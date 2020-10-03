@@ -1,0 +1,306 @@
+/*
+Theme Name: Allo
+
+Adding support for language written in a Right To Left (RTL) direction is easy -
+it's just a matter of overwriting all the horizontal positioning attributes
+of your CSS stylesheet in a separate stylesheet file named rtl.css.
+
+http://codex.wordpress.org/Right_to_Left_Language_Support
+
+*/
+body {
+	direction: rtl;
+	unicode-bidi: embed;
+}
+
+.col-full-width,
+.full-width-content {
+	float: none;
+	margin: auto;
+}
+
+@media only screen and (min-width: 992px) {
+	.pd-l-30-r-0 {
+	    padding-left: 0;
+	    padding-right: 30px;
+	}
+}
+
+.header-top .col-md-4 {
+	text-align: left;
+}
+.header-serach-overlay .header-search .serach-overlay-close {
+    position: absolute;
+    left: 60px;
+    right: auto;
+}
+.header-mini-cart i {
+    margin-right: 10px;
+    margin-left: 3px;
+}
+
+/* Menu */
+.navigation .mainmenu > li {
+	float: right;
+}
+.navigation ul.mainmenu > li.menu-item-has-children > a::after {
+	left: 0;
+}
+.navigation .main-menu li a i.mega_menu_arrow_holder {
+	float: right;
+	margin-right: 0;
+	position: relative;
+	right: -4px;
+	top: 2px;
+}
+ul.mainmenu > li:not(.sh_mega):not(.sh_mega_cats) ul.sub-menu {
+	left: auto;
+	right: -1px;
+}
+.navigation ul.mainmenu > li:not(.sh_mega) ul.sub-menu li a {
+	text-align: right;
+}
+.navigation ul.main-menu > li:not(.sh_mega):not(.sh_mega_cats) ul.sub-menu li ul.sub-menu {
+	left: -100%;
+	right: auto;
+}
+.navigation .main-menu li a i {
+	float: right;
+	margin-left: 5px;
+	margin-right: 0;
+}
+.navigation .main-menu > li .cats-mega-wrap {
+	left: auto;
+	right: -1px;
+}
+.navigation .main-menu > li .cats-mega-wrap ul.sub-menu {
+	float: right;
+}
+.navigation .main-menu > li .cats-mega-wrap .subcat {
+	float: left;
+}
+.navigation .main-menu > li .cats-mega-wrap .cats-mega-inner:before {
+    right: 140px;
+    left: auto;
+}
+.navigation ul.main-menu > li .cats-mega-wrap ul.sub-menu li {
+    border-left-width: 0px;
+    border-top-width: 0px;
+}
+.navigation ul.main-menu > li .cats-mega-wrap ul.sub-menu li.active a::before {
+	right: auto;
+	left: 5px;
+	transform: rotate(180deg);
+	-webkit-transform: rotate(180deg);
+}
+.nav-tabs {
+	padding: 0;
+}
+.special-tab-content .nav-tabs > li:first-child > a {
+	padding-right: 0;
+}
+.special-tab-content .r-tabs-accordion-title::before, 
+.special-tab-content .nav-tabs > li > a::before {
+	margin-left: 8px;
+	margin-right: 0;
+}
+.nav-tabs > li {
+	float: right;
+}
+.menu-item-meta {
+	padding: 0;
+}
+.menu-item-one .menu-item-meta > li:first-child {
+	padding-left: 7px;
+	padding-right: 0;
+}
+.menu-item-meta > li:after {
+  position: absolute;
+  content: "";
+  right: auto;
+  top: 1px;
+}
+.menu-item-meta > li:before {
+  position: absolute;
+  content: "/";
+  left: -5px;
+  top: 1px;
+}
+.menu-item-meta > li:last-child:before {
+  content: "";
+}
+.booking-with-chif.style-one .head-chif-image {
+	right: auto;
+	left: 0;
+} 
+.input > i.fa {
+	left: 15px;
+	right: auto;
+}
+
+.paginations .paging-navigation ul li > a .fa, 
+.paginations .paging-navigation ul li > span .fa {
+	transform: rotate(-180deg);
+}
+.comments-area .comment-author {
+	float: right;
+	margin-left: 30px;
+	margin-right: 0;
+}
+
+/* Post navigation */
+.post-pagination .nav-links li.nav-next a .fa-angle-double-right {
+  float: right;
+  margin-top: 3px;
+}
+.post-pagination .nav-links li.nav-previous a .fa-angle-double-left {
+	float: left;
+	margin-top: 3px;
+}
+
+/* Widget */
+.widget_nav_menu .menu .menu-click {
+	right: auto;;
+	left: -15px;
+}
+.widget_nav_menu .menu .sub-menu li a {
+	margin-left: 15px;
+}
+.product-categories .children, 
+.widget_nav_menu .sub-menu, 
+.widget_pages .children {
+  	border: 0 none;
+  	margin: 0 1em 0 0;
+}
+
+.feed-wrapper .image-area {
+  	float: right;
+  	margin-left: 20px;
+  	margin-right: 0;
+}
+
+.woocommerce ul.cart_list li img, 
+.woocommerce ul.product_list_widget li img {
+  	float: right !important;
+  	margin-left: 15px !important;
+  	margin-right: 0 !important;
+}
+.widget-area .widget_shopping_cart_content .image {
+  	float: right;
+  	margin-left: 10px;
+  	margin-right: 0;
+}
+.widget-area .widget_shopping_cart_content .ptop {
+	right: auto;
+	left: 0;
+}
+.widget-area .widget_shopping_cart_content .content > a,
+.widget-area .widget_shopping_cart_content .total-price h3 {
+	text-align: right;
+}
+.widget_categories ul li .count, 
+.widget_archive ul li .count, 
+.widget_layered_nav ul li .count {
+	right: auto;
+	left: 0;
+}
+.widget-opening-hour ul > li {
+	padding-right: 30px;
+	padding-left: 0;
+}
+.widget-opening-hour ul > li:before {
+	right: 0;
+	left: auto;
+}
+.customer-reviews .customer-info:before {
+	left: auto;
+	right: 55px;
+}
+.single-customer-review .customer-header .customer-thumb {
+	float: right;
+}
+.single-customer-review .customer-header h3.customer-name {
+	margin-left: 0;
+	margin-right: 25px;
+}
+.single-customer-review .customer-header > p {
+	margin-left: 0;
+	margin-right: 90px;
+}
+.blog-single-page-area .single-post .entry-header .entry-meta > div {
+    display: inline-block;
+    margin-right: 0;
+    margin-left: 70px;
+}
+@media only screen and (max-width: 992px) {
+  .blog-single-page-area .single-post .entry-header .entry-meta > div {
+  	margin-right: 0;
+  	margin-left: 30px;
+  }
+}
+.food-services {
+	padding-right: 0;
+}
+.food-services > li {
+	float: right;
+	padding: 18px 0;
+	text-align: right;
+}
+.food-services > li:nth-child(2n+1) {
+	margin-right: 0;
+	margin-left: 7px;
+}
+.single-event .time-from,
+.single-event.list .event-header .time-start,
+.single-event.list .event-cost, 
+.single-event.list .event-category {
+	padding-left: 0;
+	padding-right: 20px;
+}
+.single-event .event-content .event-thumb {
+	float: right;
+}
+.single-event .event-content .day {
+	right: auto;
+	left: 30px;
+}
+.single-event .col-md-6:nth-child(even):before {
+	left: auto;
+	right: -7px;
+}
+.single-event .col-md-6:nth-child(odd) .day {
+	left: 30px;
+	right: auto;
+}
+@media only screen and (min-width: 531px) {
+  .single-event .col-md-6:nth-child(odd) {
+    padding-left: 30px;
+    padding-right: 0;
+  }
+  .single-event .col-md-6:nth-child(odd):before {
+    right: auto;
+    left: -8px;
+  }
+}
+@media only screen and (min-width: 531px) {
+  .single-event .col-md-6:nth-child(even) .event-content:after {
+    top: 15px;
+    right: -15px;
+    left: auto;
+    transform: rotate(-180deg);
+  }
+}
+@media only screen and (min-width: 531px) {
+  .single-event .col-md-6:nth-child(odd) .event-content:after {
+    top: 15px;
+    left: -15px;
+    right: auto;
+    transform: rotate(-180deg);
+    }
+}
+
+/* Portfolio And Shop */
+.topbutton {
+	right: auto;
+	left: 20px;
+}

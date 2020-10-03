@@ -1,0 +1,160 @@
+.blog-area-two{
+	.single-blog{
+		figure{
+			position: relative;
+			img{
+				width: 100%;
+				opacity: 1;
+				transition: $transition;
+			}
+			.blog-con{
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 1px;
+				display: inline-block;
+				.bg-pos{
+					position: relative;
+					z-index: 999;
+					display: inline-block;
+					background: #fff;
+					padding: 30px 60px;
+					transition: $transition;
+					a{
+						h3{
+							font-weight: 500;
+							color: #222;
+							font-family: $title-font;
+							margin: 0 0 15px;
+						}
+					}
+					ul{
+						li{
+							padding: 0 10px;
+							border-right: 1px solid #929292;
+							&:last-child{
+								border-right:none;
+							}
+							a{
+								color: #929292;
+								padding: 0;
+								margin: 0;
+								i{
+									padding-right: 5px;
+								}
+								span{
+
+								}
+							}
+						}
+					}
+				}
+			}
+			&:hover{
+				img{
+					opacity: 0.8;
+				}
+				.blog-con{
+					.bg-pos{
+						background: #444;
+						a{
+							h3{
+								color: #fff;
+							}
+						}
+						ul{
+							li{
+								a{
+									color: #fff;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	.blog-two-slider{
+		button{
+			display: none !important;
+		}
+		.slick-list{
+			padding: 0 !important;
+		}
+		.slick-slide{
+			opacity: 0.4;
+		}
+		.slick-center{
+			opacity: 1;
+		}
+	}
+}
+.blog-area-three{
+	background: #f8f8f8;
+	.blog-heading{
+		h1{
+			font-family: $title-font;
+			font-weight: 500;
+		}
+	}
+	.single-blog{
+		figure{
+			position: relative;
+			display: block;
+			margin: 0 0 26px;
+			overflow: hidden;
+			img{
+				width: 100%;
+				opacity: 1;
+				transform: scale(1,1);
+				transition: $transition;
+			}
+			.date{
+				background: $primary-color;
+				display: inline-block;
+				position: absolute;
+				bottom: 20px;
+				left: 20px;
+				width: 70px;
+				height: 70px;
+				padding: 10px 20px;
+				span{
+					display: block;
+					color: #fff;
+					font-size: 18px;
+					font-family: $title-font;
+					font-weight: 500;
+				}
+			}
+		}
+		article{
+			h4{
+				font-weight: 500;
+				font-family: $title-font;
+			}
+			p{
+				color: #444444;
+				font-size: 16px;
+			}
+			a{
+				opacity: 0;
+				i{
+					padding-left:5px;
+				}
+			}
+		}
+		&:hover{
+			figure{
+				img{
+					opacity: 0.8;
+					transform: scale(1.1,1.1);
+				}
+			}
+			article{
+				a{
+					opacity: 1;
+				}
+			}
+		}
+	}
+}

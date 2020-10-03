@@ -1,0 +1,50 @@
+.breadcumb-area{
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+	position: relative;
+	z-index: 99;
+	&:after{
+		background:rgba(0, 0, 0, 0.7);
+	}
+	&.error{
+		background:#404040;
+	}
+	.breadcumb-content{
+		display: block;
+		position: relative;
+		z-index: 999;
+		padding: 130px 0;
+		.breadcumb-title{
+			h1{
+				font-weight: 400;
+				font-family: $title-font;
+				color: #fff;
+				text-transform: uppercase;
+			}
+		}
+		.breadcumb-link{
+			ul{
+				background: #fff;
+				padding: 20px 40px;
+				display: inline-block;
+				border-radius: 50px;
+				li{
+					display: inline-block;
+					color: #878787;
+					padding: 0 5px;
+					font-weight: 700;
+					a{
+						color: #878787;
+						font-weight: 700;
+					}
+					&:last-child{
+						a{
+							color: $primary-color
+						}
+					}
+				}
+			}
+		}
+	}
+}

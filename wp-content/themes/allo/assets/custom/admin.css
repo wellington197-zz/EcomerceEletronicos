@@ -1,0 +1,46 @@
+/* For Welcome Section */
+.dashicons.spin {
+  animation: dashicons-spin 1s infinite;
+  animation-timing-function: linear;
+  display: block;
+}
+
+@keyframes dashicons-spin {
+   0% {
+      transform: rotate( 0deg );
+   }
+   100% {
+      transform: rotate( 360deg );
+   }
+}
+.allo-support-section .dashicons {
+  color: #0073aa;
+  font-size: 30px;
+  margin-right: 15px;
+}
+
+.nav-tab-wrapper + .sub-header,
+.nav-tab-wrapper + .registration-notice {
+  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 0;
+  color: #23282d;
+  border: 3px double;
+  padding: 10px 15px;
+  margin-top: 30px;
+}
+.allo-important-notice.registration-form-container {
+  background: #fff;
+  padding: 30px;
+}
+.allo-important-notice.registration-form-container p {
+  font-size: 18px;
+  font-weight: 600;
+}
+.allo-important-notice.registration-form-container .about-description-faild-msg,
+.allo-important-notice.registration-form-container .about-description-success {
+  display: none;
+}
+.menu-icon-generic.toplevel_page_allo_welcome .wp-menu-image:before {
+    content: "\f330";
+}

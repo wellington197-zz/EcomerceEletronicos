@@ -1,0 +1,84 @@
+.contact-area{
+	.contact-info{
+		h3{
+			color: #333333;
+			font-family: $title-font;
+			font-weight: 500;
+			margin: 0 0 30px;
+		}
+		.info-list{
+			.single-info{
+				margin: 0 0 20px;
+				display: block;
+				.info-icon{
+					display: inline-block;
+					float: left;
+					padding-right: 20px;
+					i{
+						color: $primary-color;
+						font-size: 24px;
+						padding-top: 5px;
+					}
+				}
+				.info-con{
+					display: table;
+					p{
+						margin: 0;
+						color: #444444;
+						font-size: 16px;
+						font-family: $title-font;
+						letter-spacing: 1px;
+					}
+				}
+			}
+		}
+	}
+	.contact-form{
+		h3{
+			color: #333333;
+			font-family: $title-font;
+			font-weight: 500;
+		}
+		.form-area{
+			form{
+				fieldset{
+					display: block;
+					width: 100%;
+					input{
+						width: 100%;
+						padding: 0 15px;
+						border:none;
+						background: #f4f4f4;
+						color: #7a7a7a;
+						font-size: 15px;
+						height: 42px;
+						margin: 0 0 26px;
+					}
+					textarea{
+						width: 100%;
+						padding: 5px 15px;
+						border:none;
+						background: #f4f4f4;
+						color: #7a7a7a;
+						font-size: 15px;
+						height: 180px;
+						margin: 0 0 26px;
+					}
+				}
+				button{
+					padding: 15px 35px;
+					border-radius: 50px;
+					background: $primary-color;
+					color: #fff;
+					font-size: 15px;
+					text-transform: uppercase;
+					transition: $transition;
+					&:hover{
+						background:#444;
+						color: #fff;
+					}
+				}
+			}
+		}
+	}
+}

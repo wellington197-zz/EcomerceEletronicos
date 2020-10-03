@@ -1,0 +1,13 @@
+.client-area{
+	background: #f6f6f6;
+	padding: 50px 0;
+	.single-client{
+		width: 100%;
+		a{
+			display: block;
+			img{
+				width: 90px;
+			}
+		}
+	}
+}

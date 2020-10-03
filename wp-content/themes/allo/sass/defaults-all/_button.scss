@@ -1,0 +1,78 @@
+/***Button***/
+.btn1{
+	display: inline-block;
+	border-radius: 30px;
+	border: 2px solid #fff;
+	text-transform: uppercase;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 700;
+	padding: 15px 40px;
+	position: relative;
+	z-index: 9999;
+	 -webkit-animation: bounceInUp 2500ms ease-in-out;
+  -moz-animation: bounceInUp 2500ms ease-in-out;
+  -ms-animation: bounceInUp 2500ms ease-in-out;
+  animation: bounceInUp 2500ms ease-in-out;
+	&:hover{
+		background:#fff;
+		color: #222;
+	}
+}
+.btn2{
+	display: inline-block;
+	border-radius: 30px;
+	text-transform: uppercase;
+	color: #444444;
+	font-size: 12px;
+	font-weight: 900;
+	padding: 8px 20px;
+	background: #fff;
+	-webkit-animation: bounceInUp 2500ms ease-in-out;
+  -moz-animation: bounceInUp 2500ms ease-in-out;
+  -ms-animation: bounceInUp 2500ms ease-in-out;
+  animation: bounceInUp 2500ms ease-in-out;
+	&:hover{
+		background:$primary-color;
+		color: #fff;
+	}
+}
+.btn3{
+	display: inline-block !important;
+	text-transform: uppercase;
+	color: #222222;
+	font-size: 16px !important;
+	font-weight: 900;
+	padding: 0px 10px !important;
+	border-bottom: 2px solid #7dbe49;
+	-webkit-animation: bounceInUp 2500ms ease-in-out;
+  -moz-animation: bounceInUp 2500ms ease-in-out;
+  -ms-animation: bounceInUp 2500ms ease-in-out;
+  animation: bounceInUp 2500ms ease-in-out;
+	i{
+		padding-left: 5px;
+		font-size: 18px;
+	}
+	&:hover{
+		color: #444;
+		border-bottom: 2px solid $primary-color;
+	}
+}
+.btn4{
+	display: inline-block;
+	text-transform: uppercase;
+	color: #fff !important;
+	font-size: 12px;
+	font-weight: 900;
+	padding: 8px 10px;
+	background: $primary-color;
+	transition: $transition;
+	-webkit-animation: bounceInUp 2500ms ease-in-out;
+  -moz-animation: bounceInUp 2500ms ease-in-out;
+  -ms-animation: bounceInUp 2500ms ease-in-out;
+  animation: bounceInUp 2500ms ease-in-out;
+	&:hover{
+		background:#444;
+		color: #fff;
+	}
+}

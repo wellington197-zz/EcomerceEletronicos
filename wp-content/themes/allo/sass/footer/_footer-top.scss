@@ -1,0 +1,165 @@
+.footer-one{
+	.footer-top{
+		background: #262626;
+		.footer-link{
+			h4{
+				color: #fff;
+				font-family: $title-font;
+				font-weight: 500;
+				font-size: 20px;
+				text-transform: capitalize;
+			}
+			.link-list{
+				li{
+					display: block;
+					a{
+						color: #9c9c9c;
+						display: block;
+						padding: 3px 0;
+						&:hover{
+							color: $primary-color;
+						}
+					}
+				}
+			}
+			form{
+				display: block;
+				margin: 0 0 26px;
+				.input-prepend{
+					position: relative;
+					input{
+						width: 100%;
+						height: 42px;
+						padding: 0 10px;
+						background: #1a1a1a;
+						color: #9c9c9c;
+						border:1px solid #9c9c9c;
+					}
+					button{
+						position: absolute;
+						top: 0;
+						right: 0;
+						height: 42px;
+						width: 40px;
+						color: #fff;
+						font-size: 18px;
+						background:$primary-color;
+						transition: $transition;
+						&:hover{
+							background:#444;
+						}
+					}
+				}
+			}
+			.social-head{
+				font-weight: 500;
+				font-family: $secont-font;
+				color: #fff;
+				margin: 0 0 10px;
+			}
+			.socila-link{
+				li{
+					display: inline-block;
+					padding: 0 5px;
+					a{
+						display: block;
+						width: 30px;
+						height: 30px;
+						border: 1px solid #9c9c9c;
+						text-align: center;
+						color: #9c9c9c;
+						&:hover{
+							border: 1px solid $primary-color;
+							color: $primary-color;
+						}
+						i{
+
+						}
+					}
+				}
+			}
+		}
+	}
+}
+.footer-two{
+	.footer-top{
+		background: #fff;
+		.footer-link{
+			h4{
+				font-family: $title-font;
+				font-weight: 500;
+				font-size: 20px;
+				text-transform: capitalize;
+			}
+			.link-list{
+				li{
+					display: block;
+					a{
+						color: #646464;
+						display: block;
+						padding: 3px 0;
+						&:hover{
+							color:$primary-color;
+						}
+					}
+				}
+			}
+			form{
+				display: block;
+				margin: 0 0 26px;
+				.input-prepend{
+					position: relative;
+					input{
+						width: 100%;
+						height: 42px;
+						padding: 0 10px;
+						color: #646464;
+						border: none;
+						background: #f4f4f4;
+					}
+					button{
+						position: absolute;
+						top: 0;
+						right: 0;
+						height: 42px;
+						width: 40px;
+						font-size: 18px;
+						background:$primary-color;
+						color: #fff;
+						transition: $transition;
+						&:hover{
+							background:#444;
+							color: #fff;
+						}
+					}
+				}
+			}
+			.social-head{
+				font-weight: 500;
+				font-family: $secont-font;
+				margin: 0 0 10px;
+			}
+			.socila-link{
+				li{
+					display: inline-block;
+					padding: 0 5px;
+					a{
+						display: block;
+						width: 30px;
+						height: 30px;
+						border: 1px solid #646464;
+						text-align: center;
+						color: #646464;
+						&:hover{
+							border: 1px solid $primary-color;
+							color: $primary-color;
+						}
+						i{
+
+						}
+					}
+				}
+			}
+		}
+	}
+}

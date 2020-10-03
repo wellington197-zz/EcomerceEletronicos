@@ -1,0 +1,299 @@
+.shipping-area{
+	.button-area{
+		ul{
+			li{
+				a{
+					display: block;
+					padding: 15px;
+					background: #f8f8f8;
+					color: #646464;
+					font-size: 18px;
+					font-family: $title-font;
+				}
+				&.active{
+					a{
+						background: $primary-color;
+						color: #fff;
+					}
+				}
+			}
+		}
+	}
+	.product-list{
+		table{
+			margin: 0 0 30px;
+			tr{
+				border:1px solid #e7e7e7;
+				padding: 25px;
+				display: block;
+				margin-bottom: -1px;
+				td{
+					padding-right: 50px;
+					img{
+						width: 100%;
+						display: block;
+					}
+					.des-pro{
+						display: block;
+						padding-right: 50px;
+						width: 210px;
+						h4{
+							font-weight: 500;
+							font-family: $title-font;
+							margin: 0 0 10px;
+						}
+						p{
+							color: #646464;
+							font-family: $title-font;
+							margin: 0;
+						}
+					}
+					strong{
+						font-size: 24px;
+						display: block;
+						padding-right: 100px;
+					}
+					.order-pro{
+						position: relative;
+						display: block;
+						margin-right: 100px;
+						input{
+							width: 120px;
+							height: 46px;
+							border-radius: 50px;
+							box-shadow: none;
+							border:1px solid #e8e8e8;
+							padding-left: 25px;
+							color: #888888;
+							font-size: 18px;
+							font-family: $title-font;
+						}
+						div{
+							position: absolute;
+							top: 12px;
+							right: 0;
+							z-index: 999;
+							cursor: pointer;
+							&.btn-plus{
+								right: 40px;
+							}
+							&.btn-minus{
+								right: 20px;
+							}
+						}
+					}
+					.prize{
+						color: $primary-color;
+						font-size: 24px;
+						font-weight: 700;
+						padding-right: 50px;
+					}
+					i{
+						display: block;
+						width: 35px;
+						height: 35px;
+						border-radius: 100%;
+						border:1px solid #888;
+						text-align: center;
+						padding: 8px 0;
+						font-size: 16px;
+						cursor: pointer;
+					}
+				}
+			}
+		}
+		.total{
+			span{
+				font-size: 20px;
+				font-family: $title-font;
+				padding-right: 10px;
+			}
+			strong{
+				font-size: 28px;
+				font-family: $title-font;
+				font-weight: 400;
+			}
+		}
+	}
+	.next-step{
+		button{
+			padding: 10px 30px;
+			border-radius: 50px;
+			border:1px solid #e7e7e7;
+			text-transform: capitalize;
+			font-size: 18px;
+			font-family: $title-font;
+			background: transparent;
+			margin-top: 50px;
+			transition: $transition;
+			&:hover{
+				background: #444;
+				color: #fff;
+				border:1px solid #444;
+			}
+		}
+	}
+	.form-area{
+		h3{
+			font-weight: 500;
+			font-family: $title-font;
+			padding: 0 15px;
+		}
+		form{
+			fieldset{
+				margin: 0 0 15px;
+				label{
+					display: block;
+					width: 100%;
+					color: #333333;
+					font-weight: 400;
+					margin: 0 0 10px;
+				}
+				input{
+					display: block;
+					width: 100%;
+					margin: 0 0 10px;
+					height: 40px;
+					border-radius: 0;
+					padding: 0 15px;
+				}
+				select{
+					display: block;
+					width: 100%;
+					margin: 0 0 10px;
+					height: 40px;
+					border-radius: 0;
+					padding: 0 15px;
+					color: #646464;
+					font-size: 13px;
+				}
+			}
+		}
+	}
+	.order-list{
+		h3{
+			font-weight: 500;
+			font-family: $title-font;
+		}
+		table{
+			width: 100%;
+			tr{
+				width: 100%;
+				display: block;
+				td{
+					border:1px solid #dedede;
+					padding: 10px 15px;
+					font-size: 16px;
+					&:first-child{
+						width:400px;
+					}
+					&:last-child{
+						width: 100px;
+						text-align: center;
+					}					
+				}
+			}
+			.row-bold{
+				td{
+					border:1px solid #dedede;
+					font-weight: 700;
+				}
+			}
+		}
+	}
+	.faq{
+    h2{
+      font-weight: 400 !important;
+      color: @primary-color;
+      margin-bottom: 50px;
+    }
+    .panel-group{
+      .panel-default{
+        margin: 0 !important;
+        border-radius: 0 !important;
+        .panel-heading{
+          padding: 0;
+          background: transparent;
+          h4{
+            font-size: 16px;
+            &.panel-title{
+              a{
+                display: block;
+                padding: 16px 10px;
+                text-decoration: none;
+                font-size: 15px;
+                font-family: @body-font;
+                color: @primary-color;
+                background: transparent;
+                &:after{
+                  content:'\f175';
+                  text-align: center;
+                  transform: none !important;
+                  background: url(images/btn-hover.png) no-repeat;
+                  background-size: cover;
+                  color: #fff;
+                  padding: 5px 0;
+                  font-size: 14px;
+                  width: 30px;
+                  height: 30px;
+                  margin-top: -14px;
+                  background: #5c3f36;
+                }
+                &.collapsed{
+                  display: block;
+                  padding: 16px 10px;
+                  color: #5c3f36;
+                  text-decoration: none;
+                  font-size: 15px;
+                  transition:@transition;
+                  &:after{
+                    content:'\f178';
+                    text-align: center;
+                    transform: none !important;
+                    background: url(images/btnarrow.png) no-repeat;
+                    background-size: cover;
+                    color: #fff;
+                    padding: 5px 0;
+                    font-size: 14px;
+                    width: 30px;
+                    height: 30px;
+                    background: @primary-color;
+                  }
+                }
+              }
+            }
+          }
+        }
+        .panel-body{
+          color: #5c3f36;
+          font-size: 16px;
+        }
+      }
+    }
+  .panel-heading [data-toggle="collapse"]:after{
+    font-family: fontawesome;
+    content: "\f0d8"; /* "play" icon */
+    float: right;
+    color: #ffffff;
+    font-size: 18px;
+    line-height: 22px;
+
+    /* rotate "play" icon from > (right arrow) to down arrow */
+    -webkit-transform: rotate(-90deg);
+    -moz-transform:    rotate(-90deg);
+    -ms-transform:     rotate(-90deg);
+    -o-transform:      rotate(-90deg);
+    transform:         rotate(-90deg);
+    }
+  .panel-heading [data-toggle="collapse"].collapsed:after{
+    /* rotate "play" icon from > (right arrow) to ^ (up arrow) */
+    -webkit-transform: rotate(90deg);
+    -moz-transform:    rotate(90deg);
+    -ms-transform:     rotate(90deg);
+    -o-transform:      rotate(90deg);
+    transform:         rotate(90deg);
+    color: #222222;
+    }
+
+  }
+}

@@ -1,0 +1,93 @@
+
+---Downloaded files---
+The import files for: Electro were successfully downloaded!
+Initial max execution time = 300
+Files info:
+Site URL = http://localhost/Ecomerce
+Data file = C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/dummy-data.xml
+Widget file = C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/widgets.wie
+Customizer file = not defined!
+Redux files:
+electro_options -> C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/redux-options.json 
+
+
+------
+New AJAX call!
+
+
+------
+New AJAX call!
+
+
+------
+New AJAX call!
+
+
+------
+New AJAX call!
+
+
+------
+New AJAX call!
+
+
+---pt-ocdi/before_widgets_import---
+
+
+---Importing widgets---
+Home Sidebar : 
+
+Imagem - No Title - Imported
+Produtos - Latest Products - Imported
+Electro Features Block - No Title - Imported
+Electro Products Carousel - Featured Products - Imported
+Electro Posts Carousel - From the Blog - Imported
+
+Shop Sidebar : 
+
+Electro Product Categories - No Title - Imported
+Electro Product Filter - Filters - Imported
+Imagem - No Title - Imported
+Produtos - Latest Products - Imported
+
+Product Filters : 
+
+Filtros ativos de produto - Active Filters - Imported
+Filtrar produtos por atributo - Brands - Imported
+Filtrar produtos por atributo - Color - Imported
+Filtrar produtos por preço - Price - Imported
+
+Blog Sidebar : 
+
+Pesquisar - No Title - Imported
+Texto - About Blog - Imported
+Categorias - Categories - Imported
+Electro Recent Posts - Recent Posts - Imported
+Nuvem de tags - Tags Clouds - Imported
+
+Footer Widgets : 
+
+Produtos - Featured Products - Imported
+Produtos - Top Selling Products - Imported
+Produtos - On-sale Products - Imported
+
+Footer Bottom Widgets : 
+
+Menu - Find It Fast - Imported
+Menu -   - Imported
+Menu - Customer Care - Imported
+
+Mobile Footer Bottom Widgets : 
+
+Menu - We Recommend - Imported
+Menu - My Account - Imported
+Menu - Customer Care - Imported
+Menu - About Us - Imported
+
+
+
+---Importing Redux settings---
+Redux settings import for: electro_options finished successfully!
+
+---pt-ocdi/after_import---
+

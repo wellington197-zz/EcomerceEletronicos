@@ -1,0 +1,25 @@
+.error-area{
+	background: $primary-color;
+	padding: 180px 0;
+	.error-content{
+		h1{
+			color: #fff;
+			font-size: 300px;
+			font-family: $title-font;
+			margin: 0;
+		}
+		h2{
+			color: #fff;
+			font-family: $title-font;
+			letter-spacing: 2px;
+			font-weight: 400;
+		}
+		p{
+			font-size: 18px;
+			color: #fff;
+			width: 45%;
+			margin: auto;
+			margin-bottom: 60px;
+		}
+	}
+}

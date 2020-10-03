@@ -1,0 +1,167 @@
+.ads-area{
+	.ads{
+		figure{
+			overflow: hidden;
+			img{
+				width: 100%;
+				transition: $transition;
+				transform: scale(1,1);
+			}
+			.abs-content{
+				position: absolute;
+				top: 20%;
+				right: 20%;
+				h1{
+					font-size: 40px;
+					font-weight: 700;
+					font-family: $title-font;
+					margin: 0;
+					color: #fff;
+				}
+				p{
+					font-family: $title-font;
+					margin: 0;
+					font-size: 20px;
+					font-weight: 400;
+					color: #fff;
+				}
+				h2{
+					font-family: $title-font;
+					margin: 0;
+					font-size: 50px;
+					font-weight: 400;
+					color: #fff;
+				}
+			}
+		}
+		&:hover{
+			figure{
+				img{
+					transform: scale(1.2,1.2);
+				}
+			}
+		}
+	}
+}
+.ads-area-three{
+	.single-ads-list{
+		padding: 0 5px;
+		&:first-child{
+			padding-left:0;
+		}
+		&:last-child{
+			padding-right:0;
+		}
+	}
+	.single-ads{
+		figure{
+			position: relative;
+			overflow: hidden;
+			img{
+				width: 100%;
+				transition: $transition;
+				transform: scale(1,1);
+			}
+			.abs-content{
+				position: absolute;
+				top: 35px;
+				left: 40px;
+				h1{
+					font-family: $title-font;
+					font-weight: 700;
+					color: #fff;
+					margin: 0;
+				}
+				h2{
+					font-family: $title-font;
+					font-weight: 700;
+					color: #000;
+					margin: 0;
+				}
+				h3{
+					font-family: $title-font;
+					font-weight: 700;
+					color: #fff;
+					margin: 0;
+					font-size: 22px;
+				}
+				h4{
+					margin: 0;
+					font-size: 20px;
+					color: #000000;
+					font-weight: 400;
+					font-family: $title-font;
+				}
+				p{
+					margin: 0 0 15px;
+					font-family: $title-font;
+					font-size: 18px;
+					color: #000;
+					letter-spacing: 2px;
+				}
+				a{
+
+				}
+			}
+			&:hover{
+				img{
+					transform: scale(1.2,1.2);
+				}
+			}
+		}
+	}
+}
+.ads-area-fore{
+	.ads-single{
+		figure{
+			position: relative;
+			overflow: hidden;
+			img{
+				width: 100%;
+				transform: scale(1,1);
+				transition: $transition;
+			}
+			.ads-content-area{
+				position: absolute;
+				top: 40px;
+				width: 50%;
+				left: 50%;
+				h1{
+					font-size: 40px;
+					font-family: $title-font;
+					text-transform: uppercase;
+					color: #fff;
+					margin: 0;
+				}
+				p{
+					margin: 0 0 22px;
+					color: #fff;
+					font-size: 20px;
+					font-family: $title-font;
+					text-transform: uppercase;
+					letter-spacing: 2px;
+				}
+				.price{
+					del{
+						font-size: 30px;
+						font-weight: 400;
+						color: #fff;
+						font-family: $title-font;
+						padding-right: 10px;
+					}
+					strong{
+						font-size: 48px;
+						font-weight: 400;
+						color: #fff;
+						font-family: $title-font;
+					}
+				}
+			}
+			&:hover{
+				img{
+					transform: scale(1.2,1.2);
+				}
+			}
+		}
+	}
+}
