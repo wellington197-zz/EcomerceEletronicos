@@ -25,7 +25,7 @@ define('DB_NAME', 'ecomerce');
 /** MySQL database username */
 define('DB_USER', 'root');
 
-/** teste */
+/** teste v2 */
 /** MySQL database password */
 define('DB_PASSWORD', '');
 
