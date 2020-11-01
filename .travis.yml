@@ -1,6 +1,11 @@
 language: php
 
+# Faz a instalação com Sudo, para ter privilégio de Super Usuário.
+sudo: required
 
+# Instalação de Módulos que são necessários para a Aplicação.
+install:
+  - pip install flask
  # Defini que o processo de Deploy será na Plataforma Heroku. É necessário informar o nome da APP criada no Heroku
 deploy:
   provider: heroku
