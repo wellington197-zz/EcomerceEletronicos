@@ -1,7 +1,17 @@
+# Linguagem Utilizada para Desenvolver a Aplicação
 language: php
+
+# Versão que a aplicação suporta.
+php:
+  - "7.3"
 
 # Faz a instalação com Sudo, para ter privilégio de Super Usuário.
 sudo: required
+
+# Instalação de Módulos que são necessários para a Aplicação.
+install:
+  - pip install flask
+
 
 # Instalação de Módulos que são necessários para a Aplicação.
 install:
