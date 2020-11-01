@@ -1,0 +1,27 @@
+2020-11-01T01:18:30+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('appearance_page...')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'appearance_page...')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\admin.php(216): require_once('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\Ecomerce\wp-admin\themes.php(10): require_once('C:\\xampp\\htdocs...')
+#6 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-11-01T01:22:58+00:00 CRITICAL Uncaught Error: Call to undefined function AwesomeMotive\WPContentImporter2\wp_slash_strings_only() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php:1225
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(986): AwesomeMotive\WPContentImporter2\WXRImporter->process_post_meta(Array, 3257, Array)
+#1 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(403): AwesomeMotive\WPContentImporter2\WXRImporter->process_post(Array, Array, Array, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(80): AwesomeMotive\WPContentImporter2\WXRImporter->import('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(139): OCDI\Importer->import('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php, na linha 1225
+
+2020-11-01T01:24:42+00:00 CRITICAL Uncaught Error: Call to undefined function AwesomeMotive\WPContentImporter2\wp_slash_strings_only() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php:1225
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(986): AwesomeMotive\WPContentImporter2\WXRImporter->process_post_meta(Array, 3258, Array)
+#1 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(403): AwesomeMotive\WPContentImporter2\WXRImporter->process_post(Array, Array, Array, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(80): AwesomeMotive\WPContentImporter2\WXRImporter->import('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(139): OCDI\Importer->import('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php, na linha 1225
+
