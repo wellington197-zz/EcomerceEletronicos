@@ -1,0 +1,62 @@
+2020-10-31T21:30:16+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('appearance_page...')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'appearance_page...')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\admin.php(216): require_once('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\Ecomerce\wp-admin\themes.php(10): require_once('C:\\xampp\\htdocs...')
+#6 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-10-31T21:30:41+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('appearance_page...')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'appearance_page...')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\admin.php(216): require_once('C:\\xampp\\htdocs...')
+#5 C:\xampp\htdocs\Ecomerce\wp-admin\themes.php(10): require_once('C:\\xampp\\htdocs...')
+#6 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-10-31T21:31:30+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('index.php')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'index.php')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\index.php(100): include('C:\\xampp\\htdocs...')
+#5 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-10-31T21:31:39+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('index.php')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'index.php')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\index.php(100): include('C:\\xampp\\htdocs...')
+#5 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-10-31T21:31:40+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('index.php')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'index.php')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\index.php(100): include('C:\\xampp\\htdocs...')
+#5 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+
+2020-10-31T21:55:47+00:00 CRITICAL Uncaught Error: Call to undefined method WP_Screen::is_block_editor() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php:173
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(286): YIT_Plugin_Panel->init_wp_with_tabs('index.php')
+#1 C:\xampp\htdocs\Ecomerce\wp-includes\class-wp-hook.php(310): WP_Hook->apply_filters(NULL, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-includes\plugin.php(453): WP_Hook->do_action(Array)
+#3 C:\xampp\htdocs\Ecomerce\wp-admin\admin-header.php(97): do_action('admin_enqueue_s...', 'index.php')
+#4 C:\xampp\htdocs\Ecomerce\wp-admin\index.php(100): include('C:\\xampp\\htdocs...')
+#5 {main}
+  thrown, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\yith-woocommerce-compare\plugin-fw\lib\yit-plugin-panel.php, na linha 173
+

@@ -1,0 +1,9 @@
+language: php
+
+
+ # Defini que o processo de Deploy será na Plataforma Heroku. É necessário informar o nome da APP criada no Heroku
+deploy:
+  provider: heroku
+  api-key: 
+    secure: $Heroku_API_KEY
+  app: well87
