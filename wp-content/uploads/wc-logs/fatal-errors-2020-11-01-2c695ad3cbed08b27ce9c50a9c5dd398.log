@@ -25,3 +25,11 @@ Stack trace:
 #3 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(139): OCDI\Importer->import('C:\\xampp\\htdocs...')
 #4 C:\xampp\htdocs, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php, na linha 1225
 
+2020-11-01T16:50:23+00:00 CRITICAL Uncaught Error: Call to undefined function AwesomeMotive\WPContentImporter2\wp_slash_strings_only() in C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php:1225
+Stack trace:
+#0 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(986): AwesomeMotive\WPContentImporter2\WXRImporter->process_post_meta(Array, 3260, Array)
+#1 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php(403): AwesomeMotive\WPContentImporter2\WXRImporter->process_post(Array, Array, Array, Array)
+#2 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(80): AwesomeMotive\WPContentImporter2\WXRImporter->import('C:\\xampp\\htdocs...')
+#3 C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\inc\Importer.php(139): OCDI\Importer->import('C:\\xampp\\htdocs...')
+#4 C:\xampp\htdocs, em C:\xampp\htdocs\Ecomerce\wp-content\plugins\one-click-demo-import\vendor\awesomemotive\wp-content-importer-v2\src\WXRImporter.php, na linha 1225
+

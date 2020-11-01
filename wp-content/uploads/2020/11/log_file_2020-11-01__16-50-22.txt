@@ -1,0 +1,12 @@
+
+---Downloaded files---
+The import files for: Electro were successfully downloaded!
+Initial max execution time = 120
+Files info:
+Site URL = http://localhost/Ecomerce
+Data file = C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/dummy-data.xml
+Widget file = C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/widgets.wie
+Customizer file = not defined!
+Redux files:
+electro_options -> C:\xampp\htdocs\Ecomerce/wp-content/themes/electro/assets/dummy-data/visualcomposer/redux-options.json 
+
