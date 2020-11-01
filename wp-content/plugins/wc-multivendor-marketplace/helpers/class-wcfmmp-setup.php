@@ -156,7 +156,7 @@ class WCFMmp_Marketplace_Setup {
 							</style>
 					</head>
 					<body class="wcfm-setup wp-core-ui">
-							<h1 id="wc-logo"><a href="http://wclovers.com/"><img src="<?php echo $WCFMmp->plugin_url; ?>assets/images/wcfmmp-blue.png" alt="WCFM" /><span>WCFM Marketplace</span></a></h1>
+							<h1 id="wc-logo"><a href="http://wclovers.com/"><img src="<?php echo $WCFMmp->plugin_url; ?>assets/images/wcfmmp-75x75.png" alt="WCFM" /><span>WCFM Marketplace</span></a></h1>
 							<div class="wcfm-install-woocommerce">
 									<p><?php _e('WCFM Marketplace requires WooCommerce plugin to be active!', 'wc-multivendor-marketplace'); ?></p>
 									<form method="post" action="" name="wcfm_install_woocommerce">
@@ -582,9 +582,9 @@ class WCFMmp_Marketplace_Setup {
 					<body class="wcfm-setup wp-core-ui">
 						<h1 id="wc-logo"><a href="http://wclovers.com/"><img src="<?php echo $WCFMmp->plugin_url; ?>assets/images/wcfmmp-75x75.png" alt="WCFM" /><span>WCFM Marketplace</span></a></h1>
 						<div class="wcfm-install-woocommerce">
-							<p><?php _e('WCFM Maketplace requires WCFM Dashboard plugin to be active!', 'wc-multivendor-marketplace'); ?></p>
+							<p><?php _e('WCFM Maketplace requires WCFM Core plugin to be active!', 'wc-multivendor-marketplace'); ?></p>
 							<form method="post" action="" name="wcfmmp_install_wcfm">
-								<?php submit_button(__('Install WCFM Dashboard', 'wc-multivendor-marketplace' ), 'primary', 'wcfmmp_install_wcfm'); ?>
+								<?php submit_button(__('Install WCFM Core', 'wc-multivendor-marketplace' ), 'primary', 'wcfmmp_install_wcfm'); ?>
 								<?php wp_nonce_field('wcfmmp-install-wcfm'); ?>
 							</form>
 						</div>

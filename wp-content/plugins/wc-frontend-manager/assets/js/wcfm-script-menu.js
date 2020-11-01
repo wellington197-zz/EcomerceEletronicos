@@ -1,5 +1,56 @@
 $wcfm_search_products_list = [];
 
+var $wcfm_page_select_args = {
+			allowClear:  true,
+			placeholder: wcfm_dashboard_messages.search_page_select2,
+			minimumInputLength: '3',
+			language: {
+				inputTooShort: function ( args ) {
+					var remainingChars = args.minimum - args.input.length;
+          var message = wcfm_dashboard_messages.select2_minimum_input + remainingChars;
+          return message;
+				},
+				noResults: function () {
+          return wcfm_dashboard_messages.select2_no_result;
+        },
+        searching: function () {
+          return wcfm_dashboard_messages.select2_searching;
+        },
+        loadingMore: function () {
+          return wcfm_dashboard_messages.select2_loading_more;
+        },
+			},
+			escapeMarkup: function( m ) {
+				return m;
+			},
+			ajax: {
+				url:         wcfm_params.ajax_url,
+				dataType:    'json',
+				delay:       250,
+				data:        function( params ) {
+					return {
+						term:     params.term,
+						action:   'wcfm_json_search_pages',
+						exclude:  jQuery( this ).data( 'exclude' ),
+						include:  jQuery( this ).data( 'include' ),
+						limit:    jQuery( this ).data( 'limit' )
+					};
+				},
+				processResults: function( data ) {
+					var terms = [];
+					if ( data ) {
+						jQuery.each( data, function( id, text ) {
+							terms.push( { id: id, text: text } );
+						});
+					}
+					return {
+						results: terms
+					};
+				},
+				cache: true
+			}
+		};
+
 var $wcfm_product_select_args = {
 			allowClear:  true,
 			placeholder: wcfm_dashboard_messages.search_product_select2,
@@ -220,7 +271,9 @@ $wcfm_datatable_button_args = [
 																	orientation: 'landscape',
 																	pageSize: 'LEGAL',
 																	exportOptions: {
-																		columns: ':visible'
+																		columns: ':visible',
+																		//stripHtml: false,
+																		//stripNewlines: false,
 																	}
 																},
 																{
@@ -265,7 +318,7 @@ jQuery( document ).ready( function( $ ) {
 	
 	// Responsive
 	// WCFM Responsive Menu Toggler
-	if( $(window).width() <= 768 ) {
+	if( wcfm_params.is_mobile || wcfm_params.is_tablet ) {
 		if( $('#wcfm-main-contentainer .wcfm_responsive_menu_toggler').length > 0 ) {
 			//$('#wcfm_menu').removeClass('wcfm_menu_toggle');
 			$('#wcfm_menu').addClass('wcfm_responsive_menu_toggle');
@@ -300,16 +353,17 @@ jQuery( document ).ready( function( $ ) {
 				}
 			});
 		}
-	}
 	
-	if( $(window).width() <= 768 ) {
 		if( !$('#wcfm_menu').hasClass('wcfm_responsive_menu_toggle') ) {
 			$('.wcfm_form_simple_submit_wrapper').css( 'bottom', $('#wcfm_menu').height() );
 			$('.wcfm-message').css( 'bottom', ($('#wcfm_menu').height() + 60) );
 		}
 	}
-	if ($(window).width() <= 640) {
+	if( wcfm_params.is_mobile ) {
 		$('#wcfm-main-contentainer').css( 'max-width', $(window).width() );
+		$( window ).resize(function() {
+			$('#wcfm-main-contentainer').css( 'max-width', $(window).width() );
+		});
 		$('#wcfm-main-contentainer').parents().each(function() {
 		  $(this).addClass('no-margin');
 		});
@@ -384,6 +438,30 @@ jQuery( document ).ready( function( $ ) {
 	  setTimeout( function() {  restrictNonNegativeInput(); }, 500 );
 	}
 	
+	function restrictNameInput() {
+	  $('.wcfm_name_input').each(function() {
+	  	$(this).on("contextmenu",function(){
+				 return false;
+			}); 
+	    $(this).on('keydown', function(e) {
+	    	//console.log(e.keyCode);
+				if( !( ( e.keyCode > 95 && e.keyCode < 106 )
+								|| ( e.keyCode > 47 && e.keyCode < 58 ) 
+							  || ( e.keyCode > 64 && e.keyCode < 91 ) 
+								|| e.keyCode == 8
+								|| e.keyCode == 9
+								|| e.keyCode == 32
+								|| e.keyCode == 37
+								|| e.keyCode == 39
+								|| e.keyCode == 46
+								|| e.keyCode == 189 ) ) {
+									return false;
+								}
+			});
+	  });
+	  setTimeout( function() {  restrictNameInput(); }, 500 );
+	}
+	
 	function restrictSlugInput() {
 	  $('.wcfm_slug_input').each(function() {
 	  	$(this).on("contextmenu",function(){
@@ -416,6 +494,7 @@ jQuery( document ).ready( function( $ ) {
 		unwrapSelect();
 		
 		restrictNonNegativeInput();
+		restrictNameInput();
 		restrictSlugInput();
 	}, 500 );
 	

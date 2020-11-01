@@ -2,7 +2,7 @@
 	padding: 20px;
 	background: #fff;
 	transition: box-shadow .25s ease-in-out;
-	box-shadow: 0 2px 5px 0 rgba(0,0,0,.07);
+	box-shadow: 1px 1px 20px 0px #E9E9E9;
 	border-radius: 3px;
 	width: 90%;
 	margin: 25px auto;
@@ -47,6 +47,7 @@
 	-webkit-box-shadow: 0 1px 0 #ccc;
 	box-shadow: 0 1px 0 #ccc;
 	text-transform: uppercase;
+	text-decoration:none!important;
 }
 
 #wcfm_membership_container a.wcfm_submit_button:hover {
@@ -55,5 +56,6 @@
 }
 
 @media only screen and (max-width: 640px) {
+	#wcfm-main-contentainer .wcfm_membership_thankyou_content_wrapper {width:100%}
   #wcfm_membership_container a.wcfm_submit_button {display:block;}
 }

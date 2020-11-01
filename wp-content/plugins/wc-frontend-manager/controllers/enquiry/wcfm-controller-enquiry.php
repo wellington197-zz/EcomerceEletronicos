@@ -208,7 +208,7 @@ class WCFM_Enquiry_Controller {
 				// Action
 				$actions = '<a class="wcfm-action-icon" href="' . get_wcfm_enquiry_manage_url($wcfm_enquirys_single->ID) . '"><span class="wcfmfa fa-reply-all text_tip" data-tip="' . esc_attr__( 'Reply', 'wc-frontend-manager' ) . '"></span></a>';
 				
-				if( apply_filters( 'wcfm_is_allow_eniquiry_dalate', true ) ) {
+				if( apply_filters( 'wcfm_is_allow_eniquiry_delete', true ) ) {
 					$actions .= '<a class="wcfm_enquiry_delete wcfm-action-icon" href="#" data-enquiryid="' . $wcfm_enquirys_single->ID . '"><span class="wcfmfa fa-trash-alt text_tip" data-tip="' . esc_attr__( 'Delete', 'wc-frontend-manager' ) . '"></span></a>';
 				}
 				

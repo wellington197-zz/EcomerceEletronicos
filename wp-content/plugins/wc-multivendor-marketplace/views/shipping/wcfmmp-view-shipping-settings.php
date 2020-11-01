@@ -37,6 +37,11 @@
   if(!isset($wcfmmp_marketplace_shipping_by_weight_options['enabled']) || $wcfmmp_marketplace_shipping_by_weight_options['enabled'] == 'no' ) {
   	if( isset( $wcfmmp_all_shiping_types['by_weight'] ) ) unset( $wcfmmp_all_shiping_types['by_weight'] );
   }
+  
+  $wcfmmp_marketplace_shipping_by_distance_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', array() );
+  if(!isset($wcfmmp_marketplace_shipping_by_distance_options['enabled']) || $wcfmmp_marketplace_shipping_by_distance_options['enabled'] == 'no' ) {
+  	if( isset( $wcfmmp_all_shiping_types['by_distance'] ) ) unset( $wcfmmp_all_shiping_types['by_distance'] );
+  }
 ?>
 
   
@@ -76,6 +81,8 @@
           "wcfmmp_additional_product" => array('label' => __('Per Product Additional Price', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_additional_product]', 'placeholder' => '0.00', 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_additional_product']) ? $wcfmmp_shipping_by_country['_wcfmmp_additional_product'] : '', 'hints' => __('If a customer buys more than one type product from your store, first product of the every second type will be charged with this price', 'wc-multivendor-marketplace') ),
           "wcfmmp_additional_qty" => array('label' => __('Per Qty Additional Price', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_additional_qty]', 'placeholder' => '0.00', 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_additional_qty']) ? $wcfmmp_shipping_by_country['_wcfmmp_additional_qty'] : '', 'hints' => __('Every second product of same type will be charged with this price', 'wc-multivendor-marketplace') ),
           "wcfmmp_byc_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_free_shipping_amount']) ? $wcfmmp_shipping_by_country['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+          "wcfmmp_byc_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_country['_enable_local_pickup']) ? 'yes' : '' ),
+					"wcfmmp_byc_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_local_pickup_cost']) ? $wcfmmp_shipping_by_country['_local_pickup_cost'] : '' ),
           "wcfmmp_form_location" => array('label' => __('Ships from:', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_form_location]','type' => 'country', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_form_location']) ? $wcfmmp_shipping_by_country['_wcfmmp_form_location'] : '', 'hints' => __( 'Location from where the products are shipped for delivery. Usually it is same as the store.', 'wc-multivendor-marketplace' ) ),
           ) )
       );
@@ -239,19 +246,25 @@
   } else { ?>
   <?php
   $weight_unit = strtolower( get_option( 'woocommerce_weight_unit' ) );
-  $wcfmmp_country_weight_rates       = get_user_meta( $user_id, '_wcfmmp_country_weight_rates', true );
+  
+  $wcfmmp_shipping_by_weight           = get_user_meta( $user_id, '_wcfmmp_shipping_by_weight', true );
+  if( !$wcfmmp_shipping_by_weight ) {
+  	$wcfmmp_shipping_by_weight         = get_option( '_wcfmmp_shipping_by_weight', array() );
+  }
+  
+  $wcfmmp_country_weight_rates         = get_user_meta( $user_id, '_wcfmmp_country_weight_rates', true );
   if( !$wcfmmp_country_weight_rates ) {
   	$wcfmmp_country_weight_rates       = get_option( '_wcfmmp_country_weight_rates', array() );
   }
   
-  $wcfmmp_country_weight_mode  = get_user_meta( $user_id, '_wcfmmp_country_weight_mode', true );
+  $wcfmmp_country_weight_mode          = get_user_meta( $user_id, '_wcfmmp_country_weight_mode', true );
   if( !$wcfmmp_country_weight_mode ) {
-  	$wcfmmp_country_weight_mode  = get_option( '_wcfmmp_country_weight_mode', array() );
+  	$wcfmmp_country_weight_mode        = get_option( '_wcfmmp_country_weight_mode', array() );
   }
   
-  $wcfmmp_country_weight_unit_cost  = get_user_meta( $user_id, '_wcfmmp_country_weight_unit_cost', true );
+  $wcfmmp_country_weight_unit_cost     = get_user_meta( $user_id, '_wcfmmp_country_weight_unit_cost', true );
   if( !$wcfmmp_country_weight_unit_cost ) {
-  	$wcfmmp_country_weight_unit_cost  = get_option( '_wcfmmp_country_weight_unit_cost', array() );
+  	$wcfmmp_country_weight_unit_cost   = get_option( '_wcfmmp_country_weight_unit_cost', array() );
   }
 								
   $wcfmmp_country_weight_default_costs  = get_user_meta( $user_id, '_wcfmmp_country_weight_default_costs', true );
@@ -275,10 +288,13 @@
   
   $WCFM->wcfm_fields->wcfm_generate_form_field( 
       apply_filters( 'wcfmmp_settings_fields_shipping_rates_by_weight', array( 
+      	"wcfmmp_byw_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_weight['_free_shipping_amount']) ? $wcfmmp_shipping_by_weight['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+      	"wcfmmp_byw_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_weight['_enable_local_pickup']) ? 'yes' : '' ),
+				"wcfmmp_byw_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_weight['_local_pickup_cost']) ? $wcfmmp_shipping_by_weight['_local_pickup_cost'] : '' ),
         "wcfmmp_shipping_rates_by_weight" => array(
             'label' => __('Country and Weight wise Shipping Rate Calculation', 'wc-multivendor-marketplace') , 
             'type' => 'multiinput', 
-            'label_class' => 'wcfm_title wcfm_full_title', 
+            'label_class' => 'wcfm_title wcfm_full_ele', 
             'value' => $wcfmmp_country_weight_shipping_value, 
             'desc' => __( 'Add the countries you deliver your products to and specify rates for weight range. If the shipping price is same except some countries/states, there is an option Everywhere Else, you can use that.', 'wc-multivendor-marketplace' ), 
             'options' => array(
@@ -355,4 +371,75 @@
   );
   ?>
   <?php } ?>
+  <div class="wcfm-clearfix"></div>
+</div>
+
+<div id="wcfmmp_settings_form_shipping_by_distance" class="wcfm-content shipping_type by_distance hide_if_shipping_disabled">
+  <div class="wcfm_vendor_settings_heading">
+    <h3><?php _e('Shipping By Distance', 'wc-multivendor-marketplace'); ?></h3>
+  </div>
+  <?php if(!isset($wcfmmp_marketplace_shipping_by_distance_options['enabled']) || $wcfmmp_marketplace_shipping_by_distance_options['enabled'] == 'no' ) {
+    _e('Shipping By Distance is disabled by Admin. Please contact admin for details', 'wc-multivendor-marketplace');
+  } else { ?>
+  <?php
+  $radius_unit   = isset( $WCFMmp->wcfmmp_marketplace_options['radius_unit'] ) ? $WCFMmp->wcfmmp_marketplace_options['radius_unit'] : 'km';
+  
+  $wcfmmp_shipping_by_distance           = get_user_meta( $user_id, '_wcfmmp_shipping_by_distance', true );
+  if( !$wcfmmp_shipping_by_distance ) {
+  	$wcfmmp_shipping_by_distance         = get_option( '_wcfmmp_shipping_by_distance', array() );
+  }
+  
+  $wcfmmp_shipping_by_distance_rates         = get_user_meta( $user_id, '_wcfmmp_shipping_by_distance_rates', true );
+  if( !$wcfmmp_shipping_by_distance_rates ) {
+  	$wcfmmp_shipping_by_distance_rates       = get_option( '_wcfmmp_shipping_by_distance_rates', array() );
+  }
+  
+  $WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_shipping_distance', array(																																					
+																																									"wcfmmp_byd_default_cost" => array('label' => __('Default Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_default_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_distance['_default_cost']) ? $wcfmmp_shipping_by_distance['_default_cost'] : '', 'hints' => __('Default shipping cost, will be added with distance rule cost. Leave empty to consider default cost as `0`.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_max_distance" => array('label' => __('Max Distance', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_max_distance]', 'placeholder' => __('No Limit', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_distance['_max_distance']) ? $wcfmmp_shipping_by_distance['_max_distance'] : '', 'hints' => __('Upto maximum distance shipping supported. Leave empty to consider no limit.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_distance['_free_shipping_amount']) ? $wcfmmp_shipping_by_distance['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_distance['_enable_local_pickup']) ? 'yes' : '' ),
+																																									"wcfmmp_byd_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_distance['_local_pickup_cost']) ? $wcfmmp_shipping_by_distance['_local_pickup_cost'] : '' ),
+																																				) ) );
+	
+	$WCFM->wcfm_fields->wcfm_generate_form_field( 
+											apply_filters( 'wcfmmp_settings_fields_shipping_rates_by_distance', array( 
+												"wcfmmp_shipping_by_distance_rates" => array(
+													'label'       => __('Distance-Cost Rules', 'wc-multivendor-marketplace'), 
+													'type'        => 'multiinput', 
+													'class'       => 'wcfmmp_distance_wise_rule',
+													'label_class' => 'wcfm_title wcfmmp_shipping_distance_rates_label wcfmmp_distance_wise_rule', 
+													'value'       => $wcfmmp_shipping_by_distance_rates,
+													'options' => array(
+															"wcfmmp_distance_rule" => array( 
+																	'label' => __('Distance Rule', 'wc-multivendor-marketplace'), 
+																	'type' => 'select', 
+																	'class' => 'wcfm-select wcfmmp_distance_rule_select', 
+																	'label_class' => 'wcfm_title', 
+																	'options' => array(
+																		'up_to' => __('Distance up to', 'wc-multivendor-marketplace'),
+																		'more_than' => __('Distance more than', 'wc-multivendor-marketplace')
+																	) 
+															),
+															"wcfmmp_distance_unit" => array( 
+																	'label' => __('Distance', 'wc-multivendor-marketplace') . ' ('.$radius_unit.')', 
+																	'type' => 'number', 
+																	'class' => 'wcfm-text wcfm_non_negative_input', 
+																	'label_class' => 'wcfm_title' 
+															),
+															"wcfmmp_distance_price" => array( 
+																	'label' => __('Cost', 'wc-multivendor-marketplace') . ' ('.get_woocommerce_currency_symbol().')', 
+																	'type' => 'number', 
+																	'placeholder' => '0.00 (' . __('Free Shipping', 'wc-multivendor-marketplace') . ')',
+																	'class' => 'wcfm-text wcfm_non_negative_input', 
+																	'label_class' => 'wcfm_title' 
+															),
+													)
+												)
+											) 
+									  )
+									);
+  ?>
+  <?php } ?>
+  <div class="wcfm-clearfix"></div>
 </div>

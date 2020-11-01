@@ -257,7 +257,7 @@ class WPBakeryShortCode_mvc_team_profile extends WPBakeryShortCode {
 						<?php } ?>
 					</div>
 				</div>
-				<div class="clearfix"></div>
+				<div class="Clearfix"></div>
 				<div class="member-desc">
 					<?php echo $memb_about; ?>
 				</div>

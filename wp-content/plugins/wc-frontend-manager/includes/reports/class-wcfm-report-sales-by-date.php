@@ -655,7 +655,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 			'net_order_amounts'    => array(),
 			'gross_order_amounts'  => array(),
 		);
-
+		
 		foreach ( $data['order_amounts'] as $order_amount_key => $order_amount_value ) {
 			$data['gross_order_amounts'][ $order_amount_key ]    = $order_amount_value;
 			$data['gross_order_amounts'][ $order_amount_key ][1] -= $data['refund_amounts'][ $order_amount_key ][1];
@@ -709,7 +709,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 								datasets: [
 								      {
 												type: 'line',
-												label: "<?php _e( 'Gross Sales', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Gross Sales', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.blue,
 												borderWidth: 2,
@@ -718,7 +718,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 											},
 											{
 												type: 'line',
-												label: "<?php _e( 'Shipping', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Shipping', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.shipping).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.shipping,
 												borderWidth: 2,
@@ -727,23 +727,25 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 											},
 								      {
 												type: 'bar',
-												label: "<?php _e( 'Order Counts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Order Counts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.yellow).alpha(0.5).rgbString(),
 												borderColor: window.chartColors.yellow,
 												borderWidth: 2,
 												data: sales_data.order_counts.datas,
 											},
+											<?php if( apply_filters( 'wcfm_sales_report_is_allow_order_item_count', false ) ) { ?>
 											{
 												type: 'bar',
-												label: "<?php _e( 'Order Item Counts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Order Item Counts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.orange).alpha(0.5).rgbString(),
 												borderColor: window.chartColors.orange,
 												borderWidth: 2,
 												data: sales_data.order_item_counts.datas,
 											},
+											<?php } ?>
 											{
 												type: 'line',
-												label: "<?php _e( 'Net Sales', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Net Sales', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.green).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.green,
 												borderWidth: 2,
@@ -752,7 +754,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 											},
 											{
 												type: 'line',
-												label: "<?php _e( 'Coupon Amounts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Coupon Amounts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.purple).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.purple,
 												borderWidth: 2,
@@ -761,7 +763,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 											},
 											{
 												type: 'line',
-												label: "<?php _e( 'Refund Amounts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Refund Amounts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.refund).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.refund,
 												borderWidth: 2,
@@ -773,7 +775,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 						options: {
 							  responsive: true,
                 title:{
-                    text: "<?php _e( 'Sales Report by Date', 'wc-frontend-manager' ); ?>",
+                    text: "<?php esc_html_e( 'Sales Report by Date', 'wc-frontend-manager' ); ?>",
                     position: "bottom",
                     display: true
                 },
@@ -784,6 +786,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 								scales: {
 									xAxes: [{
 										type: "time",
+										barPercentage: 0.4,
 										time: {
 											format: timeFormat,
 											round: 'day',
@@ -791,7 +794,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 										},
 										scaleLabel: {
 											display: false,
-											labelString: "<?php _e( 'Date', 'wc-frontend-manager' ); ?>"
+											labelString: "<?php esc_html_e( 'Date', 'wc-frontend-manager' ); ?>"
 										},
 										ticks:{
 											display: $show_ticks
@@ -800,7 +803,7 @@ class WCFM_Report_Sales_By_Date extends WC_Admin_Report {
 									yAxes: [{
 										scaleLabel: {
 											display: false,
-											labelString: "<?php _e( 'Amount', 'wc-frontend-manager' ); ?>"
+											labelString: "<?php esc_html_e( 'Amount', 'wc-frontend-manager' ); ?>"
 										}
 									}]
 								},

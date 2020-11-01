@@ -93,6 +93,18 @@ class WCMp_Product_QNA {
         return $wpdb->get_row( $wpdb->prepare( $get_ques_sql, $ques_ID ) );
     }
 
+    public function get_Pending_Questions( $product_ID ) {
+        $questions = $this->get_Questions( $product_ID );
+        $pending_questions = [];
+        foreach( $questions as $question ) {
+            if( $question->status == 'pending' ) {
+                $pending_questions[] = $question;
+            } 
+        }
+        $pending_questions = !empty($pending_questions)?$pending_questions:'';
+        return $pending_questions;
+    }
+
     /**
      * Get a list of questions for a product.
      *
@@ -119,8 +131,8 @@ class WCMp_Product_QNA {
      */
     public function get_Vendor_Questions( $vendor, $unanswer = true ) {
         $vendor_questions = array();
-        if($vendor && $vendor->get_products()){ 
-            foreach ($vendor->get_products() as $product) { 
+        if($vendor && $vendor->get_products_ids()){ 
+            foreach ($vendor->get_products_ids() as $product) { 
                 $product_questions = $this->get_Questions($product->ID, "ORDER BY ques_created DESC");
                 if($product_questions){
                     foreach ($product_questions as $question) {

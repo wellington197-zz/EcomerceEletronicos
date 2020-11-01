@@ -170,7 +170,7 @@ do_action( 'before_my_account_wcfm_inquiry_manage' );
 									$wp_user_avatar_id = get_user_meta( $author_id, $wpdb->get_blog_prefix($blog_id).'user_avatar', true );
 									$wp_user_avatar = wp_get_attachment_url( $wp_user_avatar_id );
 									if ( !$wp_user_avatar ) {
-										$wp_user_avatar = $WCFM->plugin_url . 'assets/images/user.png';
+										$wp_user_avatar = apply_filters( 'wcfm_default_user_image', $WCFM->plugin_url . 'assets/images/user.png' );
 									}
 								}
 								?>
@@ -239,7 +239,7 @@ do_action( 'before_my_account_wcfm_inquiry_manage' );
 																																															"inquiry_customer_id"     => array( 'type' => 'hidden', 'value' => $inquiry_customer_id ),
 																																															"inquiry_customer_name"   => array( 'type' => 'hidden', 'value' => $inquiry_customer_name ),
 																																															"inquiry_customer_email"  => array( 'type' => 'hidden', 'value' => $inquiry_customer_email )
-																																															) );
+																																															), $inquiry_id );
 							
 							if( ( $wcfm_enquiry_allow_attachment == 'no' ) || !apply_filters( 'wcfm_is_allow_enquiry_reply_attachment', true ) ) {
 								if( isset( $wcfm_enquiry_reply_fields['inquiry_attachments'] ) ) unset( $wcfm_enquiry_reply_fields['inquiry_attachments'] );

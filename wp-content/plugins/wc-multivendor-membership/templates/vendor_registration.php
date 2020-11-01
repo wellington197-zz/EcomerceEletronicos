@@ -160,7 +160,7 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 					$registration_name_fields = apply_filters( 'wcfm_membership_registration_fields', array(  
 																																									"first_name" => array( 'label' => __('First Name', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $first_name ),
 																																									"last_name" => array( 'label' => __('Last Name', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $last_name ),
-																																									"store_name" => array( 'label' => __('Store Name', 'wc-multivendor-membership') , 'type' => 'text', 'custom_attributes' => array( 'required' => 1 ), 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $store_name ),
+																																									"store_name" => array( 'label' => __('Store Name', 'wc-multivendor-membership') , 'type' => 'text', 'custom_attributes' => array( 'required' => 1 ), 'class' => 'wcfm-text wcfm_ele wcfm_name_input', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $store_name ),
 																																	   ) );
 					
 					if( !$is_first_name ) unset( $registration_name_fields['first_name'] );
@@ -184,6 +184,8 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 							echo '<p class="description wcfm_store_slug_verified wcfm_page_options_desc" data-avail="' . __( 'Available', 'wc-multivendor-membership' ) . '" data-unavail="' . __( 'Un-available', 'wc-multivendor-membership' ) . '">' . trailingslashit( get_site_url() ) . $wcfm_store_url . '/<span class="wcfm_store_slug">'.$store_slug.'</span></p>';
 						}
 					}
+					
+					do_action( 'wcfm_membership_registration_form_before_static_custom_fields' );
 					
 					// Registration Static Field Support - 1.0.6
 					$terms = '';
@@ -275,13 +277,19 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 						}
 					}
 					
+					do_action( 'wcfm_membership_registration_form_after_static_custom_fields' );
+					
+					do_action( 'wcfm_membership_registration_form_before_dynamic_custom_fields' );
 					
 					// Registration Custom Field Support - 1.0.5
 					if( !empty( $wcfmvm_registration_custom_fields ) && !wcfm_is_vendor() ) {
 						foreach( $wcfmvm_registration_custom_fields as $wcfmvm_registration_custom_field ) {
 							if( !isset( $wcfmvm_registration_custom_field['enable'] ) ) continue;
 							if( !$wcfmvm_registration_custom_field['label'] ) continue;
+							
+							$field_class = '';
 							$field_value = '';
+							
 							$wcfmvm_registration_custom_field['name'] = sanitize_title( $wcfmvm_registration_custom_field['label'] );
 							$field_name = 'wcfmvm_custom_infos[' . $wcfmvm_registration_custom_field['name'] . ']';
 							$field_id   = md5( $field_name );
@@ -297,37 +305,44 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 							// Is Required
 							$custom_attributes = array();
 							if( isset( $wcfmvm_registration_custom_field['required'] ) && $wcfmvm_registration_custom_field['required'] ) $custom_attributes = array( 'required' => 1 );
+							
+							$attributes = array();
+							if( $wcfmvm_registration_custom_field['type'] == 'mselect' ) {
+								$field_class = 'wcfm_multi_select';
+								$attributes = array( 'multiple' => 'multiple', 'style' => 'width: 60%;' );
+							}
 								
 							switch( $wcfmvm_registration_custom_field['type'] ) {
 								case 'text':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'number':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'number', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'number', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'textarea':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'textarea', 'class' => 'wcfm-textarea', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'textarea', 'class' => 'wcfm-textarea', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'datepicker':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => 'YYYY-MM-DD', 'class' => 'wcfm-text wcfm_datepicker', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => 'YYYY-MM-DD', 'class' => 'wcfm-text wcfm_datepicker', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'timepicker':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'time', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'time', 'class' => 'wcfm-text', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'checkbox':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'checkbox', 'class' => 'wcfm-checkbox', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'checkbox', 'class' => 'wcfm-checkbox', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'upload':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'custom_attributes' => $custom_attributes, 'type' => 'file', 'class' => 'wcfm_ele', 'label_class' => 'wcfm_title', 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'custom_attributes' => $custom_attributes, 'type' => 'file', 'class' => 'wcfm_ele', 'label_class' => 'wcfm_title', 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'select':
+								case 'mselect':
 								case 'dropdown':
 									$select_opt_vals = array();
 									$select_options = explode( '|', $wcfmvm_registration_custom_field['options'] );
@@ -344,18 +359,26 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 											$is_first = false;
 										}
 									}
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'select', 'class' => 'wcfm-select', 'label_class' => 'wcfm_title', 'options' => $select_opt_vals, 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'attributes' => $attributes, 'type' => 'select', 'class' => 'wcfm-select ' . $field_class, 'label_class' => 'wcfm_title', 'options' => $select_opt_vals, 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
+								break;
+								
+								case 'html':
+									$content = nl2br( wcfm_removeslashes( $wcfmvm_registration_custom_field['content'] ) );
+									if( isset( $custom_attributes['required'] ) ) unset( $custom_attributes['required'] );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'custom_attributes' => $custom_attributes, 'attributes' => array( 'style' => 'margin-bottom:25px;' ), 'type' => 'html', 'class' => 'wcfm_ele wcfm-html-content', 'label_class' => 'wcfm_title wcfm_html_content_title', 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM'), 'value' => $content . '<div class="wcfm-clearfix"></div>' ) ) );
 								break;
 							}
 						}
 					}
 					
+					do_action( 'wcfm_membership_registration_form_after_dynamic_custom_fields' );
+					
 					if( !$user_id ) {
-						$WCFM->wcfm_fields->wcfm_generate_form_field(  array( 
+						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_membership_registration_fields_password', array( 
 																																	"passoword" => array( 'label' => __('Password', 'wc-multivendor-membership') , 'type' => 'password', 'custom_attributes' => array( 'required' => 1, 'mismatch_message' => __( 'Password and Confirm-password are not same.', 'wc-multivendor-membership' ) ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => '' ),
-																																	"passowrd_strength" => array( 'type' => 'html', 'value' => '<div id="password-strength-status"></div>' ),
+																																	"password_strength" => array( 'type' => 'html', 'value' => '<div id="password-strength-status"></div>' ),
 																																	"confirm_pwd" => array( 'label' => __('Confirm Password', 'wc-multivendor-membership') , 'type' => 'password', 'custom_attributes' => array( 'required' => 1 ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => '' ),
-																																) ) ;
+																																) ) );
 					}
 					
 					do_action( 'end_wcfm_membership_registration_form' );

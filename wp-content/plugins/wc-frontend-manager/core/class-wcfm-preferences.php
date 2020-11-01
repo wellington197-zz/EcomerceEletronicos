@@ -65,8 +65,12 @@ class WCFM_Preferences {
 		add_filter( 'wcfm_is_pref_ledger_book', array( &$this, 'wcfmpref_ledger_book' ), 750 );
 		add_filter( 'wcfm_is_pref_media_manager', array( &$this, 'wcfmpref_media_manager' ), 750 );
 		
+		// Membership
+		add_filter( 'wcfm_is_pref_membership', array( &$this, 'wcfmpref_membership' ), 750 );
+		
 		// Delivery
 		add_filter( 'wcfm_is_pref_delivery', array( &$this, 'wcfmpref_delivery' ), 750 );
+		add_filter( 'wcfm_is_pref_delivery_time', array( &$this, 'wcfmpref_delivery_time' ), 750 );
 		
 		// Affiliate
 		add_filter( 'wcfm_is_pref_affiliate', array( &$this, 'wcfmpref_affiliate' ), 750 );
@@ -285,10 +289,24 @@ class WCFM_Preferences {
   	return $is_pref;
   }
   
+  // Membership
+  function wcfmpref_membership(  $is_pref ) {
+  	$membership = ( isset( $this->wcfm_module_options['membership'] ) ) ? $this->wcfm_module_options['membership'] : 'no';
+  	if( $membership == 'yes' ) $is_pref = false;
+  	return $is_pref;
+  }
+  
   // Delivery
   function wcfmpref_delivery( $is_pref ) {
   	$delivery = ( isset( $this->wcfm_module_options['delivery'] ) ) ? $this->wcfm_module_options['delivery'] : 'no';
   	if( $delivery == 'yes' ) $is_pref = false;
+  	return $is_pref;
+  }
+  
+  // Delivery Time
+  function wcfmpref_delivery_time( $is_pref ) {
+  	$delivery_time = ( isset( $this->wcfm_module_options['delivery_time'] ) ) ? $this->wcfm_module_options['delivery_time'] : 'no';
+  	if( $delivery_time == 'yes' ) $is_pref = false;
   	return $is_pref;
   }
   

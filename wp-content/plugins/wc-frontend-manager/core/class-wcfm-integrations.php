@@ -124,8 +124,53 @@ class WCFM_Integrations {
 			}
 		}
 		
+		// WooCommerce Tiered Table Price - 6.3.4
+    if( apply_filters( 'wcfm_is_allow_wc_tiered_price_table', true ) ) {
+			if( WCFM_Dependencies::wcfm_wc_tiered_price_table_active_check() || WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+				add_filter( 'end_wcfm_products_manage', array( &$this, 'wcfm_wc_tiered_price_table_product_manage_views' ), 170 );
+				
+				add_filter( 'wcfm_product_manage_fields_variations', array( &$this, 'wcfm_wc_tiered_price_table_product_manage_fields_variations' ), 100, 4 );
+				add_filter( 'wcfm_variation_edit_data', array( &$this, 'wcfm_wc_tiered_price_table_product_data_variations' ), 100, 3 );
+			}
+		}
+		
+		// Woo Advanced Product Size Chart - 6.4.1
+    if( apply_filters( 'wcfm_is_allow_woo_product_size_chart', true ) ) {
+			if( WCFM_Dependencies::wcfm_woo_product_size_chart_plugin_active_check() ) {
+				add_filter( 'wcfm_product_manager_right_panel_after', array( &$this, 'wcfm_woo_product_size_chart_product_manage_views' ), 50 );
+			}
+		}
+		
+		// Post Expirator - 6.4.6
+    if( apply_filters( 'wcfm_is_allow_post_expirator', true ) ) {
+			if( WCFM_Dependencies::wcfm_post_expirator_plugin_active_check() ) {
+				add_filter( 'wcfm_product_manager_right_panel_after', array( &$this, 'wcfm_woo_product_post_expirator_product_manage_views' ), 60 );
+			}
+		}
+		
+		// WooCommerce German Market - 6.4.8
+    if( apply_filters( 'wcfm_is_allow_wc_german_market', true ) ) {
+			if( WCFM_Dependencies::wcfm_wc_german_market_plugin_active_check() ) {
+				add_filter( 'wcfm_product_manage_fields_pricing', array( &$this, 'wcfm_wc_german_market_product_pricing_fields' ), 170, 3 );
+				add_filter( 'end_wcfm_products_manage', array( &$this, 'wcfm_wc_german_market_product_manage_views' ), 170 );
+				
+				add_filter( 'wcfm_product_manage_fields_variations', array( &$this, 'wcfm_wc_german_market_product_manage_fields_variations' ), 100, 4 );
+				add_filter( 'wcfm_variation_edit_data', array( &$this, 'wcfm_wc_german_market_product_data_variations' ), 100, 3 );
+			}
+		}
+		
+		//  WooCommerce Country Based Restrictions - 6.5.3
+    if( apply_filters( 'wcfm_is_allow_woo_country_based_restriction', true ) ) {
+			if( WCFM_Dependencies::wcfm_woo_country_based_restriction_active_check() ) {
+				add_filter( 'end_wcfm_products_manage', array( &$this, 'wcfm_woo_country_based_restriction_product_manage_views' ), 160 );
+			}
+		}
+		
 		// Product Manage Third Party Plugins View
     add_action( 'end_wcfm_products_manage', array( &$this, 'wcfm_integrations_products_manage_views' ), 100 );
+    
+    // Listing Approve
+    add_action( 'wp_ajax_approve_listing', array( &$this, 'wcfm_listing_approve' ) );
 	}
 	
 	
@@ -511,7 +556,7 @@ class WCFM_Integrations {
 	function wcfm_geomywp_products_manage_views( ) {
 		global $WCFM;
 	  
-	  $WCFM->template->get_template( 'products-manager/wcfm-view-geomywp-products-manage.php' );
+	  $WCFM->template->get_template( 'integrations/wcfm-view-geomywp-products-manage.php' );
 	}
 	
 	/**
@@ -602,8 +647,8 @@ class WCFM_Integrations {
 		
 		if( $product_id ) {
 			$_product = wc_get_product( $product_id );
-			$wc_gzd_product = wc_gzd_get_gzd_product( $_product );
-			$_mini_desc = $wc_gzd_product->mini_desc;
+			$wc_gzd_product = wc_gzd_get_product( $_product );
+			$_mini_desc = get_post_meta( $product_id, '_mini_desc', true );
 		}
 		
 		$woocommerce_germanized_content_fields =  array(
@@ -629,29 +674,40 @@ class WCFM_Integrations {
 		$_unit_price_auto = 'no';
 		$_unit_price_regular = '';
 		$_unit_price_sale = '';
+		$_min_age         = '';
+		$_ts_gtin         = '';
+		$_ts_mpn          = '';
+		$age_select   = wc_gzd_get_age_verification_min_ages_select();
 		
 		if( $product_id ) {
 			$_product = wc_get_product( $product_id );
-			$wc_gzd_product = wc_gzd_get_gzd_product( $_product );
-			$_sale_price_label = $wc_gzd_product->sale_price_label;
-			$_sale_price_regular_label = $wc_gzd_product->sale_price_regular_label;
-			$_unit = $wc_gzd_product->unit;
-			$_unit_product = $wc_gzd_product->get_unit_products();
-			$_unit_base = $wc_gzd_product->unit_base;
+			$wc_gzd_product = wc_gzd_get_product( $_product );
+			$_sale_price_label = get_post_meta( $product_id, '_sale_price_label', true );
+			$_sale_price_regular_label = get_post_meta( $product_id, '_sale_price_regular_label', true );
+			$_unit = get_post_meta( $product_id, '_unit', true );
+			$_unit_product = get_post_meta( $product_id, '_unit_product', true );
+			$_unit_base = get_post_meta( $product_id, '_unit_base', true );
 			$_unit_price_auto = get_post_meta( $product_id, '_unit_price_auto', true ) ? get_post_meta( $product_id, '_unit_price_auto', true ) : 'no';
-			$_unit_price_regular = $wc_gzd_product->get_unit_regular_price();
-			$_unit_price_sale = $wc_gzd_product->get_unit_sale_price();
+			$_unit_price_regular = get_post_meta( $product_id, '_unit_price_regular', true );
+			$_unit_price_sale = get_post_meta( $product_id, '_unit_price_sale', true );
+			$_min_age         = get_post_meta( $product_id, '_min_age', true );
+			$_ts_gtin         = get_post_meta( $product_id, '_ts_gtin', true );
+			$_ts_mpn          = get_post_meta( $product_id, '_ts_mpn', true );
 		}
 		
 		$woocommerce_germanized_pricing_fields =  array(
-																				"_sale_price_label" => array('label' => __( 'Sale Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the old price to inform the customer.', 'woocommerce-germanized' ), 'value' => $_sale_price_label),
-																				"_sale_price_regular_label" => array('label' => __( 'Sale Regular Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the new price to inform the customer.', 'woocommerce-germanized' ), 'value' => $_sale_price_regular_label),
-																				"_unit" => array('label' => __( 'Unit', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select unit', 'woocommerce-germanized' ) ), WC_germanized()->units->get_units() ), 'class' => 'wcfm-select wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Needed if selling on a per unit basis', 'woocommerce-germanized' ), 'value' => $_unit ),
-																				"_unit_product" => array('label' => __( 'Product Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Number of units included per default product price. Example: 1000 ml.', 'woocommerce-germanized' ), 'value' => $_unit_product ),
-																				"_unit_base" => array('label' => __( 'Base Price Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Base price units. Example base price: 0,99 € / 100 ml. Insert 100 as base price unit amount.', 'woocommerce-germanized' ), 'value' => $_unit_base ),
-																				"_unit_price_auto" => array('label' => __( 'Calculation', 'woocommerce-germanized' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele checkbox_title wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Calculate base prices automatically.', 'woocommerce-germanized' ), 'dfvalue' => $_unit_price_auto, 'value' => 'yes' ),
-																				"_unit_price_regular" => array('label' => __( 'Regular Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => $_unit_price_regular),
-																				"_unit_price_sale" => array('label' => __( 'Sale Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => $_unit_price_sale),
+																				"_sale_price_label" => array('label' => __( 'Sale Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the old price to inform the customer.', 'woocommerce-germanized' ), 'value' => $_sale_price_label),
+																				"_sale_price_regular_label" => array('label' => __( 'Sale Regular Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the new price to inform the customer.', 'woocommerce-germanized' ), 'value' => $_sale_price_regular_label),
+																				"_unit" => array('label' => __( 'Unit', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select unit', 'woocommerce-germanized' ) ), WC_germanized()->units->get_units() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Needed if selling on a per unit basis', 'woocommerce-germanized' ), 'value' => $_unit ),
+																				"_unit_product" => array('label' => __( 'Product Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title variable simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Number of units included per default product price. Example: 1000 ml.', 'woocommerce-germanized' ), 'value' => $_unit_product ),
+																				"_unit_base" => array('label' => __( 'Base Price Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title variable simple external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Base price units. Example base price: 0,99 € / 100 ml. Insert 100 as base price unit amount.', 'woocommerce-germanized' ), 'value' => $_unit_base ),
+																				"_unit_price_auto" => array('label' => __( 'Calculation', 'woocommerce-germanized' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele variable checkbox_title wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Calculate base prices automatically.', 'woocommerce-germanized' ), 'dfvalue' => $_unit_price_auto, 'value' => 'yes' ),
+																				"_unit_price_regular" => array('label' => __( 'Regular Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => $_unit_price_regular),
+																				"_unit_price_sale" => array('label' => __( 'Sale Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => $_unit_price_sale),
+																				"_min_age" => array('label' => __( 'Minimum Age', 'woocommerce-germanized' ), 'type' => 'select', 'options' => $age_select, 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => __( 'Adds an age verification checkbox while purchasing this product.', 'woocommerce-germanized' ), 'value' => $_min_age),
+																				'_ts_gtin' => array( 'label' => _x( 'GTIN', 'trusted-shops', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => _x( 'ID that allows your products to be identified worldwide. If you want to display your Trusted Shops Product Reviews in Google Shopping and paid Google adverts, Google needs the GTIN.', 'trusted-shops', 'woocommerce-germanized' ), 'value' => $_ts_gtin ),
+																				'_ts_mpn' => array( 'label' => _x( 'MPN', 'trusted-shops', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking' . ' ' . $wcfm_wpml_edit_disable_element, 'hints' => _x( 'If you don\'t have a GTIN for your products, you can pass the brand name and the MPN on to Google to use the Trusted Shops Google Integration.', 'trusted-shops', 'woocommerce-germanized' ), 'value' => $_ts_mpn )
+		
 																				);
 		
 		$pricing_fields = array_merge( $pricing_fields, $woocommerce_germanized_pricing_fields );
@@ -670,16 +726,18 @@ class WCFM_Integrations {
 		
 		if( $product_id ) {
 			$_product = wc_get_product( $product_id );
-			$wc_gzd_product = wc_gzd_get_gzd_product( $_product );
-			$_free_shipping = $wc_gzd_product->free_shipping;
-			$delivery_time = $wc_gzd_product->delivery_time->slug;
+			$wc_gzd_product = wc_gzd_get_product( $_product );
+			$_free_shipping = get_post_meta( $product_id, '_free_shipping', true ) ? get_post_meta( $product_id, '_free_shipping', true ) : 'no';
+			$delivery_time = $wc_gzd_product->get_delivery_time();
+			
+			if( $delivery_time ) $delivery_time = $delivery_time->term_id;
 		}
 		
 		$delivery_time_list = array( "" => __( 'Select Delivery Time', 'wc-frontend-manager' ) );
 		$terms = get_terms( 'product_delivery_time', array( 'hide_empty' => false ) );
 		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 			foreach ( $terms as $term )
-				$delivery_time_list[ $term->slug ] = $term->name;
+				$delivery_time_list[ $term->term_id ] = $term->name;
 		}
 		
 		$woocommerce_germanized_shipping_fields =  array(
@@ -702,18 +760,21 @@ class WCFM_Integrations {
 		$terms = get_terms( 'product_delivery_time', array( 'hide_empty' => false ) );
 		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
 			foreach ( $terms as $term )
-				$delivery_time_list[ $term->slug ] = $term->name;
+				$delivery_time_list[ $term->term_id ] = $term->name;
 		}
+		
+		$age_select   = wc_gzd_get_age_verification_min_ages_select();
 		
 		$woocommerce_germanized_fields =  array(
 																				"_sale_price_label" => array('label' => __( 'Sale Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the old price to inform the customer.', 'woocommerce-germanized' ) ),
 																				"_sale_price_regular_label" => array('label' => __( 'Sale Regular Label', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select Price Label', 'woocommerce-germanized' ) ), WC_germanized()->price_labels->get_labels() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'If the product is on sale you may want to show a price label right before outputting the new price to inform the customer.', 'woocommerce-germanized' ) ),
-																				"_unit" => array('label' => __( 'Unit', 'woocommerce-germanized' ), 'type' => 'select', 'options' => array_merge( array( "-1" => __( 'Select unit', 'woocommerce-germanized' ) ), WC_germanized()->units->get_units() ), 'class' => 'wcfm-select wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'Needed if selling on a per unit basis', 'woocommerce-germanized' ) ),
 																				"_unit_product" => array('label' => __( 'Product Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'Number of units included per default product price. Example: 1000 ml.', 'woocommerce-germanized' ) ),
-																				"_unit_base" => array('label' => __( 'Base Price Units', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'Base price units. Example base price: 0,99 € / 100 ml. Insert 100 as base price unit amount.', 'woocommerce-germanized' ) ),
 																				"_unit_price_regular" => array('label' => __( 'Regular Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking'),
 																				"_unit_price_sale" => array('label' => __( 'Sale Base Price', 'woocommerce-germanized' ) . ' (' . get_woocommerce_currency_symbol() . ')', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking' ),
+																				"_min_age" => array('label' => __( 'Minimum Age', 'woocommerce-germanized' ), 'type' => 'select', 'options' => $age_select, 'class' => 'wcfm-select wcfm_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'Adds an age verification checkbox while purchasing this product.', 'woocommerce-germanized' ) ),
 																				"delivery_time" => array('label' => __( 'Delivery Time', 'woocommerce-germanized' ), 'type' => 'select', 'options' => $delivery_time_list, 'class' => 'wcfm-select wcfm_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking' ),
+																				'_ts_gtin' => array( 'label' => _x( 'GTIN', 'trusted-shops', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => _x( 'ID that allows your products to be identified worldwide. If you want to display your Trusted Shops Product Reviews in Google Shopping and paid Google adverts, Google needs the GTIN.', 'trusted-shops', 'woocommerce-germanized' ) ),
+																				'_ts_mpn' => array( 'label' => _x( 'MPN', 'trusted-shops', 'woocommerce-germanized' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title simple variable external non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => _x( 'If you don\'t have a GTIN for your products, you can pass the brand name and the MPN on to Google to use the Trusted Shops Google Integration.', 'trusted-shops', 'woocommerce-germanized' ) ),
 																				"_service" => array( 'label' => __( 'Service', 'woocommerce-germanized') , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele variable non-variable-subscription non-job_package non-resume_package non-auction non-redq_rental non-appointment non-accommodation-booking', 'label_class' => 'wcfm_title wcfm_ele variable checkbox_title non-variable-subscription non-job_package non-resume_package non-auction non-redq_rental non-appointment non-accommodation-booking', 'value' => 'yes' ),
 																				"_mini_desc" => array('label' => __( 'Optional Mini Description', 'woocommerce-germanized' ), 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele wcfm_full_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'label_class' => 'wcfm_ele wcfm_title wcfm_full_ele variable non-variable-subscription non-auction non-redq_rental non-accommodation-booking', 'hints' => __( 'This content will be shown as short product description within checkout and emails.', 'woocommerce-germanized' ) ),
 																				);
@@ -731,18 +792,22 @@ class WCFM_Integrations {
 		
 		if( $variation_id ) {
 			$_product = wc_get_product( $variation_id );
-			$wc_gzd_product = wc_gzd_get_gzd_product( $_product );
+			$wc_gzd_product = wc_gzd_get_product( $_product );
+			
+			$delivery_time = $wc_gzd_product->get_delivery_time();
+			if( $delivery_time ) $delivery_time = $delivery_time->term_id;
 			
 			$variations[$variation_id_key]['_service'] = ( get_post_meta( $variation_id, '_service', true) == 'yes' ) ? 'yes' : '';
-		  $variations[$variation_id_key]['_sale_price_label'] = $wc_gzd_product->sale_price_label;
-			$variations[$variation_id_key]['_sale_price_regular_label'] = $wc_gzd_product->sale_price_regular_label;
-			$variations[$variation_id_key]['_unit'] = $wc_gzd_product->unit;
-			$variations[$variation_id_key]['_unit_product'] = $wc_gzd_product->get_unit_products();
-			$variations[$variation_id_key]['_unit_base'] = $wc_gzd_product->unit_base;
-			$variations[$variation_id_key]['_unit_price_regular'] = $wc_gzd_product->get_unit_regular_price();
-			$variations[$variation_id_key]['_unit_price_sale'] = $wc_gzd_product->get_unit_sale_price();
-			$variations[$variation_id_key]['delivery_time'] = $wc_gzd_product->delivery_time;
-			$variations[$variation_id_key]['_mini_desc'] = $wc_gzd_product->mini_desc;
+		  $variations[$variation_id_key]['_sale_price_label'] = get_post_meta( $variation_id, '_sale_price_label', true );
+			$variations[$variation_id_key]['_sale_price_regular_label'] = get_post_meta( $variation_id, '_sale_price_regular_label', true );
+			$variations[$variation_id_key]['_unit_product'] = get_post_meta( $variation_id, '_unit_product', true );
+			$variations[$variation_id_key]['_unit_price_regular'] = get_post_meta( $variation_id, '_unit_price_regular', true );
+			$variations[$variation_id_key]['_unit_price_sale'] = get_post_meta( $variation_id, '_unit_price_sale', true );
+			$variations[$variation_id_key]['_min_age'] = get_post_meta( $variation_id, '_min_age', true );
+			$variations[$variation_id_key]['_ts_gtin'] = get_post_meta( $variation_id, '_ts_gtin', true );
+			$variations[$variation_id_key]['_ts_mpn'] = get_post_meta( $variation_id, '_ts_mpn', true );
+			$variations[$variation_id_key]['delivery_time'] = $delivery_time;
+			$variations[$variation_id_key]['_mini_desc'] = get_post_meta( $variation_id, '_mini_desc', true );
 		}
 		
 		return $variations;
@@ -753,7 +818,7 @@ class WCFM_Integrations {
 	 */
 	function wcfm_wcepeken_product_manage_views() {
 		global $WCFM;
-	  $WCFM->template->get_template( 'products-manager/wcfm-view-epeken-products-manage.php' );
+	  $WCFM->template->get_template( 'integrations/wcfm-view-epeken-products-manage.php' );
 	}
 	
 	/**
@@ -854,6 +919,254 @@ class WCFM_Integrations {
 			</div>
 		</div>
 		<?php
+	}
+	
+	/**
+	 * WooCommerce Country Based Restriction
+	 */
+	function wcfm_woo_country_based_restriction_product_manage_views() {
+		global $wp, $WCFM;
+		
+		$product_id = 0;
+		
+		$_fz_country_restriction_type = '';
+		$_restricted_countries = array();
+		
+		if( isset( $wp->query_vars['wcfm-products-manage'] ) && !empty( $wp->query_vars['wcfm-products-manage'] ) ) {
+			$product_id = absint( $wp->query_vars['wcfm-products-manage'] );
+			
+			if( $product_id ) {
+				$_fz_country_restriction_type      = get_post_meta( $product_id, '_fz_country_restriction_type', true );   
+				$_restricted_countries             = get_post_meta( $product_id, '_restricted_countries', true );  
+			}
+		}
+		?>
+		<div class="page_collapsible products_manage_woo_country_based_restriction simple variable external booking" id="wcfm_products_manage_form_woo_country_based_restriction_head"><label class="wcfmfa fa-globe"></label><?php _e( 'Country restrictions', 'woo-product-country-base-restrictions' ); ?><span></span></div>
+		<div class="wcfm-container simple variable external booking">
+			<div id="wcfm_products_manage_form_woo_country_based_restriction_expander" class="wcfm-content">
+			  <?php
+				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_woo_country_based_restriction_fields', array(  
+						
+						"_fz_country_restriction_type" => array('label' => __( 'Restriction rule', 'woo-product-country-base-restrictions' ) , 'type' => 'select', 'options' => array( 'all' => __( 'Product Available for all countries', 'woo-product-country-base-restrictions' ), 'specific'  => __( 'Product Available for selected countries', 'woo-product-country-base-restrictions' ), 'excluded' => __( 'Product not Available for selected countries', 'woo-product-country-base-restrictions' ) ), 'class' => 'wcfm-select wcfm_ele simple variable external booking', 'label_class' => 'wcfm_title simple variable external booking', 'value' => $_fz_country_restriction_type ),
+						
+						"_restricted_countries" => array('label' => __( 'Select countries', 'woo-product-country-base-restrictions' ), 'type' => 'country', 'wcfm_shipping_country' => true, 'attributes' => array( 'multiple' => true ), 'class' => 'wcfm-select wcfm_ele simple variable external booking', 'label_class' => 'wcfm_title wcfm_ele simple variable external booking', 'value' => $_restricted_countries ),
+						
+																															), $product_id ) );
+				?>
+				<div class="wcfm-clearfix"></div><br />
+			</div>
+		</div>
+		<?php
+	}
+	
+	/**
+	 * Product Manager WC Product Tiered Price Table Plugins View
+	 */
+	function wcfm_wc_tiered_price_table_product_manage_views() {
+		global $wp, $WCFM;
+		
+		$WCFM->template->get_template( 'integrations/wcfm-view-wc-tiered-price-table-products-manage.php' );
+	}
+	
+	/**
+   * Product Manager WC Product Tiered Price Table Fields - Variation
+   */
+	function wcfm_wc_tiered_price_table_product_manage_fields_variations( $variation_fileds, $variations, $variation_shipping_option_array, $variation_tax_classes_options ) {
+		global $WCFM, $WCFMu;
+		
+		$price_rules_types = array( 'fixed' => __( 'Fixed', 'tier-pricing-table' ) );
+		if( WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+			$price_rules_types = array( 'fixed' => __( 'Fixed', 'tier-pricing-table' ), 'percentage' => __( 'Percentage', 'tier-pricing-table' ) );
+		}
+		
+		$wc_tiered_price_fields =  array(  
+			
+			  "tiered_pricing_minimum" => array('label' => __( "Minimum quantity", 'tier-pricing-table' ) , 'type' => 'number', 'class' => 'wcfm-text wcfm_ele variable', 'label_class' => 'wcfm_title variable', 'hints' => __( 'Set if you are selling the product from qty more than 1', 'tier-pricing-table' ) ),
+			
+				"tiered_price_rules_type" => array('label' => __( "Tiered pricing type", 'tier-pricing-table' ) , 'type' => 'select', 'options' => $price_rules_types, 'class' => 'wcfm-select wcfm_ele variable variation_tiered_price_rules_type', 'label_class' => 'wcfm_title variable' ),
+				
+				"tiered_fixed_price_rules" => array('label' => __( "Tiered price", 'tier-pricing-table' ) , 'type' => 'multiinput', 'class' => 'wcfm-text wcfm_ele variable tiered_price_rule_type tiered_price_rule_type_fixed', 'label_class' => 'wcfm_title tiered_price_rule_type tiered_price_rule_type_fixed', 'options' => array(
+																																																										"quantity" => array('label' => __( 'Quantity', 'tier-pricing-table' ), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele variable wcfm_non_negative_input', 'label_class' => 'wcfm_ele wcfm_title variable' ),
+																																																										"price" => array('label' => __('Price', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele variable wcfm_non_negative_input', 'label_class' => 'wcfm_ele wcfm_title variable' )
+																																																										)
+																																															),
+				
+				"tiered_percent_price_rules" => array('label' => __( "Tiered price", 'tier-pricing-table' ) , 'type' => 'multiinput', 'class' => 'wcfm-text wcfm_ele variable tiered_price_rule_type tiered_price_rule_type_percentage', 'label_class' => 'wcfm_title tiered_price_rule_type tiered_price_rule_type_percentage', 'options' => array(
+																																																										"quantity" => array('label' => __( 'Quantity', 'tier-pricing-table' ), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele variable wcfm_non_negative_input', 'label_class' => 'wcfm_ele wcfm_title variable' ),
+																																																										"discount" => array('label' => __('Percent discount', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele variable wcfm_non_negative_input', 'label_class' => 'wcfm_ele wcfm_title variable' )
+																																																										)
+																																															)
+				
+				
+																													);
+		
+		if( !WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+			unset( $wc_tiered_price_fields['tiered_pricing_minimum'] );
+		 	 unset( $wc_tiered_price_fields['tiered_percent_price_rules'] );
+		 }
+		
+		$variation_fileds = array_slice($variation_fileds, 0, 12, true) +
+																	$wc_tiered_price_fields +
+																	array_slice($variation_fileds, 12, count($variation_fileds) - 1, true) ;
+		
+		return $variation_fileds;
+	}
+	
+	/**
+   * Product Manager WC Product Tiered Price Table Fields - Variation Data
+   */
+	function wcfm_wc_tiered_price_table_product_data_variations( $variations, $variation_id, $variation_id_key ) {
+		global $WCFM, $WCFMu;
+		
+		if( $variation_id ) {
+			$pricing_type = get_post_meta( $variation_id, '_tiered_price_rules_type', true );
+			$fixed_price_rules = array();
+			
+			$price_rules = get_post_meta( $variation_id, '_fixed_price_rules', true );
+			
+			if ( ! empty( $price_rules ) ) {
+				foreach ( $price_rules as $amount => $price ) {
+					$fixed_price_rules[] = array( 'quantity' => $amount, 'price' => $price );
+				}
+			}
+			
+			$variations[$variation_id_key]['tiered_price_rules_type'] = $pricing_type;
+		  $variations[$variation_id_key]['tiered_fixed_price_rules'] = $fixed_price_rules;
+		  
+		  if( WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+		  	$percent_price_rules = array();
+		  	
+		  	$price_rules = get_post_meta( $variation_id, '_percentage_price_rules', true );
+				if ( ! empty( $price_rules ) ) {
+					foreach ( $price_rules as $amount => $price ) {
+						$percent_price_rules[] = array( 'quantity' => $amount, 'discount' => $price );
+					}
+				}
+				
+				$variations[$variation_id_key]['tiered_percent_price_rules'] = $percent_price_rules;
+				
+				$variations[$variation_id_key]['tiered_pricing_minimum'] = get_post_meta( $variation_id, '_tiered_price_minimum_qty', true );
+		  }
+		}
+		
+		return $variations;
+	}
+	
+	/**
+	 * Product Manager WC German Market Plugins Pricing Fields
+	 */
+	function wcfm_wc_german_market_product_pricing_fields( $pricing_fields, $product_id, $product_type ) {
+		global $wp, $WCFM;
+		
+		$_lieferzeit = '';
+		$_suppress_shipping_notice = '';
+		$_alternative_shipping_information = '';
+		$_sale_label = '';
+		$_gm_gtin = '';
+		
+		if( $product_id ) {
+			$_lieferzeit          = maybe_unserialize( get_post_meta( $product_id, '_lieferzeit', TRUE ) );
+			$_suppress_shipping_notice = maybe_unserialize( get_post_meta( $product_id, '_suppress_shipping_notice', TRUE ) );
+			$_alternative_shipping_information = get_post_meta( $product_id, '_alternative_shipping_information', TRUE );
+			$_sale_label = get_post_meta( $product_id, '_sale_label', TRUE );
+			$_gm_gtin    = get_post_meta( $product_id, '_gm_gtin', TRUE );
+		}
+		
+		$terms = get_terms( 'product_delivery_times', array( 'orderby' => 'id', 'hide_empty' => 0 ) );
+		$_lieferzeit_options = array( '-1' => __( 'Select', 'woocommerce-german-market' ) );
+		foreach ( $terms as $i ) {
+			$_lieferzeit_options[$i->term_id] = $i->name;
+		}
+		
+		$terms = get_terms( 'product_sale_labels', array( 'orderby' => 'id', 'hide_empty' => 0 ) );
+		$_sale_label_options = array( '-2' => __( 'Select', 'woocommerce-german-market' ), '-1' => __( 'Use the default', 'woocommerce-german-market' ) );
+		foreach ( $terms as $i ) {
+			$_sale_label_options[$i->term_id] = $i->name;
+		}
+		
+		$wcfm_wc_german_market_pricing_fields = apply_filters( 'wcfm_wc_german_market_pricing_fields', array(  
+				"_lieferzeit" => array('label' => __( 'Delivery Time:', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => $_lieferzeit_options, 'class' => 'wcfm-select wcfm_ele simple variable', 'label_class' => 'wcfm_title simple variable', 'value' => $_lieferzeit ),
+				"_alternative_shipping_information" => array('label' => __( 'Alternative Shipping Information', 'woocommerce-german-market' ) , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple variable', 'label_class' => 'wcfm_title simple variable', 'value' => $_alternative_shipping_information, 'hints' => __( 'Instead of the general shipping information you can enter a special information just for this product.', 'woocommerce-german-market' ) ),
+				"_suppress_shipping_notice" => array('label' => __( 'Disable Shipping Information', 'woocommerce-german-market' ) , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele simple variable wcfm_non_negative_input', 'label_class' => 'wcfm_title checkbox-title checkbox_title simple variable', 'value' => 'on', 'dfvalue' => $_suppress_shipping_notice, 'hints' => __( 'Don’t display shipping information for this product (e.g. if it is virtual/digital).', 'woocommerce-german-market' ) ),
+				"_sale_label" => array('label' => __( 'Sale Label:', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => $_sale_label_options, 'class' => 'wcfm-select wcfm_ele simple variable', 'label_class' => 'wcfm_title simple variable', 'value' => $_sale_label ),
+																													), $product_id );
+		
+		if ( get_option( 'gm_gtin_activation', 'off' ) == 'on' ) {
+			$wcfm_wc_german_market_pricing_fields['_gm_gtin'] = array('label' => __( 'GTIN', 'woocommerce-german-market' ) , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele simple', 'label_class' => 'wcfm_title wcfm_ele simple', 'value' => $_gm_gtin );
+		}
+		
+		$pricing_fields = array_merge( $pricing_fields, $wcfm_wc_german_market_pricing_fields );
+		
+		return $pricing_fields;
+	}
+	
+	/**
+	 * Product Manager WC German Market Plugins View
+	 */
+	function wcfm_wc_german_market_product_manage_views() {
+		global $wp, $WCFM;
+		
+		$WCFM->template->get_template( 'integrations/wcfm-view-wc-german-market-products-manage.php' );
+	}
+	
+	/**
+   * Product Manager WC German Market Fields - Variation
+   */
+	function wcfm_wc_german_market_product_manage_fields_variations( $variation_fileds, $variations, $variation_shipping_option_array, $variation_tax_classes_options ) {
+		global $WCFM, $WCFMu;
+		
+		$terms = get_terms( 'product_delivery_times', array( 'orderby' => 'id', 'hide_empty' => 0 ) );
+		$_lieferzeit_options = array( '-1' => __( 'Same as parent', 'woocommerce-german-market' ) );
+		foreach ( $terms as $i ) {
+			$_lieferzeit_options[$i->term_id] = $i->name;
+		}
+		
+		$terms = get_terms( 'product_sale_labels', array( 'orderby' => 'id', 'hide_empty' => 0 ) );
+		$_sale_label_options = array( '-1' => __( 'Same as parent', 'woocommerce-german-market' ), '-2' => __( 'Select', 'woocommerce-german-market' ) );
+		foreach ( $terms as $i ) {
+			$_sale_label_options[$i->term_id] = $i->name;
+		}
+		
+		$wcfm_wc_german_market_pricing_fields = apply_filters( 'wcfm_wc_german_market_variation_pricing_fields', array(  
+				"_lieferzeit" => array('label' => __( 'Delivery Time:', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => $_lieferzeit_options, 'class' => 'wcfm-select wcfm_ele variable', 'label_class' => 'wcfm_title variable' ),
+				"variable_used_setting_ppu" => array('label' => __( 'Price per Unit', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => array( '-1' => __( 'Same as parent', 'woocommerce-german-market' ) ), 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele' ),
+				"_variable_used_setting_shipping_info" => array('label' => __( 'Shipping Information', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => array( '-1' => __( 'Same as parent', 'woocommerce-german-market' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele' ),
+				"_sale_label" => array('label' => __( 'Sale Label:', 'woocommerce-german-market' ) , 'type' => 'select', 'options' => $_sale_label_options, 'class' => 'wcfm-select wcfm_ele variable', 'label_class' => 'wcfm_title variable' ),
+																													) );
+		
+		if ( get_option( 'gm_gtin_activation', 'off' ) == 'on' ) {
+			$wcfm_wc_german_market_pricing_fields['_gm_gtin'] = array('label' => __( 'GTIN', 'woocommerce-german-market' ) , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele variable', 'label_class' => 'wcfm_title variable' );
+		}
+		
+		if ( get_option( 'german_market_age_rating', 'off' ) == 'on' ) {
+			//$wcfm_wc_german_market_pricing_fields['_age_rating_age'] = array('label' => __( 'Required age to buy this product', 'woocommerce-german-market' ) . ' ('.__( 'Years', 'woocommerce-german-market' ).')', 'type' => 'number', 'class' => 'wcfm-text wcfm_ele variable wcfm_non_negative_input', 'label_class' => 'wcfm_title variable' );
+		}
+		
+	
+		
+		$variation_fileds = array_slice($variation_fileds, 0, 12, true) +
+																	$wcfm_wc_german_market_pricing_fields +
+																	array_slice($variation_fileds, 12, count($variation_fileds) - 1, true) ;
+		
+		return $variation_fileds;
+	}
+	
+	/**
+   * Product Manager WC German Market Fields - Variation Data
+   */
+	function wcfm_wc_german_market_product_data_variations( $variations, $variation_id, $variation_id_key ) {
+		global $WCFM, $WCFMu;
+		
+		if( $variation_id ) {
+			$variations[$variation_id_key]['_lieferzeit'] = get_post_meta( $variation_id, '_lieferzeit', true );
+			$variations[$variation_id_key]['variable_used_setting_ppu'] = get_post_meta( $variation_id, 'variable_used_setting_ppu', true );
+			$variations[$variation_id_key]['_variable_used_setting_shipping_info'] = get_post_meta( $variation_id, '_variable_used_setting_shipping_info', true );
+			$variations[$variation_id_key]['_sale_label'] = get_post_meta( $variation_id, '_sale_label', true );
+			$variations[$variation_id_key]['_gm_gtin'] = get_post_meta( $variation_id, '_gm_gtin', true );
+			//$variations[$variation_id_key]['_age_rating_age'] = get_post_meta( $variation_id, '_age_rating_age', true );
+		}
+		
+		return $variations;
 	}
 	
 	/**
@@ -996,12 +1309,298 @@ class WCFM_Integrations {
 		update_user_meta( $user_id, 'vendor_wahana', $vendor_wahana);
 	}
 		
+	/**
+	 * Woo Advanced Product Size Chart Plugin Views
+	 */
+	function wcfm_woo_product_size_chart_product_manage_views( $product_id ) {
+		global $WCFM, $WCFMu, $wp;
+		
+		$chart_id = '';
+		
+		if( $product_id ) {
+			$chart_id = size_chart_get_product_chart_id( $product_id );
+		}
+		
+		$chart_list = array( '' => __( 'No Chart', 'wc-frontend-manager' ) );
+		$size_chart_post_type_name = esc_attr__( 'size-chart', 'size-chart-for-woocommerce' );
+		$size_chart_search_args = array(
+				'post_type'              => $size_chart_post_type_name,
+				'post_status'            => 'publish',
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+		);
+		$size_chart_search_wp_query = new WP_Query( $size_chart_search_args );
+		$found_chart = array();
+		if ( $size_chart_search_wp_query->have_posts() ) {
+			foreach ( $size_chart_search_wp_query->posts as $size_chart_search_chart ) {
+				$chart_list[$size_chart_search_chart->ID] = sprintf( esc_html__( '%1$s (#%2$s)', 'size-chart-for-woocommerce' ), $size_chart_search_chart->post_title, $size_chart_search_chart->ID );
+			}
+		}
+		
+		$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_woo_product_size_chart_fields', array(
+																																													"wcfm_prod_chart" => array('label' => __( 'Search/Select Size Chart', 'size-chart-for-woocommerce' ), 'type' => 'select', 'options' => $chart_list, 'class' => 'wcfm-select wcfm_ele wcfm_full_ele catalog_visibility_ele simple variable external grouped booking ', 'label_class' => 'wcfm_title wcfm_full_ele catalog_visibility_ele', 'value' => $chart_id ),
+																																											)) );
+	}
+	
+	/**
+	 * Post Expirator Plugin Views
+	 */
+	function wcfm_woo_product_post_expirator_product_manage_views( $product_id ) {
+		global $WCFM, $WCFMu, $wp;
+		
+		$expirationdatets = '';
+		$firstsave = '';
+		$default = '';
+		$expireType = '';
+		
+		if( $product_id ) {
+			$expirationdatets = get_post_meta( $product_id, '_expiration-date', true );
+			$firstsave = get_post_meta( $product_id, '_expiration-date-status', true );
+		}
+		
+		$defaults = get_option('expirationdateDefaultsProduct');
+		if (empty($expirationdatets)) {
+			$default = get_option('expirationdateDefaultDate',POSTEXPIRATOR_EXPIREDEFAULT);
+			if ($default == 'null') {
+				$defaultmonth 	=	date_i18n('m');
+				$defaultday 	=	date_i18n('d');
+				$defaulthour 	=	date_i18n('H');
+				$defaultyear 	=	date_i18n('Y');
+				$defaultminute 	= 	date_i18n('i');
+	
+			} elseif ($default == 'custom') {
+				$custom = get_option('expirationdateDefaultDateCustom');
+				if ($custom === false) $ts = time();
+				else {
+					$tz = get_option('timezone_string');
+					if ( $tz ) date_default_timezone_set( $tz );
+					$ts = time() + (strtotime($custom) - time());
+					if ( $tz ) date_default_timezone_set('UTC');
+				}
+				$defaultmonth 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$ts),'m');
+				$defaultday 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$ts),'d');
+				$defaultyear 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$ts),'Y');;
+				$defaulthour 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$ts),'H');
+				$defaultminute 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$ts),'i');
+			}
+	
+			$enabled = '';
+			$disabled = ' disabled="disabled"';
+			$categories = get_option('expirationdateCategoryDefaults');
+	
+			if (isset($defaults['expireType'])) {
+				$expireType = $defaults['expireType'];
+			}
+	
+			if (isset($defaults['autoEnable']) && ($firstsave !== 'saved') && ($defaults['autoEnable'] === true || $defaults['autoEnable'] == 1)) { 
+				$enabled = ' checked="checked"'; 
+				$disabled='';
+			} 
+		} else {
+			$defaultmonth 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$expirationdatets),'m');
+			$defaultday 	  =	get_date_from_gmt(gmdate('Y-m-d H:i:s',$expirationdatets),'d');
+			$defaultyear 	  =	get_date_from_gmt(gmdate('Y-m-d H:i:s',$expirationdatets),'Y');
+			$defaulthour 	  =	get_date_from_gmt(gmdate('Y-m-d H:i:s',$expirationdatets),'H');
+			$defaultminute 	=	get_date_from_gmt(gmdate('Y-m-d H:i:s',$expirationdatets),'i');
+			$enabled 	      = 	' checked="checked"';
+			$disabled 	    = 	'';
+			$opts           = array();
+			if( $product_id ) {
+				$opts 		= 	get_post_meta( $product_id, '_expiration-date-options', true );
+			}
+			if (isset($opts['expireType'])) {
+				$expireType = $opts['expireType'];
+			}
+			$categories = isset($opts['category']) ? $opts['category'] : false;
+		}
+	
+		$rv = array();
+		$rv[] = '<p class="wcfm_title wcfm_full_ele catalog_visibility_ele"><strong>' . __( 'Post Expirator', 'post-expirator' ) . ':</strong></p>';
+		$rv[] = '<p><input type="checkbox" name="enable-expirationdate" id="enable-expirationdate" class="wcfm-checkbox" style="margin-right:5px!important" value="checked"'.$enabled.' onclick="expirationdate_ajax_add_meta(\'enable-expirationdate\')" />';
+		$rv[] = '<label class="wcfm-title" for="enable-expirationdate">'.__('Enable Post Expiration','post-expirator').'</label></p>';
+	
+		if ($default == 'publish') {
+			$rv[] = '<em>'.__('The published date/time will be used as the expiration value','post-expirator').'</em><br/>';
+		} else {
+			$rv[] = '<table style="max-width:214px;margin:auto;margin-bottom:15px;"><tr>';
+			$rv[] = '<th style="text-align: left;">'.__('Year','post-expirator').'</th>';
+			$rv[] = '<th style="text-align: left;">'.__('Month','post-expirator').'</th>';
+			$rv[] = '<th style="text-align: left;">'.__('Day','post-expirator').'</th>';
+			$rv[] = '</tr><tr>';
+			$rv[] = '<td>';
+			$rv[] = '<select name="expirationdate_year" id="expirationdate_year"'.$disabled.'>';
+			$currentyear = date('Y');
+	
+			if ($defaultyear < $currentyear) $currentyear = $defaultyear;
+	
+			for($i = $currentyear; $i < $currentyear + 8; $i++) {
+				if ($i == $defaultyear)
+					$selected = ' selected="selected"';
+				else
+					$selected = '';
+				$rv[] = '<option'.$selected.'>'.($i).'</option>';
+			}
+			$rv[] = '</select>';
+			$rv[] = '</td><td>';
+			$rv[] = '<select name="expirationdate_month" id="expirationdate_month"'.$disabled.'>';
+	
+			for($i = 1; $i <= 12; $i++) {
+				if ($defaultmonth == date_i18n('m',mktime(0, 0, 0, $i, 1, date_i18n('Y'))))
+					$selected = ' selected="selected"';
+				else
+					$selected = '';
+				$rv[] = '<option value="'.date_i18n('m',mktime(0, 0, 0, $i, 1, date_i18n('Y'))).'"'.$selected.'>'.date_i18n('F',mktime(0, 0, 0, $i, 1, date_i18n('Y'))).'</option>';
+			}
+	
+			$rv[] = '</select>';
+			$rv[] = '</td><td>';
+			$rv[] = '<input type="number" style="width:50px!important" id="expirationdate_day" name="expirationdate_day" value="'.$defaultday.'" size="2"'.$disabled.' />,';
+			$rv[] = '</td></tr><tr>';
+			$rv[] = '<th style="text-align: left;"></th>';
+			$rv[] = '<th style="text-align: left;">'.__('Hour','post-expirator').'('.date_i18n('T',mktime(0, 0, 0, $i, 1, date_i18n('Y'))).')</th>';
+			$rv[] = '<th style="text-align: left;">'.__('Minute','post-expirator').'</th>';
+			$rv[] = '</tr><tr>';
+			$rv[] = '<td>@</td><td>';
+			$rv[] = '<select name="expirationdate_hour" style="width:50px!important" id="expirationdate_hour"'.$disabled.'>';
+	
+			for($i = 1; $i <= 24; $i++) {
+				if ($defaulthour == date_i18n('H',mktime($i, 0, 0, date_i18n('n'), date_i18n('j'), date_i18n('Y'))))
+					$selected = ' selected="selected"';
+				else
+					$selected = '';
+				$rv[] = '<option value="'.date_i18n('H',mktime($i, 0, 0, date_i18n('n'), date_i18n('j'), date_i18n('Y'))).'"'.$selected.'>'.date_i18n('H',mktime($i, 0, 0, date_i18n('n'), date_i18n('j'), date_i18n('Y'))).'</option>';
+			}
+	
+			$rv[] = '</select></td><td>';
+			$rv[] = '<input type="number" style="width:50px!important" id="expirationdate_minute" name="expirationdate_minute" value="'.$defaultminute.'" size="2"'.$disabled.' />';
+			$rv[] = '</td></tr></table>';
+		}
+		$rv[] = '<input type="hidden" name="expirationdate_formcheck" value="true" />';
+		echo implode("\n",$rv);
+	
+		echo '<br/>'.__('How to expire','post-expirator').': ';
+		echo _postExpiratorExpireType(array('type' => 'page', 'name'=>'expirationdate_expiretype','selected'=>$expireType,'disabled'=>$disabled,'onchange' => 'expirationdate_toggle_category(this)'));
+		echo '<br/>';
+		
+		/*if (isset($expireType) && ($expireType == 'category' || $expireType == 'category-add' || $expireType == 'category-remove')) {
+			$catdisplay = 'block';
+		} else {
+			$catdisplay = 'none';
+		}
+		echo '<div id="expired-category-selection" style="display: '.$catdisplay.'">';
+		echo '<br/>'.__('Expiration Categories','post-expirator').':<br/>';
+
+		echo '<div class="wp-tab-panel" id="post-expirator-cat-list">';
+		echo '<ul id="categorychecklist" class="list:category categorychecklist form-no-clear">';
+		$walker = new Walker_PostExpirator_Category_Checklist();
+		if (!empty($disabled)) $walker->setDisabled();
+		$taxonomies = get_object_taxonomies( 'product','object');
+	        $taxonomies = wp_filter_object_list($taxonomies, array('hierarchical' => true));
+		if (sizeof($taxonomies) == 0) {
+			echo '<p>'.__('You must assign a heirarchical taxonomy to this post type to use this feature.','post-expirator').'</p>';
+		} elseif (sizeof($taxonomies) > 1 && !isset($defaults['taxonomy'])) {
+			echo '<p>'.__('More than 1 heirachical taxonomy detected.  You must assign a default taxonomy on the settings screen.','post-expirator').'</p>';
+		} else {
+			$keys = array_keys($taxonomies);
+			$taxonomy = isset($defaults['taxonomy']) ? $defaults['taxonomy'] : $keys[0];
+			wp_terms_checklist(0, array( 'taxonomy' => $taxonomy, 'walker' => $walker, 'selected_cats' => $categories, 'checked_ontop' => false ) );
+			echo '<input type="hidden" name="taxonomy-heirarchical" value="'.$taxonomy.'" />';
+		}
+		echo '</ul>';
+		echo '</div>';
+		if (isset($taxonomy))
+		echo '<p class="post-expirator-taxonomy-name">'.__('Taxonomy Name','post-expirator').': '.$taxonomy.'</p>';
+		echo '</div>';*/
+	
+		echo '<div id="expirationdate_ajax_result"></div>';
+		
+		?>
+		<script type="text/javascript">
+		//<![CDATA[
+		function expirationdate_ajax_add_meta(expireenable) {
+			var expire = document.getElementById(expireenable);
+		
+			if (expire.checked == true) {
+				var enable = 'true';
+				if (document.getElementById('expirationdate_month')) {
+					document.getElementById('expirationdate_month').disabled = false;
+					document.getElementById('expirationdate_day').disabled = false;
+					document.getElementById('expirationdate_year').disabled = false;
+					document.getElementById('expirationdate_hour').disabled = false;
+					document.getElementById('expirationdate_minute').disabled = false;
+				}
+				document.getElementById('expirationdate_expiretype').disabled = false;
+				var cats = document.getElementsByName('expirationdate_category[]');
+				var max = cats.length;
+				for (var i=0; i<max; i++) {
+					cats[i].disabled = '';
+				}
+			} else {
+				if (document.getElementById('expirationdate_month')) {
+					document.getElementById('expirationdate_month').disabled = true;
+					document.getElementById('expirationdate_day').disabled = true;
+					document.getElementById('expirationdate_year').disabled = true;
+					document.getElementById('expirationdate_hour').disabled = true;
+					document.getElementById('expirationdate_minute').disabled = true;
+				}
+				document.getElementById('expirationdate_expiretype').disabled = true;
+				var cats = document.getElementsByName('expirationdate_category[]');
+				var max = cats.length;
+				for (var i=0; i<max; i++) {
+					cats[i].disabled = 'disable';
+				}
+				var enable = 'false';
+			}
+			return true;
+		}
+		function expirationdate_toggle_category(id) {
+			if (id.options[id.selectedIndex].value == 'category') {
+				jQuery('#expired-category-selection').show();
+			} else if (id.options[id.selectedIndex].value == 'category-add') {
+				jQuery('#expired-category-selection').show(); //TEMP
+			} else if (id.options[id.selectedIndex].value == 'category-remove') {
+				jQuery('#expired-category-selection').show(); //TEMP
+			} else {
+				jQuery('#expired-category-selection').hide();
+			}
+		}
+		function expirationdate_toggle_defaultdate(id) {
+			if (id.options[id.selectedIndex].value == 'custom') {
+				jQuery('#expired-custom-container').show();
+			} else {
+				jQuery('#expired-custom-container').hide();
+			}
+		
+		}
+		//]]>
+		</script>
+		<?php
+	}
 	
 	/**
    * Product Manage Third Party Plugins views
    */
   function wcfm_integrations_products_manage_views( ) {
 		global $WCFM;
-	  $WCFM->template->get_template( 'products-manager/wcfm-view-integrations-products-manage.php' );
+	  $WCFM->template->get_template( 'integrations/wcfm-view-integrations-products-manage.php' );
+	}
+	
+	/**
+	 * Listing Approve
+	 */
+	function wcfm_listing_approve() {
+		if ( !empty( $_GET['listing_id'] ) && !wcfm_is_vendor() ) {
+			$listing_id  = absint( $_GET['listing_id'] );
+			$job_data = [
+				'ID'          => $listing_id,
+				'post_status' => 'publish',
+			];
+			wp_update_post( $job_data );
+			
+			wp_safe_redirect( get_wcfm_listings_url() );
+			die;
+		}
 	}
 }

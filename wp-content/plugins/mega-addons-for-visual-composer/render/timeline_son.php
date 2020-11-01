@@ -13,11 +13,19 @@ class WPBakeryShortCode_mvc_timeline_son extends WPBakeryShortCode {
 			'size'			=>	'',
 			'centerstyle'	=>	'fonticon',
 			'bgclr'			=>	'',
-			'arrowclr'		=>	'',
+			'maintitle'		=>	'',
+			'titlealign'	=>	'left',
+			'titlepadding'	=>	'10',
+			'titlesize'		=>	'',
+			'titleclr'		=>	'',
+			'titlebg'		=>	'',
+			'image_id'		=>	'',
+			'img_width'		=>	'',
 			'icon'			=>	'',
 			'icon_size'		=>	'',
 			'css'			=>	'',
 		), $atts ) );
+		if ($image_id != '') { $image_url = wp_get_attachment_url( $image_id ); }
 		$css_class = apply_filters( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, vc_shortcode_custom_css_class( $css, ' ' ), $this->settings['base'], $atts );
 		$content = wpb_js_remove_wpautop($content, true);
 		ob_start(); ?>
@@ -35,11 +43,19 @@ class WPBakeryShortCode_mvc_timeline_son extends WPBakeryShortCode {
 			<?php } ?>
 
 			<div class="cd-timeline-content <?php echo $css_class; ?>">
-				<span class="timeline-arrow" style="border-right-color: <?php echo $arrowclr; ?>"></span>
-				<span class="timeline-arrow" style="border-left-color: <?php echo $arrowclr; ?>"></span>
-				<span class="timeline-arrow" style="border-right: 7px solid <?php echo $arrowclr; ?>;"></span>
+				<span class="timeline-arrow" style="border-right-color: <?php echo $titlebg; ?>"></span>
+				<span class="timeline-arrow" style="border-left-color: <?php echo $titlebg; ?>"></span>
+				<span class="timeline-arrow" style="border-right: 7px solid <?php echo $titlebg; ?>;"></span>
 
-				<?php echo $content; ?>
+				<h2 style="background: <?php echo $titlebg; ?>; color: <?php echo $titleclr; ?>; font-size: <?php echo $titlesize; ?>px; text-align: <?php echo $titlealign; ?>; padding: <?php echo $titlepadding ?>px 15px;">
+					<?php echo $maintitle; ?>
+				</h2>
+				<?php if ($image_url != '') { ?>
+					<img src="<?php echo $image_url; ?>" style="max-width: 100%; width: <?php echo $img_width; ?>px">
+				<?php } ?>
+				<div class="cd-timeline-content-area" style="padding: 0 10px; display: block;">
+					<?php echo $content; ?>
+				</div>
 				<span class="cd-date" style="color: <?php echo $clr; ?>; font-size: <?php echo $size; ?>px;">
 					<?php echo $date ?>
 				</span>
@@ -93,23 +109,6 @@ vc_map( array(
 			"group" 		=> 'General',
 		),
 
-
-        array(
-            "type" 			=> 	"colorpicker",
-			"heading" 		=> 	__( 'Arrow Color', 'timeline' ),
-			"param_name" 	=> 	"arrowclr",
-			"description" 	=> 	__( 'set timeline arrow color', 'timeline' ),
-			"group" 		=> 	'Content',
-        ),
-
-        array(
-            "type" 			=> 	"textarea_html",
-			"heading" 		=> 	__( 'Content Details', 'timeline' ),
-			"param_name" 	=> 	"content",
-			"description" 	=> 	__( 'Add heading, details, pictures or video url', 'timeline' ),
-			"group" 		=> 	'Content',
-        ),
-
         array(
 			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Select style', 'timeline' ),
@@ -148,6 +147,86 @@ vc_map( array(
 			"suffix" 		=> 'px',
 			"group" 		=> 	'Timeline Center',
         ),
+
+        array(
+            "type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Title', 'timeline' ),
+			"param_name" 	=> 	"maintitle",
+			"value"			=>	"Timeline Title",
+			"group" 		=> 	'Content',
+        ),
+
+        array(
+			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Title Align', 'timeline' ),
+			"param_name" 	=> "titlealign",
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"group" 		=> 'Content',
+			"value" 		=> 	array(
+				'Left'			=>		'left',
+				'Center'		=>		'center',
+				'Right'			=>		'right',
+			)
+		),
+
+        array(
+            "type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Title size', 'timeline' ),
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 	=> 	"titlesize",
+			"suffix" 		=> 'px',
+			"group" 		=> 	'Content',
+        ),
+
+		array(
+            "type" 				=> 	"vc_number",
+			"heading" 			=> 	__( 'Padding [Top - Bottom]', 'timeline' ),
+			"edit_field_class" 	=> "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 		=> 	"titlepadding",
+			"value" 			=> '10',
+			"suffix" 			=> 'px',
+			"group" 			=> 	'Content',
+        ),
+
+        array(
+            "type" 			=> 	"colorpicker",
+			"heading" 		=> 	__( 'Title Color', 'timeline' ),
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 	=> 	"titleclr",
+			"group" 		=> 	'Content',
+        ),
+
+        array(
+            "type" 			=> 	"colorpicker",
+			"heading" 		=> 	__( 'Title Background', 'timeline' ),
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 	=> 	"titlebg",
+			"group" 		=> 	'Content',
+        ),
+
+        array(
+			"type" 			=> 	"attach_image",
+			"heading" 		=> 	__( 'Select Image', 'timeline' ),
+			"param_name" 	=> 	"image_id",
+			"group" 		=> 	'Content',
+		),
+
+		array(
+            "type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Image Width', 'timeline' ),
+			"param_name" 	=> 	"img_width",
+			"suffix" 		=> 'px',
+			"group" 		=> 	'Content',
+        ),
+
+        array(
+            "type" 			=> 	"textarea_html",
+			"heading" 		=> 	__( 'Content Details', 'timeline' ),
+			"param_name" 	=> 	"content",
+			"description" 	=> 	__( 'Add heading, details, pictures or video url', 'timeline' ),
+			"group" 		=> 	'Content',
+        ),
+
         
         array(
             "type" 			=> 	"css_editor",

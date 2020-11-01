@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Kadence Toolkit
- * Description: Custom Portfolio and Shortcode functionality for free Kadence WordPress themes
- * Version: 4.9.4
- * Author: Kadence Themes
- * Author URI: https://kadencethemes.com/
+ * Plugin Name: Virtue/Ascend/Pinnacle Toolkit
+ * Description: Custom Portfolio and Shortcode functionality for free Virtue, Ascend, and Pinnacle WordPress themes.
+ * Version: 4.9.6
+ * Author: Kadence WP
+ * Author URI: https://kadencewp.com/
  * License: GPLv2 or later
  *
  * @package Kadence Toolkit

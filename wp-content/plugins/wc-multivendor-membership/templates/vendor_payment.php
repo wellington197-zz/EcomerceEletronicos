@@ -71,11 +71,13 @@ if( ( $is_free != 'yes' ) && empty( $payment_methods ) ) {
 					foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
 						if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
 							$feature_val = 'x';
-							if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+							$feature_name = sanitize_title($membership_feature_list['feature']);
+							if( !empty( $features ) && isset( $features[$feature_name] ) && !empty( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+							if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
 							if( !$feature_val ) $feature_val = 'x';
 							?>
-							<div class="wcfm_review_plan_feature"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'wc-multivendor-membership' ) ); ?></div>
-							<div class="wcfm_review_plan_feature_val"><?php echo wcfm_removeslashes( __( $feature_val, 'wc-multivendor-membership' ) ); ?></div>
+							<div class="wcfm_review_plan_feature"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'WCfM' ) ); ?></div>
+							<div class="wcfm_review_plan_feature_val"><?php echo wcfm_removeslashes( __( $feature_val, 'WCfM' ) ); ?></div>
 							<?php
 						}
 					}
@@ -90,7 +92,7 @@ if( ( $is_free != 'yes' ) && empty( $payment_methods ) ) {
 				?>
 				<div class="wcfm_review_pay_welcome"><?php _e( 'Confirmation', 'wc-multivendor-membership' ); ?>:</div>
 				<form id="wcfm_membership_payment_form_free" class="wcfm wcfm_membership_payment_form">
-					<div class="wcfm_review_pay_free"><?php _e( 'FREE Plan!!! There is no payment option for this.', 'wc-multivendor-membership' ); ?></div>
+					<div class="wcfm_review_pay_free"><?php echo apply_filters( 'wcfm_free_plan_payment_message', __( 'FREE Plan!!! There is no payment option for this.', 'wc-multivendor-membership' ) ); ?></div>
 					<input type="hidden" name="member_id" value="<?php echo $member_id; ?>" />
 					<div class="wcfm-clearfix"></div>
 					<div class="wcfm-message" tabindex="-1"></div>

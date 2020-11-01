@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     // Exit if accessed directly
     exit;
 }
-global $WCMp;
+global $WCMp, $wpdb;
 $vendor = get_wcmp_vendor(get_current_vendor_id());
 do_action('before_wcmp_vendor_dashboard_product_list_table');
 ?>
@@ -28,14 +28,15 @@ do_action('before_wcmp_vendor_dashboard_product_list_table');
                         'draft' => __('Draft', 'dc-woocommerce-multi-vendor'),
                         'trash' => __('Trash', 'dc-woocommerce-multi-vendor')
                     ));
-                    $current_status = isset($_GET['post_status']) ? $_GET['post_status'] : 'all';
+                    $current_status = isset($_GET['post_status']) ? wc_clean($_GET['post_status']) : 'all';
                     echo '<ul class="subsubsub by_status nav nav-pills category-filter-nav">';
                     //$array_keys = array_keys($statuses);
                     foreach ($statuses as $key => $label) {
                         if($key == 'all'){
-                            $count_pros = count($vendor->get_products(array('post_status'=> array('publish', 'pending','draft'))));
+                            $where = "AND ({$wpdb->prefix}posts.post_status = 'publish' OR {$wpdb->prefix}posts.post_status = 'draft' OR {$wpdb->prefix}posts.post_status = 'pending')";
+                            $count_pros = count( $vendor->get_products_ids( array( 'where' => $where ) ) );
                         }else{
-                            $count_pros = count($vendor->get_products(array('post_status'=> $key)));
+                            $count_pros = count( $vendor->get_products_ids( array( 'where' => "AND {$wpdb->prefix}posts.post_status = '$key' " ) ) );
                         }
                         if($count_pros){
                             echo '<li><a href="' . add_query_arg(array('post_status' => sanitize_title($key)), wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_products_endpoint', 'vendor', 'general', 'products'))) . '" class="' . ( $current_status == $key ? 'current' : '' ) . '">' . $label .' ( <span id="count-'.$key.'" data-status="'.$key.'" data-count="'.$count_pros.'">'. $count_pros .'</span> ) </a></li>';
@@ -128,7 +129,7 @@ do_action('before_wcmp_vendor_dashboard_product_list_table');
         </table>
         <div class="wcmp-action-container">
             <?php do_action('before_wcmp_vendor_dash_product_list_page_header_action_btn'); ?>
-            <a href="<?php echo wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_add_product_endpoint', 'vendor', 'general', 'add-product'));?>" class="btn btn-default"><i class="wcmp-font ico-add-booking"></i><?php echo __('Add Product', 'dc-woocommerce-multi-vendor');?></a>
+            <a href="<?php echo apply_filters('wcmp_vendor_dashboard_add_product_url', wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_add_product_endpoint', 'vendor', 'general', 'add-product')));?>" class="btn btn-default"><i class="wcmp-font ico-add-booking"></i><?php echo __('Add Product', 'dc-woocommerce-multi-vendor');?></a>
             <?php do_action('after_wcmp_vendor_dash_product_list_page_header_action_btn'); ?>
         </div>
         </form>

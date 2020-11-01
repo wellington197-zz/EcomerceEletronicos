@@ -15,7 +15,7 @@ global $WCMp;
 $vendor = get_wcmp_vendor( absint( $vendor_id ) );
 echo $email_heading . "\n\n";
 
-echo sprintf( __( 'A new order was received and marked as completed from %s. Their order is as follows:',  'dc-woocommerce-multi-vendor' ), $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ) . "\n\n";
+echo sprintf( __( 'A new order was received and marked as %s from %s. Their order is as follows:',  'dc-woocommerce-multi-vendor' ), $order->get_status( 'edit' ), $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() ) . "\n\n";
 
 echo "****************************************************\n\n";
 
@@ -38,6 +38,9 @@ if(apply_filters('show_cust_order_calulations_field', true, $vendor->id)) {
 			echo $total['label'] . "\t " . $total['value'] . "\n";
 		}
 	}
+}
+if ( $order->get_customer_note() ) {
+    echo esc_html__( 'Note:', 'woocommerce' ) . "\t " . wp_kses_post( wptexturize( $order->get_customer_note() ) ) . "\n";
 }
 
 echo "\n****************************************************\n\n";

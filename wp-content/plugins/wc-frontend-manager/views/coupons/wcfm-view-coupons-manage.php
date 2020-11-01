@@ -28,6 +28,11 @@ $vendor_arr = array();
 if( isset( $wp->query_vars['wcfm-coupons-manage'] ) && !empty( $wp->query_vars['wcfm-coupons-manage'] ) ) {
 	$coupon_post = get_post( $wp->query_vars['wcfm-coupons-manage'] );
 	
+	if( $coupon_post->post_type != 'shop_coupon' ) {
+		wcfm_restriction_message_show( "Invalid Coupon" );
+		return;
+	}
+	
 	if( $coupon_post->post_status == 'publish' ) {
 		if( !current_user_can( 'edit_published_shop_coupons' ) || !apply_filters( 'wcfm_is_allow_edit_coupons', true ) ) {
 			wcfm_restriction_message_show( "Edit Coupon" );
@@ -162,6 +167,7 @@ do_action( 'before_wcfm_coupons_manage' );
 				  <input type="submit" name="draft-data" value="<?php _e( 'Draft', 'wc-frontend-manager' ); ?>" id="wcfm_coupon_manager_draft_button" class="wcfm_submit_button" />
 				<?php } ?>
 			</div>
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_coupons_manage' ); ?>" />
 			<?php
 			do_action( 'after_wcfm_coupons_manage' );
 			?>

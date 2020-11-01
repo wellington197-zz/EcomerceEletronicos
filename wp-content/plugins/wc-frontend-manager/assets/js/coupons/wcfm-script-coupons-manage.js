@@ -60,6 +60,8 @@ jQuery(document).ready( function($) {
 	$('#wcfm_coupon_manager_draft_button').click(function(event) {
 	  event.preventDefault();
 	  
+	  $('.wcfm_submit_button').hide();
+	  
 	  // Validations
 	  $is_valid = wcfm_coupons_manage_form_validate();
 	  
@@ -90,14 +92,19 @@ jQuery(document).ready( function($) {
 					}
 					if($response_json.id) $('#coupon_id').val($response_json.id);
 					$('#wcfm-content').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});	
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 	
 	// Submit Coupon
 	$('#wcfm_coupon_manager_submit_button').click(function(event) {
 	  event.preventDefault();
+	  
+	  $('.wcfm_submit_button').hide();
 	  
 	  // Validations
 	  $is_valid = wcfm_coupons_manage_form_validate();
@@ -136,8 +143,11 @@ jQuery(document).ready( function($) {
 					if($response_json.id) $('#coupon_id').val($response_json.id);
 					wcfmMessageHide();
 					$('#wcfm-content').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 } );

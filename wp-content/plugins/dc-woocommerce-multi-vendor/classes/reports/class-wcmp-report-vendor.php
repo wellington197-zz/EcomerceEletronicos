@@ -38,10 +38,10 @@ class WCMp_Report_Vendor extends WC_Admin_Report {
         $this->calculate_current_range($current_range);
 
         if (isset($_POST['vendor'])) {
-            $vendor_id = $_POST['vendor'];
+            $vendor_id = absint($_POST['vendor']);
             $vendor = get_wcmp_vendor_by_term($vendor_id);
             if ($vendor)
-                $products = $vendor->get_products();
+                $products = $vendor->get_products_ids();
             if (!empty($products)) {
                 foreach ($products as $product) {
                     $chosen_product_ids[] = $product->ID;
@@ -72,7 +72,7 @@ class WCMp_Report_Vendor extends WC_Admin_Report {
                     'post_type' => 'shop_order',
                     'posts_per_page' => -1,
                     'author' => $vendor_id,
-                    'post_status' => array('wc-pending', 'wc-processing', 'wc-on-hold', 'wc-completed', 'wc-cancelled', 'wc-refunded', 'wc-failed'),
+                    'post_status' => array('wc-processing', 'wc-completed'),
                     'meta_query' => array(
                         array(
                             'key' => '_commissions_processed',

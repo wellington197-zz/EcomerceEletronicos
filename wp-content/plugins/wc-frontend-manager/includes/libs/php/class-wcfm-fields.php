@@ -615,7 +615,7 @@ class WCFM_Fields {
     $field['value'] 		= isset( $field['value'] ) ? $field['value'] : $field['dfvalue'];
     $field['name'] 			= isset( $field['name'] ) ? $field['name'] : $field['id'];
     
-    if( isset( $field['wcfmmp_shipping_country'] ) ) {
+    if( isset( $field['wcfmmp_shipping_country'] ) || isset( $field['wcfm_shipping_country'] ) ) {
     	$field['options']   = WC()->countries->get_shipping_countries();
     } else {
     	$field['options']   = WC()->countries->get_allowed_countries();
@@ -645,14 +645,23 @@ class WCFM_Fields {
     if ( ! empty( $field['attributes'] ) && is_array( $field['attributes'] ) ) {
       foreach ( $field['attributes'] as $attribute => $value ) {
         $attributes[] = esc_attr( $attribute ) . '="' . esc_attr( $value ) . '"';
+        if($attribute  == 'multiple') {
+        	$is_multiple = true;
+        	$field['name'] .= '[]';
+        }
       }
     }
       
+    $options = '';
     if( isset( $field['dokan_shipping_country'] ) || isset( $field['wcfmmp_shipping_country'] ) ) {
-    	$options = '<option value="">' . __( '-Select a location-', 'wc-frontend-manager' ) . '</option><optgroup label="-------------------------------------">';
-    	$options .= '<option value="everywhere" ' . selected( esc_attr( $field['value'] ), 'everywhere', false ) . '>' . __( 'Everywhere Else', 'wc-frontend-manager' ) . '</option>';
-    	$options .= '</optgroup><optgroup label="-------------------------------------">';
-    } else {
+    	$options = '<option value="">' . __( '-Select a location-', 'wc-frontend-manager' ) . '</option>';
+    	if( apply_filters( 'wcfm_is_allow_country_everywhere', true ) ) {
+				$options .= '<optgroup label="-------------------------------------">';
+				$options .= '<option value="everywhere" ' . selected( esc_attr( $field['value'] ), 'everywhere', false ) . '>' . __( 'Everywhere Else', 'wc-frontend-manager' ) . '</option>';
+				$options .= '</optgroup>';
+			}
+    	$options .= '<optgroup label="-------------------------------------">';
+    } elseif( !$is_multiple ) {
     	$options = '<option value="">' . __( '-Select a location-', 'wc-frontend-manager' ) . '</option><optgroup label="-------------------------------------">';
     }
     foreach ( $field['options'] as $key => $value ) {
@@ -750,16 +759,20 @@ class WCFM_Fields {
     		$field['class'] .= ' wcfm_uploader_by_id';
     		$img_src = $field['primage'];
     	} else {
-    		$img_src = $field['value'];
+    		$img_src = wcfm_get_attachment_url( $field['value'] );
     	}
-    	$placeholder = $WCFM->plugin_url . 'includes/libs/upload/images/Placeholder.png';
+    	if( isset( $field['wcfm_uploader_by_url'] ) ) {
+    		$field['class'] .= ' wcfm_uploader_by_url';
+    		$field['value'] = wcfm_get_attachment_url( $field['value'] );
+    	}
+    	$placeholder = apply_filters( 'wcfm_default_placeholder_image', $WCFM->plugin_url . 'includes/libs/upload/images/Placeholder.png' );
     	if( !$img_src ) $img_src = $placeholder;
       $mimeProp = '<img id="'.esc_attr($field['id']).'_display" data-placeholder="'.$placeholder.'" src="'.esc_attr( $img_src ).'" width="'.absint( $field['prwidth'] ).'" class="'.$placeHolder.'" />';
     } else {
       if($field['value'])
-        $field['mime'] = pathinfo($field['value'], PATHINFO_EXTENSION);
+        $field['mime'] = pathinfo( wcfm_get_attachment_url( $field['value'] ), PATHINFO_EXTENSION );
       $placeHolder	= 'placeHolder'.$field['mime'];
-      $mimeProp = '<a target="_blank" class="'. $field['mime_class'] .'" style="width: '.absint( $field['prwidth'] ).'px; height: '.absint( $field['prwidth'] ).'px;" id="'.esc_attr($field['id']).'_display" href="'.esc_attr( $field['value'] ).'"><span style="width: '.absint( $field['prwidth'] ).'px; height: '.absint( $field['prwidth'] ).'px; display: inline-block;" class="'.$placeHolder.'"></span></a>';
+      $mimeProp = '<a target="_blank" class="'. $field['mime_class'] .'" style="width: '.absint( $field['prwidth'] ).'px; height: '.absint( $field['prwidth'] ).'px;" id="'.esc_attr($field['id']).'_display" href="'.esc_attr( wcfm_get_attachment_url( $field['value'] ) ).'"><span style="width: '.absint( $field['prwidth'] ).'px; height: '.absint( $field['prwidth'] ).'px; display: inline-block;" class="'.$placeHolder.'"></span></a>';
     }
     
     // Custom attribute handling

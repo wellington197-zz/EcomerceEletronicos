@@ -86,14 +86,18 @@ class WCFMmp_Sidebar_Widgets {
 		register_widget( 'WCFMmp_Store_On_Sale_Products' );
 		register_widget( 'WCFMmp_Store_Recent_Products' );
 		register_widget( 'WCFMmp_Store_Recent_Articles' );
-		register_widget( 'WCFMmp_Store_Top_Rated_Vendors' );
-    register_widget( 'WCFMmp_Store_Best_Selling_Vendors' );
     
     // Store Lists Widgerts
     register_widget( 'WCFMmp_Store_Lists_Search' );
     register_widget( 'WCFMmp_Store_Lists_Category_Filter' );
     register_widget( 'WCFMmp_Store_Lists_Location_Filter' );
     register_widget( 'WCFMmp_Store_Lists_Radius_Filter' );
+    register_widget( 'WCFMmp_Store_Lists_Meta_Filter' );
+    
+    // Global Widgets
+    register_widget( 'WCFMmp_Store_Top_Rated_Vendors' );
+    register_widget( 'WCFMmp_Store_Best_Selling_Vendors' );
+    register_widget( 'WCFMmp_Products_Search_by_Vendors' );
 	}
 	
 	public function load_widgets($widget = '') {

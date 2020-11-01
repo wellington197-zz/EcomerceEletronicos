@@ -29,6 +29,7 @@ $menu_active_dependent_list = apply_filters( 'wcfm_menu_dependancy_map', array(
 																																			'wcfm-withdrawal'                  => 'wcfm-payments',
 																																			'wcfm-transaction-details'         => 'wcfm-payments',
 																																			'wcfm-withdrawal-reverse'          => 'wcfm-withdrawal-requests',
+																																			'wcfm-product-reviews'             => 'wcfm-reviews',
 																																			'wcfm-bookings'                    => 'wcfm-bookings-dashboard',
 																																			'wcfm-bookings-resources'          => 'wcfm-bookings-dashboard',
 																																			'wcfm-bookings-resources-manage'   => 'wcfm-bookings-dashboard',
@@ -87,7 +88,7 @@ $store_name = apply_filters( 'wcfm_store_name', $store_name );
 $user_id = get_current_user_id();
 $toggle_state = get_user_meta( $user_id, '_wcfm_menu_toggle_state', true );
 
-if( wp_is_mobile() ) {
+if( wcfm_is_mobile() || wcfm_is_tablet() ) {
 	$toggle_state = 'yes'; 
 }
 ?>
@@ -163,7 +164,7 @@ if( wp_is_mobile() ) {
 	?>
 	<?php if( apply_filters( 'wcfm_is_allow_logout_in_menu', true ) ) { ?>
 		<div class="wcfm_menu_items wcfm_menu_logout">
-			<a class="wcfm_menu_item" href="<?php echo esc_url(wp_logout_url( apply_filters( 'wcfm_logout_url', get_wcfm_url() ) ) ); ?>">
+			<a class="wcfm_menu_item" href="<?php echo esc_url(wc_logout_url( apply_filters( 'wcfm_logout_url', get_wcfm_url() ) ) ); ?>">
 				<span class="wcfmfa fa-power-off"></span>
 				<span class="text"><?php _e( 'Logout', 'wc-frontend-manager' ); ?></span>
 			</a>

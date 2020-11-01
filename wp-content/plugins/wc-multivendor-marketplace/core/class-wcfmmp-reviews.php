@@ -41,6 +41,9 @@ class WCFMmp_Reviews {
 		// Reviews Status Update 
 		add_action( 'wp_ajax_wcfmmp_reviews_status_update', array( &$this, 'wcfmmp_reviews_status_update' ) );
 		
+		// Product Reviews Status Update 
+		add_action( 'wp_ajax_wcfmmp_product_reviews_status_update', array( &$this, 'wcfmmp_product_reviews_status_update' ) );
+		
 		// Reviews Delete
 		add_action( 'wp_ajax_wcfmmp_reviews_delete', array( &$this, 'wcfmmp_reviews_delete' ) );
 		
@@ -53,6 +56,8 @@ class WCFMmp_Reviews {
 		// Reviews direct message type
 		add_filter( 'wcfm_message_types', array( &$this, 'wcfmmp_reviews_message_types' ), 110 );
 		
+		// Is allow Store Review Rating
+		add_filter( 'wcfm_is_allow_review_rating', array( &$this, 'wcfmmp_is_allow_review_rating' ) );
 	}
 	
 	/**
@@ -62,8 +67,9 @@ class WCFMmp_Reviews {
   	$wcfm_modified_endpoints = wcfm_get_option( 'wcfm_endpoints', array() );
   	
 		$query_wcfm_vars = array(
-			'wcfm-reviews'        => ! empty( $wcfm_modified_endpoints['wcfm-reviews'] ) ? $wcfm_modified_endpoints['wcfm-reviews'] : 'reviews',
-			'wcfm-reviews-manage' => ! empty( $wcfm_modified_endpoints['wcfm-reviews-manage'] ) ? $wcfm_modified_endpoints['wcfm-reviews-manage'] : 'reviews-manage',
+			'wcfm-reviews'           => ! empty( $wcfm_modified_endpoints['wcfm-reviews'] ) ? $wcfm_modified_endpoints['wcfm-reviews'] : 'reviews',
+			'wcfm-product-reviews'   => ! empty( $wcfm_modified_endpoints['wcfm-product-reviews'] ) ? $wcfm_modified_endpoints['wcfm-product-reviews'] : 'product-reviews',
+			'wcfm-reviews-manage'    => ! empty( $wcfm_modified_endpoints['wcfm-reviews-manage'] ) ? $wcfm_modified_endpoints['wcfm-reviews-manage'] : 'reviews-manage',
 		);
 		$query_vars = array_merge( $query_vars, $query_wcfm_vars );
 		
@@ -81,7 +87,11 @@ class WCFMmp_Reviews {
 			//break;
 			
 			case 'wcfm-reviews' :
-				$title = __( 'Reviews', 'wc-multivendor-marketplace' );
+				$title = __( 'Store Reviews', 'wc-multivendor-marketplace' );
+			break;
+			
+			case 'wcfm-product-reviews' :
+				$title = __( 'Product Reviews', 'wc-multivendor-marketplace' );
 			break;
   	}
   	
@@ -134,6 +144,25 @@ class WCFMmp_Reviews {
       	wp_enqueue_script( 'wcfm_reviews_js', $WCFMmp->library->js_lib_url . 'reviews/wcfmmp-script-reviews.js', array('jquery'), $WCFMmp->version, true );
       	
       	$wcfm_screen_manager_data = array();
+      	if( !apply_filters( 'wcfm_is_allow_review_rating', true ) ) {
+      		$wcfm_screen_manager_data[4] = 'yes';
+      	}
+    		if( wcfm_is_vendor() ) {
+	    		$wcfm_screen_manager_data[5] = 'yes';
+	    	}
+	    	$wcfm_screen_manager_data = apply_filters( 'wcfm_reviews_screen_manage', $wcfm_screen_manager_data );
+	    	wp_localize_script( 'wcfm_reviews_js', 'wcfm_reviews_screen_manage', $wcfm_screen_manager_data );
+      break;
+      
+      case 'wcfm-product-reviews':
+      	$WCFM->library->load_select2_lib();
+      	$WCFM->library->load_datatable_lib();
+      	wp_enqueue_script( 'wcfm_reviews_js', $WCFMmp->library->js_lib_url . 'reviews/wcfmmp-script-product-reviews.js', array('jquery'), $WCFMmp->version, true );
+      	
+      	$wcfm_screen_manager_data = array();
+      	if( !apply_filters( 'wcfm_is_allow_review_rating', true ) ) {
+      		$wcfm_screen_manager_data[3] = 'yes';
+      	}
     		if( wcfm_is_vendor() ) {
 	    		$wcfm_screen_manager_data[5] = 'yes';
 	    	}
@@ -160,6 +189,11 @@ class WCFMmp_Reviews {
 				wp_enqueue_style( 'wcfm_reviews_css',  $WCFMmp->library->css_lib_url . 'reviews/wcfmmp-style-reviews.css', array(), $WCFMmp->version );
 		  break;
 		  
+		  case 'wcfm-product-reviews':
+				wp_enqueue_style( 'collapsible_css',  $WCFM->library->css_lib_url . 'wcfm-style-collapsible.css', array(), $WCFM->version );
+				wp_enqueue_style( 'wcfm_reviews_css',  $WCFMmp->library->css_lib_url . 'reviews/wcfmmp-style-product-reviews.css', array(), $WCFMmp->version );
+		  break;
+		  
 		  case 'wcfm-reviews-manage':
 				wp_enqueue_style( 'collapsible_css',  $WCFM->library->css_lib_url . 'wcfm-style-collapsible.css', array(), $WCFM->version );
 				wp_enqueue_style( 'wcfm_reviews_manage_css',  $WCFMmp->library->css_lib_url . 'reviews/wcfmmp-style-reviews-manage.css', array(), $WCFMmp->version );
@@ -176,6 +210,10 @@ class WCFMmp_Reviews {
 	  switch( $end_point ) {
       case 'wcfm-reviews':
       	$WCFMmp->template->get_template( 'reviews/wcfmmp-view-reviews.php' );
+      break;
+      
+      case 'wcfm-product-reviews':
+      	$WCFMmp->template->get_template( 'reviews/wcfmmp-view-product-reviews.php' );
       break;
       
       case 'wcfm-reviews-manage':
@@ -203,6 +241,16 @@ class WCFMmp_Reviews {
 						return $wcfm_review_object->processing();
           } else {
             new WCFMmp_Reviews_Controller();
+          }
+  			break;
+  			
+  			case 'wcfm-product-reviews':
+					include_once( $controllers_path . 'wcfmmp-controller-product-reviews.php' );
+					if( defined('WCFM_REST_API_CALL') ) {
+						$wcfm_review_object = new WCFMmp_Product_Reviews_Controller();
+						return $wcfm_review_object->processing();
+          } else {
+            new WCFMmp_Product_Reviews_Controller();
           }
   			break;
   			
@@ -337,6 +385,30 @@ class WCFMmp_Reviews {
   }
   
   /**
+   * WCFM Product Review Status Update
+   */
+  function wcfmmp_product_reviews_status_update() {
+    global $WCFM, $WCFMmp, $_POST, $wpdb;
+  	
+   	$reviewid = absint($_POST['reviewid']);
+		$status   = absint($_POST['status']);
+		
+		if( $reviewid ) {
+			if( $status ) { // On Approve
+				if( $status == 2 ) {
+					wp_set_comment_status( $reviewid, 'trash' );
+				} else {
+					wp_set_comment_status( $reviewid, 'approve' );
+				}
+			} else {
+				wp_set_comment_status( $reviewid, 'hold' );
+			}
+		}
+		echo 'success';
+  	die;
+  }
+  
+  /**
    * WCfM Reviews Delete
    */
   function wcfmmp_reviews_delete() {
@@ -451,7 +523,7 @@ class WCFMmp_Reviews {
 	 */
 	public function show_star_rating( $store_rating = 0, $vendor_id = 0 ) {
 		
-		if ( apply_filters( 'wcfm_is_pref_vendor_reviews', true ) ) {
+		if ( apply_filters( 'wcfm_is_pref_vendor_reviews', true ) && apply_filters( 'wcfm_is_allow_review_rating', true ) ) {
 			if( $vendor_id ) {
 				$store_rating = $this->get_vendor_review_rating( $vendor_id );
 			}
@@ -566,7 +638,7 @@ class WCFMmp_Reviews {
 				
 				if( 'product' !== get_post_type( absint( $product_id ) ) ) return;
 				
-				$vendor_id  = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$vendor_id  = wcfm_get_vendor_id_by_post( $product_id );
 				if( !$vendor_id ) return;
 		
 				if ( get_option( 'woocommerce_enable_review_rating' ) == 'yes' ) {
@@ -652,6 +724,14 @@ class WCFMmp_Reviews {
   function wcfmmp_reviews_message_types( $message_types ) {
 		$message_types['review'] = __( 'Store Review', 'wc-multivendor-marketplace' );
 		return $message_types;
+	}
+	
+	function wcfmmp_is_allow_review_rating( $is_allow ) {
+		$is_allow = false;
+		if( 'yes' === get_option( 'woocommerce_enable_review_rating' ) ) {
+			$is_allow = true;
+		}
+		return $is_allow;
 	}
 	
 }

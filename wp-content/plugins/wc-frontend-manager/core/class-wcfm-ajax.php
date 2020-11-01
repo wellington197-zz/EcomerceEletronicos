@@ -29,6 +29,9 @@ class WCFM_Ajax {
     // Product Mark as Approve
 		add_action( 'wp_ajax_wcfm_product_approve', array( &$this, 'wcfm_product_approve' ) );
 		
+		// Product Mark as Reject
+		add_action( 'wp_ajax_wcfm_product_reject', array( &$this, 'wcfm_product_reject' ) );
+		
 		// Product Mark as Archive - 6.2.5
 		add_action( 'wp_ajax_wcfm_product_archive', array( &$this, 'wcfm_product_archive' ) );
 		
@@ -74,6 +77,9 @@ class WCFM_Ajax {
 		// WCfM Dashboard Menu Toggle
 		add_action( 'wp_ajax_wcfm_menu_toggler', array( $this, 'wcfm_menu_toggler' ) );
 		
+		// WCfM Ajax Pages Search
+		add_action( 'wp_ajax_wcfm_json_search_pages', array( $this, 'wcfm_json_search_pages' ) );
+		
 		// WCfM Ajax Product Search
 		add_action( 'wp_ajax_wcfm_json_search_products_and_variations', array( $this, 'wcfm_json_search_products_and_variations' ) );
 		
@@ -97,6 +103,9 @@ class WCFM_Ajax {
     
     // Knowledgebase View
     add_action('wp_ajax_wcfm_knowledgebase_view', array( &$this, 'wcfm_knowledgebase_view' ) );
+    
+    // Direct Message Send Reply View
+    add_action('wp_ajax_wcfm_messages_send_reply', array( &$this, 'wcfm_messages_send_reply' ) );
     
     // Generate Login Popup Form
     add_action('wp_ajax_wcfm_login_popup_form', array( &$this, 'wcfm_login_popup_form' ) );
@@ -163,7 +172,7 @@ class WCFM_Ajax {
 				
 				case 'wcfm-orders':
 					if( $WCFM->is_marketplace && ( wcfm_is_vendor() || apply_filters( 'wcfm_is_show_marketplace_orders', false ) ) ) {
-						if( apply_filters( 'wcfm_is_show_marketplace_itemized_orders', false ) ) {
+						if( apply_filters( 'wcfm_is_show_marketplace_itemwise_orders', false ) ) {
 							include_once( $this->controllers_path . 'orders/wcfm-controller-' . $WCFM->is_marketplace . '-itemized-orders.php' );
 						} else {
 							include_once( $this->controllers_path . 'orders/wcfm-controller-' . $WCFM->is_marketplace . '-orders.php' );
@@ -348,8 +357,13 @@ class WCFM_Ajax {
 					'error' => $result->get_error_message(),
 				) );
 			} else {
-				// Addmin notification message for new_taxonomy_term 
 				$author_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
+				
+				// Set Vendor Reference 
+				if( wcfm_is_vendor() )
+					update_term_meta( $result['term_id'], '_wcfm_vendor', $author_id );
+				
+				// Addmin notification message for new_taxonomy_term 
 				$author_is_admin = 0;
 				$author_is_vendor = 1;
 				$message_to = 0;
@@ -366,6 +380,8 @@ class WCFM_Ajax {
 					echo '<label class="selectit">' . $nbsp . '<input type="checkbox" class="wcfm-checkbox" name="product_cats[]" value="' . esc_attr( $term->term_id ) . '" checked /><span>' . esc_html( $term->name ) . '</span></label>';
 				}
 				echo '</li>';
+				
+				do_action( 'wcfm_after_add_taxonomy_new_term', $result['term_id'], $new_term, $taxonomy, $parent_term, $author_id );
 			}
 		}
 		die();
@@ -485,6 +501,30 @@ class WCFM_Ajax {
   		wp_update_post( $update_product, true );
   		update_post_meta( $product_id, '_wcfm_product_approved_by', get_current_user_id() );
   		do_action( 'wcfm_after_product_approve', $product_id );
+  		delete_post_meta( $product_id, '_wcfm_review_product_notified' );
+  	}
+		
+		die;
+  }
+  
+  /**
+   * Handle Product mark as Rejct
+   */
+  function wcfm_product_reject() {
+  	global $WCFM;
+  	
+  	if( isset( $_POST['proid'] ) && !empty( $_POST['proid'] ) ) {
+  		$product_id = absint( $_POST['proid'] );
+  		$reason     = wc_clean( $_POST['reason'] );
+  		do_action( 'wcfm_before_product_reject', $product_id, $reason );
+  		$update_product = apply_filters( 'wcfm_product_content_before_update', array(
+  																																					'ID'           => $product_id,
+																																						'post_status'  => 'draft',
+																																						'post_type'    => 'product',
+																																					), $product_id );
+  		wp_update_post( $update_product, true );
+  		update_post_meta( $product_id, '_wcfm_product_rejected_by', get_current_user_id() );
+  		do_action( 'wcfm_after_product_reject', $product_id, $reason );
   		delete_post_meta( $product_id, '_wcfm_review_product_notified' );
   	}
 		
@@ -732,12 +772,12 @@ class WCFM_Ajax {
 		}
 		
 		if ( ! empty( $_POST['wcfm_wcfmu_inactive'] ) ) {
-			$offer_key = 'wcfm_wcfmu_inactive22092019';
+			$offer_key = 'wcfm_wcfmu_inactive09062020';
 			update_option( $offer_key . '_tracking_notice', 'hide' );
 		}
 		
 		if ( ! empty( $_POST['wcfm_wcfmgs_inactive'] ) ) {
-			$offer_key = 'wcfm_wcfmgs_inactive22092019';
+			$offer_key = 'wcfm_wcfmgs_inactive09062020';
 			update_option( $offer_key . '_tracking_notice', 'hide' );
 		}
   }
@@ -781,6 +821,57 @@ class WCFM_Ajax {
   	
   	echo "success";
   	die;
+  }
+  
+  /**
+   * WCFM ajax Pages Search
+   */
+  function wcfm_json_search_pages() {
+  	global $WCFM, $_POST, $_GET;
+  	
+  	$term = wc_clean( empty( $term ) ? wc_clean( $_GET['term'] ) : $term );
+
+		if ( empty( $term ) ) {
+			wp_die();
+		}
+		
+		$args = array(
+			'posts_per_page'   => 25,
+			'offset'           => 0,
+			'category'         => '',
+			'category_name'    => '',
+			'orderby'          => 'date',
+			'order'            => 'DESC',
+			'include'          => '',
+			'exclude'          => '',
+			'meta_key'         => '',
+			'meta_value'       => '',
+			'post_type'        => 'page',
+			'post_mime_type'   => '',
+			'post_parent'      => '',
+			//'author'	   => get_current_user_id(),
+			'post_status'      => array('publish', 'private'),
+			'suppress_filters' => 0 
+		);
+		$args = apply_filters( 'wcfm_pages_args', $args );
+		$args['s'] = $term;
+		
+		$pages_objs = get_posts( $args );
+		$pages_array = array();
+		$woocommerce_pages = array ( wc_get_page_id('shop'), wc_get_page_id('cart'), wc_get_page_id('checkout'), wc_get_page_id('myaccount'));
+		foreach ( $pages_objs as $page ) {
+			if(!in_array($page->ID, $woocommerce_pages)) {
+				global $sitepress;
+				if ( function_exists('icl_object_id') && $sitepress ) {
+					$default_lang = $sitepress->get_default_language();
+					$pages_array[icl_object_id( $page->ID, 'page', true, $default_lang )] = $page->post_title;
+				} else {
+					$pages_array[$page->ID] = $page->post_title;
+				}
+			}
+		}
+		
+		wp_send_json( apply_filters( 'wcfm_json_search_pages', $pages_array ) );
   }
   
   /**
@@ -871,7 +962,7 @@ class WCFM_Ajax {
 				if( in_array( $product_type, $wcfm_sv_product_types ) ) {
 					$variations = array();
 					
-					$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription' ) );
+					$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription', 'pw-gift-cards' ) );
 					if( in_array( $product_type, $wcfm_variable_product_types ) ) {
 						$variation_ids = $product_data->get_children();
 						if(!empty($variation_ids)) {
@@ -1010,7 +1101,12 @@ class WCFM_Ajax {
 			$member_user = new WP_User( $member_id );
 			$vendor_store = wcfm_get_vendor_store( $member_id );
 			
-			$member_user->set_role('disable_vendor');
+			if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $member_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+				$member_user->remove_role('wcfm_vendor');
+				$member_user->add_role('disable_vendor');
+			} else {
+				$member_user->set_role('disable_vendor');
+			}
 			
 			update_user_meta( $member_id, '_disable_vendor', true );
 			
@@ -1055,7 +1151,12 @@ class WCFM_Ajax {
 			} elseif( $is_marketplace == 'dokan' ) {
 				$member_user->set_role('seller');
 			} elseif( $is_marketplace == 'wcfmmarketplace' ) {
-				$member_user->set_role('wcfm_vendor');
+				if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $member_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+					$member_user->remove_role('disable_vendor');
+					$member_user->add_role('wcfm_vendor');
+				} else {
+					$member_user->set_role('wcfm_vendor');
+				}
 			}
 			
 			delete_user_meta( $member_id, '_disable_vendor' );
@@ -1095,6 +1196,15 @@ class WCFM_Ajax {
 			echo $knowledgebase_post->post_content;
 			echo '</td></tr></tbody></table>';
 		}
+		die;
+	}
+	
+	/**
+	 * Generate Send Reply Message Popup
+	 */
+	function wcfm_messages_send_reply() {
+		global $WCFM;
+		$WCFM->template->get_template( 'messages/wcfm-view-messages-send-reply.php' );
 		die;
 	}
 	
@@ -1209,4 +1319,5 @@ class WCFM_Ajax {
 		}
 		die;
 	}
+	
 }

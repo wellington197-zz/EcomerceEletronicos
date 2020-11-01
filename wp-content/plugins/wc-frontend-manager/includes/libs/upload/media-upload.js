@@ -56,8 +56,14 @@ function addWCFMUploaderProperty(wcfmuploader) {
 			jQuery("#"+id+'_display span').show();
 			if( jQuery("#"+id).parent().hasClass( 'wcfm_uploader_by_id' ) ) {
 				jQuery("#"+id).val(attachment.id);
-			} else {
+			} else if( jQuery("#"+id).parent().hasClass( 'wcfm_uploader_by_url' ) ) {
 				jQuery("#"+id).val(attachment.url);
+			} else {
+				if( button.hasClass( 'downloadable_product' ) ) {
+					jQuery("#"+id).val(attachment.url);	
+				} else {
+					jQuery("#"+id).val(attachment.id);
+				}
 			}
 			jQuery("#"+id).hide();
 			button.hide();
@@ -116,8 +122,10 @@ function addWCFMUploaderProperty(wcfmuploader) {
 				jQuery("#"+id+'_display span').show();
 				if( jQuery("#"+id).parent().hasClass( 'wcfm_uploader_by_id' ) ) {
 					jQuery("#"+id).val(attachment.id);
-				} else {
+				} else if( jQuery("#"+id).parent().hasClass( 'wcfm_uploader_by_url' ) ) {
 					jQuery("#"+id).val(attachment.url);
+				} else {
+					jQuery("#"+id).val(attachment.id);
 				}
 				jQuery("#"+id).hide();
 				//button.hide();
@@ -240,7 +248,8 @@ function addWCFMMultiUploaderProperty(wcfmuploader) {
       jQuery.each(attachments, function(index, attachment) {
       	if( index == 0 ) {
 					jQuery("#"+id+'_display').attr('src', attachment.url).removeClass('placeHolder').show();
-					jQuery("#"+id).val(attachment.url);
+					//jQuery("#"+id).val(attachment.url);
+					jQuery("#"+id).val(attachment.id);
 					jQuery("#"+id).hide();
 					jQuery("#"+id+'_remove_button').show().val('x');
 				} else {
@@ -249,7 +258,8 @@ function addWCFMMultiUploaderProperty(wcfmuploader) {
 						jQuery("#"+id).parent().parent().parent().find('.add_multi_input_block').click();
 						$id = jQuery("#"+id).parent().parent().parent().find('.multi_input_block:last').find('.upload_button').attr('id').replace('_button', '');
 						jQuery("#"+$id+'_display').attr('src', attachment.url).removeClass('placeHolder').show();
-						jQuery("#"+$id).val(attachment.url);
+						//jQuery("#"+$id).val(attachment.url);
+						jQuery("#"+$id).val(attachment.id);
 						jQuery("#"+$id).hide();
 						jQuery("#"+$id+'_remove_button').show().val('x');
 					} else {

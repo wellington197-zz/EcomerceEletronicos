@@ -19,6 +19,7 @@ if( !apply_filters( 'wcfm_is_pref_notice', true ) || !apply_filters( 'wcfm_is_al
 $notice_id = 0;
 $title = '';
 $content = '';
+$content_type = '';
 $allow_reply = 'yes';
 $close_new_reply = 'no';
 
@@ -30,6 +31,12 @@ if( isset( $wp->query_vars['wcfm-notice-manage'] ) && !empty( $wp->query_vars['w
 		
 		$title = $notice_post->post_title;
 		$content = $notice_post->post_content;
+		$content_type = $notice_post->post_type;
+		
+		if( $content_type != 'wcfm_notice' ) {
+			wcfm_restriction_message_show( "Invalid Topic" );
+			return;
+		}
 		
 		$allow_reply = get_post_meta( $notice_id, 'allow_reply', true ) ? get_post_meta( $notice_id, 'allow_reply', true ) : 'yes';
 		$close_new_reply = get_post_meta( $notice_id, 'close_new_reply', true ) ? get_post_meta( $notice_id, 'close_new_reply', true ) : 'no';

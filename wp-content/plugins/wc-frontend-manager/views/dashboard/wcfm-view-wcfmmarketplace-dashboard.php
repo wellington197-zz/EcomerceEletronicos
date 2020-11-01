@@ -137,7 +137,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 		
 		<?php if( apply_filters( 'wcfm_is_pref_stats_box', true ) ) { ?>
 			<div class="wcfm_dashboard_stats">
-				<?php if( $wcfm_is_allow_reports = apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
+				<?php if( apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
 					<?php if( apply_filters( 'wcfm_sales_report_is_allow_gross_sales', true ) && apply_filters( 'wcfm_is_allow_stats_block_gross_sales', true ) ) { ?>
 						<div class="wcfm_dashboard_stats_block">
 							<a href="<?php echo get_wcfm_reports_url( 'month' ); ?>">
@@ -192,7 +192,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 		<?php } ?>
 		<?php do_action( 'wcfm_after_dashboard_stats_box', $user_id ); ?>
 		
-		<?php if( $wcfm_is_allow_reports = apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
+		<?php if( apply_filters( 'wcfm_is_allow_reports', true ) && apply_filters( 'wcfm_is_allow_dashboard_reports', true ) ) { ?>
 			<div class="wcfm_dashboard_wc_reports_sales">
 				<div class="wcfm-container">
 					<div id="wcfm_dashboard_wc_reports_expander_sales" class="wcfm-content">
@@ -216,7 +216,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 			<div class="wcfm_dashboard_wc_status_data">
 			
 			  <?php if ( $is_wcfm_analytics_enable = is_wcfm_analytics() ) { ?>
-					<?php if ( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) ) { ?>
+					<?php if ( apply_filters( 'wcfm_is_allow_analytics', true ) && apply_filters( 'wcfm_is_allow_dashboard_store_analytics', true ) ) { ?>
 						<div class="wcfm_dashboard_wcfm_analytics">
 							<div class="page_collapsible" id="wcfm_dashboard_wcfm_anaytics"><span class="wcfmfa fa-chart-line"></span><span class="dashboard_widget_head"><?php _e('Store Analytics', 'wc-frontend-manager'); ?></span></div>
 							<div class="wcfm-container">
@@ -240,7 +240,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 					<?php } ?>
 				<?php } ?>
 				
-				<?php if ( !is_wcfm_analytics() || WCFM_Dependencies::wcfma_plugin_active_check() ) { ?>
+				<?php if ( ( !is_wcfm_analytics() || WCFM_Dependencies::wcfma_plugin_active_check() ) && apply_filters( 'wcfm_is_allow_manage_products', true ) && apply_filters( 'wcfm_is_allow_dashboard_product_stats', true ) ) { ?>
 					<div class="wcfm_dashboard_wcfm_product_stats">
 						<div class="page_collapsible" id="wcfm_dashboard_wcfm_product_status"><span class="wcfmfa fa-cubes"></span><span class="dashboard_widget_head"><?php _e('Product Stats', 'wc-frontend-manager'); ?></span></div>
 						<div class="wcfm-container">
@@ -261,7 +261,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 				
 				<div class="wcfm_dashboard_more_stats">
 				
-				  <?php if( apply_filters( 'wcfm_is_dashboard_more_stats', true ) ) { ?>
+				  <?php if( apply_filters( 'wcfm_is_dashboard_more_stats', true ) && ( apply_filters( 'wcfm_is_allow_reports', true ) || apply_filters( 'wcfm_is_allow_orders', true ) ) ) { ?>
 						<div class="page_collapsible" id="wcfm_dashboard_wc_status">
 							<span class="wcfmfa fa-list fa-clock"></span>
 							<span class="dashboard_widget_head"><?php _e('Store Stats', 'wc-frontend-manager'); ?></span>
@@ -269,7 +269,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 						<div class="wcfm-container">
 							<div id="wcfm_dashboard_wc_status_expander" class="wcfm-content">
 								<ul class="wc_status_list">
-									<?php if( $wcfm_is_allow_reports = apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
+									<?php if( apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
 										<?php
 										if ( ( $top_seller = $WCFM->library->get_top_seller() ) && $top_seller->qty ) {
 											?>
@@ -286,7 +286,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 									
 									<?php do_action( 'after_wcfm_dashboard_sales_reports' ); ?>
 									
-									<?php if( $wcfm_is_allow_orders = apply_filters( 'wcfm_is_allow_orders', true ) ) { ?>
+									<?php if( apply_filters( 'wcfm_is_allow_orders', true ) ) { ?>
 										<li class="processing-orders">
 											<a href="<?php echo get_wcfm_orders_url( ); ?>">
 												<span class="wcfmfa fa-life-ring"></span>
@@ -305,7 +305,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 									
 									<?php do_action( 'after_wcfm_dashboard_orders' ); ?>
 									
-									<?php if( $wcfm_is_allow_reports = apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
+									<?php if( apply_filters( 'wcfm_is_allow_reports', true ) ) { ?>
 										<li class="low-in-stock">
 											<a href="<?php echo apply_filters( 'low_in_stock_report_url',  get_wcfm_reports_url( ) ); ?>">
 												<span class="wcfmfa fa-sort-amount-down"></span>
@@ -335,7 +335,7 @@ if( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) 
 			<div class="wcfm_dashboard_wc_status_graph">
 			  
 		
-			  <?php if( apply_filters( 'wcfm_is_allow_reports', true ) && apply_filters( 'wcfm_is_allow_sales_by_product_reports', true ) ) { ?>
+			  <?php if( apply_filters( 'wcfm_is_allow_reports', true ) && apply_filters( 'wcfm_is_allow_sales_by_product_reports', true ) && apply_filters( 'wcfm_is_allow_dashboard_sales_by_product_reports', true ) ) { ?>
 			  	
 					<div class="wcfm_dashboard_wc_reports_pie">
 						<div class="page_collapsible" id="wcfm_dashboard_wc_reports_pie"><span class="wcfmfa fa-chart-pie"></span><span class="dashboard_widget_head"><?php _e('Sales by Product', 'wc-frontend-manager'); ?></span></div>

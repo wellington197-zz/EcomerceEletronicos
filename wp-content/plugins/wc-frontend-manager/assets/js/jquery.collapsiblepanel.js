@@ -496,14 +496,17 @@ jQuery( document ).ready( function( $ ) {
 	if ($(window).width() > 640) {
 		$( ".page_collapsible" ).on( "click", function() {
 			var wrapHeight = $( this ).next('.wcfm-container').height();
-			//var wrapOHeight = $( this ).next('.wcfm-container').outerHeight();
+			var wrapOHeight = $( this ).next('.wcfm-container').outerHeight();
+			//console.log($( this ).attr('id') );
 			//console.log(collapsHeight +"::"+ wrapHeight+"::"+wrapOHeight);
-			if(collapsHeight > wrapHeight) {
-				$('.wcfm-tabWrap').css('height', ( collapsHeight + 100 ) );
-				$(document.body).trigger('wcfm_product_tabwrap_changed', ( collapsHeight + 100 ) );
-			} else { 
-				$('.wcfm-tabWrap').css('height', ( wrapHeight + 100 ) );
-				$(document.body).trigger('wcfm_product_tabwrap_changed', ( wrapHeight + 100 ) );
+			if( wrapHeight != 1 ) {
+				if(collapsHeight > wrapHeight) {
+					$('.wcfm-tabWrap').css('height', ( collapsHeight + 100 ) );
+					$(document.body).trigger('wcfm_product_tabwrap_changed', ( collapsHeight + 100 ) );
+				} else { 
+					$('.wcfm-tabWrap').css('height', ( wrapHeight + 100 ) );
+					$(document.body).trigger('wcfm_product_tabwrap_changed', ( wrapHeight + 100 ) );
+				}
 			}
 		});
 	}
@@ -513,15 +516,25 @@ jQuery( document ).ready( function( $ ) {
 function resetCollapsHeight(multi_input_holder) {
 	if (jQuery(window).width() > 640) {
 		if( multi_input_holder.attr('id') != 'gallery_img' ) {
+			if( multi_input_holder.hasClass( 'wcfm_admin_shipping_setting_block' ) )
+				multi_input_holder = multi_input_holder.parent().parent().parent();
+			
 			var wrapHeight = multi_input_holder.parent().height();
-			//console.log(multi_input_holder.parent().attr('id'));
+			//console.log(multi_input_holder.attr('id') + "::" + multi_input_holder.parent().attr('id'));
 			//console.log(collapsHeight +"::"+ wrapHeight);
-			if(collapsHeight > wrapHeight) {
-				jQuery('.wcfm-tabWrap').css('height', ( collapsHeight + 150 ) );
-				jQuery(document.body).trigger('wcfm_product_tabwrap_changed', ( collapsHeight + 150 ) );
-			} else { 
-				jQuery('.wcfm-tabWrap').css('height', ( wrapHeight + 150 ) );
-				jQuery(document.body).trigger('wcfm_product_tabwrap_changed', ( wrapHeight + 150 ) );
+			if( wrapHeight != null && wrapHeight != 1 ) {
+				if(collapsHeight > wrapHeight) {
+					jQuery('.wcfm-tabWrap').css('height', ( collapsHeight + 150 ) );
+					jQuery(document.body).trigger('wcfm_product_tabwrap_changed', ( collapsHeight + 150 ) );
+				} else { 
+					if( multi_input_holder.parent().hasClass('shipping_type') ) {
+						jQuery('.wcfm-tabWrap').css('height', ( wrapHeight + 300 ) );
+						jQuery(document.body).trigger('wcfm_product_tabwrap_changed', ( wrapHeight + 300 ) );
+					} else {
+						jQuery('.wcfm-tabWrap').css('height', ( wrapHeight + 150 ) );
+						jQuery(document.body).trigger('wcfm_product_tabwrap_changed', ( wrapHeight + 150 ) );
+					}
+				}
 			}
 		}
 	}

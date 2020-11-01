@@ -3,15 +3,15 @@
 	Plugin Name: Mega Addons For WPBakery Page Builder
 	Description: Mega Addons gives you multi plugins all in one. It's very powerful for any theme.
 	Plugin URI: https://addons.topdigitaltrends.net/
-	Author: Nasir
+	Author: Topdigitaltrends
 	Author URI: https://www.topdigitaltrends.net/
-	Version: 3.1
+	Version: 4.2.0
 	License: GPL2
 	*/
 	
 	/*
 	
-	    Copyright (C) 2018  Nasir  nasirahmad2010@hotmail.com
+	    Copyright (C) 2018  Topdigitaltrends  nasir179125@gmail.com
 	
 	    This program is free software; you can redistribute it and/or modify
 	    it under the terms of the GNU General Public License, version 2, as

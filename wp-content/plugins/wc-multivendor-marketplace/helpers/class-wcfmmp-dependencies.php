@@ -54,4 +54,18 @@ class WCFMmp_Dependencies {
 		return in_array( 'msg91-woocommerce-sms-integration-lite/wc_sms_plugin.php', self::$active_plugins ) || array_key_exists( 'msg91-woocommerce-sms-integration-lite/wc_sms_plugin.php', self::$active_plugins );
 		return false;
 	}
+	
+	// BuddyPress Support
+	static function wcfm_biddypress_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'buddypress/bp-loader.php', self::$active_plugins ) || array_key_exists( 'buddypress/bp-loader.php', self::$active_plugins );
+		return false;
+	}
+	
+	// GEO my Wp Support
+	static function wcfm_geo_my_wp_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'geo-my-wp/geo-my-wp.php', self::$active_plugins ) || array_key_exists( 'geo-my-wp/geo-my-wp.php', self::$active_plugins ) || class_exists( 'GEO_MY_WP' );
+		return false;
+	}
 }

@@ -25,4 +25,30 @@ jQuery(document).ready(function($) {
 			}
 		});
 	});
+	
+	$('select[name="spmv_orderby"]').each(function() {
+	  $(this).change(function() {
+	  	$spmv_sroter = $(this);
+		  $spmv_sroter.parent().parent().find('.wcfmmp_product_mulvendor_table_container').block({
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			});
+			var data = {
+				action       : 'wcfmmp_more_offers_sorting',
+				product_id   : $spmv_sroter.data('product_id'),
+				sorting      : $spmv_sroter.val()
+			}	
+			$.ajax({
+				type:		'POST',
+				url: wcfm_params.ajax_url,
+				data: data,
+				success:	function(response) {
+					$spmv_sroter.parent().parent().find('.wcfmmp_product_mulvendor_table_container').replaceWith( response );
+				}
+			});
+		});
+	});
 });

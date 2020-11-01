@@ -69,7 +69,7 @@ class CurlClient implements ClientInterface
 
         // TODO: curl_reset requires PHP >= 5.5.0. Once we drop support for PHP 5.4, we can simply
         // initialize this to true.
-        $this->enablePersistentConnections = function_exists('curl_reset');
+        $this->enablePersistentConnections = false; //function_exists('curl_reset');
 
         $this->enableHttp2 = $this->canSafelyUseHttp2();
     }

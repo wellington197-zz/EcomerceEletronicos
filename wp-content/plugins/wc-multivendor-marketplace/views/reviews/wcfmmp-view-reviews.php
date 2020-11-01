@@ -2,7 +2,7 @@
 /**
  * WCFM plugin view
  *
- * WCFM Marketplace Reviews List View
+ * WCFM Marketplace Product Reviews List View
  *
  * @author 		WC Lovers
  * @package 	wcfmmp/views/reviews/
@@ -35,7 +35,7 @@ if( wcfm_is_vendor() ) {
 <div class="collapse wcfm-collapse" id="wcfm_reviews_listing">
   <div class="wcfm-page-headig">
 		<span class="wcfmfa fa-comment-alt"></span>
-		<span class="wcfm-page-heading-text"><?php _e( 'Reviews', 'wc-multivendor-marketplace' ); ?></span>
+		<span class="wcfm-page-heading-text"><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager' ) ) . ' ' . __( 'Reviews', 'wc-multivendor-marketplace' ); ?></span>
 		<?php do_action( 'wcfm_page_heading' ); ?>
 	</div>
 	<div class="wcfm-collapse-content">
@@ -59,6 +59,12 @@ if( wcfm_is_vendor() ) {
 				}
 				?>
 			</ul>
+			
+			<?php
+			if( apply_filters( 'wcfm_is_allow_manage_product_reviews', true ) ) {
+				echo '<a id="add_new_product_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.wcfm_product_reviews_url().'" data-tip="' . __('Product Reviews', 'wc-multivendor-marketplace') . '"><span class="wcfmfa fa-cube"></span><span class="text">' . __( 'Product Reviews', 'wc-multivendor-marketplace' ) . '</span></a>';
+			}
+			?>
 			<div class="wcfm-clearfix"></div>
 		</div>
 	  <div class="wcfm-clearfix"></div><br />

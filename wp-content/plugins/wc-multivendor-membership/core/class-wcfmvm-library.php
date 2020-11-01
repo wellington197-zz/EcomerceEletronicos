@@ -92,6 +92,7 @@ class WCFMvm_Library {
       case 'wcfm-memberships-settings':
       	$WCFM->library->load_collapsible_lib();
       	$WCFM->library->load_select2_lib();
+      	$WCFM->library->load_upload_lib();
       	
       	$WCFM->library->load_colorpicker_lib();
 				wp_enqueue_script( 'iris', admin_url('js/iris.min.js'),array('jquery-ui-draggable', 'jquery-ui-slider', 'jquery-touch-punch'), false, 1);

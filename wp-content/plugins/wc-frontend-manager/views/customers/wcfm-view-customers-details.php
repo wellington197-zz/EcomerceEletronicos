@@ -21,6 +21,7 @@ $user_name = '&ndash;';
 $user_email = '&ndash;';
 $first_name = '&ndash;';
 $last_name = '&ndash;';
+$company_name = '&ndash;';
 
 if( isset( $wp->query_vars['wcfm-customers-details'] ) && !empty( $wp->query_vars['wcfm-customers-details'] ) ) {
 	$customer_id = $wp->query_vars['wcfm-customers-details'];
@@ -31,6 +32,7 @@ if( isset( $wp->query_vars['wcfm-customers-details'] ) && !empty( $wp->query_var
 		$user_email = $customer_user->user_email;
 		$first_name = $customer_user->first_name;
 		$last_name = $customer_user->last_name;
+		$company_name = get_user_meta( $customer_id, 'billing_company', true );
 	} else {
 		wcfm_restriction_message_show( "Invalid Customer" );
 		return;
@@ -67,7 +69,7 @@ if( isset( $wp->query_vars['wcfm-customers-details'] ) && !empty( $wp->query_var
 		<div class="wcfm-container wcfm-top-element-container">
 			<h2>
 			<?php 
-			echo $first_name . ' ' . $last_name; 
+			echo apply_filters( 'wcfm_customers_display_name_data',  $first_name . ' ' . $last_name, $customer_id ); 
 			if( apply_filters( 'wcfm_allow_order_customer_details', true ) ) {
 				echo '&nbsp('.$user_email.')';
 			}
@@ -91,7 +93,7 @@ if( isset( $wp->query_vars['wcfm-customers-details'] ) && !empty( $wp->query_var
 				if(!empty($wcfm_customers_array)) {
 					foreach( $wcfm_customers_array as $wcfm_customers_single ) {
 						if ( $wcfm_customers_single->last_name && $wcfm_customers_single->first_name ) {
-							$customers_arr[$wcfm_customers_single->ID] = $wcfm_customers_single->first_name . ' ' . $wcfm_customers_single->last_name;
+							$customers_arr[$wcfm_customers_single->ID] = apply_filters( 'wcfm_customers_display_name_data', $wcfm_customers_single->first_name . ' ' . $wcfm_customers_single->last_name, $wcfm_customers_single->ID );
 						} else {
 							$customers_arr[$wcfm_customers_single->ID] = $wcfm_customers_single->display_name;
 						}
@@ -173,10 +175,11 @@ if( isset( $wp->query_vars['wcfm-customers-details'] ) && !empty( $wp->query_var
 																																			"user_email" => array( 'label' => __('Email', 'wc-frontend-manager') , 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $user_email),
 																																			"first_name" => array( 'label' => __('First Name', 'wc-frontend-manager') , 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $first_name),
 																																			"last_name" => array( 'label' => __('Last Name', 'wc-frontend-manager') , 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $last_name),
+																																			"company_name" => array( 'label' => __('Company Name', 'wc-frontend-manager') , 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $company_name),
 																																			"customer_id" => array('type' => 'hidden', 'value' => $customer_id )
 																																	 ), $customer_id );
 				
-				if( !apply_filters( 'wcfm_allow_view_customer_email', true ) ) {
+				if( !apply_filters( 'wcfm_allow_view_customer_email', true ) || !apply_filters( 'wcfm_allow_view_customer_billing_email', true ) ) {
 					unset( $customer_fields_general['user_email'] );
 				}
 			

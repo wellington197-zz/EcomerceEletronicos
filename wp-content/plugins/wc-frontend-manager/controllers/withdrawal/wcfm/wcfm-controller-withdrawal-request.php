@@ -47,17 +47,36 @@ class WCFM_Withdrawal_Request_Controller {
 					$no_of_commission = count( $commissions );
 					
 					foreach( $commissions as $commission_id ) {
-						if( $commission_ids ) $commission_ids .= ',';
-						$commission_ids .= $commission_id;
 						
-						$sql = 'SELECT order_id, total_commission, withdraw_charges  FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders';
+						$sql = 'SELECT order_id, item_id, total_commission, withdraw_charges  FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders';
 						$sql .= ' WHERE 1=1';
 						$sql .= " AND ID = " . $commission_id;
 						$commission_infos = $wpdb->get_results( $sql );
 						if( !empty( $commission_infos ) ) {
 							foreach( $commission_infos as $commission_info ) {
+								$order = wc_get_order( $commission_info->order_id );
+								if( !is_a( $order , 'WC_Order' ) ) continue;
+				
+								try {
+									$line_item = new WC_Order_Item_Product( absint( $commission_info->item_id ) );
+									
+									// Refunded Items Skipping
+									if( $refunded_qty = $order->get_qty_refunded_for_item( absint( $commission_info->item_id ) ) ) {
+										$refunded_qty = $refunded_qty * -1;
+										if( $line_item->get_quantity() == $refunded_qty ) {
+											continue;
+										}
+									}
+								}  catch (Exception $e) {
+									continue;
+								}
+								
+								if( $commission_ids ) $commission_ids .= ',';
+								$commission_ids .= $commission_id;
+								
 								if( $order_ids ) $order_ids .= ',';
 								$order_ids .= $commission_info->order_id;
+								
 								$total_commission += (float) $commission_info->total_commission;
 							}
 						}

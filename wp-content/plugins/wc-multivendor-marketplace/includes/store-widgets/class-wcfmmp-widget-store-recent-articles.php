@@ -36,7 +36,7 @@ class WCFMmp_Store_Recent_Articles extends WP_Widget {
 		extract( $args, EXTR_SKIP );
 		
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
@@ -59,8 +59,11 @@ class WCFMmp_Store_Recent_Articles extends WP_Widget {
 		$is_disable_vendor = get_user_meta( $store_id, '_disable_vendor', true );
 		if ( $is_disable_vendor ) return;
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
-		$number       = $instance['number'];
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
+		$number       = !empty( $instance['number'] ) ? $instance['number'] : 10;
 		
 		$r = new WP_Query( apply_filters( 'widget_posts_args', array(
 			'posts_per_page'      => $number,

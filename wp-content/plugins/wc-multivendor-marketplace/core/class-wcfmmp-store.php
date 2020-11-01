@@ -170,6 +170,12 @@ class WCFMmp_Store {
 			if( isset( $store_tabs['policies'] ) ) unset( $store_tabs['policies'] );
 		}
 		
+		if( isset( $store_tabs['policies'] ) && apply_filters( 'wcfmmp_is_allow_store_policy_tab_title_by_setting', true ) ) {
+			$wcfm_policy_vendor_options = (array) wcfm_get_user_meta( $this->id, 'wcfm_policy_vendor_options', true );
+			$_wcfm_vendor_policy_tab_title = isset( $wcfm_policy_vendor_options['policy_tab_title'] ) ? $wcfm_policy_vendor_options['policy_tab_title'] : '';
+			if( $_wcfm_vendor_policy_tab_title ) $store_tabs['policies'] = $_wcfm_vendor_policy_tab_title;
+		}
+			
 		if( !apply_filters( 'wcfm_is_pref_vendor_reviews', true ) ) {
 			//$WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $this->id, 'review_manage' )
 			if( isset( $store_tabs['reviews'] ) ) unset( $store_tabs['reviews'] );
@@ -196,7 +202,7 @@ class WCFMmp_Store {
 				'payment'                 => array( 'paypal' => array( 'email' ), 'bank' => array() ),
 				'phone'                   => '',
 				'store_email'             => '',
-				'show_email'              => 'no',
+				'show_email'              => 'yes',
 				'address'                 => array(),
 				'location'                => '',
 				'store_lat'               => 0,
@@ -418,6 +424,10 @@ class WCFMmp_Store {
 		}
 		
 		return apply_filters( 'wcfmp_store_tabs_url', $store_tab_url, $tab );
+	}
+	
+	public function show_email() {
+		return true;
 	}
 
 	/**
@@ -700,7 +710,7 @@ class WCFMmp_Store {
 			return false;
 		}
 
-		return apply_filters( 'wcfmmp_store_banner', wp_get_attachment_url( $banner_id ), $this->get_id() );
+		return apply_filters( 'wcfmmp_store_banner', wcfm_get_attachment_url( $banner_id ), $this->get_id() );
 	}
 	
 	/**
@@ -758,7 +768,7 @@ class WCFMmp_Store {
 			return apply_filters( 'wcfmmp_store_default_logo', $WCFM->plugin_url . 'assets/images/wcfmmp-blue.png' ); //get_avatar_url( $this->data->user_email, 96 );
 		}
 
-		return wp_get_attachment_url( $avatar_id );
+		return apply_filters( 'wcfmmp_store_logo', wp_get_attachment_url( $avatar_id ), $this->get_id() );
 	}
 	
 	/**
@@ -814,7 +824,7 @@ class WCFMmp_Store {
 		}
 		
 		$vendor_taxonomies = $WCFMmp->wcfmmp_vendor->wcfmmp_get_vendor_taxonomy( $this->get_id(), $taxonomy );
-		return $vendor_taxonomies;
+		return apply_filters( 'wcfm_vendor_store_taxomonies', $vendor_taxonomies, $this->get_id(), $taxonomy );
 	}
 	
 	/**
@@ -979,7 +989,7 @@ class WCFMmp_Store {
 	public function show_star_rating() {
 		global $WCFM, $WCFMmp;
 		
-		if( apply_filters( 'wcfm_is_pref_vendor_reviews', true ) ) {
+		if( apply_filters( 'wcfm_is_pref_vendor_reviews', true ) && apply_filters( 'wcfm_is_allow_review_rating', true ) ) {
 			$WCFMmp->wcfmmp_reviews->show_star_rating( 0, $this->id );
 		}
 	}

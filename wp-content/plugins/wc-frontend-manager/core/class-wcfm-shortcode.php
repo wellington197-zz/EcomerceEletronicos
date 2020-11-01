@@ -27,6 +27,9 @@ class WCFM_Shortcode {
 		add_shortcode('wcfm_enquiry', array(&$this, 'wcfm_enquiry_shortcode'));
 		add_shortcode('wcfm_inquiry', array(&$this, 'wcfm_enquiry_shortcode'));
 		
+		// WCFM Policies Short Code
+		add_shortcode('wcfm_policy', array(&$this, 'wcfm_policy_shortcode'));
+		
 		// WCfM Store Follow Button Short code
 		if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
 			add_shortcode('wcfm_follow', array(&$this, 'wcfm_follow_shortcode'));
@@ -71,6 +74,18 @@ class WCFM_Shortcode {
 		
 		$this->load_class('enquiry');
 		return $this->shortcode_wrapper( array('WCFM_Enquiry_Shortcode', 'output'), $attr);
+	}
+	
+	/**
+	 * WCFM Policy short code
+	 */
+	function wcfm_policy_shortcode( $attr ) {
+		global $WCFM;
+		
+		//if( !is_product() && ( function_exists( 'wcfmmp_is_store_page' ) && !wcfmmp_is_store_page() ) ) return;
+		
+		$this->load_class('policy');
+		return $this->shortcode_wrapper( array('WCFM_Policy_Shortcode', 'output'), $attr);
 	}
 	
 	/**

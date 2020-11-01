@@ -65,7 +65,7 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 		if( apply_filters( 'wcfmmp_is_allow_order_status_filter', false ) ) {
 			$sql .= " AND commission.order_status IN ({$allowed_status})";
 		}
-		if( apply_filters( 'wcfmmp_is_allow_show_trashed_orders', false ) ) {
+		if( !apply_filters( 'wcfmmp_is_allow_show_trashed_orders', false ) ) {
 			$sql .= ' AND `is_trashed` = 0';
 		}
 		
@@ -75,11 +75,17 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 
 		// check if it is a search
 		if ( ! empty( $_POST['search']['value'] ) ) {
-			$order_id = absint( $_POST['search']['value'] );
-			if( function_exists( 'wc_sequential_order_numbers' ) ) { $order_id = wc_sequential_order_numbers()->find_order_by_order_number( $order_id ); }
+			//$order_id = absint( $_POST['search']['value'] );
+			//if( function_exists( 'wc_sequential_order_numbers' ) ) { $order_id = wc_sequential_order_numbers()->find_order_by_order_number( $order_id ); }
 
-			$sql .= " AND `order_id` = {$order_id}";
-
+			//$sql .= " AND `order_id` = {$order_id}";
+			
+			$wc_order_ids = implode( ',',  wc_order_search( $_POST['search']['value'] ) );
+			if( !empty( $wc_order_ids ) ) {
+				$sql .= " AND `order_id` in ({$wc_order_ids})";
+			} else {
+				$sql .= " AND `order_id` in (0)";
+			}
 		} else {
 
 			if ( ! empty( $_POST['filter_date_form'] ) && ! empty( $_POST['filter_date_to'] ) ) {
@@ -131,7 +137,7 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 			$sql .= " AND commission.order_status IN ({$allowed_status})";
 		}
 		
-		if( apply_filters( 'wcfmmp_is_allow_show_trashed_orders', false ) ) {
+		if( !apply_filters( 'wcfmmp_is_allow_show_trashed_orders', false ) ) {
 			$sql .= ' AND `is_trashed` = 0';
 		}
 		
@@ -139,10 +145,17 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 
 		// check if it is a search
 		if ( ! empty( $_POST['search']['value'] ) ) {
-			$order_id = absint( $_POST['search']['value'] );
-			if( function_exists( 'wc_sequential_order_numbers' ) ) { $order_id = wc_sequential_order_numbers()->find_order_by_order_number( $order_id ); }
+			//$order_id = absint( $_POST['search']['value'] );
+			//if( function_exists( 'wc_sequential_order_numbers' ) ) { $order_id = wc_sequential_order_numbers()->find_order_by_order_number( $order_id ); }
 
-			$sql .= " AND `order_id` = {$order_id}";
+			//$sql .= " AND `order_id` = {$order_id}";
+			
+			$wc_order_ids = implode( ',', wc_order_search( $_POST['search']['value'] ) );
+			if( !empty( $wc_order_ids ) ) {
+				$sql .= " AND `order_id` in ({$wc_order_ids})";
+			} else {
+				$sql .= " AND `order_id` in (0)";
+			}
 
 		} else {
 
@@ -263,26 +276,39 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 				$order_item_ids = explode( ",", $order->order_item_ids );
 				try {
 					foreach( $order_item_ids as $order_item_id ) {
-						$line_item = new WC_Order_Item_Product( $order_item_id );
-						$product   = $line_item->get_product();
-						$item_meta_html = strip_tags( wc_display_item_meta( $line_item, array(
-																																					'before'    => "\n- ",
-																																					'separator' => "\n- ",
-																																					'after'     => "",
-																																					'echo'      => false,
-																																					'autop'     => false,
-																																				) ) );
-				
-						$order_item_details .= '<div class=""><span class="qty">' . $line_item->get_quantity() . 'x</span><span class="name">' . apply_filters( 'wcfm_order_item_name', $line_item->get_name(), $line_item );
-						if ( $product && $product->get_sku() ) {
-							$order_item_details .= ' (' . __( 'SKU:', 'wc-frontend-manager' ) . ' ' . esc_html( $product->get_sku() ) . ')';
+						if( $order_item_id ) {
+							$line_item = new WC_Order_Item_Product( $order_item_id );
+							$product   = $line_item->get_product();
+							$item_meta_html = strip_tags( wc_display_item_meta( $line_item, array(
+																																						'before'    => "\n- ",
+																																						'separator' => "\n- ",
+																																						'after'     => "",
+																																						'echo'      => false,
+																																						'autop'     => false,
+																																					) ) );
+					
+							$order_item_details .= '<div class=""><span class="qty">' . $line_item->get_quantity() . 'x</span><span class="name">' . apply_filters( 'wcfm_order_item_name', $line_item->get_name(), $line_item );
+							if ( $product && $product->get_sku() ) {
+								$order_item_details .= ' (' . __( 'SKU:', 'wc-frontend-manager' ) . ' ' . esc_html( $product->get_sku() ) . ')';
+							}
+							if ( ! empty( $item_meta_html ) && apply_filters( 'wcfm_is_allow_order_list_item_meta', false ) ) $order_item_details .= '<br />(' . $item_meta_html . ')';
+							$order_item_details .= '</span></div>';
+						} else {
+							do_action( 'wcfm_manual_order_reset', $order->order_id, true );
+							$order_posted = get_post( $order->order_id );
+							do_action( 'wcfm_manual_order_processed', $order->order_id, $order_posted, $the_order );
+							//unset( $wcfm_orders_json_arr[$index] );
+							break;
 						}
-						if ( ! empty( $item_meta_html ) && apply_filters( 'wcfm_is_allow_order_list_item_meta', false ) ) $order_item_details .= '<br />(' . $item_meta_html . ')';
-						$order_item_details .= '</span></div>';
 					}
 				} catch (Exception $e) {
 					wcfm_log( "Order List Error ::" . $order->order_id . " => " . $e->getMessage() );
-					do_action( 'wcfm_order_repair_order_item', $order->order_id );
+					if( apply_filters( 'wcfm_is_allow_repair_order_item', false ) ) {
+						do_action( 'wcfm_manual_order_reset', $order->order_id, true );
+						$order_posted = get_post( $order->order_id );
+						do_action( 'wcfm_manual_order_processed', $order->order_id, $order_posted, $the_order );
+						//do_action( 'wcfm_order_repair_order_item', $order->order_id );
+					}
 					unset( $wcfm_orders_json_arr[$index] );
 					continue;
 				}
@@ -300,7 +326,7 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 						$billing_address = wp_kses( $the_order->get_formatted_billing_address(), array( 'br' => array() ) );
 					}
 				}
-				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . $billing_address . "</div>"; 
+				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . apply_filters( 'wcfm_orderlist_billing_address', $billing_address, $order->order_id ) . "</div>"; 
 				
 				// Shipping Address
 				$shipping_address = '&ndash;';
@@ -309,18 +335,17 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 						$shipping_address = wp_kses( $the_order->get_formatted_shipping_address(), array( 'br' => array() ) );
 					}
 				}
-				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . $shipping_address . "</div>";
+				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . apply_filters( 'wcfm_orderlist_shipping_address', $shipping_address, $order->order_id ) . "</div>";
 				
 				// Gross Sales
 				$gross_sales = 0;
 				$commission_ids = explode( ",", $order->commission_ids );
-				foreach( $commission_ids as $commission_id ) {
-					if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
-						$gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_total' );
-					} else {
-						$gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_sales_total' );
-					}
+				if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
+					$gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_total' );
+				} else {
+					$gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_sales_total' );
 				}
+				
 				/*if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $order->vendor_id, $order->order_id ) ) {
 					$gross_sales += (float) sanitize_text_field( $order->item_total );
 				} else {
@@ -361,7 +386,13 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 				$wcfm_orders_json_arr[$index][] =  $gross_sales;
 				
 				// Gross Sales Amount
-				$wcfm_orders_json_arr[$index][] =  $gross_sales_amt;
+				if( $order->is_partially_refunded || in_array( 1, $is_refundeds ) ) {
+					$wcfm_orders_json_arr[$index][] =  $gross_sales_amt - (float) $order->refunded_amount;
+				} elseif( $order->is_refunded ) {
+					$wcfm_orders_json_arr[$index][] = 0;
+				} else {
+					$wcfm_orders_json_arr[$index][] =  $gross_sales_amt;
+				}
 				
 				// Commision && Commission Amount
 				$status = __( 'N/A', 'wc-frontend-manager' );
@@ -387,7 +418,7 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 					$wcfm_orders_json_arr[$index][] = '';
 				} else {
 					$total = (float) $order->total_commission;
-					if( $order->is_partially_refunded ) {
+					if( $order->is_partially_refunded || in_array( 1, $is_refundeds ) ) {
 						$gross_sales_amt = $gross_sales_amt - (float) $order->refunded_amount;
 					}
 					if( $admin_fee_mode ) {
@@ -405,14 +436,18 @@ class WCFM_Orders_WCFMMarketplace_Controller {
 				
 				// Date
 				$order_date = ( version_compare( WC_VERSION, '2.7', '<' ) ) ? $the_order->order_date : $the_order->get_date_created();
-				$wcfm_orders_json_arr[$index][] = apply_filters( 'wcfm_order_date_display', $the_order->get_date_created()->date_i18n( wc_date_format() . ' ' . wc_time_format() ), $order->order_id, $order );
+				if( $order_date ) {
+					$wcfm_orders_json_arr[$index][] = apply_filters( 'wcfm_order_date_display', $order_date->date_i18n( wc_date_format() . ' ' . wc_time_format() ), $order->order_id, $order );
+				} else {
+					$wcfm_orders_json_arr[$index][] = apply_filters( 'wcfm_order_date_display', '&ndash;', $order->order_id, $order );
+				}
 				
 				// Action
 				$actions = '';
 				if( apply_filters( 'wcfm_is_allow_order_status_update', true ) && !in_array( 'requested', $refund_statuses ) && in_array( 0, $is_refundeds ) ) {
 					$allowed_order_status = apply_filters( 'wcfm_allowed_order_status', wc_get_order_statuses(), $order->order_id );
 					$status_update_block_statuses = apply_filters( 'wcfm_status_update_block_statuses', array( 'refunded', 'cancelled', 'failed' ), $order->order_id );
-					if( in_array( 'wc-completed', array_keys($allowed_order_status) ) && !in_array( 'completed', $status_update_block_statuses ) && !in_array( $order_status, array( 'failed', 'cancelled', 'refunded', 'completed', 'request', 'proposal', 'proposal-sent', 'proposal-expired', 'proposal-rejected', 'proposal-canceled', 'proposal-accepted' ) ) ) $actions = '<a class="wcfm_order_mark_complete wcfm-action-icon" href="#" data-orderid="' . $order->order_id . '"><span class="wcfmfa fa-check-circle text_tip" data-tip="' . esc_attr__( 'Mark as Complete', 'wc-frontend-manager' ) . '"></span></a>';
+					if( in_array( 'wc-completed', array_keys($allowed_order_status) ) && !in_array( $order_status, $status_update_block_statuses ) && !in_array( $order_status, array( 'failed', 'cancelled', 'refunded', 'completed', 'request', 'proposal', 'proposal-sent', 'proposal-expired', 'proposal-rejected', 'proposal-canceled', 'proposal-accepted' ) ) ) $actions = '<a class="wcfm_order_mark_complete wcfm-action-icon" href="#" data-orderid="' . $order->order_id . '"><span class="wcfmfa fa-check-circle text_tip" data-tip="' . esc_attr__( 'Mark as Complete', 'wc-frontend-manager' ) . '"></span></a>';
 				}
 				
 				if( $can_view_orders )

@@ -23,7 +23,7 @@ class WCFM_Customers_Controller {
 		$length = wc_clean($_POST['length']);
 		$offset = wc_clean($_POST['start']);
 		
-		$customer_user_role = apply_filters( 'wcfm_customer_user_role', array( 'customer', 'subscriber', 'client', 'bbp_participant' ) );
+		$customer_user_role = apply_filters( 'wcfm_customer_user_role', array( 'customer', 'subscriber', 'client', 'bbp_participant', 'wholesale_customer' ) );
 		
 		$args = array(
 									'role__in'     => $customer_user_role,

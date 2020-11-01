@@ -26,6 +26,15 @@ class WCFM_Articles_Manage_Controller {
 	  $wcfm_articles_manage_messages = get_wcfm_articles_manager_messages();
 	  $has_error = false;
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_articles_manage_form_data['wcfm_nonce'] ) && !empty( $wcfm_articles_manage_form_data['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_articles_manage_form_data['wcfm_nonce'], 'wcfm_articles_manage' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  if(isset($wcfm_articles_manage_form_data['title']) && !empty($wcfm_articles_manage_form_data['title'])) {
 	  	$is_update = false;
 	  	$is_publish = false;
@@ -144,6 +153,33 @@ class WCFM_Articles_Manage_Controller {
 					wp_update_post( array( 'ID' => $featured_img_id, 'post_parent' => $new_article_id ) );
 				} elseif(isset($wcfm_articles_manage_form_data['featured_img']) && empty($wcfm_articles_manage_form_data['featured_img'])) {
 					delete_post_thumbnail( $new_article_id );
+				}
+				
+				// Yoast SEO Support
+				if( WCFM_Dependencies::wcfm_yoast_plugin_active_check() || WCFM_Dependencies::wcfm_yoast_premium_plugin_active_check() ) {
+					if(isset($wcfm_articles_manage_form_data['yoast_wpseo_focuskw_text_input'])) {
+						update_post_meta( $new_article_id, '_yoast_wpseo_focuskw_text_input', $wcfm_articles_manage_form_data['yoast_wpseo_focuskw_text_input'] );
+						update_post_meta( $new_article_id, '_yoast_wpseo_focuskw', $wcfm_articles_manage_form_data['yoast_wpseo_focuskw_text_input'] );
+					}
+					if(isset($wcfm_articles_manage_form_data['yoast_wpseo_metadesc'])) {
+						update_post_meta( $new_article_id, '_yoast_wpseo_metadesc', strip_tags( $wcfm_articles_manage_form_data['yoast_wpseo_metadesc'] ) );
+					}
+				}
+				
+				// All in One SEO Support
+				if( WCFM_Dependencies::wcfm_all_in_one_seo_plugin_active_check() || WCFM_Dependencies::wcfm_all_in_one_seo_pro_plugin_active_check() ) {
+					if(isset($wcfm_articles_manage_form_data['aiosp_title'])) {
+						update_post_meta( $new_article_id, '_aioseop_title', $wcfm_articles_manage_form_data['aiosp_title'] );
+						update_post_meta( $new_article_id, '_aioseop_description', $wcfm_articles_manage_form_data['aiosp_description'] );
+					}
+				}
+				
+				// Rank Math SEO Support
+				if( WCFM_Dependencies::wcfm_rankmath_seo_plugin_active_check() ) {
+					if(isset($wcfm_articles_manage_form_data['rank_math_focus_keyword'])) {
+						update_post_meta( $new_article_id, 'rank_math_focus_keyword', $wcfm_articles_manage_form_data['rank_math_focus_keyword'] );
+						update_post_meta( $new_article_id, 'rank_math_description', $wcfm_articles_manage_form_data['rank_math_description'] );
+					}
 				}
 				
 				do_action( 'after_wcfm_articles_manage_meta_save', $new_article_id, $wcfm_articles_manage_form_data );

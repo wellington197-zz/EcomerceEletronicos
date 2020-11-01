@@ -3,6 +3,12 @@ jQuery(document).ready(function($) {
 		$(".country_select").select2();
 	}	
 	
+	if( $(".wcfm_multi_select").length > 0 ) {
+		$(".wcfm_multi_select").select2({
+			placeholder: wcfm_registration_params.choose_select2 + ' ...'
+		});
+	}
+	
 	// Email Verification
 	if( $('.wcfm_email_verified_input').length > 0 ) {
 		$('#user_email').on( 'blur', function() {
@@ -117,6 +123,71 @@ jQuery(document).ready(function($) {
 		}
 	}
 	
+	// Select wrapper fix
+	function unwrapSelect() {
+		$('#wcfm-main-contentainer').find('input[type="checkbox"]').each(function() {
+			if ( $(this).parent().hasClass( "icheckbox_minimal" ) ) {
+			  $(this).iCheck( 'destroy' );
+			}
+			if ( $(this).parent().is( "span" ) ) {
+			  $(this).unwrap( "span" );
+			}
+			if ( $(this).parent().is( "label" ) ) {
+			  $(this).unwrap( "label" );
+			}
+		});
+		$('#wcfm-main-contentainer').find('select').each(function() {
+			if ( $(this).parent().is( "span" ) ) {
+			  $(this).unwrap( "span" );
+			}
+			if ( $(this).parent().is( "label" ) ) {
+			  $(this).unwrap( "label" );
+			}
+			if ( $(this).parent().hasClass( "select-option" ) || $(this).parent().hasClass( "buddyboss-select-inner" ) || $(this).parent().hasClass( "buddyboss-select" ) ) {
+				$(this).parent().find('.ti-angle-down').remove();
+				$(this).parent().find('span').remove();
+			  $(this).unwrap( "div" );
+			}
+		});
+		setTimeout( function() {  unwrapSelect(); }, 500 );
+	}
+	
+	// Store Name Validation
+	function restrictNameInput() {
+	  $('.wcfm_name_input').each(function() {
+	  	$(this).on("contextmenu",function(){
+				 return false;
+			}); 
+	    $(this).on('keydown', function(e) {
+	    	//console.log(e.keyCode);
+				if( !( ( e.keyCode > 95 && e.keyCode < 106 )
+								|| ( e.keyCode > 47 && e.keyCode < 58 ) 
+							  || ( e.keyCode > 64 && e.keyCode < 91 ) 
+								|| e.keyCode == 8
+								|| e.keyCode == 9
+								|| e.keyCode == 32
+								|| e.keyCode == 37
+								|| e.keyCode == 39
+								|| e.keyCode == 46
+								|| e.keyCode == 189 ) ) {
+									return false;
+								}
+			});
+	  });
+	  setTimeout( function() {  restrictNameInput(); }, 500 );
+	}
+	
+	setTimeout( function() {
+		$('#wcfm-main-contentainer').find('select').each(function() {
+			if ( $(this).parent().is( "span" ) || $(this).parent().is( "label" ) ) {
+			  $(this).css( 'padding', '5px' ).css( 'min-width', '15px' ).css( 'min-height', '35px' ).css( 'padding-top', '5px' ).css( 'padding-right', '5px' ); //.change();
+			}
+		});
+		unwrapSelect();
+		
+		restrictNameInput();
+	}, 500 );
+	
 	// Store Slug Verification
 	if( $('.wcfm_store_slug_verified').length > 0 ) {
 		$('#store_name').on( 'blur', function() {
@@ -161,7 +232,7 @@ jQuery(document).ready(function($) {
 							$('.wcfm_store_slug_verified').append( '<span class="wcfm_store_slug_status"><span class="wcicon-status-completed"></span>&nbsp;'+$('.wcfm_store_slug_verified').data('avail')+'</span>' );
 						} else {
 							$('#store_name').removeClass('wcfm_validation_success').addClass('wcfm_validation_failed');
-							$('.wcfm_store_slug').text( '[your_store]' );
+							$('.wcfm_store_slug').text( '['+wcfm_registration_params.your_store+']' );
 							$('.wcfm_store_slug_verified').append( '<span class="wcfm_store_slug_status" style="color: red;"><span class="wcicon-status-cancelled"></span>&nbsp;'+$('.wcfm_store_slug_verified').data('unavail')+'</span>' );
 						}
 						$('#store_name').unblock();
@@ -263,9 +334,9 @@ jQuery(document).ready(function($) {
 	function checkStrength( password ) {
 		var strength = 0
 		if (password.length < 6) {
-			$('#passowrd_strength').removeClass();
-			$('#passowrd_strength').addClass('short')
-			$('#passowrd_strength').html(wcfm_registration_params.short);
+			$('#password_strength').removeClass();
+			$('#password_strength').addClass('short')
+			$('#password_strength').html(wcfm_registration_params.short);
 			return 'short';
 		}
 		if (password.length > 7) strength += 1
@@ -280,19 +351,19 @@ jQuery(document).ready(function($) {
 		// Calculated strength value, we can return messages
 		// If value is less than 2
 		if (strength < 2) {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('weak')
-			$('#passowrd_strength').html( wcfm_registration_params.weak );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('weak')
+			$('#password_strength').html( wcfm_registration_params.weak );
 			return 'weak';
 		} else if (strength == 2) {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('good')
-			$('#passowrd_strength').html( wcfm_registration_params.good );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('good')
+			$('#password_strength').html( wcfm_registration_params.good );
 			return 'good';
 		} else {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('strong')
-			$('#passowrd_strength').html( wcfm_registration_params.strong );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('strong')
+			$('#password_strength').html( wcfm_registration_params.strong );
 			return 'strong';
 		}
 	}
@@ -340,6 +411,7 @@ jQuery(document).ready(function($) {
 			}
 		}, 1000 );
 	}
+	
 	$('#wcfm_membership_register_button').click(function(event) {
 	  event.preventDefault();
 	  
@@ -350,12 +422,12 @@ jQuery(document).ready(function($) {
 	  $is_valid = $wcfm_is_valid_form;
 	  
 	  if( $is_valid ) {
-	  	$passowrd = $('#passoword').val();
-			if( $passowrd && wcfm_registration_params.is_strength_check ) {
-				$passowrd_strength = checkStrength($passowrd );
-				if( ( $passowrd_strength == 'short') || ( $passowrd_strength == 'weak' ) ) {
+	  	$password = $('#passoword').val();
+			if( $password && wcfm_registration_params.is_strength_check ) {
+				$password_strength = checkStrength($password );
+				if( ( $password_strength == 'short') || ( $password_strength == 'weak' ) ) {
 					$('#passoword').removeClass('wcfm_validation_success').addClass('wcfm_validation_failed');
-					$('#wcfm_membership_container .wcfm-message:not(.email_verification_message, .sms_verification_message)').html( '<span class="wcicon-status-cancelled"></span>' + wcfm_registration_params.passowrd_failed ).addClass('wcfm-error').slideDown();
+					$('#wcfm_membership_container .wcfm-message:not(.email_verification_message, .sms_verification_message)').html( '<span class="wcicon-status-cancelled"></span>' + wcfm_registration_params.password_failed ).addClass('wcfm-error').slideDown();
 					$is_valid = false;
 				}
 			}

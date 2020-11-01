@@ -39,6 +39,8 @@ class WCFM_Custom_Field_Products_Manage_Controller {
 					} else {
 						update_post_meta( $new_product_id, $group_name, array() );
 					}
+					
+					do_action( 'wcfm_after_pm_custom_field_group_save', $new_product_id, $group_name, $group_value );
 				} else {
 					$wcfm_product_custom_block_fields = $wcfm_product_custom_field['wcfm_product_custom_block_fields'];
 					if( !empty( $wcfm_product_custom_block_fields ) ) {
@@ -46,6 +48,8 @@ class WCFM_Custom_Field_Products_Manage_Controller {
 							$field_name = $wcfm_product_custom_block_field['name'];
 							if(isset($wcfm_products_manage_form_data[$field_name])) {
 								update_post_meta( $new_product_id, $field_name, $wcfm_products_manage_form_data[$field_name] );
+								
+								do_action( 'wcfm_after_pm_custom_field_save', $new_product_id, $field_name, $wcfm_product_custom_block_field['type'], $wcfm_products_manage_form_data[$field_name] );
 							} else {
 								if( $wcfm_product_custom_block_field['type'] == 'checkbox' ) {
 									if( isset($wcfm_products_manage_form_data[$field_name]) ) {

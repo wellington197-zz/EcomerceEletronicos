@@ -80,6 +80,7 @@ $withdrawal_mode = isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_mode'] 
 							<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Mode', 'wc-frontend-manager' ); ?></th>
+							<th><?php _e( apply_filters( 'wcfm_payments_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 							<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 						</tr>
@@ -94,6 +95,7 @@ $withdrawal_mode = isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_mode'] 
 							<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Mode', 'wc-frontend-manager' ); ?></th>
+							<th><?php _e( apply_filters( 'wcfm_payments_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 							<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 						</tr>

@@ -3,17 +3,29 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Component, Fragment } from '@wordpress/element';
-import { Disabled, PanelBody } from '@wordpress/components';
-import { InspectorControls, ServerSideRender } from '@wordpress/editor';
+import { Disabled, PanelBody, Placeholder } from '@wordpress/components';
+import { InspectorControls } from '@wordpress/block-editor';
+import { ServerSideRender } from '@wordpress/editor';
 import PropTypes from 'prop-types';
+import GridContentControl from '@woocommerce/editor-components/grid-content-control';
+import GridLayoutControl from '@woocommerce/editor-components/grid-layout-control';
+import ProductCategoryControl from '@woocommerce/editor-components/product-category-control';
+import ProductOrderbyControl from '@woocommerce/editor-components/product-orderby-control';
+import { gridBlockPreview } from '@woocommerce/resource-previews';
+import { Icon, tag } from '@woocommerce/icons';
 
-/**
- * Internal dependencies
- */
-import GridContentControl from '../../components/grid-content-control';
-import GridLayoutControl from '../../components/grid-layout-control';
-import ProductCategoryControl from '../../components/product-category-control';
-import ProductOrderbyControl from '../../components/product-orderby-control';
+const EmptyPlaceholder = () => (
+	<Placeholder
+		icon={ <Icon srcElement={ tag } /> }
+		label={ __( 'On Sale Products', 'woocommerce' ) }
+		className="wc-block-product-on-sale"
+	>
+		{ __(
+			'This block shows on-sale products. There are currently no discounted products in your store.',
+			'woocommerce'
+		) }
+	</Placeholder>
+);
 
 /**
  * Component to handle edit mode of "On Sale Products".
@@ -34,7 +46,7 @@ class ProductOnSaleBlock extends Component {
 		return (
 			<InspectorControls key="inspector">
 				<PanelBody
-					title={ __( 'Layout', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Layout', 'woocommerce' ) }
 					initialOpen
 				>
 					<GridLayoutControl
@@ -45,16 +57,18 @@ class ProductOnSaleBlock extends Component {
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Content', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Content', 'woocommerce' ) }
 					initialOpen
 				>
 					<GridContentControl
 						settings={ contentVisibility }
-						onChange={ ( value ) => setAttributes( { contentVisibility: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { contentVisibility: value } )
+						}
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Order By', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Order By', 'woocommerce' ) }
 					initialOpen={ false }
 				>
 					<ProductOrderbyControl
@@ -65,7 +79,7 @@ class ProductOnSaleBlock extends Component {
 				<PanelBody
 					title={ __(
 						'Filter by Product Category',
-						'woo-gutenberg-products-block'
+						'woocommerce'
 					) }
 					initialOpen={ false }
 				>
@@ -88,11 +102,19 @@ class ProductOnSaleBlock extends Component {
 	render() {
 		const { attributes, name } = this.props;
 
+		if ( attributes.isPreview ) {
+			return gridBlockPreview;
+		}
+
 		return (
 			<Fragment>
 				{ this.getInspectorControls() }
 				<Disabled>
-					<ServerSideRender block={ name } attributes={ attributes } />
+					<ServerSideRender
+						block={ name }
+						attributes={ attributes }
+						EmptyResponsePlaceholder={ EmptyPlaceholder }
+					/>
 				</Disabled>
 			</Fragment>
 		);

@@ -1,13 +1,13 @@
-﻿=== WCFM Marketplace - Multivendor Marketplace for WooCommerce ===
+﻿=== WCFM Marketplace - Best Multivendor Marketplace for WooCommerce ===
 Contributors: wclovers
 Tags: woocommerce marketplace, multivendor marketplace, multi vendor, multi seller, woocommerce product vendors 
 Donate link: https://www.paypal.me/wclovers/25usd
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.5
 WC requires at least: 3.0
-WC tested up to: 3.7.0
+WC tested up to: 4.4.0
 Requires PHP: 5.6
-Stable tag: 3.2.2
+Stable tag: 3.4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,9 +15,9 @@ The most featured and powerful multi vendor plugin for WordPress, setup best woo
 
 == Description ==
 
-### Best multi vendor marketplace solution for WordPress and WooCommerce
+### Best multivendor marketplace solution for WordPress and WooCommerce
 
-WooCommerce Multi vendor Marketplace (WCFM Marketplace) is the one-stop multi-vendor plugin that you’ve been waiting for. No doubt, you are going to experience the best front end multi vendor marketplace plugin on WordPress, powered by WooCommerce. It helps you to build your own dream marketplace like Amazon, eBay, etsy, AirBnB or Flipkart within minutes, with minimal setup. 
+WooCommerce Multivendor Marketplace (WCFM Marketplace) is the best free front end multi-vendor marketplace plugin on WordPress, powered by WooCommerce. It helps you to build your own dream marketplace like Amazon, eBay, etsy, AirBnB or Flipkart within minutes, with minimal setup. 
 
 👉 Know more about it's exclusive [features list](https://wclovers.com/blog/woocommerce-frontend-manager/)
 👉 Experience before decide - [WCFM Marketplace Demo](https://wcfmmp.wcfmdemos.com/my-account/)
@@ -27,8 +27,19 @@ It has got everything from our own with [WooCommerce Frontend Manager](https://w
 🎉 It will enahnce your vendor's marketplace experience to next level using <strong>FREE</stong> [Vendor Mobile APP](https://docs.wclovers.com/wcfm-app/)
 
 Experience Advanced modules like <strong>Store Invoice</strong>, <strong>Support Ticket</strong>, <strong>Shipment Tracking</strong>, Product Importer & Bulk Stock Manager along with WooCommerce Bookings, WooCommerce Appointments, WooCommerce Rental & Bookings System, WooCommerce Subscriptions and WP Job Manager compatibility using [WCFM – Ultimate](https://wclovers.com/product/woocommerce-frontend-manager-ultimate/) that will make business for your vendors easier. With steady support from our team, create and manage your e-commerce website hassle-free with the all new WCfM Marketplace!
- 
+
+🎉 Let your vendors give quick real-time support via [Live Chat](https://docs.wclovers.com/live-chat/)
+
 What's interesting in WCfM Marketplace you think? You’ll get to know that by and by as we gradually develop our brainchild. However, let’s have a look at a few of our features...
+
+### Most Featured Store List & Filters
+
+👉 Radius search
+👉 Search by city
+👉 Search by zip code
+👉 Search by category
+
+[Full details here ...](https://docs.wclovers.com/store-list/)
 
 ### Most Powerful Commission System
 
@@ -48,12 +59,13 @@ What's interesting in WCfM Marketplace you think? You’ll get to know that by a
 
 👉 Shipping Rate By Zone
 👉 Shipping Rate By Country
+👉 Shipping Rate By Distance (Distance rate shipping)
 👉 Shipping Rate By Weight (Rule and by per unit cost)
 👉 Shipping Class Support
 👉 Restriction by Country
 👉 Restriction by Zip code
 
-[Know more on this ...](https://wclovers.com/knowledgebase/wcfm-marketplace-store-shipping/)
+[Know more on this ...](https://docs.wclovers.com/store-shipping/)
 
 ### Versatile Withdrawal Options
 
@@ -69,6 +81,9 @@ What's interesting in WCfM Marketplace you think? You’ll get to know that by a
 👉 Stripe Split Pay ([3D Secure & SCA Compatible](https://wclovers.com/blog/wcfm-marketplace-stripe-sca-compatibility/))
 👉 PayPal
 👉 [PayPal Direct Pay](https://wordpress.org/plugins/wc-frontend-manager-direct-paypal/)
+👉 [PayFast](https://github.com/wclovers/wcfm-pg-payfast)
+👉 [PayStack](https://github.com/wclovers/wcfm-pg-paystack)
+👉 [MangoPay](https://github.com/wclovers/wcfm-pg-mangopay)
 👉 Wirecard (Moip)
 👉 Skrill
 👉 Bank Transfer
@@ -83,9 +98,9 @@ You may create your own Payment Gateway as well, [developer's guide](https://wcl
 >
 > Do you think anything is missing then WCFM Ultimate is also there for you :)
 >
-> [WCFM - Ultimate](https://wclovers.com/product/woocommerce-frontend-manager-ultimate/) - optional, to have advance features
-> [WCFM - Delivery](https://wclovers.com/product/woocommerce-frontend-manager-delivery/) - optional, to enable delivery management
-> [WCFM - Affiliate](https://wclovers.com/product/woocommerce-frontend-manager-affiliate/) - optional, to enable marketplace affiliate
+> [WCFM - Ultimate](https://wclovers.com/product/woocommerce-frontend-manager-ultimate/) - [Pro Modules](https://wclovers.com/blog/woocommerce-frontend-manager/)
+> [WCFM - Delivery](https://wclovers.com/product/woocommerce-frontend-manager-delivery/) - [Delivery Person](https://wclovers.com/knowledgebase/wcfm-marketplace-delivery/) and [Delivery Time](https://docs.wclovers.com/delivery-time/) modules
+> [WCFM - Affiliate](https://wclovers.com/product/woocommerce-frontend-manager-affiliate/) - [Marketplace Affiliate Mpdule](https://docs.wclovers.com/wcfm-affiliate/)
 
 > [View Demo](https://wcfmmp.wcfmdemos.com/my-account/)
 >
@@ -110,6 +125,12 @@ You may create your own Payment Gateway as well, [developer's guide](https://wcl
 
 [Read all documentations from here.](https://wclovers.com/knowledgebase/)
 
+### Elementor Integration
+
+💁 [WCFM Marketplace integrate with Elementor](https://wordpress.org/plugins/wc-frontend-manager-elementor/)
+
+This will allow you to create your marketplace store page using Elementor with your own design. Easily and Beatifully!
+
 ### REST API
 
 💁 [WCFM Marketplace - REST API Addon](https://wordpress.org/plugins/wcfm-marketplace-rest-api/)
@@ -117,7 +138,6 @@ You may create your own Payment Gateway as well, [developer's guide](https://wcl
 
 ### SMS Notification & OTP Veirification 
 
-👨 All Users    - https://wordpress.org/plugins/msg91-woocommerce-sms-integration-lite/
 👨 Indian Users - https://wordpress.org/plugins/sms-alert/
 👨 Other Users  - https://woocommerce.com/products/twilio-sms-notifications/
 👨 Netgsm       - https://wordpress.org/plugins/netgsm/
@@ -134,6 +154,7 @@ You may create your own Payment Gateway as well, [developer's guide](https://wcl
 👉 wcfm_store_info         - Display any store info by ID
 👉 wcfm_stores_carousel    - Stores as slider
 👉 wcfm_store_hours        - Store opening-closing hours
+👉 wcfm_shipping_time      - Product estimated shipping time display 
 👉 wcfm_more_offers        - Other vendors pricing offer for a product
 👉 wcfm_store_fb_feed      - Store Facebook page feed
 👉 wcfm_store_twitter_feed - Store Twitter feed
@@ -151,41 +172,24 @@ If you already have a multi-vendor store setup using WC Marketplace or WC Vendor
 🔖 WooCommerce Appointments - [Demo](http://wcappointment.wcfmdemos.com/my-account/)
 🔖 WooCommerce Subscriptions - [Demo](http://demo.wcfmdemos.com/my-account/)
 🔖 WooCommerce Product Addons - [Demo](http://wcappointment.wcfmdemos.com/my-account/)
-🔖 WooCommerce Rental & Bookings System - [Demo](http://wcrental.wcfmdemos.com/my-account/)
-🔖 WooCommerce Box Office (Event Management and Tickting System)
 🔖 GEO my WordPress (GEO my WP)
 🔖 WooCommerce Simple Auctions
 🔖 YITH Auctions Free & Premium
 🔖 Advanced Custom Fields(ACF & ACF Pro)
 🔖 Toolset Types
 🔖 Toolset Maps
-🔖 WooCommerce Role Based Price
-🔖 WooCommerce Germanized
 🔖 WooCommerce PDF Vouchers
-🔖 WooCommerce PDF Product Voucher
-🔖 WooCommerce Lottery
-🔖 WooCommerce Deposits
-🔖 WooCommerce Bulk Discount
 🔖 WooCommerce Tab Manager
-🔖 WooCommerce Product SKU Generator
-🔖 Epeken All Kurir Plugin for Woocommerce Full Version
-🔖 FedEx WooCommerce Shipping with Print Label
-🔖 DHL Express/DHL Paket WooCommerce Shipping with Print Label by XAdapter
 🔖 Yoast SEO & Yoast SEO Premium
-🔖 Woocommerce Product Availability Scheduler
 🔖 WooCommerce Measurement Price Calculator
-🔖 WooCommerce Advanced Product Labels
-🔖 WooCommerce Wholesale Prices
-🔖 WooCommerce Min/Max Quantities
-🔖 WooCommerce 360 Images
-🔖 WooCommerce Product Badge Manager
-🔖 WooCommerce Quote Request
-🔖 WooCommerce Variation Swatches
-🔖 WooCommerce Dynamic Pricing
-🔖 MSRP for WooCommerce (Algoritmika)
-🔖 Cost of Goods for WooCommerce (Algoritmika)
+🔖 Wholesale Prices
+🔖 YiTH Request a Quote Premium
+🔖 WooCommerce License Manager / License Manager for WooCommerce
 🔖 Fancy Product Designer
+🔖 Post Expirator
 🔖 FooEvents
+
+Check full list from [here](https://wclovers.com/wcfm-compatible-plugins/)
 
 = Setup Guide = 
 
@@ -198,7 +202,7 @@ If you already have a multi-vendor store setup using WC Marketplace or WC Vendor
 
 ### Feedback 
 
-All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
+All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6-12 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
 
 It is extremely disheartening when trigger happy users downrate a plugin for no fault of the plugin. 
 
@@ -250,6 +254,360 @@ NONE.
 
 
 == Changelog ==
+
+= 3.4.4 =
+*Updated - 28/08/2020
+
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Enhance - Country Based Restrictions for WooCommerce compatibility added
+* Enhance - Vendor shipping setting "Shippling Class" WPML compatibility added
+* Enhance - Checkout user location field current location locate option added
+* Enhance - Product custom fields "Multi Select" field type support added
+* Fixed   - Store list category filter not working issue resolved
+* Fixed   - On Mobile store list map icons are not clickable issue resolved
+* Fixed   - Vendors pending withdrawal amount showing wrong data issue resolved
+* Fixed   - Vendors able to withdraw refunded order items issue resolved
+* Fixed   - Disable Multi vendor checkout condition conflict with Min/Max quantity condition issue resolved
+* Fixed   - "Filter Products by Store" widget not working for vendor users issue resolved
+* Fixed   - Vendor shipping zone setting "Back to zone list" on click setting panel broken issue resolved
+* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
+* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved
+* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
+* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
+* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved
+
+= 3.4.3 =
+*Updated - 02/08/2020
+
+* Feature - ShipStation integration for vendors (WCFM Ultimate required) - [Documentation](https://docs.wclovers.com/shipstation/)
+* Enhance - PayFast vendor payment gateway published at GitHub (Split payment supported) - [Details](https://github.com/wclovers/wcfm-pg-payfast)
+* Enhance - PayStack vendor payment gateway published at GitHub - [Details](https://github.com/wclovers/wcfm-pg-paystack)
+* Enhance - MangoPay vendor payment gateway published at GitHub - [Details](https://github.com/wclovers/wcfm-pg-mangopay)
+* Enhance - Vendor Profile ACF user type fields support added (WCFM Ultimate required)
+* Enhance - WooCommerce 4.3+ compatibility added
+* Tweak   - YiTH Request a Quote one vendor's products at a time restriction added
+* Tweak   - PW Gift Cards redeem only for the issuer vendor's products restriction added 
+* Tweak   - ELEX Shipping addons compatibility revoked, instead recommend to use [WooCommerce Multi-Vendor Support for ELEX Shipping Plugins](https://elextensions.com/plugin/woocommerce-multi-vendor-add-on-for-elex-shipping-plugins/)
+* Fixed   - Store list search with pagination issue resolved
+* Fixed   - Country wise shipping calculation issue resolved
+* Fixed   - Product page vendor info display "as Tab" location display issue resolved 
+* Fixed   - Vendor profile complete bar "Store Description" checking issue resolved
+* Fixed   - Product page location still visible when vendor disabled "Address" or "Location" display issue resolved
+
+= 3.4.2 =
+*Updated - 20/06/2020
+
+* Fixed   - In Mobile store location not showing properly using Google Map APP issue resolved
+* Fixed   - Store list page OpenStreetMap Radius filter not working from sidebar issue resolved
+* Fixed   - OpenStreetMap Radius filter always showing all map pointers issue resolved
+* Fixed   - Multiple vendors order's refund popup item meta display issue resolved
+* Fixed   - Some missing strings are added to translation file
+
+= 3.4.1 =
+*Updated - 09/06/2020
+
+* Enhance - WooCommerce 4.2+ compatibility added
+* Enhance - "Filter Products by Store" widget added for WooCommerce product archive pages to filter products by vendor
+* Enhance - Vendor order support added for Manual booking associate with existing order 
+* Enhance - WCFM Delivery - delivery time slots WPML compatibility added
+* Enahnce - Checkout delivery location field compatibility added for "Force shipping to the customer billing address" setting option
+* Enahnce - YiTH Request a Quote Premium "accepted quote" pay page shipping compatibility added
+* Enahnce - YiTH Request a Quote Premium "accepted quote" vendor order compatibility added
+* Fixed   - Vendor product variation export issue resolved
+* Fixed   - Store list page map pointer not visible at proper position issue resolved
+* Fixed   - Store list page map pointer position change on map zoom change issue resolved
+* Fixed   - Trashed orders visible to vendors issue resolved 
+* Fixed   - Distance shipping setting panel broken issue resolved
+
+= 3.4.0 =
+*Updated - 13/05/2020
+
+* Enhance - Page load performence improved
+* Enhance - Store List search by "City" and "Zipcode" option added - [Documentation](https://docs.wclovers.com/store-list/)
+* Enhance - Products Custom Taxonomy add/access capability option added (WCFM Ultimate required)
+* Enhance - Edit order item wise cost and quantity edit option added (WCFM Ultimate required)
+* Enhance - Vendors capability check improved
+* Enhance - Vendor additional info edit "File/Image" type fields support added
+* Enhance - Store and Product location using map url improved to show exact location on Google map with marker
+* Enhance - Store setup responsive and RTL CSS improved
+* Tweak   - Map default pin icon changed
+* Fixed   - Variable product "Free Shipping" threshold calculation issue resolved
+* Fixed   - COD order store new order email trigger issue resolved
+* Fixed   - Product archive radius filter "no match" condition showing all stores on map issue resolved
+* Fixed   - Map default location and default zoom not working for all maps issue resolved
+* Fixed   - Store and product list map "auto_zoom" not working properly issue resolved
+* Fixed   - Store carousel shortcode "per_row" attribute not working issue resolved
+
+= 3.3.12 =
+*Updated - 08/05/2020
+
+* Fixed   - Plugin activation error issue resolved
+
+= 3.3.11 =
+*Updated - 08/05/2020
+
+* Enhance - WooCommerce 4.1 compatibility added
+* Enhance - Local Pickup shipping option vendor's address append with shipping label
+* Enhance - Delivery Time "Week Day Off" and "Daily basis time slots" compatibility added
+* Enhance - WooCommerce Bookings "Global Availability" vendor wise compatibility added (WCFM Ultimate required)
+* Enhance - Refund request popup item meta display option added
+* Enhance - If cart items shipping not required then "Delivery Location" auto-disable option added
+* Enhance - Google Map store location display "cluster" support added
+* Enhance - Checkout user location auto-detect option added
+* Enhance - Store List display improved
+* Tweak   - Admin mode commission setting "Commission on Tax" calculate on Admin's Fee, previously always calculate on vendor's earning 
+* Fixed   - Store list not showing when "sort by order" change issue resolved
+
+= 3.3.10 =
+*Updated - 30/04/2020
+
+* Feature - Delivery Time module compatibility added - [WCFM Delivery addon required](https://wclovers.com/product/woocommerce-frontend-manager-delivery/) - [Documentation](https://docs.wclovers.com/delivery-time/)
+* Enhance - Multivendor Checkout disable option added (WCFM Admin Setting -> Order Setting)
+* Fixed   - Distance rate shipping vendor setting "cost field" not visible issue resolved
+
+= 3.3.9 =
+*Updated - 26/04/2020
+
+* Feature - Distance rate shipping option added - [Documentation](https://docs.wclovers.com/store-shipping/#distance-rate-shipping)
+* Enhance - User location by map input under checkout option added
+* Fixed   - Yoast SEO vendor stores sitemap generation issue added
+* Fixed   - Without WCFM Membership addon Admin setting page load issue resolved
+
+= 3.3.8 =
+*Updated - 17/04/2020
+
+* Feature - YiTH Request a Quote Premium compatibility added (WCFM Ultimate Required)
+* Enhance - Shipping by Country and Shipping by Weight "Pickup from Store" option added
+* Enhance - Vendors are allowed to manage own Product reviews 
+* Enhance - Store reviews "star rating" visibility as per WooCommerce rating setting synced
+* Enhance - WooCommerce German Market product fields compatibility added
+* Enhance - Pending approval product "Reject with Reason" option added
+* Enhance - Store Policies removed Admin and Vendors new order e-mails
+
+= 3.3.7 =
+*Updated - 06/04/2020
+
+* Enhance - Store location setting "Open Street Map" pointer dragging support added
+* Enhance - Product object checking improved
+* Enhance - [wcfm_policy] - short code added, works for single product and vendor's store page
+* Enhance - Product page full "sold by" box link to store filter added - wcfmmp_is_allow_full_sold_by_linked
+* Enhance - Store list full "store card " link to store filter added - wcfmmp_is_allow_full_store_card_linked
+* Fixed   - Store setup page "wcfm_setting_options" JS parameter missing issue fixed
+* Fixed   - Group archive showing all vendors issue resolved
+
+= 3.3.6 =
+*Updated - 15/03/2020
+
+* Feature - Post Expirator compatibility added
+* Enhance - WooCommerce 4.0+ compatibility added
+* Enhance - WP 5.4+ compatibility added
+* Enhance - Admin order list "vendor/store filter" option added
+* Enhance - Withdrawal request auto-cancel on refund process
+* Enhance - Reverse Withdrawal auto-cancel and re-generate on refund process
+* Tweak   - Store page policy tab title display change to as per vendor's "Policy Tab Label" setting
+* Fixed   - Order item Tax refund issue resolved
+* Fixed   - Stripe Split pay direct charge full refund application not fully refunded issue resolved
+* Fixed   - Yoast SEO - Store page "Canonical URL" trailing slash missing issue resolved
+* Fixed   - Rank Math SEO - Store page "Meta Description" and "Canonical URL" not properly rendering issue resolved
+* Fixed   - Without policy content "Policies" heading visible under order details page issue resolved
+* Fixed   - Without customer support content heading visible under order details page issue resolved
+* Fixed   - Without "policy" and "customer support" content headings visible under store invoice issue resolved
+
+= 3.3.5 =
+*Updated - 09/03/2020
+
+* Fixed   - On install "wcfm_get_option" function not-defined error issue resolved
+
+= 3.3.4 =
+*Updated - 07/03/2020
+
+* Feature - PW WooCommerce Gift Cards compatibility added
+* Enhance - Store page url base WPML compatibility added
+* Enhance - FooEvent Check-in APP Rest API compatibility added
+* Enhance - Store category filter SEO improved
+* Enhance - Product list GEO location auto-filter compatibility added
+* Tweak   - SPMV "more offers" product list "out of stock" products exclude
+
+= 3.3.3 =
+*Updated - 18/02/2020
+
+* Feature - Store list "registration custom fileds" meta filter widget added
+* Enhance - Store Zone Shipping "No class cost" support added
+* Enhance - Inquiry and Support Tickets "My Account" view improved
+* Enhance - Firebase Chat conversation email format improved
+* Enhance - Bookable and Appointment products order commission invoice improved
+* Enhance - Store and product radius filter Firefox display improved 
+* Enhance - Store zone shipping locaton rule "postcode ranges" compatibility added 
+* Enhance - Store list full card linked option added - enable by pass TRUE to this filter "wcfmmp_is_allow_full_store_card_linked"  
+* Fixed   - Archived products breaking store page pagination issue resolved 
+
+= 3.3.2 =
+*Updated - 08/02/2020
+
+* Feature - Firebase chat - Offline Messages and Chat History view added (WCFM Ultimate required)
+* Feature - Order item quantity wise refund request option added
+* Feature - Order item tax refund request option added
+* Enhance - Customers are now allowed to place "Partial refund request"
+* Enhance - Vendors are now allowed access "Refund Requests" dashboard
+* Enhance - Reports data generation performence improved
+* Enhance - Vendor "Store Invoice" setting manage option added under Admin's vendor manage  
+* Enhance - "wcfm_store_info", "wcfm_chat_now" and "wcfm_follow" short codes will work for any vendor created post page
+* Dev     - Stripe "Express Connect API" support added, enbale by return TRUE to this filter - wcfm_is_allow_stripe_express_api
+* Dev     - Vendor's own product purchase commission disable option added, enable by return FALSE to this filter - wcfm_is_allow_vendor_own_product_commission
+* Fixed   - Firebase chat - Chat copy email not sending issue resolved
+* Fixed   - Vendor verification not opening issue resolved
+* Fixed   - Store list map not showing stores as per "search_category" issue resolved
+* Fixed   - Store widget throwing PHP undefined index issue resolved
+* Fixed   - OpenStreetMap load over HTTPS/SSL issue resolved
+* Fixed   - Report graph point showing long decimal numbers issue resolved
+* Fixed   - Multilingual site using WPML store list page map markers not loading issue resolved 
+
+= 3.3.1 =
+*Updated - 25/01/2020
+
+* Enhance - WooCommerce 3.9+ compatibility added
+* Enhance - Vendor orders liting page search by "Order ID" option added
+* Enhance - Whole order shippment tracking update option added under order details
+* Enhance - Product CSV Import as Admin "Store" column support added to import products for specific store/vendor
+* Enhance - Schedule order email "Store Invoice" generate and attach with mail support added
+* Enhance - Vendor coupon apply validation added
+* Enhance - Store reference added with vendor's order note
+* Enhance - WoodMart theme 360 degree image and variation image gallery compatibility added
+* Enhance - Advanced Product Size Charts for WooCommerce plugin compatibility added
+* Enhance - Germanized for WooCommerce 3.1+ compatibility added
+* Enhance - WooCommerce Bookings "Resources" delete and filter by store/vendor option added
+* Enhance - "Group Archive" page map support added
+* Dev     - Order item policies show by vendor filter "wcfm_is_allow_order_item_policies_by_vendor" added, return TRUE
+* Dev     - Order policies disable for emails filter "wcfm_is_allow_order_item_policies_by_vendor" added, return FALSE
+* Dev     - Order policies disable for invoice filter "wcfm_is_allow_policy_under_order_invoice" added, return FALSE
+* Fixed   - Store "Slider Banner" not loading issue resolved
+* Fixed   - Electro theme and Fancy Product Designer conflict issue resolved
+* Fixed   - Store "Default Banner" and "Default Logo" not loading issue resolved
+* Fixed   - Non-vendor products author reset to current user on update issue resolved
+* Fixed   - For only Admin product Stripe split pay gateway checkout processing issue resolved 
+
+= 3.3.0 =
+*Updated - 18/01/2020
+
+* Feature - License Manager for WooCommerce compatibility added (WCFM Ultimate required)
+* Feature - Payment gateway specific transacton charge/fee deduct from vendor commission option added (Setup from WCFM Admin Setting -> Payment Setting, vendor wise override possible from WCFM Vendor Manage -> Commission & Withdrawal)
+* Enhance - Vendor store weight based shipping "Free Shipping" threshold support added
+* Enhance - WooCommerce Quick View Pro compatibility added
+* Enhance - ELEX Role based Price compatibility added
+* Enhance - GEO my WP Leaflet map library support added
+* Enhance - WP Offload Media Pro compatibility added
+* Enhance - Dashboard logout url change to site's frontend url
+* Fixed   - GEO Location Map center setup setting not loading issue resolved
+* Fixed   - Store location setting Google map not loading issue resolved
+* Fixed   - Store badges hover not working after store list refresh issue resolved
+
+= 3.2.8 =
+*Updated - 11/01/2020
+
+* Feature - Open Street Map (Free map library) support added
+* Feature - Firebase Free Chat API support added - [Documentation](https://docs.wclovers.com/live-chat/)
+* Enhance - Vendor order item wise notification disable filter "wcfm_is_allow_itemize_notification" added, return "false" to disable
+* Enhance - Fancy Product Designer 4.2+ compatibility added
+* Enhance - WooCommerce Multilingual 4.7+ compatibility added
+* Enhance - Divi Theme builder support added
+* Enhance - Store address show capability setting check added for Map vendor card information
+* Enhance - On store page tab change page scroll to proper position support added 
+* Fixed   - Vendors not able to see wePOS products issue resolved
+
+= 3.2.7 =
+*Updated - 21/12/2019
+
+* Enhance - Netgsm SMS plugin support added for vendor registration OTP verification
+* Enhance - "Add to Store" products list restricted by capability wise allowed product types 
+* Enhance - Vendor can see other vendors' coupons under order details restriction added
+* Enhance - Vendor registration custom fields "multi-select" type field support added
+* Enhance - WPML sites membership using "WC Products" non-default langugage subscription thank you page redirect support added
+* Enhance - "wcfm_store_info" shortcode "store_badges" data support added
+* Enhance - WooCommerce Tiered Table Price Premium compatibility added
+* Enhance - SPMV more offers product list sorting option added
+* Tweak   - SPMV products showing lowest cost product at products archive pages, previously showing first created product
+* Tweak   - Vendor email notification send to "store email", previously send at "account email"
+* Tweak   - On Booking cancel "Admin Calcel Email" send to vednors, previously "Customer Cancel Email" send to vendors
+* Fixed   - Product "excerpt" and "description" fields custom validation not working issue resolved
+* Fixed   - Expired coupon visible on store page issue resolved
+* Fixed   - WooCommerce Sequential Order Numbers not visible every where issue resolved
+* Fixed   - WooCommerce Product Badges not reset issue resolved
+* Fixed   - Add announcement page showing "Invalid Topic" issue resolved
+* Fixed   - Product custom validation message visible shipment tracking update form issue resolved
+* Fixed   - Stripe gateway throwing "Invalid Source Object" issue resolved 
+* Fixed   - Store setup "Enhanced Select" field load issue resolved
+
+= 3.2.6 =
+*Updated - 21/11/2019
+
+* Enhance - WordPress 5.3 compatibility added
+* Enhance - WooCommerce 3.8 compatibility added
+* Enhance - WooCommerce Tiered Table Price plugin compatibility added
+* Enhance - WooCommerce Deposit remaining payment invoice generate compatibility added
+* Enhance - Order contains multiple vendors items edit by one vendor support added
+* Enhance - Vendor product import new category create and assign to products support added
+* Enhance - Store Hours timezone wise check added
+* Enhance - Store new order email product thumbnail display support added 
+* Enhance - Article/Post Yoast SEO meta support added 
+* Enhance - Product and Article All in One SEO meta title and description support added
+* Enhance - Product and Article Rank Math SEO focus keyword and meta description support added
+* Enhance - SPMV disable showing same products multiple items under widgets
+* Enhance - SPMV products quick edit view restricted to edit product title
+* Enhance - WPML translated products quick edit view restricted to edit meta information
+* Enhance - Store page breadcrumb WPML compatibilty added
+* Enhance - Store page address display linked with Google Map
+* Enhance - Product bulk delete option added
+* Enhance - Estimated shipping time display short code added - [wcfm_shipping_time]
+* Enhance - FooEvent PDF ticket download option added
+* Fixed   - FooEvent ticket barcode not rendering issue resolved
+* Fixed   - Free shipping condition display decimal format issue resolved
+* Fixed   - Admin's product count showing "0" issue resolved
+* Fixed   - Store list page order by rating exclude vendors without review issue resolved
+* Fixed   - On membership cancel archived/draft products able to re-publish issue resolved
+* Fixed   - Vendors able to import more than product limit capability issue resolved
+* Fixed   - Without product limit vendor able to import product issue resolved
+* Fixed   - Zone shipping cost unable to set rule issue resolved
+* Fixed   - Product "Off Line" bit reset issue resolved 
+* Fixed   - Auction product manager tab not visible properly issue resolved
+* Fixed   - Analytics view broken due to deleted products issue resolved
+* Fixed   - Notification sound file load issue resolved
+
+= 3.2.5 =
+*Updated - 22/10/2019
+
+* Enhance - Single product page product's location display option added
+* Enhance - Store Setup widget "Divi Theme" compatibility added 
+* Enhance - BuddyPress message sync "allowed email notification" setting check added
+* Enhance - Store list page RTL display improved
+* Enhance - Product list page GEO search RTL display improved
+* Enhance – Affiliate commission reset on order status change (cancel, failed, refunded etc ...) compatibility added
+* Enhance – Affiliate commission reset on order item refund compatibility added
+* Enhance – Affiliate commission reset on order item delete compatibility added
+* Enhance – Affiliate commission reset on order delete compatibility added
+* Fixed   - Refunded order "Admin Fee" display wrong amount under vendor's orders list issue resolved 
+* Fixed   - Vendor's order status change notification generate for only one order item issue resolved
+* Fixed   - Store Social "pinterest" link to "instagram" issue resolved
+
+= 3.2.4 =
+*Updated - 05/10/2019
+
+* Feature - [WCFM Marketplace integrate with Elementor](https://wordpress.org/plugins/wc-frontend-manager-elementor/) addon compatibility added
+
+= 3.2.3 =
+*Updated - 03/10/2019
+
+* Enhance - Vendor commission order support added for Manual Booking order
+* Enhance - Vendor commission order support added for Manual Appointment order
+* Enhance - Vendor commission order support added for Deposit remaining amount payment order
+* Enhance - Withdrawal, Withdrawal Request, Reverse Withdrawal screens "date range" filter added
+* Enhance - Product and Vendor Registration custom filed "HTML Block" field type support added
+* Enhance - GEO Radius search "Miles" unit support added
+* Enhance - Live Chatbox "Store Logo" set at chat popup
+* Tweak   - Store List "classic" theme style changed, old classic style can be used by "compact" theme
+* Fixed   - Store page "Category Filter" all store categories not visible issue resolved
+* Fixed   - Vendor's store shipping "Taxable" status "None" not working issue resolved 
+* Fixed   - Brazilian Checkout field conflict with Wirecard CPF field issue resolved 
+* Fixed   - Live Chatbox not closing issue resolved
 
 = 3.2.2 =
 *Updated - 22/09/2019
@@ -1123,16 +1481,21 @@ NONE.
 
 == Upgrade Notice ==
 
-= 3.2.2 =
-* Feature - Wirecard (Moip) payment gateway (customer & vendor split payment) added
-* Enhance - Commission applicable on Tax and Shipping custom condition "Fixed Commission" applied multiple times takedn care of  
-* Enhance - Subscription Renewal order "Admin Mode Commission" support added
-* Enhance - Vendor Shipping "Flat Rate" cost rule support added
-* Enhance - Store SEO WPML compatibility added
-* Enhance - Store page social - snapchat display option added
-* Enhance - "wp-admin" articles, coupons, orders, bookings, appointments, subscriptions listing "Store/Vendor" reference added
-* Enhance - Store list and products search by location map default position setting option added
-* Enhance - Hide "Become a Vendor" link from "My Account" page setting option added at WCFM Admin Setting -> Vendor Registration Tab
-* Enhance - "Sold by Label" applied for all dashboard modules "Vendor/Store" display
-* Enhance - WC Appointments "two way" Gcal sync compatibility added
-* Enhance - Analytics "Data Cleanup" option added
+= 3.4.4 =
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Enhance - Country Based Restrictions for WooCommerce compatibility added
+* Enhance - Vendor shipping setting "Shippling Class" WPML compatibility added
+* Enhance - Checkout user location field current location locate option added
+* Enhance - Product custom fields "Multi Select" field type support added
+* Fixed   - Store list category filter not working issue resolved
+* Fixed   - On Mobile store list map icons are not clickable issue resolved
+* Fixed   - Vendors pending withdrawal amount showing wrong data issue resolved
+* Fixed   - Vendors able to withdraw refunded order items issue resolved
+* Fixed   - Disable Multi vendor checkout condition conflict with Min/Max quantity condition issue resolved
+* Fixed   - "Filter Products by Store" widget not working for vendor users issue resolved
+* Fixed   - Vendor shipping zone setting "Back to zone list" on click setting panel broken issue resolved
+* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
+* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved
+* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
+* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
+* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved

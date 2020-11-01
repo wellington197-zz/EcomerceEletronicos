@@ -3,14 +3,16 @@ $booking_status = '';
 $booking_filter = '';	
 
 jQuery(document).ready(function($) {
-	
+		
 	$wcfm_bookings_table = $('#wcfm-bookings').DataTable( {
 		"processing": true,
 		"serverSide": true,
 		"pageLength": parseInt(dataTables_config.pageLength),
 		"bFilter"   : false,
+		"dom"       : 'Bfrtip',
 		"responsive": true,
 		"language"  : $.parseJSON(dataTables_language),
+		"buttons"   : $wcfm_datatable_button_args,
 		"columns"   : [
 										{ responsivePriority: 2 },
 										{ responsivePriority: 1 },

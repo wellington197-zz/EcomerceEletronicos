@@ -57,12 +57,69 @@ if( isset( $wcfm_membership_options['membership_reject_rules'] ) ) $membership_r
 $required_approval = isset( $membership_reject_rules['required_approval'] ) ? $membership_reject_rules['required_approval'] : 'no';
 $vendor_reject_rule = isset( $membership_reject_rules['vendor_reject_rule'] ) ? $membership_reject_rules['vendor_reject_rule'] : 'same';
 
+
+$global_free_thankyou_content = wcfm_get_option( 'wcfm_membership_free_thankyou_content', '' );
+if( !$global_free_thankyou_content ) {
+	$global_free_thankyou_content = "<strong>Welcome,</strong>
+														<br /><br />
+														You have successfully subscribed to our membership plan. 
+														<br /><br />
+														Your account already setup and ready to configure.
+														<br /><br />
+														Kindly follow the below the link to visit your dashboard.
+														<br /><br />
+														Thank You";
+}
+$free_thankyou_content = $global_free_thankyou_content;
+
+$global_subscription_thankyou_content = wcfm_get_option( 'wcfm_membership_subscription_thankyou_content', '' );
+if( !$global_subscription_thankyou_content ) {
+	$global_subscription_thankyou_content = "<strong>Welcome,</strong>
+																		<br /><br />
+																		You have successfully submitted your Vendor Account request. 
+																		<br /><br />
+																		Your Vendor application is still under review.
+																		<br /><br />
+																		You will receive details about our decision in your email very soon!
+																		<br /><br />
+																		Thank You";
+}
+$subscription_thankyou_content = $global_subscription_thankyou_content;
+
+$global_subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_subject', '[{site_name}] Successfully Subscribed' );
+$global_subscription_welcome_email_content = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_content', '' );
+if( !$global_subscription_welcome_email_content ) {
+	$global_subscription_welcome_email_content = "Dear {first_name},
+																<br /><br />
+																You have successfully registered as a vendor for <b>{site_name}</b>.
+																<br /><br />
+																Your account has been setup and it is ready to be configured.
+																<br /><br />
+																{plan_details}
+																<br /><br />
+																Kindly follow the link below to visit your dashboard and start selling.
+																<br /><br />
+																Dashboard: {dashboard_url} 
+																<br /><br />
+																Thank You";
+}
+$subscription_welcome_email_subject = $global_subscription_welcome_email_subject;
+$subscription_welcome_email_content = $global_subscription_welcome_email_content;
+
 $associated_group = '';
 
 if( isset( $wp->query_vars['wcfm-memberships-manage'] ) && !empty( $wp->query_vars['wcfm-memberships-manage'] ) ) {
 	$membership_post = get_post( $wp->query_vars['wcfm-memberships-manage'] );
+	
 	// Fetching Membership Data
 	if($membership_post && !empty($membership_post)) {
+		
+		if( $membership_post->post_type != 'wcfm_memberships' ) {
+			wcfm_restriction_message_show( "Invalid Membership" );
+			return;
+		}
+		
+		
 		$membership_id = $wp->query_vars['wcfm-memberships-manage'];
 		
 		$is_wcfm_membership_disable = get_post_meta( $membership_id, 'is_wcfm_membership_disable', true ) ? 'yes' : 'no';
@@ -113,6 +170,18 @@ if( isset( $wp->query_vars['wcfm-memberships-manage'] ) && !empty( $wp->query_va
 				
 			}
 		}
+		
+		$free_thankyou_content = wcfm_get_post_meta( $membership_id, 'free_thankyou_content', true );
+		if( !$free_thankyou_content ) $free_thankyou_content = $global_free_thankyou_content;
+		$subscription_thankyou_content = wcfm_get_post_meta( $membership_id, 'subscription_thankyou_content', true );
+		if( !$subscription_thankyou_content ) $subscription_thankyou_content = $global_subscription_thankyou_content;
+		$subscription_welcome_email_subject = wcfm_get_post_meta( $membership_id, 'subscription_welcome_email_subject', true );
+		if( !$subscription_welcome_email_subject ) $subscription_welcome_email_subject = $global_subscription_welcome_email_subject;
+		$subscription_welcome_email_content = wcfm_get_post_meta( $membership_id, 'subscription_welcome_email_content', true );
+		if( !$subscription_welcome_email_content ) $subscription_welcome_email_content = $global_subscription_welcome_email_content;
+	} else {
+		wcfm_restriction_message_show( "Invalid Membership" );
+		return;
 	}
 }
 
@@ -203,16 +272,24 @@ do_action( 'before_wcfm_memberships_manage' );
 			<div class="wcfm-container">
 				<div id="memberships_manage_general_expander" class="wcfm-content">
 						<?php
-							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'Membership_manager_fields_general', array(  
+							$membership_manager_fields_general = apply_filters( 'membership_manager_fields_general', array(  
 																																															"is_wcfm_membership_disable" => array('label' => __('Disable Membership', 'wc-multivendor-membership') , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title wcfm_ele', 'value' => 'yes', 'dfvalue' => $is_wcfm_membership_disable ),
 																																															"is_wcfm_membership_plan_disable" => array('label' => __('Hide from Plan Table', 'wc-multivendor-membership') , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title wcfm_ele', 'value' => 'yes', 'hints' => __( 'Set this ON to hide this mebership level from Membership plan table.', 'wc-multivendor-membership' ), 'dfvalue' => $is_wcfm_membership_plan_disable ),
 																																															'is_restricted' => array( 'label' => __( 'One Time Subscription', 'wc-multivendor-membership' ), 'name' => 'subscription[is_restricted]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $is_restricted, 'hints' => __( 'Enable this to restrict users from subscribe more than once to this plan.', 'wc-multivendor-membership' ) ),
 																																															"title" => array('label' => __('Name', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $title),
 																																															"subscribe_button_label" => array( 'label' => __( 'Subscribe Button Label', 'wc-multivendor-membership' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'custom_attributes' => array( 'required' => true ), 'value' => $subscribe_button_label ),
 																																															"excerpt" => array('label' => __('Description', 'wc-multivendor-membership') , 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $description),
-																																															"subscribe_button" => array('label' => __('Subscribe Button', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'attributes' => array( 'readonly' => true ), 'label_class' => 'wcfm_title', 'value' => '[wcfmvm_subscribe id="'.$membership_id.'"]', 'desc' => __( 'Add this short code anywhere to your site to show subscribe button for this membership plan. Default button label `Subscribe Now`, change using parameter `subscribe_now`. e.g. [wcfmvm_subscribe id="599" subscribe_now="Register Now"]', 'wc-multivendor-membership' ) ),
+																																															"subscribe_button" => array('label' => __('Subscribe Button Shortcode', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'attributes' => array( 'readonly' => true ), 'label_class' => 'wcfm_title', 'value' => '[wcfmvm_subscribe id="'.$membership_id.'"]', 'desc' => __( 'Add this short code anywhere to your site to show subscribe button for this membership plan. Default button label `Subscribe Now`, change using parameter `subscribe_now`. e.g. [wcfmvm_subscribe id="599" subscribe_now="Register Now"]', 'wc-multivendor-membership' ) ),
+																																															"subscribe_button_url" => array('label' => __('Subscribe Button URL', 'wc-multivendor-membership') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'attributes' => array( 'readonly' => true ), 'label_class' => 'wcfm_title', 'value' => add_query_arg( array( 'action' => 'wcfm_choose_membership', 'membership' => $membership_id, 'method' => 'by_url' ), WC()->ajax_url() ), 'desc' => __( 'You may use this URL to your custom subscription button or link.', 'wc-multivendor-membership' ) ),
 																																															"membership_id" => array('type' => 'hidden', 'value' => $membership_id)
-																																					) ) );
+																																					), $membership_id );
+							
+							if( !$membership_id ) {
+								unset( $membership_manager_fields_general['subscribe_button'] );
+								unset( $membership_manager_fields_general['subscribe_button_url'] );
+							}
+							 
+							$WCFM->wcfm_fields->wcfm_generate_form_field( $membership_manager_fields_general );
 						?>
 				</div>
 			</div>
@@ -233,10 +310,12 @@ do_action( 'before_wcfm_memberships_manage' );
 									foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
 										if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
 											$has_feature = true;
+											$feature_name = sanitize_title($membership_feature_list['feature']);
 											$feature_val = '';
-											if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+											if( !empty( $features ) && isset( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+											if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
 											$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'membership_manager_fields_features', array(  
-																																																			sanitize_title($membership_feature_list['feature']) => array( 'label' => $membership_feature_list['feature'], 'name' => 'features[' . $membership_feature_list['feature'] . ']', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $feature_val ),
+																																																			$feature_name => array( 'label' => $membership_feature_list['feature'], 'name' => 'features[' . $feature_name . ']', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $feature_val ),
 																																									) ) );
 										}
 									}
@@ -347,6 +426,55 @@ do_action( 'before_wcfm_memberships_manage' );
 																																				"vendor_reject_rule" => array( 'label' => __( 'If Application Rejected?', 'wc-multivendor-membership'), 'type' => 'select', 'options' => array( 'same' => __( 'Keep as normal user', 'wc-multivendor-membership') , 'delete' => __( 'Delete user from system', 'wc-multivendor-membership' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'hints' => __( 'This rule will be applicable if a vendor application reject by Admin.', 'wc-multivendor-membership' ), 'value' => $vendor_reject_rule ),
 																																				) ) );
 						?>
+					</div>
+				</div>
+				<div class="wcfm_clearfix"></div>
+				<!-- end collapsible -->
+				
+				<!-- collapsible -->
+				<div class="page_collapsible" id="membership_form_thankyou_head">
+					<label class="wcfmfa fa-thumbs-up"></label>
+					<?php _e('Thank You', 'wc-multivendor-membership'); ?><span></span>
+				</div>
+				<div class="wcfm-container">
+					<div id="membership_form_thankyou_expander" class="wcfm-content">
+					  <h2><?php _e('Thank You Page Content', 'wc-multivendor-membership'); ?></h2>
+					  <div class="wcfm_clearfix"></div>
+						<?php
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'membership_setting_thankyou_fields', array(  
+																																				'free_thankyou_content' => array( 'type' => 'wpeditor', 'class' => 'wcfm-text wcfm_ele wcfm_wpeditor', 'desc_class' => 'instructions', 'value' => $free_thankyou_content, 'desc' => __( 'Please don\'t include Dashboard URL, it will be automatically append with the content.', 'wc-multivendor-membership' ) ),
+																																				) ) );
+						?>
+						<div class="wcfm_clearfix"></div><br />
+						<h2><?php _e('On Approval Thank You Page Content', 'wc-multivendor-membership'); ?></h2>
+					  <div class="wcfm_clearfix"></div>
+						<?php
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'membership_setting_thankyou_approval_fields', array(  
+																																				'subscription_thankyou_content' => array( 'type' => 'wpeditor', 'class' => 'wcfm-text wcfm_ele wcfm_wpeditor', 'desc_class' => 'instructions', 'value' => $subscription_thankyou_content, 'desc' => __( 'This content will be visible when user will require Admin approval to become vendor.', 'wc-multivendor-membership' ) )
+																																				) ) );
+						?>
+						<div class="wcfm_clearfix"></div>
+					</div>
+				</div>
+				<div class="wcfm_clearfix"></div>
+				<!-- end collapsible -->
+				
+				<!-- collapsible -->
+				<div class="page_collapsible" id="membership_form_thankyou_head">
+					<label class="wcfmfa fa-envelope"></label>
+					<?php _e('Welcome Email', 'wc-multivendor-membership'); ?><span></span>
+				</div>
+				<div class="wcfm-container">
+					<div id="membership_form_thankyou_expander" class="wcfm-content">
+					  <h2><?php _e('Vendor Welcome Email', 'wc-multivendor-membership'); ?></h2>
+					  <div class="wcfm_clearfix"></div>
+						<?php
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'membership_setting_welcome_email_fields', array(  
+																																				'subscription_welcome_email_subject' => array( 'label' => __( 'Notification Subject', 'wc-multivendor-membership' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $subscription_welcome_email_subject ),
+																																				'subscription_welcome_email_content' => array( 'label' => __( 'Notification Content', 'wc-multivendor-membership' ), 'type' => 'wpeditor', 'class' => 'wcfm-text wcfm_ele wcfm_wpeditor', 'label_class' => 'wcfm_title wcfm_full_ele_title', 'value' => $subscription_welcome_email_content )
+																																				) ) );
+						?>
+						<div class="wcfm_clearfix"></div>
 					</div>
 				</div>
 				<div class="wcfm_clearfix"></div>

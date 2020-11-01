@@ -6,19 +6,6 @@ var mailchimp,
     mailchimp_submitted_email = false,
     mailchimpReady = function (a) { /in/.test(document.readyState) ? setTimeout("mailchimpReady(" + a + ")", 9) : a(); };
 
-function mailchimpPollQueue() {
-    try {
-        var queue = new XMLHttpRequest;
-        queue.open("GET", mailchimp_public_data.queue_url, true);
-        queue.setRequestHeader("Accept", "application/json");
-        queue.timeout = 4000; // Set timeout to 4 seconds (4000 milliseconds)
-        queue.ontimeout = function () { console.log('queue success'); };
-        queue.send();
-    } catch (a) {
-        console.log("mailchimp.init_queue.error", a)
-    }
-}
-
 function mailchimpGetCurrentUserByHash(a) {
     try {
         var b = mailchimp_public_data.ajax_url + "?action=mailchimp_get_user_by_hash&hash=" + a, c = new XMLHttpRequest;
@@ -46,7 +33,7 @@ function mailchimpHandleBillingEmail(selector) {
         var b = void 0 !== a ? a.value : "";
         if (!mailchimp_cart.valueEmail(b) || mailchimp_submitted_email === b) { return false; }
         mailchimp_cart.setEmail(b);
-        var c = mailchimp_public_data.ajax_url + "?action=mailchimp_set_user_by_email&email=" + b;
+        var c = mailchimp_public_data.ajax_url + "?action=mailchimp_set_user_by_email&email=" + b + "&mc_language=" + mailchimp_public_data.language;
         var d = new XMLHttpRequest;
         d.open("POST", c, !0);
         d.onload = function () {
@@ -213,9 +200,6 @@ mailchimpReady(function () {
             mailchimp_registration_email.onfocus = function () { mailchimpHandleBillingEmail('#reg_email'); }
         }
 
-        if (mailchimp_public_data.queue_should_fire) {
-            mailchimpPollQueue();
-        }
     } catch (e) {
         console.log('mailchimp ready error', e);
     }

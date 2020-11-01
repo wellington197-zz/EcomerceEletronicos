@@ -3,19 +3,11 @@
 /**
  * Inventory product tab template
  *
- * Used by edit-product.php template
+  * Override this template by copying it to yourtheme/dc-product-vendor/vendor-dashboard/product-manager/views/html-product-data-inventory.php
  *
- * This template can be overridden by copying it to yourtheme/dc-product-vendor/vendor-dashboard/product-manager/views/html-product-data-inventory.php.
- *
- * HOWEVER, on occasion WCMp will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
- *
- * @author 		WC Marketplace
- * @package 	WCMp/templates/vendor dashboard/product manager/views
- * @version     3.3.0
+ * @author  WC Marketplace
+ * @package     WCMp/Templates
+ * @version   3.3.0
  */
 defined( 'ABSPATH' ) || exit;
 ?>
@@ -87,7 +79,7 @@ defined( 'ABSPATH' ) || exit;
                                 <span class="img_tip" data-desc="<?php esc_html_e( 'When product stock reaches this amount you will be notified by email', 'woocommerce' ); ?>"></span>
                             </label>
                             <div class="col-md-6 col-sm-9">
-                                <input class="form-control" type="text" id="_low_stock_amount" name="_low_stock_amount" value="<?php echo $product_object->get_low_stock_amount( 'edit' ); ?>" placeholder="<?php echo get_option( 'woocommerce_notify_low_stock_amount' ); ?>" /> 
+                                <input class="form-control" type="text" id="_low_stock_amount" name="_low_stock_amount" value="<?php echo $product_object->get_low_stock_amount( 'edit' ); ?>" placeholder="<?php echo esc_attr(get_option( 'woocommerce_notify_low_stock_amount') ); ?>" /> 
                             </div>
                         </div>
                     </div>

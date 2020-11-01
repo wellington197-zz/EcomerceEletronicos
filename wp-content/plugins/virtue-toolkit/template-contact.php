@@ -39,7 +39,7 @@ global $post, $pinnacle;
 					} ?>
 					<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<?php echo esc_attr($gmap_api);?>"></script>
 					<script type="text/javascript">
-								jQuery(window).load(function() {
+								jQuery(window).on( 'load', function(){
 									jQuery('#map_address').gmap3({
 										map: {
 										    address:"<?php echo esc_js($address);?>",

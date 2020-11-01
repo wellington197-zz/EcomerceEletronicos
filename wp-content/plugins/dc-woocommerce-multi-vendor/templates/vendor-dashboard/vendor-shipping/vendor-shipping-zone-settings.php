@@ -42,7 +42,7 @@
 			<div class="form-group hide_if_zone_not_limited">
 			   	<label for="" class="control-label col-sm-3 col-md-3"><?php _e( 'Set your postcode', 'dc-woocommerce-multi-vendor' ); ?></label>
 			   	<div class="col-md-6 col-sm-9">
-			    	<input id="select_zone_postcodes" class="form-control" type="text" name="<?php echo 'wcmp_shipping_zone['. $zone_id .'][_select_zone_postcodes]'; ?>" value="<?php echo $postcodes; ?>" placholder="<?php _e( 'Postcodes need to be comma separated', 'dc-woocommerce-multi-vendor' ); ?>">
+			    	<input id="select_zone_postcodes" class="form-control" type="text" name="<?php echo 'wcmp_shipping_zone['. $zone_id .'][_select_zone_postcodes]'; ?>" value="<?php echo $postcodes; ?>" placeholder="<?php _e( 'Postcodes need to be comma separated', 'dc-woocommerce-multi-vendor' ); ?>">
 			   	</div>
 			</div>
 		<?php } ?>
@@ -99,8 +99,9 @@
 			<a href="javascript:void(0);" class="btn btn-default wcmp-zone-method-add-btn show-shipping-methods"><i class="fa fa-plus"></i><?php _e( 'Add Shipping Method', 'dc-woocommerce-multi-vendor' ) ?></a>
 		</div>
 		<?php 
-                    $WCMp->template->get_template( 'vendor-dashboard/vendor-shipping/vendor-edit-shipping-method.php' );
-                    $WCMp->template->get_template( 'vendor-dashboard/vendor-shipping/vendor-add-shipping-method.php' );
+
+		$WCMp->template->get_template( 'vendor-dashboard/vendor-shipping/vendor-edit-shipping-method.php' );
+		$WCMp->template->get_template( 'vendor-dashboard/vendor-shipping/vendor-add-shipping-method.php' );
 		?>
 	</div>
 </div>

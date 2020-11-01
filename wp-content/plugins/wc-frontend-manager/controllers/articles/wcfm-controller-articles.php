@@ -122,7 +122,7 @@ class WCFM_Articles_Controller {
 				
 				// Title
 				if( apply_filters( 'wcfm_is_allow_edit_articles', true ) ) {
-					$wcfm_articles_json_arr[$index][] =  '<a href="' . get_wcfm_articles_manage_url( $wcfm_articles_single->ID ) . '" class="wcfm_article_title wcfm_dashboard_item_title">' . $wcfm_articles_single->post_title . '</a>';
+					$wcfm_articles_json_arr[$index][] =  apply_filters( 'wcfm_article_title_dashboard', '<a href="' . get_wcfm_articles_manage_url( $wcfm_articles_single->ID ) . '" class="wcfm_article_title wcfm_dashboard_item_title">' . $wcfm_articles_single->post_title . '</a>', $wcfm_articles_single->ID );
 				} else {
 					if( $wcfm_articles_single->post_status == 'publish' ) {
 						$wcfm_articles_json_arr[$index][] =  apply_filters( 'wcfm_article_title_dashboard', $wcfm_articles_single->post_title, $wcfm_articles_single->ID );

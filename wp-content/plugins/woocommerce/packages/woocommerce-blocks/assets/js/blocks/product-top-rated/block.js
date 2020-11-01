@@ -4,16 +4,13 @@
 import { __ } from '@wordpress/i18n';
 import { Component, Fragment } from '@wordpress/element';
 import { Disabled, PanelBody } from '@wordpress/components';
-import { InspectorControls, ServerSideRender } from '@wordpress/editor';
-
+import { InspectorControls } from '@wordpress/block-editor';
+import { ServerSideRender } from '@wordpress/editor';
 import PropTypes from 'prop-types';
-
-/**
- * Internal dependencies
- */
-import GridContentControl from '../../components/grid-content-control';
-import GridLayoutControl from '../../components/grid-layout-control';
-import ProductCategoryControl from '../../components/product-category-control';
+import GridContentControl from '@woocommerce/editor-components/grid-content-control';
+import GridLayoutControl from '@woocommerce/editor-components/grid-layout-control';
+import ProductCategoryControl from '@woocommerce/editor-components/product-category-control';
+import { gridBlockPreview } from '@woocommerce/resource-previews';
 
 /**
  * Component to handle edit mode of "Top Rated Products".
@@ -33,7 +30,7 @@ class ProductTopRatedBlock extends Component {
 		return (
 			<InspectorControls key="inspector">
 				<PanelBody
-					title={ __( 'Layout', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Layout', 'woocommerce' ) }
 					initialOpen
 				>
 					<GridLayoutControl
@@ -44,18 +41,20 @@ class ProductTopRatedBlock extends Component {
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Content', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Content', 'woocommerce' ) }
 					initialOpen
 				>
 					<GridContentControl
 						settings={ contentVisibility }
-						onChange={ ( value ) => setAttributes( { contentVisibility: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { contentVisibility: value } )
+						}
 					/>
 				</PanelBody>
 				<PanelBody
 					title={ __(
 						'Filter by Product Category',
-						'woo-gutenberg-products-block'
+						'woocommerce'
 					) }
 					initialOpen={ false }
 				>
@@ -78,11 +77,18 @@ class ProductTopRatedBlock extends Component {
 	render() {
 		const { name, attributes } = this.props;
 
+		if ( attributes.isPreview ) {
+			return gridBlockPreview;
+		}
+
 		return (
 			<Fragment>
 				{ this.getInspectorControls() }
 				<Disabled>
-					<ServerSideRender block={ name } attributes={ attributes } />
+					<ServerSideRender
+						block={ name }
+						attributes={ attributes }
+					/>
 				</Disabled>
 			</Fragment>
 		);

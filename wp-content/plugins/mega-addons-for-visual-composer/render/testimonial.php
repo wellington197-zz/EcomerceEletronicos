@@ -44,12 +44,12 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 						<div class="tm-name">
 							<span style="font-size: <?php echo $namesize; ?>px; color: <?php echo $nameclr; ?>; font-weight: bold;"><?php echo $name; ?></span>,
 							<span><i><a href="<?php echo esc_url($link['url']); ?>" target="<?php echo $link['target']; ?>" title="<?php echo esc_html($link['title']); ?>" style="color: <?php echo $profclr; ?>; font-size: <?php echo $profsize; ?>px; font-style: italic; text-decoration: none;"><?php echo $prof; ?></a></i></span>
-							<p style="padding-top: 5px; display: <?php echo $rating; ?>">
+							<p style="padding-top: 5px; display: <?php echo $rating; ?>;">
 								<img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png">
 							</p>
 						</div>
 					</div>
-					<div class="clearfix"></div>
+					<div class="Clearfix"></div>
 				</div>
 			</div>			
 		<?php } ?>
@@ -66,10 +66,12 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 						</div>
 					</div>
 					<div class="tm-profile">
-						<img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png">
+						<?php if ($rating !== 'none') { ?>
+							<img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png">
+						<?php } ?>
 						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" style="width: <?php echo $width; ?>px; border-radius: <?php echo $radius; ?>%">
 					</div>
-					<div class="clearfix"></div>
+					<div class="Clearfix"></div>
 				</div>
 				<div class="tm-quotes2" style="background: <?php echo $bgclr; ?>;">
 					<?php echo $content; ?>
@@ -95,7 +97,9 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 						</a>
 					</p>
 				</div>
-				<img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png">
+				<?php if ($rating !== 'none') { ?>
+					<img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png">
+				<?php } ?>
 			</div>
 		<?php } ?>
 
@@ -110,13 +114,15 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 					</p><br>
 					<div class="tm-prof4">
 						<span style="font-size: <?php echo $namesize; ?>px; color: <?php echo $nameclr; ?>; font-weight: bold; text-align: center;"><?php echo $name; ?></span>
-						<span><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php if ($rating !== 'none') { ?>
+							<span><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php } ?>
 						<p><a href="<?php echo esc_url($link['url']); ?>" target="<?php echo $link['target']; ?>" title="<?php echo esc_html($link['title']); ?>" style="color: <?php echo $profclr; ?>; font-size: <?php echo $profsize; ?>px; font-style: italic; text-decoration: none; ">
 							<?php echo $prof; ?>
 						</a></p>
 					</div>
 				</div>
-				<div class="clearfix"></div>
+				<div class="Clearfix"></div>
 			</div>
 		<?php } ?>
 
@@ -133,10 +139,12 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 						<p><a href="<?php echo esc_url($link['url']); ?>" target="<?php echo $link['target']; ?>" title="<?php echo esc_html($link['title']); ?>" style="color: <?php echo $profclr; ?>; font-size: <?php echo $profsize; ?>px; font-style: italic; text-decoration: none; ">
 							<?php echo $prof; ?>
 						</a></p>
-						<span><img style="border-radius: 0px;" src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php if ($rating !== 'none') { ?>
+							<span><img style="border-radius: 0px;" src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php } ?>
 					</div>
 				</div>
-				<div class="clearfix"></div>
+				<div class="Clearfix"></div>
 			</div>
 		<?php } ?>
 
@@ -154,10 +162,12 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 								<?php echo $prof; ?>
 							</a>
 						</p>
-						<span><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php if ($rating !== 'none') { ?>
+							<span><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></span>
+						<?php } ?>
 					</div>
 				</div>
-				<div class="clearfix"></div>
+				<div class="Clearfix"></div>
 			</div>
 		<?php } ?>
 
@@ -173,9 +183,11 @@ class WPBakeryShortCode_vc_testimonial extends WPBakeryShortCode {
 							<?php echo $prof; ?>
 						</a>
 					</p>
-					<p style="padding-top: 5px;"><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></p>
+					<?php if ($rating !== 'none') { ?>
+						<p style="padding-top: 5px;"><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/<?php echo $rating; ?>.png"></p>
+					<?php } ?>
 				</div>
-				<div class="clearfix"></div>
+				<div class="Clearfix"></div>
 				<div class="tm-quotes-7" style="font-style: italic;">
 					<?php echo $content; ?>
 				</div>

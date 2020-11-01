@@ -66,6 +66,8 @@ jQuery(document).ready(function($) {
 	$('#wcfm_customer_submit_button').click(function(event) {
 	  event.preventDefault();
 	  
+	  $('.wcfm_submit_button').hide();
+	  
 	  // Validations
 	  $is_valid = wcfm_customers_manage_form_validate();
 	  if( $is_valid ) {
@@ -103,8 +105,11 @@ jQuery(document).ready(function($) {
 					if($response_json.id) $('#customer_id').val($response_json.id);
 					wcfmMessageHide();
 					$('#wcfm-content').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 	

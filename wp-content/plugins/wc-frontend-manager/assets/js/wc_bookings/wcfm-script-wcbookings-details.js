@@ -9,18 +9,24 @@ jQuery(document).ready(function($) {
 	// Booking Confirm
 	$('#wcfm_booking_confirmed_button').click(function(event) {
 		event.preventDefault();
-		$('#wcfm_booking_status').val('confirmed');
-		modifyWCFMBookingStatus();
-		$('.wcfm_booking_confirmed_cancel_wrapper').remove();
+		var rconfirm = confirm(wcfm_dashboard_messages.booking_mark_complete_confirm);
+		if( rconfirm ) {
+			$('#wcfm_booking_status').val('confirmed');
+			modifyWCFMBookingStatus();
+			$('.wcfm_booking_confirmed_cancel_wrapper').remove();
+		}
 		return false;
 	});
 	
 	// Booking Cancelled
 	$('#wcfm_booking_declined_button').click(function(event) {
 		event.preventDefault();
-		$('#wcfm_booking_status').val('cancelled');
-		modifyWCFMBookingStatus();
-		$('.wcfm_booking_confirmed_cancel_wrapper').remove();
+		var rconfirm = confirm(wcfm_dashboard_messages.booking_mark_decline_confirm);
+		if( rconfirm ) {
+			$('#wcfm_booking_status').val('cancelled');
+			modifyWCFMBookingStatus();
+			$('.wcfm_booking_confirmed_cancel_wrapper').remove();
+		}
 		return false;
 	});
 		

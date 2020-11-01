@@ -43,12 +43,14 @@ class WCFMvm_Frontend {
 		
 		// Membership Details in Profile 
 		if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_vendor_membership', true ) ) {
-			add_action( 'wcfm_dashboard_after_username', array( &$this, 'wcfmvm_vendor_dashboard_username' ), 12 );
-			//add_action( 'end_wcfm_vendor_settings', array( &$this, 'wcfmvm_vendor_membership_user_setting_block' ), 12 );
-			add_action( 'wcfm_vendor_setting_header_after', array( &$this, 'wcfmvm_vendor_membership_user_setting_header' ), 12 );
-			add_action( 'end_wcfm_user_profile', array( &$this, 'wcfmvm_vendor_membership_user_profile' ), 12 );
-			if( apply_filters( 'wcfm_is_allow_membership_manage_under_setting', false ) ) {
-				add_action( 'end_wcfm_vendor_settings', array( &$this, 'wcfmvm_vendor_membership_user_profile' ), 12 );
+			if( apply_filters( 'wcfm_is_pref_membership', true ) ) {
+				add_action( 'wcfm_dashboard_after_username', array( &$this, 'wcfmvm_vendor_dashboard_username' ), 12 );
+				//add_action( 'end_wcfm_vendor_settings', array( &$this, 'wcfmvm_vendor_membership_user_setting_block' ), 12 );
+				add_action( 'wcfm_vendor_setting_header_after', array( &$this, 'wcfmvm_vendor_membership_user_setting_header' ), 12 );
+				add_action( 'end_wcfm_user_profile', array( &$this, 'wcfmvm_vendor_membership_user_profile' ), 12 );
+				if( apply_filters( 'wcfm_is_allow_membership_manage_under_setting', false ) ) {
+					add_action( 'end_wcfm_vendor_settings', array( &$this, 'wcfmvm_vendor_membership_user_profile' ), 12 );
+				}
 			}
 		}
 		
@@ -86,6 +88,16 @@ class WCFMvm_Frontend {
 	function wcfm_membership_template( $page_template ) {
 		global $WCFM;
 		if ( wc_post_content_has_shortcode( 'wcfm_vendor_membership' ) && apply_filters( 'wcfm_is_allow_membership_empty_template', true )  ) {
+			if( function_exists( 'et_theme_builder_frontend_override_template' ) && apply_filters( 'wcfm_is_allow_divi_builder_template', true ) ) {
+				$layouts         = et_theme_builder_get_template_layouts();
+				$override_header = et_theme_builder_overrides_layout( ET_THEME_BUILDER_HEADER_LAYOUT_POST_TYPE );
+				$override_footer = et_theme_builder_overrides_layout( ET_THEME_BUILDER_FOOTER_LAYOUT_POST_TYPE );
+				if ( $override_header || $override_footer ) {
+					return $page_template;
+				}
+			}
+			
+			
 			$wcfm_options = get_option( 'wcfm_options', array() );
 			$is_dashboard_full_view_disabled = isset( $wcfm_options['dashboard_full_view_disabled'] ) ? $wcfm_options['dashboard_full_view_disabled'] : 'no';
 			$is_dashboard_theme_header_disabled = isset( $wcfm_options['dashboard_theme_header_disabled'] ) ? $wcfm_options['dashboard_theme_header_disabled'] : 'no';
@@ -189,13 +201,15 @@ class WCFMvm_Frontend {
   	
 		if( !apply_filters( 'wcfm_is_allow_membership', true ) ) return $menus;
 		
-		$menus = array_slice($menus, 0, 3, true) +
-										array( 'wcfm-memberships' => array(   'label'     => __( 'Memberships', 'wc-multivendor-membership'),
-																												 'url'        => get_wcfm_memberships_url( ),
-																												 'icon'       => 'user-plus',
-																												 'priority'   => 62
-																												) )	 +
-													array_slice($menus, 3, count($menus) - 3, true) ;
+		if( apply_filters( 'wcfm_is_pref_membership', true ) ) {
+			$menus = array_slice($menus, 0, 3, true) +
+											array( 'wcfm-memberships' => array(   'label'     => __( 'Memberships', 'wc-multivendor-membership'),
+																													 'url'        => get_wcfm_memberships_url( ),
+																													 'icon'       => 'user-plus',
+																													 'priority'   => 62
+																													) )	 +
+														array_slice($menus, 3, count($menus) - 3, true) ;
+		}
 		
   	return $menus;
   }
@@ -259,8 +273,10 @@ class WCFMvm_Frontend {
 						if( !empty( $membership_feature_lists ) ) {
 							foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
 								if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
-									$feature_val = 'x';
-									if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+									$feature_val = '';
+									$feature_name = sanitize_title($membership_feature_list['feature']);
+									if( !empty( $features ) && isset( $features[$feature_name] ) && !empty( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+									if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
 									if( !$feature_val ) $feature_val = 'x';
 									?>
 									<div class="wcfm_review_plan_feature"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'wc-multivendor-membership' ) ); ?></div>
@@ -443,14 +459,15 @@ class WCFMvm_Frontend {
 					}
 				}
 				?>
-				<p class="store_name wcfm_ele wcfm_title"><strong><?php _e( $wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership'); ?></strong></p>
+				<p class="store_name wcfm_ele wcfm_title"><strong><?php _e( $wcfmvm_registration_custom_field['label'], 'WCfM'); ?></strong></p>
 				<span class="wcfm_vendor_store_info">
 				  <?php 
 				  if( $field_value && $wcfmvm_registration_custom_field['type'] == 'upload' ) {
-				    echo '<a class="wcfm-wp-fields-uploader wcfm_linked_images" target="_blank" style="width: 32px; height: 32px;" href="' . $field_value . '"><span style="width: 32px; height: 32px; display: inline-block;" class="placeHolderDocs"></span></a>';
+				    echo '<a class="wcfm-wp-fields-uploader wcfm_linked_images" target="_blank" style="width: 32px; height: 32px;" href="' . wcfm_get_attachment_url( $field_value ) . '"><span style="width: 32px; height: 32px; display: inline-block;" class="placeHolderDocs"></span></a>';
 				  } else {
 				  	if( !$field_value ) $field_value = '&ndash;';
-				  	echo $field_value;
+				  	if( is_array( $field_value ) ) echo implode( ', ', $field_value ); 
+				  	else echo $field_value;
 				  }
 				  ?>
 				</span>
@@ -565,8 +582,10 @@ class WCFMvm_Frontend {
 							  if( !empty( $membership_feature_lists ) ) {
 									foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
 										if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
-											$feature_val = 'x';
-											if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+											$feature_val = '';
+											$feature_name = sanitize_title($membership_feature_list['feature']);
+											if( !empty( $features ) && isset( $features[$feature_name] ) && !empty( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+											if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
 											if( !$feature_val ) $feature_val = 'x';
 											?>
 											<div class="wcfm_review_plan_feature"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'wc-multivendor-membership' ) ); ?></div>
@@ -687,7 +706,7 @@ class WCFMvm_Frontend {
 				$wcfmvm_custom_infos = (array) get_user_meta( $vendor_id, 'wcfmvm_custom_infos', true );
 				
 				if( !empty( $wcfmvm_registration_custom_fields ) ) {
-					echo "<div style=\"margin-top: 30px;\"><h2>" . __( 'Additional Info', 'wc-multivendor-membership' ) . "</h2><div class=\"wcfm_clearfix\"></div>";
+					echo "<div class='wcfm_profile_membership_additional_info_label' style=\"margin-top: 30px;\"><h2>" . __( 'Additional Info', 'wc-multivendor-membership' ) . "</h2><div class=\"wcfm_clearfix\"></div>";
 					foreach( $wcfmvm_registration_custom_fields as $wcfmvm_registration_custom_field ) {
 						if( !isset( $wcfmvm_registration_custom_field['enable'] ) ) continue;
 						if( !$wcfmvm_registration_custom_field['label'] ) continue;
@@ -706,14 +725,15 @@ class WCFMvm_Frontend {
 							}
 						}
 						?>
-						<p class="store_name wcfm_ele wcfm_title"><strong><?php _e( $wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership'); ?></strong></p>
+						<p class="store_name wcfm_ele wcfm_title"><strong><?php _e( $wcfmvm_registration_custom_field['label'], 'WCfM'); ?></strong></p>
 						<span class="wcfm_vendor_store_info">
 						  <?php 
 							if( $field_value && $wcfmvm_registration_custom_field['type'] == 'upload' ) {
 								echo '<a class="wcfm-wp-fields-uploader wcfm_linked_images" target="_blank" style="width: 32px; height: 32px;" href="' . $field_value . '"><span style="width: 32px; height: 32px; display: inline-block;" class="placeHolderDocs"></span></a>';
 							} else {
 								if( !$field_value ) $field_value = '&ndash;';
-								echo $field_value;
+								if( is_array( $field_value ) ) echo implode( ', ', $field_value ); 
+								else echo $field_value;
 							}
 							?>
 						</span>
@@ -726,11 +746,11 @@ class WCFMvm_Frontend {
 				if( apply_filters( 'wcfm_is_allow_change_membership', true, $vendor_id ) ) {
 					if( count( $wcfm_memberships_list ) > 1 ) {
 						do_action( 'wcfm_before_change_membership_link', $vendor_id );
-						//if( !$is_recurring ) {
+						if( !$is_recurring ) {
 							printf( __( '%sChange or Upgrade your current membership plan >>%s', 'wc-multivendor-membership' ), '<a style="text-decoration: underline; margin-left: 10px; color: #00897b;" target="_blank" href="' . apply_filters( 'wcfm_change_membership_url', get_wcfm_membership_url() ) . '">', '</a>' );
-						//} else {
-						//	printf( __( '%sChange or Upgrade: First cancel your current subscription.%s', 'wc-multivendor-membership' ), '<span style="text-decoration: underline; margin-left: 10px;">', '</span>' );
-						//}
+						} else {
+							printf( __( '%sChange or Upgrade: First cancel your current subscription.%s', 'wc-multivendor-membership' ), '<span style="text-decoration: underline; margin-left: 10px;">', '</span>' );
+						}
 						do_action( 'wcfm_after_change_membership_link', $vendor_id );
 					}
 				}
@@ -777,7 +797,16 @@ class WCFMvm_Frontend {
 			$order         = new WC_Order( $order_id );
 			$line_items    = $order->get_items( apply_filters( 'woocommerce_admin_order_item_types', 'line_item' ) );
 			foreach ( $line_items as $item_id => $item ) {
-				if( in_array( $item->get_product_id(), $wcfm_subcription_products ) ) {
+				$product_id = $item->get_product_id();
+				
+				// WPML Support
+				if ( $product_id && defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+					global $sitepress;
+					$default_language = $sitepress->get_default_language();
+					$product_id = icl_object_id( $product_id, 'product', false, $default_language );
+				}
+				
+				if( in_array( $product_id, $wcfm_subcription_products ) ) {
 					// Reset Membership Session
 					if( WC()->session && WC()->session->get( 'wcfm_membership' ) ) {
 						WC()->session->__unset( 'wcfm_membership' );
@@ -833,7 +862,9 @@ class WCFMvm_Frontend {
  		if( isset( $_REQUEST['fl_builder'] ) ) return;
  		
  		// Memmebrship Subscribe Button
- 		wp_enqueue_script( 'wcfm_membership_subscribe_js', $WCFMvm->library->js_lib_url_min . 'wcfmvm-script-membership-subscribe.js', array('jquery' ), $WCFMvm->version, true );
+ 		if( apply_filters( 'wcfm_is_pref_membership', true ) ) {
+ 			//wp_enqueue_script( 'wcfm_membership_subscribe_js', $WCFMvm->library->js_lib_url_min . 'wcfmvm-script-membership-subscribe.js', array('jquery' ), $WCFMvm->version, true );
+ 		}
  		
  		// Load End Point Scripts
 	  if( is_wcfm_membership_page() ) {
@@ -846,7 +877,7 @@ class WCFMvm_Frontend {
 					wp_enqueue_script( 'wc-country-select' );
 					wp_enqueue_script( 'wcfm_membership_registration_js', $WCFMvm->library->js_lib_url_min . 'wcfmvm-script-membership-registration.js', array('jquery' ), $WCFMvm->version, true );
 					
-					$wcfm_registration_params = array( 'is_strength_check' => apply_filters( 'wcfm_is_allow_passowrd_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'passowrd_failed' => __( 'Passowrd strength should be atleast "Good".', 'wc-frontend-manager' ) );
+					$wcfm_registration_params = array( 'your_store' => __( 'your_store', 'wc-multivendor-membership' ), 'is_strength_check' => apply_filters( 'wcfm_is_allow_password_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'password_failed' => __( 'Password strength should be atleast "Good".', 'wc-frontend-manager' ), "choose_select2" => __( "Choose ", "wc-frontend-manager" ) );
 					wp_localize_script( 'wcfm_membership_registration_js', 'wcfm_registration_params', $wcfm_registration_params );
 					
 					if( apply_filters( 'wcfm_is_allow_registration_recaptcha', true ) ) {
@@ -879,7 +910,7 @@ class WCFMvm_Frontend {
 			wp_enqueue_script( 'wc-country-select' );
 			wp_enqueue_script( 'wcfm_membership_registration_js', $WCFMvm->library->js_lib_url_min . 'wcfmvm-script-membership-registration.js', array('jquery' ), $WCFMvm->version, true );
 			
-			$wcfm_registration_params = array( 'is_strength_check' => apply_filters( 'wcfm_is_allow_passowrd_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'passowrd_failed' => __( 'Passowrd strength should be atleast "Good".', 'wc-frontend-manager' ) );
+			$wcfm_registration_params = array( 'is_strength_check' => apply_filters( 'wcfm_is_allow_password_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'password_failed' => __( 'Password strength should be atleast "Good".', 'wc-frontend-manager' ), "choose_select2" => __( "Choose ", "wc-frontend-manager" ) );
 			wp_localize_script( 'wcfm_membership_registration_js', 'wcfm_registration_params', $wcfm_registration_params );
 			
 			if( apply_filters( 'wcfm_is_allow_registration_recaptcha', true ) ) {
@@ -907,17 +938,21 @@ class WCFMvm_Frontend {
  		
  		$wcfm_options = $WCFM->wcfm_options;
  		
- 		wp_enqueue_style( 'wcfm_subscribe_button_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-subscribe-button.css', array(), $WCFMvm->version );
- 		
  		$upload_dir      = wp_upload_dir();
-		$wcfmvm_style_custom_subscribe_button = get_option( 'wcfmvm_style_custom_subscribe_button' );
-		if( $wcfmvm_style_custom_subscribe_button && file_exists( trailingslashit( $upload_dir['basedir'] ) . 'wcfm/' . $wcfmvm_style_custom_subscribe_button ) ) {
-			wp_enqueue_style( 'wcfmvm_custom_subscribe_button_css',  trailingslashit( $upload_dir['baseurl'] ) . 'wcfm/' . $wcfmvm_style_custom_subscribe_button, array( 'wcfm_subscribe_button_css' ), $WCFMvm->version );
+ 		
+ 		if( apply_filters( 'wcfm_is_pref_membership', true ) ) {
+			//wp_enqueue_style( 'wcfm_subscribe_button_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-subscribe-button.css', array(), $WCFMvm->version );
+			
+			$wcfmvm_style_custom_subscribe_button = get_option( 'wcfmvm_style_custom_subscribe_button' );
+			if( $wcfmvm_style_custom_subscribe_button && file_exists( trailingslashit( $upload_dir['basedir'] ) . 'wcfm/' . $wcfmvm_style_custom_subscribe_button ) ) {
+				wp_enqueue_style( 'wcfmvm_custom_subscribe_button_css',  trailingslashit( $upload_dir['baseurl'] ) . 'wcfm/' . $wcfmvm_style_custom_subscribe_button, array( 'wcfm_core_css' ), $WCFMvm->version );
+			}
 		}
+		
+		$current_step = wcfm_membership_registration_current_step();
  		
  		// Load End Point Scripts
 	  if( is_wcfm_membership_page() ) {
-	  	$current_step = wcfm_membership_registration_current_step();
 			
 			wp_enqueue_style( 'wcfm_membership_steps_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-steps.css', array(), $WCFMvm->version );
 			
@@ -936,6 +971,10 @@ class WCFMvm_Frontend {
 				
 				case 'thankyou':
 					wp_enqueue_style( 'wcfm_membership_thankyou_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-thankyou.css', array(), $WCFMvm->version );
+					
+					if( is_rtl() ) {
+						wp_enqueue_style( 'wcfm_membership_thankyou_rtl_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-thankyou-rtl.css', array('wcfm_membership_thankyou_css'), $WCFMvm->version );
+					}
 				break;
 				
 				default:
@@ -955,10 +994,18 @@ class WCFMvm_Frontend {
 		}
 		
 		if( is_wcfm_registration_page() ) {
-			wp_enqueue_style( 'wcfm_membership_registration_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-registration.css', array(), $WCFMvm->version );
-			
-			if( is_rtl() ) {
-				wp_enqueue_style( 'wcfm_membership_registration_rtl_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-registration-rtl.css', array( 'wcfm_membership_registration_css' ), $WCFMvm->version );
+			if( isset( $_REQUEST['vmstep'] ) && $current_step && ( $current_step == 'thankyou' ) ) {
+				wp_enqueue_style( 'wcfm_membership_thankyou_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-thankyou.css', array(), $WCFMvm->version );
+				
+				if( is_rtl() ) {
+					wp_enqueue_style( 'wcfm_membership_thankyou_rtl_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-thankyou-rtl.css', array('wcfm_membership_thankyou_css'), $WCFMvm->version );
+				}
+			} else {
+				wp_enqueue_style( 'wcfm_membership_registration_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-registration.css', array(), $WCFMvm->version );
+				
+				if( is_rtl() ) {
+					wp_enqueue_style( 'wcfm_membership_registration_rtl_css',  $WCFMvm->library->css_lib_url_min . 'wcfmvm-style-membership-registration-rtl.css', array( 'wcfm_membership_registration_css' ), $WCFMvm->version );
+				}
 			}
 		}
 			
@@ -1162,6 +1209,11 @@ class WCFMvm_Frontend {
 		 // home_url() . '/?swpm_process_stripe_sca_subscription=1&ref_id=' . $ref_id; //We are going to use it to do post payment processing.
 	
 		$current_url = ( isset( $_SERVER['HTTPS'] ) ? 'https' : 'http' ) . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+		
+		//Include the Stripe library.
+		if( !class_exists( 'Stripe\Stripe' ) ) {
+			include( $WCFMvm->plugin_path . 'includes/libs/stripe-gateway/init.php');
+		}
 		
 		try {
 			\Stripe\Stripe::setApiKey( $secret_key );

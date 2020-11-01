@@ -35,8 +35,12 @@ class WCFMmp_Store_Product_Search extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
-		$wcfm_store_url    = get_option( 'wcfm_store_url', 'store' );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
+		
+		$wcfm_store_url    = wcfm_get_option( 'wcfm_store_url', 'store' );
 		$wcfm_store_name   = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 		if ( empty( $wcfm_store_name ) ) return;
 		$seller_info       = get_user_by( 'slug', $wcfm_store_name );

@@ -23,6 +23,17 @@ class WCFM_Withdrawal_Requests_Controller {
 		$length = wc_clean($_POST['length']);
 		$offset = wc_clean($_POST['start']);
 		
+		$start_date = '';
+    $end_date = '';
+    
+    if( isset($_POST['start_date']) && !empty($_POST['start_date']) ) {
+    	$start_date = date('Y-m-d', strtotime(wc_clean($_POST['start_date'])) );
+    }
+    
+    if( isset($_POST['end_date']) && !empty($_POST['end_date']) ) {
+    	$end_date = date('Y-m-d', strtotime(wc_clean($_POST['end_date'])) );
+    }
+		
 		$the_orderby = ! empty( $_POST['orderby'] ) ? sanitize_text_field( $_POST['orderby'] ) : 'ID';
 		$the_order   = ( ! empty( $_POST['order'] ) && 'asc' === $_POST['order'] ) ? 'ASC' : 'DESC';
 		
@@ -51,6 +62,9 @@ class WCFM_Withdrawal_Requests_Controller {
 		} else {
 			$sql .= " AND commission.vendor_id != 0";
 		}
+		if( $start_date && $end_date ) {
+			$sql .= " AND DATE( commission.created ) BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+		}
 		
 		$filtered_withdrawal_requests_count = $wpdb->get_var( $sql );
 		if( !$filtered_withdrawal_requests_count ) $filtered_withdrawal_requests_count = 0;
@@ -63,6 +77,9 @@ class WCFM_Withdrawal_Requests_Controller {
 			$sql .= $withdrawal_vendor_filter;
 		} else {
 			$sql .= " AND commission.vendor_id != 0";
+		}
+		if( $start_date && $end_date ) {
+			$sql .= " AND DATE( commission.created ) BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
 		}
 		$sql .= " ORDER BY `{$the_orderby}` {$the_order}";
 		$sql .= " LIMIT {$length}";
@@ -101,7 +118,7 @@ class WCFM_Withdrawal_Requests_Controller {
 				
 				// Transc.ID
 				$transaction_label = apply_filters( 'wcfm_withdrawal_requests_label', '<a href="' . wcfm_transaction_details_url( $wcfm_withdrawal_request_single->ID ) . '" class="wcfm_dashboard_item_title">#' . sprintf( '%06u', $wcfm_withdrawal_request_single->ID ) . '</a>', $wcfm_withdrawal_request_single->ID, $wcfm_withdrawal_request_single->order_ids, $wcfm_withdrawal_request_single->commission_ids );
-				if( apply_filters( 'wcfm_is_pref_vendor_invoice', true ) && ( $wcfm_withdrawal_request_single->withdraw_status != 'cancelled' ) && WCFM_Dependencies::wcfmu_plugin_active_check() && WCFM_Dependencies::wcfm_wc_pdf_invoices_packing_slips_plugin_active_check() ) {
+				if( apply_filters( 'wcfm_is_pref_vendor_invoice', true ) && apply_filters( 'wcfm_is_allow_withdrawal_invoice', true ) && ( $wcfm_withdrawal_request_single->withdraw_status != 'cancelled' ) && WCFM_Dependencies::wcfmu_plugin_active_check() && WCFM_Dependencies::wcfm_wc_pdf_invoices_packing_slips_plugin_active_check() ) {
 					$invoice_url = add_query_arg( array( 'withdraw_id' => $wcfm_withdrawal_request_single->ID, 'action' => 'store_payment_invoice' ), WC()->ajax_url() );
 					$transaction_label .= '<br /><a class="wcfm_withdrawal_invoice wcfm-action-icon withdrawal_quick_action wcfmfa fa-file-pdf text_tip" href="'.$invoice_url.'" data-withdrawalid="' . $wcfm_withdrawal_request_single->ID . '" data-tip="' . esc_attr__( 'Invoice', 'wc-frontend-manager' ) . '"></a>';
 				}
@@ -114,7 +131,7 @@ class WCFM_Withdrawal_Requests_Controller {
 					foreach( $withdrawal_order_ids as $withdrawal_order_id ) {
 						if( $withdrawal_order_id ) {
 							if( $withdrawal_orders ) $withdrawal_orders .= ', ';
-							$withdrawal_orders .= '<a class="wcfm_dashboard_item_title transaction_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $withdrawal_order_id ) .'">#'.  $withdrawal_order_id . '</a>';;
+							$withdrawal_orders .= '<a class="wcfm_dashboard_item_title transaction_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $withdrawal_order_id ) .'">#'.  wcfm_get_order_number( $withdrawal_order_id ) . '</a>';;
 						}
 					}
 				}
@@ -147,6 +164,9 @@ class WCFM_Withdrawal_Requests_Controller {
 				
 				// Commission IDs
 				$wcfm_withdrawal_requests_json_arr[$index][] =  '<span class="wcfm_dashboard_item_title transaction_commission_ids">#'.  $wcfm_withdrawal_request_single->commission_ids . '</span>';
+				
+				// Additional Info
+				$wcfm_withdrawal_requests_json_arr[$index][] = apply_filters( 'wcfm_withdrawal_request_additonal_data', '&ndash;', $wcfm_withdrawal_request_single->ID, $wcfm_withdrawal_request_single->order_ids, $wcfm_withdrawal_request_single->commission_ids, $wcfm_withdrawal_request_single->vendor_id );
 				
 				// Note
 				if( $wcfm_withdrawal_request_single->withdraw_note ) {

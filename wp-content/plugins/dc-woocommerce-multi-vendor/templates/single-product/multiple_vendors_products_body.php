@@ -18,12 +18,11 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
-global $WCMp;
+global $WCMp, $product;
+$single_pro = $product;
 if(isset($more_product_array) && is_array($more_product_array) && count($more_product_array) > 0) {
 	if(isset($sorting) && !empty($sorting)) {	
-		/*function wcmp_sort_by_price($a, $b) {
-			return $a['price_val'] - $b['price_val'];
-		}*/		
+	
 		if($sorting == 'price') {		
 			usort($more_product_array, function($a, $b){return $a['price_val'] - $b['price_val'];});
 		}
@@ -45,25 +44,30 @@ if(isset($more_product_array) && is_array($more_product_array) && count($more_pr
 		<div class="row rowbody">						
 			<div class="rowsub ">
 				<div class="vendor_name">
-					<a href="<?php echo $more_product['shop_link']; ?>" class="wcmp_seller_name"><?php echo $more_product['seller_name']; ?></a>
+					<a href="<?php echo esc_url($more_product['shop_link']); ?>" class="wcmp_seller_name"><?php echo esc_html($more_product['seller_name']); ?></a>
 					<?php do_action('after_wcmp_singleproductmultivendor_vendor_name', $more_product['product_id'], $more_product);?>
 				</div>
 				<?php 
 				if(isset($more_product['rating_data']) && is_array($more_product['rating_data']) && isset($more_product['rating_data']['avg_rating']) && $more_product['rating_data']['avg_rating']!=0 && $more_product['rating_data']['avg_rating']!=''){ 
-					echo wc_get_rating_html( $more_product['rating_data']['avg_rating'] );	
+					echo esc_html(wc_get_rating_html( $more_product['rating_data']['avg_rating'] ));	
 				}else {
 					echo "<div class='star-rating'></div>";
 				}
 				?>
 			</div>
 			<div class="rowsub">
-                <?php echo $_product->get_price_html(); ?>
+                <?php echo esc_html($_product->get_price_html()); ?>
 			</div>
 			<div class="rowsub">
-				<?php if($more_product['product_type'] == 'simple') {?>
-					<a href="<?php echo '?add-to-cart='.$more_product['product_id']; ?>" class="buttongap button" ><?php echo apply_filters('add_to_cart_text', __('Add to Cart','dc-woocommerce-multi-vendor')); ?></a>
-				<?php } ?>
-				<a href="<?php echo get_permalink($more_product['product_id']); ?>" class="buttongap button" ><?php echo __('Details','dc-woocommerce-multi-vendor'); ?></a>
+				<?php 
+                                // reset global $product variable
+                                global $product;
+                                $product = $_product;
+                                woocommerce_template_loop_add_to_cart( array(
+                                    'quantity' => 1,
+                                ) );
+                                ?>
+				<a href="<?php echo esc_url(get_permalink($more_product['product_id'])); ?>" class="buttongap button" ><?php echo esc_html_e('Details','dc-woocommerce-multi-vendor'); ?></a>
 			</div>
 			<div style="clear:both;"></div>							
 		</div>
@@ -71,5 +75,8 @@ if(isset($more_product_array) && is_array($more_product_array) && count($more_pr
 		
 	<?php
 	}
+        // reset again with global product
+        global $product;
+        $product = $single_pro;
 }
 ?>

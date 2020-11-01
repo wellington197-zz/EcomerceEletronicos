@@ -21,6 +21,7 @@ class WCFMmp_Shipping_Gateway {
     $this->load_gateway('shipping-by-country');
     $this->load_gateway('shipping-by-zone');
     $this->load_gateway('shipping-by-weight');
+    $this->load_gateway('shipping-by-distance');
   }
   
   /**
@@ -35,6 +36,7 @@ class WCFMmp_Shipping_Gateway {
     $methods['wcfmmp_product_shipping_by_country'] = 'WCFMmp_Shipping_By_Country';
     $methods['wcfmmp_product_shipping_by_zone'] = 'WCFMmp_Shipping_By_Zone';
     $methods['wcfmmp_product_shipping_by_weight'] = 'WCFMmp_Shipping_By_Weight';
+    $methods['wcfmmp_product_shipping_by_distance'] = 'WCFMmp_Shipping_By_Distance';
     return $methods;
   }
   

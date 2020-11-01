@@ -38,9 +38,9 @@ class WCFM_Follow_Shortcode {
 		if( !$vendor_id && ( function_exists( 'wcfmmp_is_store_page' ) && wcfmmp_is_store_page() ) ) {
 			$vendor_id = get_query_var( 'author' );
 		}
-		if( !$vendor_id && is_product() && $post && is_object( $post ) ) {
+		if( !$vendor_id && is_single() && $post && is_object( $post ) && wcfm_is_vendor( $post->post_author ) ) {
 			$product_id = $post->ID;
-			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+			$vendor_id = $post->post_author;
 		}
 		
 		if( !$vendor_id ) return;

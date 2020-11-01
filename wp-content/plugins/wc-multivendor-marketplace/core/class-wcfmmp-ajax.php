@@ -67,7 +67,8 @@ class WCFMmp_Ajax {
 			die;
 		}
 		
-		$order_sync  = isset( $WCFMmp->wcfmmp_marketplace_options['order_sync'] ) ? $WCFMmp->wcfmmp_marketplace_options['order_sync'] : 'no';
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$order_sync  = isset( $wcfmmp_marketplace_options['order_sync'] ) ? $wcfmmp_marketplace_options['order_sync'] : 'no';
 		if( $order_sync == 'yes' ) return;
 		
 		$vendor_id = $WCFMmp->vendor_id;
@@ -85,40 +86,57 @@ class WCFMmp_Ajax {
 			
 			do_action( 'wcfmmp_vendor_order_status_updated', $order_id, $order_status, $vendor_id );
 			
+			// Add Order Note for Log
+			if( apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) {
+				$shop_name = wcfm_get_vendor_store( absint($vendor_id) );
+			} else {
+				$shop_name = wcfm_get_vendor_store_name( absint($vendor_id) );
+			}
+			
 			// Fetch Product ID
 			$is_all_complete = true;
-			$sql = 'SELECT product_id  FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders AS commission';
-			$sql .= ' WHERE 1=1';
-			$sql .= " AND `order_id` = " . $order_id;
-			$sql .= " AND `vendor_id` = " . $vendor_id;
-			$commissions = $wpdb->get_results( $sql );
-			$product_id = 0;
-			if( !empty( $commissions ) ) {
-				foreach( $commissions as $commission ) {
-					$product_id = $commission->product_id;
+			if( apply_filters( 'wcfm_is_allow_itemwise_notification', true ) ) {
+				$sql = 'SELECT product_id  FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders AS commission';
+				$sql .= ' WHERE 1=1';
+				$sql .= " AND `order_id` = " . $order_id;
+				$sql .= " AND `vendor_id` = " . $vendor_id;
+				$commissions = $wpdb->get_results( $sql );
+				$product_id = 0;
+				if( !empty( $commissions ) ) {
+					foreach( $commissions as $commission ) {
+						$product_id = $commission->product_id;
+					
+						$wcfm_messages = sprintf( __( 'Order item <b>%s</b> status updated to <b>%s</b> by <b>%s</b>', 'wc-multivendor-marketplace' ), '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_permalink($product_id) . '">' . get_the_title( $product_id ) . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name );
+						
+						add_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
+						$is_customer_note = apply_filters( 'wcfm_is_allow_order_update_note_for_customer', '1' );
+						$comment_id = $order->add_order_note( apply_filters( 'wcfm_order_item_status_update_message', $wcfm_messages, $order_id, $vendor_id, $product_id ), $is_customer_note );
+						add_comment_meta( $comment_id, '_vendor_id', $vendor_id );
+						remove_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
+						
+						if( apply_filters( 'wcfm_is_allow_order_update_note_for_admin', true ) ) {
+							$wcfm_messages = apply_filters( 'wcfm_order_item_status_update_admin_message', sprintf( __( '<b>%s</b> order item <b>%s</b> status updated to <b>%s</b> by <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . wcfm_get_order_number( $order_id ) . '</a>', '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_permalink($product_id) . '">' . get_the_title( $product_id ) . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name ), $order_id, $vendor_id, $product_id );
+							$WCFM->wcfm_notification->wcfm_send_direct_message( $vendor_id, 0, 0, 1, $wcfm_messages, 'status-update' );
+						}
+					}
+				}
+			} else {
+				$wcfm_messages = sprintf( __( 'Order status updated to <b>%s</b> by <b>%s</b>', 'wc-frontend-manager' ), $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name );
+				
+				add_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
+				$is_customer_note = apply_filters( 'wcfm_is_allow_order_update_note_for_customer', '1' );
+				$comment_id = $order->add_order_note( apply_filters( 'wcfm_order_item_status_update_message', $wcfm_messages, $order_id, $vendor_id, 0 ), $is_customer_note);
+				add_comment_meta( $comment_id, '_vendor_id', $vendor_id );
+				remove_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
+				
+				if( apply_filters( 'wcfm_is_allow_order_update_note_for_admin', true ) ) {
+					$wcfm_messages = apply_filters( 'wcfm_order_item_status_update_admin_message', sprintf( __( '<b>%s</b> order status updated to <b>%s</b> by <b>%s</b>', 'wc-frontend-manager' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order->get_order_number() . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name ), $order_id, $vendor_id, 0 );
+					$WCFM->wcfm_notification->wcfm_send_direct_message( -2, 0, 1, 0, $wcfm_messages, 'status-update' );
 				}
 			}
 			
-			// Add Order Note for Log
-			if( apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) {
-				$shop_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( absint($vendor_id) );
-			} else {
-				$shop_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( absint($vendor_id) );
-			}
-			
-			$wcfm_messages = sprintf( __( 'Order item <b>%s</b> status updated to <b>%s</b> by <b>%s</b>', 'wc-multivendor-marketplace' ), '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_permalink($product_id) . '">' . get_the_title( $product_id ) . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name );
-			
-			add_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
-			$is_customer_note = apply_filters( 'wcfm_is_allow_order_update_note_for_customer', '1' );
-			$comment_id = $order->add_order_note( $wcfm_messages, $is_customer_note );
-			add_comment_meta( $comment_id, '_vendor_id', $vendor_id );
-			remove_filter( 'woocommerce_new_order_note_data', array( $WCFM->wcfm_marketplace, 'wcfm_update_comment_vendor' ), 10, 2 );
-			
-			$wcfm_messages = sprintf( __( '<b>%s</b> order item <b>%s</b> status updated to <b>%s</b> by <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order_id . '</a>', '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_permalink($product_id) . '">' . get_the_title( $product_id ) . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $order_status ), $shop_name );
-			$WCFM->wcfm_notification->wcfm_send_direct_message( $vendor_id, 0, 0, 1, $wcfm_messages, 'status-update' );
-			
 			// Update Main Order status on all Commission Order Status Update
-			if( in_array( $status, apply_filters( 'wcfm_change_main_order_on_child_order_statuses', array( 'completed' ) ) ) && apply_filters( 'wcfm_is_allow_mark_complete_main_order_on_all_child_order_complete', false ) ) {
+			if( in_array( $status, apply_filters( 'wcfm_change_main_order_on_child_order_statuses', array( 'completed', 'processing' ) ) ) && apply_filters( 'wcfm_is_allow_mark_complete_main_order_on_all_child_order_complete', true ) ) {
 				if ( wc_is_order_status( 'wc-'.$status ) && $order_id ) {
 					
 					// Check is all vendor orders completed or not
@@ -139,14 +157,14 @@ class WCFMmp_Ajax {
 						$order->update_status( $status, '', true );
 						
 						// Add Order Note for Log
-						$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-frontend-manager' ), '#' . $order->get_order_number(), wc_get_order_status_name( $status ) );
+						$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-multivendor-marketplace' ), '#' . $order->get_order_number(), wc_get_order_status_name( $status ) );
 						$is_customer_note = apply_filters( 'wcfm_is_allow_order_update_note_for_customer', '1' );
 						
 						$comment_id = $order->add_order_note( $wcfm_messages, $is_customer_note );
 						
 						$WCFM->wcfm_notification->wcfm_send_direct_message( -2, 0, 1, 0, $wcfm_messages, 'status-update' );
 						
-						do_action( 'woocommerce_order_edit_status', $order_id, $statusv );
+						do_action( 'woocommerce_order_edit_status', $order_id, $status );
 						do_action( 'wcfm_order_status_updated', $order_id, $status );
 					}
 				}
@@ -168,7 +186,7 @@ class WCFMmp_Ajax {
 		$search_term     = isset( $_REQUEST['search_term'] ) ? sanitize_text_field( $_REQUEST['search_term'] ) : '';
 		$search_category = isset( $_REQUEST['wcfmmp_store_category'] ) ? sanitize_text_field( $_REQUEST['wcfmmp_store_category'] ) : '';
 		$pagination_base = isset( $_REQUEST['pagination_base'] ) ? sanitize_text_field( $_REQUEST['pagination_base'] ) : '';
-		$paged           = isset( $_REQUEST['paged'] ) ? absint( $_REQUEST['paged'] ) : 1;
+		$paged           = 1; //isset( $_REQUEST['paged'] ) ? absint( $_REQUEST['paged'] ) : 1;
 		$per_row         = isset( $_REQUEST['per_row'] ) ? absint( $_REQUEST['per_row'] ) : 3;
 		$per_page        = isset( $_REQUEST['per_page'] ) ? absint( $_REQUEST['per_page'] ) : 10;
 		$includes        = isset( $_REQUEST['includes'] ) ? sanitize_text_field( $_REQUEST['includes'] ) : '';
@@ -237,6 +255,7 @@ class WCFMmp_Ajax {
 		$excludes        = isset( $_REQUEST['excludes'] ) ? sanitize_text_field( $_REQUEST['excludes'] ) : '';
 		$has_product     = isset( $_REQUEST['has_product'] ) ? sanitize_text_field( $_REQUEST['has_product'] ) : '';
 		$sidebar         = isset( $_REQUEST['sidebar'] ) ? sanitize_text_field( $_REQUEST['sidebar'] ) : '';
+		//$filter_vendor   = isset( $_REQUEST['filter_vendor'] ) ? sanitize_text_field( $_REQUEST['filter_vendor'] ) : '';
 		$search_data     = array();
 		
 		if( isset( $_POST['search_data'] ) )
@@ -246,6 +265,10 @@ class WCFMmp_Ajax {
 		
 		if( $includes ) $includes = explode(",", $includes);
 		else $includes = array();
+		
+		//if( $filter_vendor ) {
+			//$includes = array( $filter_vendor );
+		//}
 
 		$stores = $WCFMmp->wcfmmp_vendor->wcfmmp_search_vendor_list( true, '', '', $search_term, $search_category, $search_data, $has_product, $includes );
 		
@@ -255,12 +278,16 @@ class WCFMmp_Ajax {
 				$store_user      = wcfmmp_get_store( $store_id );
 				$store_info      = $store_user->get_shop_info();
 				
-				$store_name      = isset( $store_info['store_name'] ) ? esc_html( $store_info['store_name'] ) : __( 'N/A', 'wc-multivendor-marketplace' );
+				$store_name      = wcfm_get_vendor_store_name( $store_id );
 				$store_name      = apply_filters( 'wcfmmp_store_title', $store_name , $store_id );
 				$store_url       = wcfmmp_get_store_url( $store_id );
 				$store_address   = $store_user->get_address_string(); 
 				$store_description = $store_user->get_shop_description();
 				$gravatar        = $store_user->get_avatar();
+				
+				if( $store_address && ( ( $store_info['store_hide_address'] == 'yes' ) || !wcfm_vendor_has_capability( $store_id, 'vendor_address' ) ) ) {
+					$store_address = '';
+				}
 				
 				$store_lat    = isset( $store_info['store_lat'] ) ? esc_attr( $store_info['store_lat'] ) : 0;
 				$store_lng    = isset( $store_info['store_lng'] ) ? esc_attr( $store_info['store_lng'] ) : 0;
@@ -534,7 +561,8 @@ class WCFMmp_Ajax {
                   'type' => 'text', 
                   'class' => 'wcfm-text wcfm_ele hide_if_zone_not_limited', 
                   'label_class' => 'wcfm_title wcfm_ele hide_if_zone_not_limited', 
-                  'placeholder' => __('Postcodes need to be comma separated', 'wc-multivendor-marketplace'),
+                  'desc' => __('Postcodes containing wildcards (e.g. CB23*) or fully numeric ranges (e.g. 90210...99000) are also supported.', 'wc-multivendor-marketplace'),
+                  'desc_class' => 'instructions hide_if_zone_not_limited',
                   'value' => $postcodes  
                 )
               )
@@ -548,10 +576,11 @@ class WCFMmp_Ajax {
             <i aria-hidden="true" class="wcfmfa fa-truck"></i>
             <?php  _e('Shipping Method', 'wc-multivendor-marketplace'); ?>
           </h2> 
+          <div class="wcfm-clearfix"></div>
           <span>
             <?php _e('Add your shipping method for appropiate zone', 'wc-multivendor-marketplace'); ?>
           </span> 
-          <div class="clearfix"></div>
+          <div class="wcfm-clearfix"></div>
         </div>
         <div class="wcfmmp-zone-method-content">
           <table class="wcfmmp-table zone-method-table">
@@ -747,7 +776,7 @@ class WCFMmp_Ajax {
       if ($item['data']->needs_shipping()) {
         //print_r($item['data']->name); die;
         $product_id = $item['product_id'];
-        $vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+        $vendor_id = wcfm_get_vendor_id_by_post( $product_id );
         //WC()->cart->remove_cart_item($cart_item_key);
         $vendor_data = get_user_meta( $vendor_id, 'wcfmmp_profile_settings', true );
         if( $vendor_data && !empty( $vendor_data['shop_shipping_countries'] ) ) {

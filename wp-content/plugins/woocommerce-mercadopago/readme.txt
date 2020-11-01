@@ -1,10 +1,10 @@
-=== WooCommerce Mercado Pago ===
+=== Mercado Pago payments for WooCommerce ===
 Contributors: mercadopago, mercadolivre, claudiosanches, marcelohama
 Tags: ecommerce, mercadopago, woocommerce
 Requires at least: 4.9.10
-Tested up to: 5.2.2
+Tested up to: 5.5
 Requires PHP: 5.6
-Stable tag: 4.0.8
+Stable tag: 4.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,7 +34,6 @@ You can trust us as you trust a strategic partner. Use the money from your sales
 * Payments in advance from 2 to 14 business days, according to our Terms and Conditions;
 * One-click payments with the basic and personalized Mercado Pago checkouts;
 * Payments via tickets (Boletos);
-* Subscriptions;
 * Seller Protection Program.
 
 = Compatibility =
@@ -42,24 +41,28 @@ You can trust us as you trust a strategic partner. Use the money from your sales
 
 == Screenshots ==
 
-1. `Pay with the payment method you prefer`
-2. `Pay with the payment method you prefer`
-3. `Pay with debit and credit cards`
-4. `Pay with debit and credit cards`
-5. `Pay with money and cash`
-6. `Pay with ticket and Loterica`
+1. `High approval rates.`
+2. `Your money available instantly.`
+3. `All payment methods.`
+4. `You do not need to write a single line of code to receive payments.`
+5. `01 Create an account in Mercado Pago.`
+6. `02 Activate the module in your store.`
+7. `03 Receive the money from your sales.`
 
 == Frequently Asked Questions ==
 
 = How do we protect the sellers =
+
 We take care of the money with maximum security
 We help you in case of problems
 We protect your sales against chargebacks
 
 = Where can I find the documentation? =
+
 Check out our official documentation for installing and configuring the Mercado Pago plugin in your store.
 
 = Where and how can I contribute? =
+
 Suggest documentation improvement on [our website](https://www.mercadopago.com.br/developers/es/plugins_sdks/plugins/official/woo-commerce/) for integrators and developers,
 Subscribe to the [development log](https://plugins.trac.wordpress.org/log/woocommerce-mercadopago/) by [RSS](https://plugins.trac.wordpress.org/log/woocommerce-mercadopago/?limit=100&mode=stop_on_copy&format=rss),
 [Review the code](https://plugins.trac.wordpress.org/browser/woocommerce-mercadopago/) and visit the [SVN repository](https://plugins.svn.wordpress.org/woocommerce-mercadopago/),
@@ -69,7 +72,7 @@ Help us translate WordPress: [Translate](https://translate.wordpress.org/project
 
 = Minimum Technical Requirements =
 * WordPress version
-* Compatibility and dependency of WooCommerce VXX 
+* Compatibility and dependency of WooCommerce VXX
 * LAMP Environment (Linux, Apache, MySQL, PHP)
 * SSL Certificate
 * Additional configuration: safe_mode off, memory_limit higher than 256MB
@@ -78,13 +81,13 @@ Install the module in two different ways: automatically, from the “Plugins” 
 
 Automatic Installation by WordPress admin
 1. Access "Plugins" from the navigation side menu of your WordPress administrator.
-2. Once inside Plugins, click on 'Add New' and search for 'Mercado Pago WooCommerce' in the WordPress Plugin list
+2. Once inside Plugins, click on 'Add New' and search for 'Mercado Pago payments for WooCommerce' in the WordPress Plugin list
 3. Click on "Install."
 
-Done! It will be in the "Installed Plugins" section and from there you can activate it. 
+Done! It will be in the "Installed Plugins" section and from there you can activate it.
 
 Manual Installation
-1. Download the zip now or from the o WordPress Module Directory
+1. Download the [zip] (https://github.com/mercadopago/cart-woocommerce/archive/master.zip) now or from the o WordPress Module [Directory] (https://br.wordpress.org/plugins/woocommerce-mercadopago/)
 2. Unzip the folder and rename it to ”woocommerce-mercadopago”
 3. Copy the "woocommerce-mercadopago" file into your WordPress directory, inside the "Plugins" folder.
 
@@ -112,6 +115,135 @@ Set up both the plugin and the checkouts you want to activate on your payment av
 Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks/plugins/official/woo-commerce/">official documentation</a> for more information on the specific fields to configure.
 
 == Changelog ==
+= v4.5.0 (26/10/2020) =
+* Features
+  - Compatibility with WooCommerce v4.6.x
+  - Improved security (added access token in the header for all calls to Mercado Livre and Mercado Pago endpoints)
+  - Add new endpoint to validate Access Token and Public key to substitute old process to validation
+  - Improved performance with CSS minification
+
+* Bug fixes
+  - Fixed conflict with wc-api webhook and Mercado Pago webhook/IPN.
+  - Fixed alert in currency conversion
+  - Fixed tranlate in currency conversion
+  - Bug fixed when updating orders that have two or more payments associated.
+
+* Bug fixes
+  - Fixed conflict with wc-api webhook and Mercado Pago webhook/IPN.
+
+= v4.4.0 (21/09/2020) =
+* Features
+  - Compatibility with WooCommerce v4.5.x
+
+* Bug fixes
+  - Adjusted error when shipping is not used
+
+= v4.3.1 (10/09/2020) =
+* Bug fixes
+  - Adjusted inventory (for canceled orders) on payments made at the personalized offline checkout
+
+= v4.3.0 (31/08/2020) =
+* Features
+  - Improve plugin initialization
+  - Compatibility with Wordpress v5.5 and WooCommerce v4.4.x
+
+* Bug fixes
+  - Fixed currency conversion API - Alert added at checkout when currency conversion fails
+  - Adjusted inventory (for canceled orders) on payments made at the personalized offline checkout
+  - Adjusted translation in general
+  - Adjusted currency translation alert
+
+= v4.2.2 (27/07/2020) =
+* Features
+  - Added feature: cancelled orders on WooCommerce are automatically cancelled on Mercado Pago
+  - Compatibility with Wordpress v5.4 and WooCommerce v4.3.x
+
+* Bug fixes
+  - Fixed notification bug - No longer updates completed orders
+  - Fixed currency conversion API - No longer allows payments without currency conversion
+  - Fixed payment procesisng for virtual products
+  - Added ABSPATH in every PHP file
+  - Adjusted installments translation
+  - Adjusted state names for Transparent Checkout in Brazil
+  - Adjusted currency translation translations
+  - Removed text in code written in Spanish
+
+== Changelog ==
+= v4.2.1 (18/05/2020) =
+* Bug fixes
+  - Corrected CI document input validation on Uruguay Custom Offline Checkout.
+
+= v4.2.0 (13/05/2020) =
+* Features
+  - Added compatibility with WooCommerce version 4.1.0
+  - Added Integrator ID field on checkouts’ configuration screens
+  - Added validation for Public Keys
+  - Added alert to activate the WooCommerce plugin whenever it is inactive
+  - Added alert to install the WooCommerce plugin whenever it is uninstalled
+  - Added assets versioning
+  - Added minification of JS files
+  - Added debug mode for JS in order to use files without minification
+  - Added payment flow for WebPay in Chile for Checkout Custom Offline
+  - Updated documentation and regionalized links
+
+* Bug fixes
+  - Corrected notification status on charged_back
+  - Corrected issue when invalid credentials were switched
+  - Corrected checkout options for Store Name, Store Category and Store ID
+  - Corrected validation on the cardNumber field whenever card number is removed
+  - Corrected input masks on CPNJ and CPF; CNPJ validation and translation in Brazil for Custom Checkout Offline;
+  - Corrected mercadopago.js loading
+  - Corrected processing of payment status notifications
+  - Corrected personalized URLs for successful, refused and pending payments on Checkout Mercado Pago
+  - Added success and error messages on received payment notifications
+  - Added alphabetical order on offline payment methods for Checkout Custom
+  - Added CI document input on Custom Checkout OFF in Uruguay
+  - Added compatibility with third-party discount plugins which attribute value on order->fees (computation of fees_cost upon purchase)
+  - Added validation, focus and error messages on all JS inputs on Checkout Custom Online and Offline
+  - Usability improvements for Checkout Custom - Credit Card on mobile devices
+  - Adjusted error messages on online Checkout Custom Online
+  - Adjusted status updates on Checkout Custom Offline orders
+  - Updated documentation and guide links
+
+= v4.1.1 (10/01/2020) =
+* Feature
+  - Currency Conversion in Checkout Mercado Pago added
+
+* Bug fixes
+  - Currency Conversion for CHO Custom ON and OFF fixed
+  - Shipping Cost in the creation of Preferences fixed
+  - ME2 shipping mode in the creation of Preferences removed
+  - Checkout Mercado Pago class instance fixed when the first configurations are saved
+
+= v4.1.0 (06/01/2020) =
+* Feature
+  - Updated plugin name from "WooCommerce Mercado Pago" to "Mercado Pago payments for WooCommerce".
+  - Feature currency conversion returned.
+  - New feature to check if cURL is installed
+  - Refactored Javascript code for custom checkout Debit and credit card. Performance improvement, reduced number of SDK calls. Fixed validation errors. Javascript code refactored to the order review page. Removed select from mexico payment method.
+
+* Bug fixes
+  - Fixed credential issue when the plugin is upgraded from version 3.x.x to 4xx. Unable to save empty credential.
+  - Fixed issue to validate credential when checkout is active. The same problem occurs when removing the enabled checkout credential.
+  - Fixed error: Undefined index: MLA in WC_WooMercadoPago_Credentials.php on line 163.
+  - Fixed error: Call to a member function analytics_save_settings() in WC_WooMercadoPago_Hook_Abstract.php on line 68. Has affected users that cleared the credential and filled new credential production.
+  - Fixed load of WC_WooMercadoPago_Module.php file.
+  - Fixed error Uncaught Error: Call to a member function homologValidate().
+  - Fixed error Undefined index: section in WC_WooMercadoPago_PaymentAbstract.php on line 303. Affected users who did not have homologous accounts
+  - Fixed issue to validate credential when checkout is active. The same problem occurs when removing the enabled checkout credential.
+  - Fixed issue to calculate commission and discount.
+  - Fixed Layout of checkout custom input.
+  - Fixed translation ES of Modo Producción, Habilitá and definí
+  - Fixed Uncaught Error call to a member function update_status() in WC_WooMercadoPago_Notification_Abstract.php. Handle Mercado Pago Notification Failures and Exceptions.
+  - Fix PT-BR debit card translation on admin.
+  - Fix PT-BR debit card translation on checkout.
+  - Remove "One Step Checkout" from CHO Custom Off.
+  - Remove Mercado Creditos from Custom CHO OFF.
+  - Fixed issue to check if WooCommerce plugin is installed
+
+* Break change
+  - Removed feature and support to Mercado Envios shipping. Before install the plugin verify if your store has another method of shipping configured.
+
 = v4.0.8 (13/09/2019) =
 * Bug fixes
   - Fixed mercado envios
@@ -145,7 +277,7 @@ Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks
   - Fixed input blank in basic checkout config
 
 = v4.0.2 (02/09/2019) =
-* Feature All 
+* Feature All
   - Performance improvement
   - UX and UI improvements
   - Code refactoring
@@ -158,7 +290,7 @@ Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks
   - Logs to assist support and integration
 * Bug fixes
   - Added product_id
-  - Fixed payment account_money 
+  - Fixed payment account_money
   - Fixed translation Spanish Neutral and Argentino
 
 = v4.0.2-Beta (13/08/2019) =
@@ -169,7 +301,7 @@ Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks
   - Fixed title space checkout custom
 
 = v4.0.1-Beta (09/08/2019) =
-* Bug fixes 
+* Bug fixes
   - Fixed notification IPN and Webhook
   - Fixed payment processing
   - Fixed Argentina ticket checkout
@@ -177,7 +309,7 @@ Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks
   - Fixed layout checkouts
 
 = v4.0.0-Beta (02/08/2019) =
-* Feature All 
+* Feature All
   - Performance improvement
   - UX and UI improvements
   - Code refactoring
@@ -190,24 +322,24 @@ Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks
   - Logs to assist support and integration
 
 = v3.1.1 (03/05/2019) =
-* Feature All 	
+* Feature All
   - Added alert message on all ADMIN pages for setting access_token and public_key credentials, as client_id and client_secret credentials will no longer be used. Basic Checkout will continue to work by setting these new credentials.
   - We have added minor translation enhancements.
   - We add error message when any API error occurs while validating credentials.
 
 = v3.1.0 (17/04/2019) =
-* Feature All   	
+* Feature All
   - We are no longer using client_id and client_secret credentials. This will affect the functioning of the basic checkout. You will need to configure access_token and public_key, in the plugin settings have. You can access the link to get the credentials inside of configurations of plugin.
 * Improvements
   - Performance enhancements have been made, removing unnecessary requests and adding scope limitation for some functionality.
 
 = v3.0.17 (07/08/2018) =
-* Feature All 
+* Feature All
   - Adding X Product ID
   - Migration from v0 (collections) to v1
-  
+
 = v3.0.16 (20/07/2018) =
-* Feature MCO 
+* Feature MCO
   - Adding PSE gateway for Colombia
 * Improvements
   - Some code improvements

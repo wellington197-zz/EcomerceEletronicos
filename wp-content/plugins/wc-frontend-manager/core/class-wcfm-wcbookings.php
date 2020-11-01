@@ -59,7 +59,7 @@ class WCFM_WCBookings {
 		add_filter( 'woocommerce_email_recipient_new_booking', array( $this, 'wcfm_filter_booking_emails' ), 20, 2 );
 
 		// Add vendor email for cancelled booking email
-		add_filter( 'woocommerce_email_recipient_booking_cancelled', array( $this, 'wcfm_filter_booking_emails' ), 20, 2 );
+		add_filter( 'woocommerce_email_recipient_admin_booking_cancelled', array( $this, 'wcfm_filter_booking_emails' ), 20, 2 );
   }
   
   /**
@@ -210,6 +210,7 @@ class WCFM_WCBookings {
 	  	case 'wcfm-bookings':
       	$WCFM->library->load_datatable_lib();
       	$WCFM->library->load_daterangepicker_lib();
+      	$WCFM->library->load_datatable_download_lib();
 	    	wp_enqueue_script( 'wcfm_bookings_js', $WCFM->library->js_lib_url . 'wc_bookings/wcfm-script-wcbookings.js', array('jquery', 'dataTables_js'), $WCFM->version, true );
 	    	
 	    	// Screen manager
@@ -387,7 +388,7 @@ class WCFM_WCBookings {
 		if ( ! empty( $this_email ) ) {
 			if( $WCFM->is_marketplace ) {
 				
-				$vendor_email = $WCFM->wcfm_vendor_support->wcfm_get_vendor_email_from_product( $this_email->product_id );
+				$vendor_email = wcfm_get_vendor_store_email_by_post( $this_email->product_id );
 				if ( isset( $recipients ) ) {
 					$recipients .= ',' . $vendor_email;
 				} else {

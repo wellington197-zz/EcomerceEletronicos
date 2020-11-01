@@ -965,7 +965,7 @@ class WCFM_WCVendors {
   	$products_arr = array(0);
   	while( $post_loop_offset < $post_count ) {
 			$args = array(
-								'posts_per_page'   => 10,
+								'posts_per_page'   => apply_filters( 'wcfm_break_loop_offset', 10 ),
 								'offset'           => $post_loop_offset,
 								'category'         => '',
 								'category_name'    => '',
@@ -993,7 +993,7 @@ class WCFM_WCVendors {
 			} else {
 				break;
 			}
-			$post_loop_offset += 10;
+			$post_loop_offset += apply_filters( 'wcfm_break_loop_offset', 10 );
 		}
 		
 		return $products_arr;

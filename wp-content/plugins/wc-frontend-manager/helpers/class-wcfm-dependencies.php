@@ -218,21 +218,21 @@ class WCFM_Dependencies {
 	// Xadaptor DHL WooCommerce DHL Shipping support - 3.3.0
 	static function wcfm_wc_dhl_shipping_active_check() {
 		if ( ! self::$active_plugins ) self::init();
-		return in_array( 'dhl-woocommerce-shipping/dhl-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'dhl-woocommerce-shipping/dhl-woocommerce-shipping.php', self::$active_plugins );
+		//return in_array( 'dhl-woocommerce-shipping/dhl-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'dhl-woocommerce-shipping/dhl-woocommerce-shipping.php', self::$active_plugins );
 		return false;
 	}
 	
 	// Xadaptor FedEX WooCommerce Fedex Shipping support - 3.3.6
 	static function wcfm_wc_fedex_shipping_active_check() {
 		if ( ! self::$active_plugins ) self::init();
-		return in_array( 'fedex-woocommerce-shipping/fedex-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'fedex-woocommerce-shipping/fedex-woocommerce-shipping.php', self::$active_plugins );
+		//return in_array( 'fedex-woocommerce-shipping/fedex-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'fedex-woocommerce-shipping/fedex-woocommerce-shipping.php', self::$active_plugins );
 		return false;
 	}
 	
 	// Xadaptor FedEX WooCommerce EasyPost Shipping support - 3.3.6
 	static function wcfm_wc_easypost_shipping_active_check() {
 		if ( ! self::$active_plugins ) self::init();
-		return in_array( 'easypost-woocommerce-shipping/easypost-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'easypost-woocommerce-shipping/easypost-woocommerce-shipping.php', self::$active_plugins );
+		//return in_array( 'easypost-woocommerce-shipping/easypost-woocommerce-shipping.php', self::$active_plugins ) || array_key_exists( 'easypost-woocommerce-shipping/easypost-woocommerce-shipping.php', self::$active_plugins );
 		return false;
 	}
 	
@@ -326,4 +326,68 @@ class WCFM_Dependencies {
 		return in_array( 'woo-product-availability-scheduler/woocommerce-product-availability-scheduler.php', self::$active_plugins ) || array_key_exists( 'woo-product-availability-scheduler/woocommerce-product-availability-scheduler.php', self::$active_plugins );
 		return false;
 	}
+	
+	// WooCommerce Tiered Table Price - 6.3.4
+	static function wcfm_wc_tiered_price_table_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'tier-pricing-table/tier-pricing-table.php', self::$active_plugins ) || array_key_exists( 'tier-pricing-table/tier-pricing-table.php', self::$active_plugins );
+		return false;
+	}
+	
+	// WooCommerce Tiered Table Price Premium - 6.3.6
+	static function wcfm_wc_tiered_price_table_premium_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'tier-pricing-table-premium/tier-pricing-table.php', self::$active_plugins ) || array_key_exists( 'tier-pricing-table-premium/tier-pricing-table.php', self::$active_plugins );
+		return false;
+	}
+	
+	// All in One SEO
+	static function wcfm_all_in_one_seo_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'all-in-one-seo-pack/all_in_one_seo_pack.php', self::$active_plugins ) || array_key_exists( 'all-in-one-seo-pack/all_in_one_seo_pack.php', self::$active_plugins );
+		return false;
+	}
+	
+	// All in One SEO Pro
+	static function wcfm_all_in_one_seo_pro_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'all-in-one-seo-pack-pro/all_in_one_seo_pack.php', self::$active_plugins ) || array_key_exists( 'all-in-one-seo-pack-pro/all_in_one_seo_pack.php', self::$active_plugins );
+		return false;
+	}
+	
+	// Rank Math SEO
+	static function wcfm_rankmath_seo_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'seo-by-rank-math/rank-math.php', self::$active_plugins ) || array_key_exists( 'seo-by-rank-math/rank-math.php', self::$active_plugins );
+		return false;
+	}
+	
+	// Woo Advanced Product Size Chart - 6.4.1
+	static function wcfm_woo_product_size_chart_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'woo-advanced-product-size-chart/size-chart-for-woocommerce.php', self::$active_plugins ) || array_key_exists( 'woo-advanced-product-size-chart/size-chart-for-woocommerce.php', self::$active_plugins );
+		return false;
+	}
+	
+	// Post Expirator - 6.4.1
+	static function wcfm_post_expirator_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'post-expirator/post-expirator.php', self::$active_plugins ) || array_key_exists( 'post-expirator/post-expirator.php', self::$active_plugins );
+		return false;
+	}
+	
+	// German Market - 6.4.8
+	static function wcfm_wc_german_market_plugin_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'woocommerce-german-market/WooCommerce-German-Market.php', self::$active_plugins ) || array_key_exists( 'woocommerce-german-market/WooCommerce-German-Market.php', self::$active_plugins );
+		return false;
+	}
+	
+	// WooCommerce Country Based Restrictions - 6.5.3
+	static function wcfm_woo_country_based_restriction_active_check() {
+		if ( ! self::$active_plugins ) self::init();
+		return in_array( 'woo-product-country-base-restrictions/woocommerce-product-country-base-restrictions.php', self::$active_plugins ) || array_key_exists( 'woo-product-country-base-restrictions/woocommerce-product-country-base-restrictions.php', self::$active_plugins );
+		return false;
+	}
+	
 }

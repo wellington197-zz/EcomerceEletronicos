@@ -1,8 +1,8 @@
-<?php
+<?php //phpcs:ignore WordPress.Files.FileName.NotHyphenatedLowercase
 /**
  * Custom Autoloader Composer Plugin, hooks into composer events to generate the custom autoloader.
  *
- * @package Automattic\Jetpack\Autoloader
+ * @package automattic/jetpack-autoloader
  */
 
 // phpcs:disable PHPCompatibility.Keywords.NewKeywords.t_useFound
@@ -24,7 +24,7 @@ use Composer\EventDispatcher\EventSubscriberInterface;
 /**
  * Class CustomAutoloaderPlugin.
  *
- * @package Automattic\Jetpack\Autoloader
+ * @package automattic/jetpack-autoloader
  */
 class CustomAutoloaderPlugin implements PluginInterface, EventSubscriberInterface {
 
@@ -54,9 +54,38 @@ class CustomAutoloaderPlugin implements PluginInterface, EventSubscriberInterfac
 	}
 
 	/**
+	 * Do nothing.
+	 * phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	 *
+	 * @param Composer    $composer Composer object.
+	 * @param IOInterface $io IO object.
+	 */
+	public function deactivate( Composer $composer, IOInterface $io ) {
+		/*
+		 * Intentionally left empty. This is a PluginInterface method.
+		 * phpcs:enable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		 */
+	}
+
+	/**
+	 * Do nothing.
+	 * phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	 *
+	 * @param Composer    $composer Composer object.
+	 * @param IOInterface $io IO object.
+	 */
+	public function uninstall( Composer $composer, IOInterface $io ) {
+		/*
+		 * Intentionally left empty. This is a PluginInterface method.
+		 * phpcs:enable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		 */
+	}
+
+
+	/**
 	 * Tell composer to listen for events and do something with them.
 	 *
-	 * @return array List of succribed events.
+	 * @return array List of subscribed events.
 	 */
 	public static function getSubscribedEvents() {
 		return array(
@@ -71,11 +100,19 @@ class CustomAutoloaderPlugin implements PluginInterface, EventSubscriberInterfac
 	 */
 	public function postAutoloadDump( Event $event ) {
 
+		$config = $this->composer->getConfig();
+
+		if ( 'vendor' !== $config->raw()['config']['vendor-dir'] ) {
+			$this->io->writeError( "\n<error>An error occurred while generating the autoloader files:", true );
+			$this->io->writeError( 'The project\'s composer.json or composer environment set a non-default vendor directory.', true );
+			$this->io->writeError( 'The default composer vendor directory must be used.</error>', true );
+			exit();
+		}
+
 		$installationManager = $this->composer->getInstallationManager();
 		$repoManager         = $this->composer->getRepositoryManager();
 		$localRepo           = $repoManager->getLocalRepository();
 		$package             = $this->composer->getPackage();
-		$config              = $this->composer->getConfig();
 		$optimize            = true;
 		$suffix              = $config->get( 'autoloader-suffix' )
 			? $config->get( 'autoloader-suffix' )

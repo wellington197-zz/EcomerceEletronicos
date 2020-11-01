@@ -25,6 +25,15 @@ class WCFM_Settings_Marketplace_Controller {
 	  
 	  $has_error = false;
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_settings_form['wcfm_nonce'] ) && !empty( $wcfm_settings_form['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_settings_form['wcfm_nonce'], 'wcfm_settings' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  if( wcfm_is_vendor() ) {
 	  	$user_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
 	  } else  {
@@ -116,7 +125,11 @@ class WCFM_Settings_Marketplace_Controller {
 							}
 							if( apply_filters( 'wcfm_is_allow_reassociate_role', false ) ) {
 								$member_user = new WP_User(absint($user_id));
-								$member_user->set_role('wcfm_vendor');
+								if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $user_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+									$member_user->add_role('wcfm_vendor');
+								} else {
+									$member_user->set_role('wcfm_vendor');
+								}
 							}
 						} else {
 							echo '{"status": false, "message": "' . __( 'Shop Slug already exists.', 'wc-frontend-manager' ) . '"}';
@@ -181,17 +194,16 @@ class WCFM_Settings_Marketplace_Controller {
 				} else {
 					$wcfm_settings_form['store_seo']['wcfmmp-seo-og-image'] = '';
 				}
-			}
 			
 			// Set Twitter Image
-			if( isset($wcfm_settings_form['store_seo']) ) {
 				if( !empty($wcfm_settings_form['store_seo']['wcfmmp-seo-twitter-image']) ) {
 					$wcfm_settings_form['store_seo']['wcfmmp-seo-twitter-image'] = $WCFM->wcfm_get_attachment_id($wcfm_settings_form['store_seo']['wcfmmp-seo-twitter-image']);
 				} else {
 					$wcfm_settings_form['store_seo']['wcfmmp-seo-twitter-image'] = '';
 				}
+				
+				wcfm_update_user_meta( $user_id, 'wcfm_seo_vendor_options', $wcfm_settings_form['store_seo'] );
 			}
-			wcfm_update_user_meta( $user_id, 'wcfm_seo_vendor_options', $wcfm_settings_form['store_seo'] );
 		}
 		
 		// Vacation Settings

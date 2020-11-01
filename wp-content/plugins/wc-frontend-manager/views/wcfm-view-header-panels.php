@@ -20,7 +20,7 @@ $is_menu_disabled = isset( $wcfm_options['menu_disabled'] ) ? $wcfm_options['men
 
 $user_id = get_current_user_id();
 $wp_user_avatar_id = get_user_meta( $user_id, $wpdb->get_blog_prefix($blog_id).'user_avatar', true );
-$wp_user_avatar = wp_get_attachment_url( $wp_user_avatar_id );
+$wp_user_avatar = wcfm_get_attachment_url( $wp_user_avatar_id );
 if( !$wp_user_avatar && apply_filters( 'wcfm_is_pref_buddypress', true ) && WCFM_Dependencies::wcfm_biddypress_plugin_active_check() ) {
 	$wp_user_avatar = bp_core_fetch_avatar( array( 'html' => false, 'item_id' => $user_id ) );
 }
@@ -32,14 +32,15 @@ $unread_notice = $WCFM->wcfm_notification->wcfm_direct_message_count( 'notice' )
 $unread_message = $WCFM->wcfm_notification->wcfm_direct_message_count( 'message' ); 
 $unread_enquiry = $WCFM->wcfm_notification->wcfm_direct_message_count( 'enquiry' );
 
-$store_name = apply_filters( 'wcfm_store_name', __( 'My Store', 'wc-frontend-manager' ) );
-//$store_name = __( 'My Store', 'wc-frontend-manager' );
+$wcfm_my_store_label = wcfm_get_option( 'wcfm_my_store_label', __( 'My Store', 'wc-frontend-manager' ) );
+$store_name = '<a href="'.get_permalink( wc_get_page_id( 'shop' ) ).'" target="_blank">' . __( $wcfm_my_store_label, 'wc-frontend-manager' ) . '</a>';
+$store_name = apply_filters( 'wcfm_store_name', $store_name );
 ?>
 
 <?php if( ($is_menu_disabled != 'yes') ) { ?>
   <span class="wcfm_menu_toggler wcfmfa fa-bars text_tip" data-tip="<?php _e( 'Toggle Menu', 'wc-frontend-manager' ); ?>"></span>
 <?php } ?>
-<?php if( $is_responsive_float_menu_disabled == 'yes' ) { ?>
+<?php if( wcfm_is_mobile() || wcfm_is_tablet() ) { ?>
 	<span class="wcfm_responsive_menu_toggler wcfmfa fa-bars" title="<?php _e( 'Toggle Menu', 'wc-frontend-manager' ); ?>"></span>
 <?php } ?>
 <span class="wcfm-store-name-heading-text"><?php _e( $store_name );?></span>
@@ -78,6 +79,6 @@ if( !$wcfm_is_allow_headpanels ) {
   <?php do_action( 'wcfm_after_header_panel_item' ); ?>
   
   <?php if( apply_filters( 'wcfm_is_allow_header_logout', false ) ) { ?>
-    <a href="<?php echo esc_url(wp_logout_url( apply_filters( 'wcfm_logout_url', get_wcfm_url() ) ) ); ?>" class="wcfmfa fa-power-off text_tip" data-tip="<?php _e( 'Logout', 'wc-frontend-manager' ); ?>"></a>
+    <a href="<?php echo esc_url(wc_logout_url( apply_filters( 'wcfm_logout_url', get_wcfm_url() ) ) ); ?>" class="wcfmfa fa-power-off text_tip" data-tip="<?php _e( 'Logout', 'wc-frontend-manager' ); ?>"></a>
   <?php } ?>
 </div>

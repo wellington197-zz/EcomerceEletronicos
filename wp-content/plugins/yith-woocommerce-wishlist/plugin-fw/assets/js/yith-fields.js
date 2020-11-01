@@ -1,5 +1,4 @@
-
-jQuery( function ( $ ) {
+( function ( $ ) {
 
     /* global yith_framework_fw_fields*/
 
@@ -27,20 +26,30 @@ jQuery( function ( $ ) {
         /* Datepicker */
         $datepicker.each( function () {
             var args = $( this ).data();
+
+            // set animation to false to prevent style 'glitches' when removing class on closing
+            args.showAnim   = false;
+            args.beforeShow = function ( input, instance ) {
+                instance.dpDiv.addClass( 'yith-plugin-fw-datepicker-div' );
+            };
+            args.onClose    = function ( selectedDate, instance ) {
+                instance.dpDiv.removeClass( 'yith-plugin-fw-datepicker-div' );
+            };
+
             $( this ).datepicker( args );
         } );
 
         /* Colorpicker */
         $colorpicker.wpColorPicker( {
-                                        palettes: false,
-                                        width   : 200,
-                                        mode    : 'hsl',
-                                        clear   : function () {
-                                            var input = $( this );
-                                            input.val( input.data( 'default-color' ) );
-                                            input.change();
-                                        }
-                                    } );
+            palettes: false,
+            width   : 200,
+            mode    : 'hsl',
+            clear   : function () {
+                var input = $( this );
+                input.val( input.data( 'default-color' ) );
+                input.change();
+            }
+        } );
 
 
         $colorpicker.each( function () {
@@ -55,15 +64,15 @@ jQuery( function ( $ ) {
 
             if ( !wrap1.find( '.wp-picker-clear-custom' ).length ) {
                 var button = $( '<span/>' ).attr( {
-                                                      class: "wp-picker-default-custom"
-                                                  } );
+                    class: "wp-picker-default-custom"
+                } );
                 wrap1.find( '.wp-picker-default' ).wrap( button );
             }
 
             if ( !wrap2.find( '.wp-picker-clear-custom' ).length ) {
                 var button = $( '<span/>' ).attr( {
-                                                      class: "wp-picker-default-custom"
-                                                  } );
+                    class: "wp-picker-default-custom"
+                } );
                 wrap2.find( '.wp-picker-default' ).wrap( button );
             }
         } );
@@ -75,7 +84,7 @@ jQuery( function ( $ ) {
             // preview
             $upload.imgUrl.change( function () {
                 var url     = $( this ).val(),
-                    re      = new RegExp( "(http|ftp|https)://[a-zA-Z0-9@?^=%&amp;:/~+#-_.]*.(gif|jpg|jpeg|png|ico)" ),
+                    re      = new RegExp( "(http|ftp|https)://[a-zA-Z0-9@?^=%&amp;:/~+#-_.]*.(gif|jpg|jpeg|png|ico|svg)" ),
                     preview = $( this ).parent().find( $upload.imgPreviewHandler ).first();
 
                 if ( preview.length < 1 ) {
@@ -94,7 +103,7 @@ jQuery( function ( $ ) {
 
                 var t  = $( this ),
                     custom_uploader,
-                    id = t.attr( 'id' ).replace( /-button$/, '' );
+                    id = t.attr( 'id' ).replace( /-button$/, '' ).replace(/(\[|\])/g, '\\$1');
 
                 //If the uploader object has already been created, reopen the dialog
                 if ( custom_uploader ) {
@@ -105,27 +114,27 @@ jQuery( function ( $ ) {
                 var custom_uploader_states = [
                     // Main states.
                     new wp.media.controller.Library( {
-                                                         library   : wp.media.query(),
-                                                         multiple  : false,
-                                                         title     : 'Choose Image',
-                                                         priority  : 20,
-                                                         filterable: 'uploaded'
-                                                     } )
+                        library   : wp.media.query(),
+                        multiple  : false,
+                        title     : 'Choose Image',
+                        priority  : 20,
+                        filterable: 'uploaded'
+                    } )
                 ];
 
                 // Create the media frame.
                 custom_uploader = wp.media.frames.downloadable_file = wp.media( {
-                                                                                    // Set the title of the modal.
-                                                                                    title   : 'Choose Image',
-                                                                                    library : {
-                                                                                        type: ''
-                                                                                    },
-                                                                                    button  : {
-                                                                                        text: 'Choose Image'
-                                                                                    },
-                                                                                    multiple: false,
-                                                                                    states  : custom_uploader_states
-                                                                                } );
+                    // Set the title of the modal.
+                    title   : 'Choose Image',
+                    library : {
+                        type: ''
+                    },
+                    button  : {
+                        text: 'Choose Image'
+                    },
+                    multiple: false,
+                    states  : custom_uploader_states
+                } );
 
                 //When a file is selected, grab the URL and set it as the text field's value
                 custom_uploader.on( 'select', function () {
@@ -145,8 +154,8 @@ jQuery( function ( $ ) {
 
             $( document ).on( 'click', $upload.resetButtonHandler, function ( e ) {
                 var t             = $( this ),
-                    id            = t.attr( 'id' ),
-                    input_id      = t.attr( 'id' ).replace( /-button-reset$/, '' ),
+                    id            = t.attr( 'id' ).replace(/(\[|\])/g, '\\$1'),
+                    input_id      = t.attr( 'id' ).replace( /-button-reset$/, '' ).replace(/(\[|\])/g, '\\$1'),
                     default_value = $( '#' + id ).data( 'default' );
 
                 $( "#" + input_id ).val( default_value );
@@ -169,19 +178,19 @@ jQuery( function ( $ ) {
 
                 // Create the media frame.
                 var image_gallery_frame = wp.media.frames.image_gallery = wp.media( {
-                                                                                        // Set the title of the modal.
-                                                                                        title : $t.data( 'choose' ),
-                                                                                        button: {
-                                                                                            text: $t.data( 'update' )
-                                                                                        },
-                                                                                        states: [
-                                                                                            new wp.media.controller.Library( {
-                                                                                                                                 title     : $t.data( 'choose' ),
-                                                                                                                                 filterable: 'all',
-                                                                                                                                 multiple  : true
-                                                                                                                             } )
-                                                                                        ]
-                                                                                    } );
+                    // Set the title of the modal.
+                    title : $t.data( 'choose' ),
+                    button: {
+                        text: $t.data( 'update' )
+                    },
+                    states: [
+                        new wp.media.controller.Library( {
+                            title     : $t.data( 'choose' ),
+                            filterable: 'all',
+                            multiple  : true
+                        } )
+                    ]
+                } );
 
                 // When an image is selected, run a callback.
                 image_gallery_frame.on( 'select', function () {
@@ -206,30 +215,30 @@ jQuery( function ( $ ) {
             $imageGallery.sliderWrapper.each( function () {
                 var $t = $( this );
                 $t.sortable( {
-                                 items               : 'li.image',
-                                 cursor              : 'move',
-                                 scrollSensitivity   : 40,
-                                 forcePlaceholderSize: true,
-                                 forceHelperSize     : false,
-                                 helper              : 'clone',
-                                 opacity             : 0.65,
-                                 start               : function ( event, ui ) {
-                                     ui.item.css( 'background-color', '#f6f6f6' );
-                                 },
-                                 stop                : function ( event, ui ) {
-                                     ui.item.removeAttr( 'style' );
-                                 },
-                                 update              : function ( event, ui ) {
-                                     var attachment_ids = '';
+                    items               : 'li.image',
+                    cursor              : 'move',
+                    scrollSensitivity   : 40,
+                    forcePlaceholderSize: true,
+                    forceHelperSize     : false,
+                    helper              : 'clone',
+                    opacity             : 0.65,
+                    start               : function ( event, ui ) {
+                        ui.item.css( 'background-color', '#f6f6f6' );
+                    },
+                    stop                : function ( event, ui ) {
+                        ui.item.removeAttr( 'style' );
+                    },
+                    update              : function ( event, ui ) {
+                        var attachment_ids = '';
 
-                                     $t.find( 'li.image' ).css( 'cursor', 'default' ).each( function () {
-                                         var attachment_id = $( this ).attr( 'data-attachment_id' );
-                                         attachment_ids    = attachment_ids + attachment_id + ',';
-                                     } );
+                        $t.find( 'li.image' ).css( 'cursor', 'default' ).each( function () {
+                            var attachment_id = $( this ).attr( 'data-attachment_id' );
+                            attachment_ids    = attachment_ids + attachment_id + ',';
+                        } );
 
-                                     $t.closest( '.image-gallery' ).find( '.image_gallery_ids' ).val( attachment_ids );
-                                 }
-                             } );
+                        $t.closest( '.image-gallery' ).find( '.image_gallery_ids' ).val( attachment_ids );
+                    }
+                } );
             } );
 
             // Remove images
@@ -295,23 +304,23 @@ jQuery( function ( $ ) {
                 labels   = $( this ).data( 'labels' );
 
             $( this ).slider( {
-                                  value: val,
-                                  min  : minValue,
-                                  max  : maxValue,
-                                  range: 'min',
-                                  step : step,
+                value: val,
+                min  : minValue,
+                max  : maxValue,
+                range: 'min',
+                step : step,
 
-                                  create: function () {
-                                      $( this ).find( '.ui-slider-handle' ).text( $( this ).slider( "value" ) );
-                                  },
+                create: function () {
+                    $( this ).find( '.ui-slider-handle' ).text( $( this ).slider( "value" ) );
+                },
 
 
-                                  slide: function ( event, ui ) {
-                                      $( this ).find( 'input' ).val( ui.value );
-                                      $( this ).find( '.ui-slider-handle' ).text( ui.value );
-                                      $( this ).siblings( '.feedback' ).find( 'strong' ).text( ui.value + labels );
-                                  }
-                              } );
+                slide: function ( event, ui ) {
+                    $( this ).find( 'input' ).val( ui.value );
+                    $( this ).find( '.ui-slider-handle' ).text( ui.value );
+                    $( this ).siblings( '.feedback' ).find( 'strong' ).text( ui.value + labels );
+                }
+            } );
         } );
 
         /* codemirror */
@@ -374,7 +383,7 @@ jQuery( function ( $ ) {
                 select  = wrapper.find( 'select' ).first();
 
             if ( select.length ) {
-                select.val( key );
+                select.val( key ).trigger('yith_select_images_value_changed');
                 items.removeClass( 'yith-plugin-fw-select-images__item--selected' );
                 item.addClass( 'yith-plugin-fw-select-images__item--selected' );
             }
@@ -408,7 +417,7 @@ jQuery( function ( $ ) {
         $( document.body ).trigger( 'yith-framework-enhanced-select-init' );
     };
 
-    yith_fields_init();
+    $( document ).on( 'yith_fields_init', yith_fields_init ).trigger( 'yith_fields_init' );
 
     /* on-off */
     $( document ).on( 'click', '.yith-plugin-fw-onoff-container span', function () {
@@ -434,8 +443,11 @@ jQuery( function ( $ ) {
         var toggle      = $( this ),
             action      = 'yith_plugin_fw_save_toggle_element',
             formdata    = toggle.serializeToggleElement(),
-            id          = toggle.find( '.yith-toggle_wrapper' ).attr( 'id' ),
+            wrapper     = toggle.find( '.yith-toggle_wrapper' ),
+            id          = wrapper.attr( 'id' ),
             current_tab = $.urlParam( 'tab' );
+
+        formdata.append( 'security', wrapper.data( 'nonce' ) );
 
         if ( typeof array_keys != 'undefined' && array_keys.length > 0 ) {
             formdata.append( 'yith_toggle_elements_order_keys', array_keys );
@@ -445,25 +457,31 @@ jQuery( function ( $ ) {
             action              = 'yith_plugin_fw_save_toggle_element_metabox';
             post_id             = $( this ).closest( 'form#post' ).find( '#post_ID' ).val();
             yit_metaboxes_nonce = $( this ).closest( 'form#post' ).find( '#yit_metaboxes_nonce' ).val();
-            url                 = yith_framework_fw_fields.ajax_url + '?action=' + action + "&post_ID=" + post_id + '&yit_metaboxes_nonce=' + yit_metaboxes_nonce + "&toggle_id=" + id;
+            metabox_tab         = $( this ).closest( '.tabs-panel' ).attr( 'id' );
+            url                 = yith_framework_fw_fields.ajax_url +
+                '?action=' + action +
+                "&post_ID=" + post_id +
+                '&yit_metaboxes_nonce=' + yit_metaboxes_nonce +
+                "&toggle_id=" + id +
+                "&metabox_tab=" + metabox_tab;
         } else {
             url = yith_framework_fw_fields.admin_url + '?action=' + action + '&tab=' + current_tab + "&toggle_id=" + id;
         }
 
         $.ajax( {
-                    type       : "POST",
-                    url        : url,
-                    data       : formdata,
-                    contentType: false,
-                    processData: false,
-                    success    : function ( result ) {
-                        if ( spinner ) {
-                            spinner.removeClass( 'show' );
-                        }
+            type       : "POST",
+            url        : url,
+            data       : formdata,
+            contentType: false,
+            processData: false,
+            success    : function ( result ) {
+                if ( spinner ) {
+                    spinner.removeClass( 'show' );
+                }
 
-                        $( document ).trigger( 'yith_save_toggle_element_done', [ result, toggle ] );
-                    }
-                } );
+                $( document ).trigger( 'yith_save_toggle_element_done', [result, toggle] );
+            }
+        } );
     };
 
     $.fn.serializeToggleElement = function () {
@@ -520,7 +538,7 @@ jQuery( function ( $ ) {
             toggle_el.find( '.subtitle' ).html( subtitle );
         }
 
-        $( document ).trigger( 'yith-toggle-element-item-title', [ toggle_el ] );
+        $( document ).trigger( 'yith-toggle-element-item-title', [toggle_el] );
     };
 
     $.urlParam = function ( name ) {
@@ -550,25 +568,25 @@ jQuery( function ( $ ) {
     /**Add new box toggle**/
     $( document ).on( 'click', '.yith-add-box-button', function ( event ) {
         event.preventDefault();
-        var $this = $( this ),
-            target_id = $this.data( 'box_id' ),
-            closed_label   = $this.data('closed_label'),
-            label          = $this.data('opened_label'),
-            id        = $this.closest( '.yith-toggle_wrapper' ).attr( 'id' );
-            template      = wp.template( 'yith-toggle-element-add-box-content-' + id );
+        var $this        = $( this ),
+            target_id    = $this.data( 'box_id' ),
+            closed_label = $this.data( 'closed_label' ),
+            label        = $this.data( 'opened_label' ),
+            id           = $this.closest( '.yith-toggle_wrapper' ).attr( 'id' );
+        template         = wp.template( 'yith-toggle-element-add-box-content-' + id );
 
         if ( '' !== target_id ) {
             $( '#' + target_id ).html( template( { index: 'box_id' } ) ).slideToggle();
-            if (closed_label !== '') {
-                if ($this.html() === closed_label) {
-                    $this.html(label).removeClass('closed');
+            if ( closed_label !== '' ) {
+                if ( $this.html() === closed_label ) {
+                    $this.html( label ).removeClass( 'closed' );
                 } else {
-                    $this.html(closed_label).addClass('closed');
+                    $this.html( closed_label ).addClass( 'closed' );
                 }
             }
 
-            yith_fields_init();
-            $( document ).trigger( 'yith-add-box-button-toggle', [ $this ] );
+            $( document ).trigger( 'yith_fields_init' );
+            $( document ).trigger( 'yith-add-box-button-toggle', [$this] );
         }
     } );
 
@@ -585,7 +603,7 @@ jQuery( function ( $ ) {
 
         hidden_obj.val( counter );
 
-        $( document ).trigger( 'yith-toggle-change-counter', [ hidden_obj, add_box ] );
+        $( document ).trigger( 'yith-toggle-change-counter', [hidden_obj, add_box] );
 
         counter       = hidden_obj.val();
         var template  = wp.template( 'yith-toggle-element-item-' + id ),
@@ -623,27 +641,26 @@ jQuery( function ( $ ) {
 
         $( toggle_el ).formatToggleTitle();
         var form_is_valid = $( '<input type="hidden">' ).val( 'yes' );
-        $( document ).trigger( 'yith-toggle-element-item-before-add', [ add_box, toggle_el, form_is_valid ] );
+        $( document ).trigger( 'yith-toggle-element-item-before-add', [add_box, toggle_el, form_is_valid] );
 
-        var delayInMilliseconds =1000; //1 second
-        setTimeout(function() {
+        var delayInMilliseconds = 1000; //1 second
+        setTimeout( function () {
             if ( form_is_valid.val() === 'yes' ) {
                 $( toggle_element ).find( '.yith-toggle-elements' ).append( toggle_el );
                 $( add_box ).find( '.yith-plugin-fw-datepicker' ).datepicker( 'destroy' );
                 $( add_box ).html( '' );
-                $( add_box ).prev('.yith-add-box-button').trigger('click');
+                $( add_box ).prev( '.yith-add-box-button' ).trigger( 'click' );
                 toggle_element.saveToggleElement();
 
-                var delayInMilliseconds =2000; //1 second
-                setTimeout(function() {
-                    $( toggle_element ).find('.highlight').removeClass('highlight');
-                }, delayInMilliseconds);
+                var delayInMilliseconds = 2000; //1 second
+                setTimeout( function () {
+                    $( toggle_element ).find( '.highlight' ).removeClass( 'highlight' );
+                }, delayInMilliseconds );
 
 
-                yith_fields_init();
+                $( document ).trigger( 'yith_fields_init' );
             }
         }, delayInMilliseconds );
-
 
 
     } );
@@ -653,10 +670,10 @@ jQuery( function ( $ ) {
         var toggle     = $( this ).closest( '.toggle-element' ),
             toggle_row = $( this ).closest( '.yith-toggle-row' ),
             spinner    = toggle_row.find( '.spinner' );
-            toggle_row.formatToggleTitle();
+        toggle_row.formatToggleTitle();
 
         var form_is_valid = $( '<input type="hidden">' ).val( 'yes' );
-        $( document ).trigger( 'yith-toggle-element-item-before-update', [ toggle, toggle_row, form_is_valid ] );
+        $( document ).trigger( 'yith-toggle-element-item-before-update', [toggle, toggle_row, form_is_valid] );
         if ( form_is_valid.val() === 'yes' ) {
             spinner.addClass( 'show' );
             toggle.saveToggleElement( spinner );
@@ -681,23 +698,104 @@ jQuery( function ( $ ) {
 
     // Radio
     $( document ).on( 'click', '.yith-plugin-fw-radio input[type=radio]', function () {
-        $( this ).closest( '.yith-plugin-fw-radio' ).val( $( this ).val() ).trigger( 'change' );
+        var _radioContainer = $( this ).closest( '.yith-plugin-fw-radio' ),
+            _value          = $( this ).val();
+
+        _radioContainer.val( _value ).data( 'value', _value ).trigger( 'change' );
     } );
 
-    $(document).on('click', '.yith-password-eye', function () {
-        var $this = $(this),
-            inp = $(this).closest('.yith-password-wrapper').find('input');
-        if (inp.attr('type') === "password") {
-            inp.attr('type', 'text');
-            $this.addClass('yith-password-eye-closed');
+    $( document.body ).on( 'yith-plugin-fw-init-radio', function () {
+        $( '.yith-plugin-fw-radio:not(.yith-plugin-fw-radio--initialized)' ).each( function () {
+            $( this ).val( $( this ).data( 'value' ) );
+            $( this ).addClass( 'yith-plugin-fw-radio--initialized' );
+        } );
+    } ).trigger( 'yith-plugin-fw-init-radio' );
+
+    // Password Eye field
+    $( document ).on( 'click', '.yith-password-eye', function () {
+        var $this = $( this ),
+            inp   = $( this ).closest( '.yith-password-wrapper' ).find( 'input' );
+        if ( inp.attr( 'type' ) === "password" ) {
+            inp.attr( 'type', 'text' );
+            $this.addClass( 'yith-password-eye-closed' );
         } else {
-            inp.attr('type', 'password');
-            $this.removeClass('yith-password-eye-closed');
+            inp.attr( 'type', 'password' );
+            $this.removeClass( 'yith-password-eye-closed' );
         }
-    });
-
-    $( '.yith-plugin-fw-radio' ).each( function () {
-        $( this ).val( $( this ).attr( 'value' ) );
     } );
 
-} );
+    /**
+     * Select2 - add class to stylize it with the new plugin-fw style
+     */
+    $( document ).on( 'select2:open', function ( e ) {
+        if ( $( e.target ).closest( '.yith-plugin-ui' ).length ) {
+            $( '.select2-results' ).closest( '.select2-container' ).addClass( 'yith-plugin-fw-select2-container' );
+        }
+    } );
+    /**
+     * Dimensions
+     */
+    var fw_dimensions = {
+        selectors   : {
+            wrapper   : '.yith-plugin-fw-dimensions',
+            units     : {
+                wrapper      : '.yith-plugin-fw-dimensions__units',
+                single       : '.yith-plugin-fw-dimensions__unit',
+                value        : '.yith-plugin-fw-dimensions__unit__value',
+                selectedClass: 'yith-plugin-fw-dimensions__unit--selected'
+            },
+            linked    : {
+                button            : '.yith-plugin-fw-dimensions__linked',
+                value             : '.yith-plugin-fw-dimensions__linked__value',
+                wrapperActiveClass: 'yith-plugin-fw-dimensions--linked-active'
+            },
+            dimensions: {
+                number: '.yith-plugin-fw-dimensions__dimension__number'
+            }
+        },
+        init        : function () {
+            var self = fw_dimensions;
+            $( document ).on( 'click', self.selectors.units.single, self.unitChange );
+            $( document ).on( 'click', self.selectors.linked.button, self.linkedChange );
+            $( document ).on( 'change keyup', self.selectors.dimensions.number, self.numberChange );
+        },
+        unitChange  : function ( e ) {
+            var unit        = $( this ).closest( fw_dimensions.selectors.units.single ),
+                wrapper     = unit.closest( fw_dimensions.selectors.units.wrapper ),
+                units       = wrapper.find( fw_dimensions.selectors.units.single ),
+                valueField  = wrapper.find( fw_dimensions.selectors.units.value ).first(),
+                value       = unit.data( 'value' );
+
+            units.removeClass( fw_dimensions.selectors.units.selectedClass );
+            unit.addClass( fw_dimensions.selectors.units.selectedClass );
+            valueField.val( value );
+        },
+        linkedChange: function () {
+            var button      = $( this ).closest( fw_dimensions.selectors.linked.button ),
+                mainWrapper = button.closest( fw_dimensions.selectors.wrapper ),
+                valueField  = button.find( fw_dimensions.selectors.linked.value ),
+                value       = valueField.val();
+
+            if ( 'yes' === value ) {
+                mainWrapper.removeClass( fw_dimensions.selectors.linked.wrapperActiveClass );
+                valueField.val( 'no' );
+            } else {
+                mainWrapper.addClass( fw_dimensions.selectors.linked.wrapperActiveClass );
+                valueField.val( 'yes' );
+
+                mainWrapper.find( fw_dimensions.selectors.dimensions.number ).first().trigger( 'change' );
+            }
+        },
+        numberChange: function ( e ) {
+            var number      = $( this ).closest( fw_dimensions.selectors.dimensions.number ),
+                mainWrapper = number.closest( fw_dimensions.selectors.wrapper );
+            if ( mainWrapper.hasClass( fw_dimensions.selectors.linked.wrapperActiveClass ) ) {
+                var numbers = mainWrapper.find( fw_dimensions.selectors.dimensions.number );
+
+                numbers.val( number.val() );
+            }
+        }
+    };
+    fw_dimensions.init();
+
+} )( jQuery );

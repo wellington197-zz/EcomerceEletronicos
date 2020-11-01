@@ -207,7 +207,7 @@ class WCFMmp_Admin {
 				if( function_exists( 'wcfm_get_vendor_store_by_post' ) ) {
 					$store_name = wcfm_get_vendor_store_by_post( $post_id );
 					if( $store_name ) {
-						$vendor_name = $store_name;
+						$vendor_name = '<span class="dashicons dashicons-businessperson"></span>' . $store_name;
 					}
 				}
 				echo $vendor_name;
@@ -239,7 +239,7 @@ class WCFMmp_Admin {
 								$store_name = wcfm_get_vendor_store( $vendor_id );
 								if( $store_name ) {
 									if( $vendor_name ) $vendor_name .= "<br />";
-									$vendor_name .= $store_name;
+									$vendor_name .= '<span class="dashicons dashicons-businessperson"></span>' . $store_name;
 									$processed_vendors[$vendor_id] = $vendor_id;
 								}
 							}
@@ -276,7 +276,7 @@ class WCFMmp_Admin {
 							$store_name = wcfm_get_vendor_store( $vendor_id );
 							if( $store_name ) {
 								if( $vendor_name ) $vendor_name .= "<br />";
-								$vendor_name .= $store_name;
+								$vendor_name .= '<span class="dashicons dashicons-businessperson"></span>' . $store_name;
 								$processed_vendors[$vendor_id] = $vendor_id;
 							}
 						}
@@ -300,7 +300,7 @@ class WCFMmp_Admin {
 					$product_id  = $the_booking->get_product_id( 'edit' );
 					$store_name = wcfm_get_vendor_store_by_post( $product_id );
 					if( $store_name ) {
-						$vendor_name = $store_name;
+						$vendor_name = '<span class="dashicons dashicons-businessperson"></span>' . $store_name;
 					}
 				}
 				echo $vendor_name;
@@ -319,7 +319,7 @@ class WCFMmp_Admin {
 					$product_id  = $the_appointment->get_product_id( 'edit' );
 					$store_name = wcfm_get_vendor_store_by_post( $product_id );
 					if( $store_name ) {
-						$vendor_name = $store_name;
+						$vendor_name = '<span class="dashicons dashicons-businessperson"></span>' . $store_name;
 					}
 				}
 				echo $vendor_name;
@@ -382,7 +382,7 @@ class WCFMmp_Admin {
   	echo '<div id ="wcfmmp_store_product_data" class="panel woocommerce_options_panel"><div class="options_group"><p class="form-field _wcfmmp_store_field">';
   	echo '<label for="wcfmmp_store">' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-multivendor-marketplace' ) ) . '</label>';
   	$vendor_arr = $WCFM->wcfm_vendor_support->wcfm_get_vendor_list();
-  	$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $post->ID );
+  	$vendor_id = wcfm_get_vendor_id_by_post( $post->ID );
   	$WCFM->wcfm_fields->wcfm_generate_form_field( array(
 																											"wcfmmp_store" => array( 'type' => 'select', 'class' => 'select short', 'options' => $vendor_arr, 'value' => $vendor_id, 'attributes' => array( 'style' => 'width:400px;' ) )
 																											 ) );
@@ -456,7 +456,6 @@ class WCFMmp_Admin {
 		$WCFM->wcfm_fields->wcfm_generate_form_field( array(
 																												'tax_enable' => array( 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable ),
 																												) );
-		echo '<br/><br><span class="desciption">' . __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) . '</span>';
 		echo '</p>';
 		
 		echo '<p class="form-field _wcfmmp_commission_fixed_field commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity"><label for="vendor_commission_fixed">' . __( 'Tax Label', 'wc-multivendor-marketplace' ) . '</label>';
@@ -494,12 +493,28 @@ class WCFMmp_Admin {
 					$WCFMmp->wcfmmp_vendor->wcfmmp_save_vendor_taxonomy( $wcfmmp_store, $product_id, $pcategory->term_id );
 				}
 			}
+			
+			// For Variations
+			$product = wc_get_product( $product_id );
+			$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription', 'pw-gift-card' ) );
+			if( in_array( $product->get_type(), $wcfm_variable_product_types ) ) {
+				foreach ( $product->get_children() as $child_id ) {
+					$arg = array(
+						'ID' => $child_id,
+						'post_author' => $wcfmmp_store,
+					);
+					wp_update_post( $arg );
+				}
+			}
   	} else {
-			$arg = array(
-				'ID' => $product_id,
-				'post_author' => get_current_user_id(),
-			);
-			wp_update_post( $arg );
+  		$old_vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+  		if( $old_vendor_id && wcfm_is_vendor( $old_vendor_id ) ) {
+				$arg = array(
+					'ID' => $product_id,
+					'post_author' => get_current_user_id(),
+				);
+				wp_update_post( $arg );
+			}
 		}
 		
 		// Update Product Commission
@@ -647,7 +662,6 @@ class WCFMmp_Admin {
 		$WCFM->wcfm_fields->wcfm_generate_form_field( array(
 																												'tax_enable' => array( 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable ),
 																												) );
-		echo '<br/><br><span class="desciption">' . __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) . '</span>';
 		echo '</p>';
 		
 		echo '<p class="form-field _wcfmmp_commission_fixed_field commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity"><label for="vendor_commission_fixed">' . __( 'Tax Label', 'wc-multivendor-marketplace' ) . '</label>';
@@ -711,7 +725,7 @@ class WCFMmp_Admin {
 		echo '<tr><th colspan="2"><h3 class="form-field commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity" style="color:#17a2b8;">' . __('Commission Tax Settings', 'wc-multivendor-marketplace') . '</h3></th></tr>';
 		
 		$WCFM->wcfm_fields->wcfm_generate_form_field( array(
-																												'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'in_table' => true, 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable, 'desc_class' => 'commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'desc' => __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) ),
+																												'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'in_table' => true, 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable ),
 																												) );
 		
 		$WCFM->wcfm_fields->wcfm_generate_form_field( array(

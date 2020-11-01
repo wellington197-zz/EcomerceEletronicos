@@ -153,23 +153,57 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
 
      if ( $products ) {
        $amount = $this->calculate_per_seller( $products, $destination_country, $destination_state );
-     }
 
-     $tax_rate = ( $this->tax_status == 'none' ) ? false : '';
-     
-     if( !$amount ) {
-     	 $this->title = __('Free Shipping', 'wc-multivendor-marketplace');
-     }
-
-     $rate = array(
-         'id'    => $this->id . ':1',
-         'label' => $this->title,
-         'cost'  => $amount,
-         'taxes' => $tax_rate
-     );
-
-     // Register the rate
-     $this->add_rate( $rate );
+			 $tax_rate = ( $this->tax_status == 'none' ) ? false : '';
+			 
+			 if( !$amount ) {
+				 $this->title = __('Free Shipping', 'wc-multivendor-marketplace');
+			 }
+	
+			 $rate = array(
+					 'id'    => $this->id . ':1',
+					 'label' => $this->title,
+					 'cost'  => $amount,
+					 'taxes' => $tax_rate
+			 );
+	
+			 // Register the rate
+			 $this->add_rate( $rate );
+			 
+			 // Local Pickup Method Check
+			 $wcfmmp_shipping_by_country = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_country', true );
+			 $enable_local_pickup = isset($wcfmmp_shipping_by_country['_enable_local_pickup']) ? 'yes' : '';
+			 $local_pickup_cost = isset($wcfmmp_shipping_by_country['_local_pickup_cost']) ? $wcfmmp_shipping_by_country['_local_pickup_cost'] : '';
+			 if( $enable_local_pickup ) {
+			 	 $address = wcfm_get_vendor_store_address_by_vendor( $vendor_id );
+			 	 $rate = array(
+						 'id'    => 'local_pickup:1',
+						 'label' => apply_filters( 'wcfmmp_local_pickup_shipping_option_label', __('Pickup from Store', 'wc-multivendor-marketplace')  . ' ('.$address.')', $vendor_id ),
+						 'cost'  => $local_pickup_cost,
+						 'taxes' => $tax_rate
+				 );
+		
+				 // Register the rate
+				 $this->add_rate( $rate );
+			 }
+			 
+			 // Free Shipping Method Check
+			 if( $amount ) {
+			 	 $amount = $this->calculate_per_seller( $products, $destination_country, $destination_state, true );
+			 	 
+			 	 if( !$amount ) {
+			 	 	 $rate = array(
+							 'id'    => 'free_shipping:1',
+							 'label' => __('Free Shipping', 'wc-multivendor-marketplace'),
+							 'cost'  => $amount,
+							 'taxes' => $tax_rate
+					 );
+			
+					 // Register the rate
+					 $this->add_rate( $rate );
+			 	 }
+			 }
+		 }
   }
 
 
@@ -236,7 +270,7 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
   *
   * @return float
   */
-  public function calculate_per_seller( $products, $destination_country, $destination_state  ) {
+  public function calculate_per_seller( $products, $destination_country, $destination_state, $is_consider_free_threshold = false  ) {
      $amount = 0.0;
      $price = array();
 
@@ -258,7 +292,7 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
 				 $wcfmmp_shipping_by_country = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_country', true );
 				 
 				 $wcfmmp_free_shipping_amount = isset($wcfmmp_shipping_by_country['_free_shipping_amount']) ? $wcfmmp_shipping_by_country['_free_shipping_amount'] : '';
-				 $wcfmmp_free_shipping_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $wcfmmp_free_shipping_amount );
+				 $wcfmmp_free_shipping_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $wcfmmp_free_shipping_amount, $vendor_id );
 
 				 $default_shipping_price     = isset( $wcfmmp_shipping_by_country['_wcfmmp_shipping_type_price'] ) ? $wcfmmp_shipping_by_country['_wcfmmp_shipping_type_price'] : 0;
 				 $default_shipping_add_price = isset( $wcfmmp_shipping_by_country['_wcfmmp_additional_product'] ) ? $wcfmmp_shipping_by_country['_wcfmmp_additional_product'] : 0;
@@ -266,7 +300,7 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
 				 $downloadable_count  = 0;
 				 $products_total_cost = 0;
 				 foreach ( $products as $product ) {
-
+				 	 
 					 if ( isset( $product['variation_id'] ) ) {
 							 $is_virtual      = get_post_meta( $product['variation_id'], '_virtual', true );
 							 $is_downloadable = get_post_meta( $product['variation_id'], '_downloadable', true );
@@ -296,10 +330,27 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
 							 $price[ $vendor_id ]['qty'][] = 0;
 					 }
 					 
-					 $products_total_cost += (float) get_post_meta( $product['product_id'], '_price', true ) * absint( $product['quantity'] );
+					 $line_subtotal      = (float) $product['line_subtotal'];
+					 $line_total         = (float) $product['line_total'];
+					 $discount_total     = $line_subtotal - $line_total;
+					 $line_subtotal_tax  = (float) $product['line_subtotal_tax'];
+					 $line_total_tax     = (float) $product['line_tax'];
+					 $discount_tax_total = $line_subtotal_tax - $line_total_tax;
+					
+					 if( apply_filters( 'wcfmmp_free_shipping_threshold_consider_tax', true ) ) {
+					 	 $total = $line_subtotal + $line_subtotal_tax;
+					 } else {
+					 	 $total = $line_subtotal;
+					 }
+		
+					 if ( WC()->cart->display_prices_including_tax() ) {
+						 $products_total_cost += round( $total - ( $discount_total + $discount_tax_total ), wc_get_price_decimals() );
+					 } else {
+						 $products_total_cost += round( $total - $discount_total, wc_get_price_decimals() );
+					 }
 				 }
 				 
-				 if( $wcfmmp_free_shipping_amount && ( $wcfmmp_free_shipping_amount <= $products_total_cost ) ) {
+				 if( $is_consider_free_threshold && $wcfmmp_free_shipping_amount && ( $wcfmmp_free_shipping_amount <= $products_total_cost ) ) {
 				 	 return apply_filters( 'wcfmmp_shipping_country_calculate_amount', 0, $price, $products, $destination_country, $destination_state );
 				 }
 
@@ -311,9 +362,9 @@ class WCFMmp_Shipping_By_Country extends WC_Shipping_Method {
 
 				 $wcfmmp_country_rates = get_user_meta( $vendor_id, '_wcfmmp_country_rates', true );
 				 $wcfmmp_state_rates   = get_user_meta( $vendor_id, '_wcfmmp_state_rates', true );
-
+				 
 				 if ( isset( $wcfmmp_state_rates[$destination_country] ) ) {
-					 if ( array_key_exists( $destination_state, $wcfmmp_state_rates[$destination_country] ) ) {
+					 if ( $destination_state && array_key_exists( $destination_state, $wcfmmp_state_rates[$destination_country] ) ) {
 						 if ( isset( $wcfmmp_state_rates[$destination_country][$destination_state] ) ) {
 							 $price[$vendor_id]['state_rates'] = floatval( $wcfmmp_state_rates[$destination_country][$destination_state] );
 						 } else {

@@ -22,7 +22,7 @@
 			<?php echo $content; ?>
 		</div>			
 		<div class="price">
-      		<a href="<?php echo $btn_url; ?>" class="price-btn" style="font-size: <?php echo $btnsize; ?>px; background-color: <?php echo $top_bg; ?>; box-shadow: inset 0 -2px <?php echo $top_bg; ?>;-webkit-box-shadow: inset 0 -2px <?php echo $top_bg; ?>;">
+      		<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="price-btn" style="font-size: <?php echo $btnsize; ?>px; background-color: <?php echo $top_bg; ?>; box-shadow: inset 0 -2px <?php echo $top_bg; ?>;-webkit-box-shadow: inset 0 -2px <?php echo $top_bg; ?>;">
       			<?php echo $btn_text; ?>
       		</a>
 		</div>

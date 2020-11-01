@@ -79,10 +79,14 @@ class wcfmvm_paypal_ipn_handler {
 				update_user_meta( $member_id, 'wcfm_membership_paymode', 'paypal' );
 				update_user_meta( $member_id, 'wcfm_paypal_subscription_id', $this->ipn_data['subscr_id'] );
 				$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
-				if( $required_approval == 'no' ) {
+				if( $required_approval != 'yes' ) {
 					$WCFMvm->register_vendor( $member_id );
 				} else {
-					$WCFMvm->send_approval_reminder_admin( $member_id );
+					$wcfm_is_send_approval_reminder_admin = get_user_meta( $member_id, 'wcfm_is_send_approval_reminder_admin', true );
+					if( !$wcfm_is_send_approval_reminder_admin ) {
+						$WCFMvm->send_approval_reminder_admin( $member_id );
+						update_user_meta( $member_id, 'wcfm_is_send_approval_reminder_admin', 'yes' );
+					}
 				}
 			}
 			$WCFMvm->store_subscription_data( $member_id, 'paypal_subs', $this->ipn_data['subscr_id'], $transaction_type, 'Completed', $this->post_string );
@@ -119,10 +123,14 @@ class wcfmvm_paypal_ipn_handler {
 			if( $wcfm_membership ) {
 				update_user_meta( $member_id, 'wcfm_membership_paymode', 'paypal' );
 				$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
-				if( $required_approval == 'no' ) {
+				if( $required_approval != 'yes' ) {
 					$WCFMvm->register_vendor( $member_id );
 				} else {
-					$WCFMvm->send_approval_reminder_admin( $member_id );
+					$wcfm_is_send_approval_reminder_admin = get_user_meta( $member_id, 'wcfm_is_send_approval_reminder_admin', true );
+					if( !$wcfm_is_send_approval_reminder_admin ) {
+						$WCFMvm->send_approval_reminder_admin( $member_id );
+						update_user_meta( $member_id, 'wcfm_is_send_approval_reminder_admin', 'yes' );
+					}
 				}
 			}
 			$WCFMvm->store_subscription_data( $member_id, 'paypal', $txn_id, $transaction_type, $payment_status, $this->post_string );

@@ -186,6 +186,25 @@ class WCFM_Withdrawal {
       	} elseif( $WCFM->is_marketplace == 'wcfmmarketplace' ) {
       		$WCFM->library->load_daterangepicker_lib();
       		wp_enqueue_script( 'wcfm_wcfm_payments_js', $WCFM->library->js_lib_url . 'withdrawal/wcfm/wcfm-script-payments.js', array('jquery'), $WCFM->version, true );
+      		
+      		// Screen manager
+					$wcfm_screen_manager = (array) get_option( 'wcfm_screen_manager' );
+					$wcfm_screen_manager_data = array();
+					if( isset( $wcfm_screen_manager['withdrawal-requests'] ) ) $wcfm_screen_manager_data = $wcfm_screen_manager['withdrawal-requests'];
+					if( !isset( $wcfm_screen_manager_data['admin'] ) ) {
+						$wcfm_screen_manager_data['admin'] = $wcfm_screen_manager_data;
+						$wcfm_screen_manager_data['vendor'] = $wcfm_screen_manager_data;
+					}
+					if( wcfm_is_vendor() ) {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['vendor'];
+					} else {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
+					}
+					$wcfm_screen_manager_data[3] = 'yes';
+					if( apply_filters( 'wcfm_payments_additonal_data_hidden', true ) ) {
+						$wcfm_screen_manager_data[8] = 'yes';
+					}
+					wp_localize_script( 'wcfm_wcfm_payments_js', 'wcfm_payments_screen_manage', $wcfm_screen_manager_data );
       	} elseif( $WCFM->is_marketplace == 'dokan' ) {
       		wp_enqueue_script( 'wcfm_dokan_payments_js', $WCFM->library->js_lib_url . 'withdrawal/dokan/wcfm-script-payments.js', array('jquery'), $WCFM->version, true );
       	}
@@ -193,11 +212,32 @@ class WCFM_Withdrawal {
       
       case 'wcfm-withdrawal':
       	$WCFM->library->load_datatable_lib();
+      	$WCFM->library->load_datepicker_lib();
       	$WCFM->library->load_datatable_download_lib();
       	if( $WCFM->is_marketplace == 'wcmarketplace' ) {
       		wp_enqueue_script( 'wcfm_wcmp_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/wcmp/wcfm-script-withdrawal.js', array('jquery'), $WCFM->version, true );
       	} elseif( $WCFM->is_marketplace == 'wcfmmarketplace' ) {
+      		$WCFM->library->load_daterangepicker_lib();
       		wp_enqueue_script( 'wcfm_wcfm_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/wcfm/wcfm-script-withdrawal.js', array('jquery'), $WCFM->version, true );
+      		
+      		// Screen manager
+					$wcfm_screen_manager = (array) get_option( 'wcfm_screen_manager' );
+					$wcfm_screen_manager_data = array();
+					if( isset( $wcfm_screen_manager['withdrawal-requests'] ) ) $wcfm_screen_manager_data = $wcfm_screen_manager['withdrawal-requests'];
+					if( !isset( $wcfm_screen_manager_data['admin'] ) ) {
+						$wcfm_screen_manager_data['admin'] = $wcfm_screen_manager_data;
+						$wcfm_screen_manager_data['vendor'] = $wcfm_screen_manager_data;
+					}
+					if( wcfm_is_vendor() ) {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['vendor'];
+					} else {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
+					}
+					$wcfm_screen_manager_data[2] = 'yes';
+					if( apply_filters( 'wcfm_withdrawal_additonal_data_hidden', true ) ) {
+						$wcfm_screen_manager_data[6] = 'yes';
+					}
+					wp_localize_script( 'wcfm_wcfm_withdrawal_js', 'wcfm_withdrawal_screen_manage', $wcfm_screen_manager_data );
       	} elseif( $WCFM->is_marketplace == 'dokan' ) {
       		wp_enqueue_script( 'wcfm_dokan_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/dokan/wcfm-script-withdrawal.js', array('jquery'), $WCFM->version, true );
       	}
@@ -206,21 +246,66 @@ class WCFM_Withdrawal {
       case 'wcfm-withdrawal-requests':
       	$WCFM->library->load_select2_lib();
       	$WCFM->library->load_datatable_lib();
+      	$WCFM->library->load_datepicker_lib();
       	$WCFM->library->load_datatable_download_lib();
       	if( $WCFM->is_marketplace == 'wcmarketplace' ) {
       		//wp_enqueue_script( 'wcfm_wcmp_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/wcmp/wcfm-script-withdrawal.js', array('jquery'), $WCFM->version, true );
       	} elseif( $WCFM->is_marketplace == 'wcfmmarketplace' ) {
+      		$WCFM->library->load_daterangepicker_lib();
       		wp_enqueue_script( 'wcfm_wcfm_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/wcfm/wcfm-script-withdrawal-requests.js', array('jquery'), $WCFM->version, true );
+      		
+      		// Screen manager
+					$wcfm_screen_manager = (array) get_option( 'wcfm_screen_manager' );
+					$wcfm_screen_manager_data = array();
+					if( isset( $wcfm_screen_manager['withdrawal-requests'] ) ) $wcfm_screen_manager_data = $wcfm_screen_manager['withdrawal-requests'];
+					if( !isset( $wcfm_screen_manager_data['admin'] ) ) {
+						$wcfm_screen_manager_data['admin'] = $wcfm_screen_manager_data;
+						$wcfm_screen_manager_data['vendor'] = $wcfm_screen_manager_data;
+					}
+					if( wcfm_is_vendor() ) {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['vendor'];
+						$wcfm_screen_manager_data[3] = 'yes';
+					} else {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
+					}
+					$wcfm_screen_manager_data[7] = 'yes';
+					if( apply_filters( 'wcfm_withdrawal_request_additonal_data_hidden', true ) ) {
+						$wcfm_screen_manager_data[8] = 'yes';
+					}
+					wp_localize_script( 'wcfm_wcfm_withdrawal_js', 'wcfm_withdrawal_request_screen_manage', $wcfm_screen_manager_data );
       	} elseif( $WCFM->is_marketplace == 'dokan' ) {
       		wp_enqueue_script( 'wcfm_dokan_withdrawal_js', $WCFM->library->js_lib_url . 'withdrawal/dokan/wcfm-script-withdrawal-requests.js', array('jquery'), $WCFM->version, true );
       	}
       break;
       
       case 'wcfm-withdrawal-reverse':
+      	$WCFM->library->load_select2_lib();
       	$WCFM->library->load_datatable_lib();
+      	$WCFM->library->load_datepicker_lib();
       	$WCFM->library->load_datatable_download_lib();
       	if( $WCFM->is_marketplace == 'wcfmmarketplace' ) {
+      		$WCFM->library->load_daterangepicker_lib();
       		wp_enqueue_script( 'wcfm_wcfm_withdrawal_reverse_js', $WCFM->library->js_lib_url . 'withdrawal/wcfm/wcfm-script-withdrawal-reverse.js', array('jquery'), $WCFM->version, true );
+      		
+      		// Screen manager
+					$wcfm_screen_manager = (array) get_option( 'wcfm_screen_manager' );
+					$wcfm_screen_manager_data = array();
+					if( isset( $wcfm_screen_manager['withdrawal-reverse'] ) ) $wcfm_screen_manager_data = $wcfm_screen_manager['withdrawal-reverse'];
+					if( !isset( $wcfm_screen_manager_data['admin'] ) ) {
+						$wcfm_screen_manager_data['admin'] = $wcfm_screen_manager_data;
+						$wcfm_screen_manager_data['vendor'] = $wcfm_screen_manager_data;
+					}
+					if( wcfm_is_vendor() ) {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['vendor'];
+						$wcfm_screen_manager_data[2] = 'yes';
+					} else {
+						$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
+					}
+					if( apply_filters( 'wcfm_withdrawal_reverse_additonal_data_hidden', true ) ) {
+						$wcfm_screen_manager_data[6] = 'yes';
+					}
+					$wcfm_screen_manager_data[7] = 'yes';
+					wp_localize_script( 'wcfm_wcfm_withdrawal_reverse_js', 'wcfm_withdrawal_reverse_screen_manage', $wcfm_screen_manager_data );
       	}
       break;
       

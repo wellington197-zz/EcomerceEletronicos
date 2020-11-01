@@ -60,11 +60,11 @@ if( !empty( $membership_feature_lists ) ) {
 }
 
 $wcfm_restricted_memberships = array();
-if( $current_plan ) {
+//if( $current_plan ) {
 	$member_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
 	$wcfm_restricted_memberships = get_user_meta( $member_id, 'wcfm_restricted_memberships', true ); 
 	if( !$wcfm_restricted_memberships ) $wcfm_restricted_memberships = array();
-}
+//}
 
 $wcfm_membership_table_plan_count = 0;
 ?>
@@ -82,8 +82,8 @@ $wcfm_membership_table_plan_count = 0;
 						foreach( $membership_feature_lists as $membership_feature_list ) {
 							?>
 							<div class="wcfm_membership_element wcfm_membership_feature_element">
-								<span class="wcfm_membership_element_content"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'wc-multivendor-membership' ) ); ?>
-								  <?php if( isset( $membership_feature_list['help'] ) && !empty( $membership_feature_list['help'] ) ) { ?>&nbsp;<i class="wcfmfa fa-question-circle text_tip" data-tip="<?php echo wcfm_removeslashes( __( $membership_feature_list['help'], 'wc-multivendor-membership' ) ); ?>"></i> <?php } ?>
+								<span class="wcfm_membership_element_content"><?php echo wcfm_removeslashes( __( $membership_feature_list['feature'], 'WCfM' ) ); ?>
+								  <?php if( isset( $membership_feature_list['help'] ) && !empty( $membership_feature_list['help'] ) ) { ?>&nbsp;<i class="wcfmfa fa-question-circle text_tip" data-tip="<?php echo wcfm_removeslashes( __( $membership_feature_list['help'], 'WCfM' ) ); ?>"></i> <?php } ?>
 								</span>
 							</div>
 							<?php
@@ -100,6 +100,7 @@ $wcfm_membership_table_plan_count = 0;
     <?php
     foreach( $wcfm_memberships_array as $wcfm_membership_id => $wcfm_membership_data ) {
     	$is_wcfm_membership_plan_disable = get_post_meta( $wcfm_membership_id, 'is_wcfm_membership_plan_disable', true ) ? 'yes' : 'no';
+    	$is_wcfm_membership_plan_disable = apply_filters( 'wcfm_membership_is_plan_disable', $is_wcfm_membership_plan_disable, $wcfm_membership_id );
     	if( $is_wcfm_membership_plan_disable == 'yes' ) continue;
     	
     	// Restricted Membership Check
@@ -139,20 +140,20 @@ $wcfm_membership_table_plan_count = 0;
 					<?php } ?>
 					<div class="wcfm_membership_title">
 					  <div class="wcfm_membership_title_text">
-						  <?php _e( $wcfm_membership->post_title, 'wc-multivendor-membership' ); ?>
+						  <?php _e( $wcfm_membership->post_title, 'WCfM' ); ?>
 						</div>
 					</div>
 					<div class="wcfm_membership_price">
 						<?php 
 						if( $is_free == 'yes' ) {
-							echo apply_filters( 'wcfm_membership_price_display', wc_price(0), 0 );
+							echo apply_filters( 'wcfm_membership_price_display', wc_price(0), 0, $wcfm_membership_id, true );
 							echo '<div class="wcfm_membership_price_description">' . __( 'No payment required', 'wc-multivendor-membership' ) . '</div>';
 						} else {
 							if( $subscription_type == 'one_time' ) {
-								echo apply_filters( 'wcfm_membership_price_display', wc_price($one_time_amt), $one_time_amt );
+								echo apply_filters( 'wcfm_membership_price_display', wc_price($one_time_amt), $one_time_amt, $wcfm_membership_id, false );
 								echo '<div class="wcfm_membership_price_description">' . __( 'One time payment', 'wc-multivendor-membership' ) . '</div>';
 							} else {
-								echo apply_filters( 'wcfm_membership_price_display', wc_price($billing_amt), $billing_amt );
+								echo apply_filters( 'wcfm_membership_price_display', wc_price($billing_amt), $billing_amt, $wcfm_membership_id, false );
 								$price_description = sprintf( __( 'for each %s %s', 'wc-multivendor-membership' ), $billing_period, $period_options[$billing_period_type] );
 								if( !empty( $trial_period ) && !empty( $trial_amt ) ) {
 									$price_description .= ' ' . sprintf( __( 'with %s for first %s %s', 'wc-multivendor-membership' ), get_woocommerce_currency_symbol() . $trial_amt, $trial_period, $period_options[$trial_period_type] );
@@ -167,7 +168,7 @@ $wcfm_membership_table_plan_count = 0;
 					</div>
 					<div class="wcfm_membership_description">
 						<span class="wcfm_membership_description_content">
-						  <?php _e( $wcfm_membership->post_excerpt, 'wc-multivendor-membership' ); ?>
+						  <?php _e( $wcfm_membership->post_excerpt, 'WCfM' ); ?>
 						  <?php do_action( 'after_wcfm_membership_description_content', $wcfm_membership->ID ); ?>
 						</span>
 					</div>
@@ -184,8 +185,8 @@ $wcfm_membership_table_plan_count = 0;
 								?>
 								<div class="wcfm_membership_element wcfm_membership_feature_element">
 									<span class="wcfm_membership_element_content">
-									  <?php _e( $membership_feature_list['feature'], 'wc-multivendor-membership' ); ?>
-									  <?php if( isset( $membership_feature_list['help'] ) && !empty( $membership_feature_list['help'] ) ) { ?>&nbsp;<i class="wcfmfa fa-question-circle text_tip" data-tip="<?php _e( $membership_feature_list['help'], 'wc-multivendor-membership' ); ?>"></i> <?php } ?>
+									  <?php _e( $membership_feature_list['feature'], 'WCfM' ); ?>
+									  <?php if( isset( $membership_feature_list['help'] ) && !empty( $membership_feature_list['help'] ) ) { ?>&nbsp;<i class="wcfmfa fa-question-circle text_tip" data-tip="<?php _e( $membership_feature_list['help'], 'WCfM' ); ?>"></i> <?php } ?>
 									</span>
 								</div>
 								<?php
@@ -206,20 +207,20 @@ $wcfm_membership_table_plan_count = 0;
 						<?php } ?>
 						<div class="wcfm_membership_title">
 						  <div class="wcfm_membership_title_text">
-							  <?php _e( $wcfm_membership->post_title, 'wc-multivendor-membership' ); ?>
+							  <?php _e( $wcfm_membership->post_title, 'WCfM' ); ?>
 							</div>
 						</div>
 						<div class="wcfm_membership_price">
 							<?php 
 							if( $is_free == 'yes' ) {
-								echo apply_filters( 'wcfm_membership_price_display', wc_price(0), 0 );
+								echo apply_filters( 'wcfm_membership_price_display', wc_price(0), 0, $wcfm_membership_id, true );
 								echo '<div class="wcfm_membership_price_description">' . __( 'No payment required', 'wc-multivendor-membership' ) . '</div>';
 							} else {
 								if( $subscription_type == 'one_time' ) {
-									echo apply_filters( 'wcfm_membership_price_display', wc_price($one_time_amt), $one_time_amt );
+									echo apply_filters( 'wcfm_membership_price_display', wc_price($one_time_amt), $one_time_amt, $wcfm_membership_id, false );
 									echo '<div class="wcfm_membership_price_description">' . __( 'One time payment', 'wc-multivendor-membership' ) . '</div>';
 								} else {
-									echo apply_filters( 'wcfm_membership_price_display', wc_price($billing_amt), $billing_amt );
+									echo apply_filters( 'wcfm_membership_price_display', wc_price($billing_amt), $billing_amt, $wcfm_membership_id, false );
 									$price_description = sprintf( __( 'for each %s %s', 'wc-multivendor-membership' ), $billing_period, $period_options[$billing_period_type] );
 									if( !empty( $trial_period ) && !empty( $trial_amt ) ) {
 										$price_description .= ' ' . sprintf( __( 'with %s for first %s %s', 'wc-multivendor-membership' ), get_woocommerce_currency_symbol() . $trial_amt, $trial_period, $period_options[$trial_period_type] );
@@ -234,7 +235,7 @@ $wcfm_membership_table_plan_count = 0;
 						</div>
 						<div class="wcfm_membership_description">
 							<span class="wcfm_membership_description_content">
-							  <?php _e( $wcfm_membership->post_excerpt, 'wc-multivendor-membership' ); ?>
+							  <?php _e( $wcfm_membership->post_excerpt, 'WCfM' ); ?>
 							  <?php do_action( 'after_wcfm_membership_description_content', $wcfm_membership->ID ); ?>
 							</span>
 						</div>
@@ -244,11 +245,14 @@ $wcfm_membership_table_plan_count = 0;
 						<div class="wcfm_membership_box_body">
 							<?php
 							foreach( $membership_feature_lists as $membership_feature_list ) {
-								$feature_val = 'x';
-								if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) && !empty( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+								$feature_val = '';
+								$feature_name = sanitize_title($membership_feature_list['feature']);
+								if( !empty( $features ) && isset( $features[$feature_name] ) && !empty( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+								if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) && !empty( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+								if( !$feature_val ) $feature_val = 'x';
 								?>
 								<div class="wcfm_membership_element">
-									<span class="wcfm_membership_element_content"><?php _e( $feature_val, 'wc-multivendor-membership' ); ?></span>
+									<span class="wcfm_membership_element_content"><?php _e( $feature_val, 'WCfM' ); ?></span>
 								</div>
 								<?php
 							}

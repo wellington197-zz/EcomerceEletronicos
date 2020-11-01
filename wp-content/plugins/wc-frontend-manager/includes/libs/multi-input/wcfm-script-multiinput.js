@@ -21,7 +21,7 @@ jQuery(document).ready(function($) {
       $(this).children('.remove_multi_input_block').attr( 'title', wcfm_dashboard_messages.wcfm_multiblick_remove_help );
       $(this).children('.wcfm_multiblock_sortable').remove();
       if( multi_input_limit != 1 ) {
-      	if( !multi_input_holder.hasClass( 'wcfm_non_sortable' ) ) {
+      	if( !multi_input_holder.hasClass( 'wcfm_non_sortable' ) && !wcfm_params.is_mobile ) {
       		$(this).prepend('<span class="wcfmfa fa-arrows-alt wcfm_multiblock_sortable" title="'+wcfm_dashboard_messages.wcfm_multiblick_sortable_help+'"></span><div class="wcfm_clearfix"></div>');
       	}
       }
@@ -114,8 +114,11 @@ jQuery(document).ready(function($) {
 			multi_input_holder.find('.field_type_options').each(function() {
 				$(this).off('change').on('change', function() {
 					$(this).parent().find('.field_type_select_options').hide();
+					$(this).parent().find('.field_type_html_options').hide();
 					if( $(this).val() == 'select' ) $(this).parent().find('.field_type_select_options').show();
+					else if( $(this).val() == 'mselect' ) $(this).parent().find('.field_type_select_options').show();
 					else if( $(this).val() == 'dropdown' ) $(this).parent().find('.field_type_select_options').show();
+					else if( $(this).val() == 'html' ) $(this).parent().find('.field_type_html_options').show();
 				} ).change();
 			} );
 			
@@ -177,8 +180,11 @@ jQuery(document).ready(function($) {
 		multi_input_holder.find('.field_type_options').each(function() {
 			$(this).off('change').on('change', function() {
 				$(this).parent().find('.field_type_select_options').hide();
+				$(this).parent().find('.field_type_html_options').hide();
 				if( $(this).val() == 'select' ) $(this).parent().find('.field_type_select_options').show();
+				else if( $(this).val() == 'mselect' ) $(this).parent().find('.field_type_select_options').show();
 				else if( $(this).val() == 'dropdown' ) $(this).parent().find('.field_type_select_options').show();
+				else if( $(this).val() == 'html' ) $(this).parent().find('.field_type_html_options').show();
 			} ).change();
 		} );
 		
@@ -194,11 +200,15 @@ jQuery(document).ready(function($) {
 		} );
 		
 		// Sortable
-		multi_input_holder.sortable({
-      update: function( event, ui ) {
-        resetMultiInputIndex(multi_input_holder);
-      }
-    }).disableSelection();
+		if( multi_input_limit != 1 ) {
+      if( !multi_input_holder.hasClass( 'wcfm_non_sortable' ) && !wcfm_params.is_mobile ) {
+				multi_input_holder.sortable({
+					update: function( event, ui ) {
+						resetMultiInputIndex(multi_input_holder);
+					}
+				}).disableSelection();
+			}
+		}
   }
   
   // Fields Collapser

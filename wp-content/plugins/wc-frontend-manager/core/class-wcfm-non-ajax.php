@@ -231,6 +231,8 @@ class WCFM_Non_Ajax {
 	function wcfm_admin_bar_menu() {
 		global $WCFM, $wp_admin_bar;
 		
+		if( !current_user_can( 'administrator' ) ) return;
+		
 		$wcfm_menus = $WCFM->get_wcfm_menus();
 		$wcfm_formeted_menus = apply_filters( 'wcfm_formeted_menus', $wcfm_menus );
 		//unset($wcfm_menus['settings']);
@@ -258,7 +260,7 @@ class WCFM_Non_Ajax {
 							'parent'    => 'wcfm-menu',
 							'id' => 'wcfm-menu-'. $wcfm_menu_key,
 							'title' => '<span class="wcfm-admin-menu">' . __( $wcfm_menu_data['label'], 'wc-frontend-manager' ) . '</span>',
-							'href'  => wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
+							'href'  => $wcfm_menu_data['url'], //wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
 							'meta'   => array( 'tabindex' => 0 )
 						) );
 						
@@ -268,14 +270,14 @@ class WCFM_Non_Ajax {
 									'parent'    => 'wcfm-menu-'. $wcfm_menu_key,
 									'id' => 'wcfm-menu-sub-parent-'. $wcfm_menu_key,
 									'title' => '<span class="wcfm-admin-menu">' . __( $wcfm_menu_data['label'], 'wc-frontend-manager' ) . '</span>',
-									'href'  => wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
+									'href'  => $wcfm_menu_data['url'], //wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
 									'meta'   => array( 'tabindex' => 0 )
 								) );
 								$wp_admin_bar->add_menu( array(
 									'parent'    => 'wcfm-menu-'. $wcfm_menu_key,
 									'id' => 'wcfm-menu-sub-'. $wcfm_menu_key,
 									'title' => '<span class="wcfm-admin-menu">' . __( 'Add New', 'wc-frontend-manager' ) . '</span>',
-									'href'  => wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
+									'href'  => $wcfm_menu_data['url'], //wcfm_get_endpoint_url( $wcfm_menu_key, '', $wcfm_page ),
 									'meta'   => array( 'tabindex' => 0 )
 								) );
 							}

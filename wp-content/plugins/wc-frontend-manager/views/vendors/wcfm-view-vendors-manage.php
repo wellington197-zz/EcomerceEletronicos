@@ -11,7 +11,7 @@
 global $wp, $WCFM, $WCFMu;
 
 $is_allow_vendors = apply_filters( 'wcfm_is_allow_vendors', true );
-if( !$is_allow_vendors || !apply_filters( 'wcfm_is_allow_manage_vendor', true ) || !apply_filters( 'wcfm_is_allow_edit_vendor', true ) ) {
+if( wcfm_is_vendor() || !$is_allow_vendors || !apply_filters( 'wcfm_is_allow_manage_vendor', true ) || !apply_filters( 'wcfm_is_allow_edit_vendor', true ) ) {
 	wcfm_restriction_message_show( "Vendors" );
 	return;
 }
@@ -161,7 +161,7 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 <div class="collapse wcfm-collapse">
   <div class="wcfm-page-headig">
 		<span class="wcfmfa fa-user-alt"></span>
-		<span class="wcfm-page-heading-text"><?php echo __( 'Manage', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager'); ?></span>
+		<span class="wcfm-page-heading-text"><?php echo apply_filters( 'wcfm_manage_vendor_title', __( 'Manage', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager') ); ?></span>
 		<?php do_action( 'wcfm_page_heading' ); ?>
 	</div>
 	<div class="wcfm-collapse-content">
@@ -322,12 +322,18 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 						$disable_vendor = get_user_meta( $vendor_id, '_disable_vendor', true );
 						echo "<div class=\"wcfm_clearfix\"></div><br />";
 						if( !$disable_vendor ) {
-							echo '<a href="#" style="padding: 10px !important;" data-memberid="'.$vendor_id.'" id="wcfm_vendor_disable_button" class="wcfm_vendor_disable_button wcfm_submit_button">' . __( 'Disable Account', 'wc-frontend-manager' ) . '</a>';
+							
+							if( apply_filters( 'wcfm_is_allow_disable_enable_vendor', true ) ) {
+								echo '<a href="#" style="padding: 10px !important;" data-memberid="'.$vendor_id.'" id="wcfm_vendor_disable_button" class="wcfm_vendor_disable_button wcfm_submit_button">' . __( 'Disable Account', 'wc-frontend-manager' ) . '</a>';
+							}
+							
 							if( $stat_box_link ) {
 								echo '<a href="'.$stat_box_link.'" style="padding: 10px !important;" class="wcfm_submit_button"><span class="wcfmfa fa-chart-line"></span>&nbsp;' . __( 'Sales Report', 'wc-frontend-manager' ) . '</a>';
 							}
 						} else {
-							echo '<a href="#" style="padding: 10px !important;" data-memberid="'.$vendor_id.'" id="wcfm_vendor_enable_button" class="wcfm_vendor_enable_button wcfm_submit_button">' . __( 'Enable Account', 'wc-frontend-manager' ) . '</a>';
+							if( apply_filters( 'wcfm_is_allow_disable_enable_vendor', true ) ) {
+								echo '<a href="#" style="padding: 10px !important;" data-memberid="'.$vendor_id.'" id="wcfm_vendor_enable_button" class="wcfm_vendor_enable_button wcfm_submit_button">' . __( 'Enable Account', 'wc-frontend-manager' ) . '</a>';
+							}
 						}
 						echo "<div class=\"wcfm_clearfix\"></div><br />";
 					?>
@@ -384,23 +390,25 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 			
 				<?php do_action( 'before_wcfm_vendor_membership_details', $vendor_admin_id, $vendor_id ); ?>
 				
-				<!-- collapsible -->
-				<div class="page_collapsible vendor_manage_membership" id="wcfm_vendor_manage_form_membership_head"><label class="wcfmfa fa-user-plus"></label><?php _e( 'Membership', 'wc-frontend-manager' ); ?><span></span></div>
-				<div class="wcfm-container">
-					<div id="wcfm_vendor_manage_form_membership_expander" class="wcfm-content">
-						<?php 
-						if( WCFM_Dependencies::wcfmvm_plugin_active_check() ) {
-							do_action( 'wcfm_vendor_manage_membrship_details', $vendor_admin_id, $vendor_id );
-						} else {
-							echo "<h2>";
-							_e( 'Vendor not yet subscribed for a membership!', 'wc-frontend-manager' );
-							echo "</h2><div class=\"wcfm_clearfix\"></div><br />";
-						}
-						?>
+				<?php if( apply_filters( 'wcfm_is_pref_membership', true ) ) { ?>
+					<!-- collapsible -->
+					<div class="page_collapsible vendor_manage_membership" id="wcfm_vendor_manage_form_membership_head"><label class="wcfmfa fa-user-plus"></label><?php _e( 'Membership', 'wc-frontend-manager' ); ?><span></span></div>
+					<div class="wcfm-container">
+						<div id="wcfm_vendor_manage_form_membership_expander" class="wcfm-content">
+							<?php 
+							if( WCFM_Dependencies::wcfmvm_plugin_active_check() ) {
+								do_action( 'wcfm_vendor_manage_membrship_details', $vendor_admin_id, $vendor_id );
+							} else {
+								echo "<h2>";
+								_e( 'Vendor not yet subscribed for a membership!', 'wc-frontend-manager' );
+								echo "</h2><div class=\"wcfm_clearfix\"></div><br />";
+							}
+							?>
+						</div>
 					</div>
-				</div>
-				<div class="wcfm_clearfix"></div><br />
-				<!-- end collapsible -->
+					<div class="wcfm_clearfix"></div><br />
+					<!-- end collapsible -->
+				<?php } ?>
 				
 				<?php do_action( 'after_wcfm_vendor_membership_details', $vendor_admin_id, $vendor_id ); ?>
 				
@@ -410,32 +418,24 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 					<div class="wcfm-container">
 						<div id="wcfm_vendor_manage_form_message_expander" class="wcfm-content">
 							<?php
-							if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
-								$rich_editor = apply_filters( 'wcfm_is_allow_rich_editor', 'rich_editor' );
-								$wpeditor = apply_filters( 'wcfm_is_allow_profile_wpeditor', 'wpeditor' );
-								if( $wpeditor && $rich_editor ) {
-									$rich_editor = 'wcfm_wpeditor';
-								} else {
-									$wpeditor = 'textarea';
-								}
-								$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_messages_field_vendor_manage', array(
-																																																				"wcfm_messages" => array( 'type' => $wpeditor, 'class' => 'wcfm-textarea wcfm_ele ' . $rich_editor, 'label_class' => 'wcfm_title' ),
-																																																				"direct_to" => array( 'type' => 'hidden', 'value' => $vendor_id ),
-																																																				) ) );
-								?>
-								<div id="wcfm_messages_submit">
-									<input type="submit" name="save-data" value="<?php _e( 'Send', 'wc-frontend-manager' ); ?>" id="wcfm_messages_save_button" class="wcfm_submit_button" />
-								</div>
-								<div class="wcfm-clearfix"></div>
-								<div class="wcfm-message" tabindex="-1"></div>
-								<div class="wcfm-clearfix"></div>
-							<?php 
-							 } else {
-								 if( $is_wcfmu_inactive_notice_show = apply_filters( 'is_wcfmu_inactive_notice_show', true ) ) {
-									 wcfmu_feature_help_text_show( __( 'Direct Message', 'wc-frontend-manager' ), false, true );
-								 }
-							 }
-							 ?>
+							$rich_editor = apply_filters( 'wcfm_is_allow_rich_editor', 'rich_editor' );
+							$wpeditor = apply_filters( 'wcfm_is_allow_profile_wpeditor', 'wpeditor' );
+							if( $wpeditor && $rich_editor ) {
+								$rich_editor = 'wcfm_wpeditor';
+							} else {
+								$wpeditor = 'textarea';
+							}
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_messages_field_vendor_manage', array(
+																																																			"wcfm_messages" => array( 'type' => $wpeditor, 'class' => 'wcfm-textarea wcfm_ele ' . $rich_editor, 'label_class' => 'wcfm_title' ),
+																																																			"direct_to" => array( 'type' => 'hidden', 'value' => $vendor_id ),
+																																																			) ) );
+							?>
+							<div id="wcfm_messages_submit">
+								<input type="submit" name="save-data" value="<?php _e( 'Send', 'wc-frontend-manager' ); ?>" id="wcfm_messages_save_button" class="wcfm_submit_button" />
+							</div>
+							<div class="wcfm-clearfix"></div>
+							<div class="wcfm-message" tabindex="-1"></div>
+							<div class="wcfm-clearfix"></div>
 						</div>
 					</div>
 					<div class="wcfm_clearfix"></div><br />

@@ -30,7 +30,7 @@ class WCFM_Withdrawal_Requests_Approve_Controller {
 	  	$withdraw_note = esc_sql( $withdraw_note );
 	  	
 	  	// WCFM form custom validation filter
-			$custom_validation_results = apply_filters( 'wcfm_form_custom_validation', $wcfm_withdrawal_manage_form_data, 'withdrawal_manage' );
+			$custom_validation_results = apply_filters( 'wcfm_form_custom_validation', $wcfm_withdrawal_manage_form_data, 'withdrawal_requests_manage' );
 			if(isset($custom_validation_results['has_error']) && !empty($custom_validation_results['has_error'])) {
 				$custom_validation_error = __( 'There has some error in submitted data.', 'wc-frontend-manager' );
 				if( isset( $custom_validation_results['message'] ) && !empty( $custom_validation_results['message'] ) ) { $custom_validation_error = $custom_validation_results['message']; }

@@ -366,7 +366,7 @@ jQuery( function( $ ) {
 
 			if( jQuery('input[name=wcfmmp_stripe_customer_id]').length > 0 ) {
 				if ( jQuery('input[name=wcfmmp_stripe_customer_id]:checked').val() == 'new' ) {
-					if( ! wcfmmp_stripe_split_pay_form.hasSource() && ! wcfmmp_stripe_split_pay_form.hasToken() ) {
+					if( ! wcfmmp_stripe_split_pay_form.hasSource() || ! wcfmmp_stripe_split_pay_form.hasToken() ) {
 						e.preventDefault();
 	
 						wcfmmp_stripe_split_pay_form.block();
@@ -387,7 +387,7 @@ jQuery( function( $ ) {
 					//return false;
 				}
 			} else {
-				if( ! wcfmmp_stripe_split_pay_form.hasSource() && ! wcfmmp_stripe_split_pay_form.hasToken() ) {
+				if( ! wcfmmp_stripe_split_pay_form.hasSource() || ! wcfmmp_stripe_split_pay_form.hasToken() ) {
 					e.preventDefault();
 
 					wcfmmp_stripe_split_pay_form.block();

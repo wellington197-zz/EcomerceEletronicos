@@ -72,13 +72,6 @@ class Loco_mvc_AdminRouter extends Loco_hooks_Hookable {
                 add_submenu_page( 'loco', $title, __('Settings','loco-translate'), $cap, 'loco-config-user', $render );
             }
         }
-
-        // legacy link redirect from previous v1.x slug
-        if( isset($_GET['page']) && 'loco-translate' === $_GET['page'] ){
-            if( wp_redirect( self::generate('') ) ){
-                exit(0); // <- required to avoid page permissions being checked
-            }
-        }
     }
 
 
@@ -183,6 +176,7 @@ class Loco_mvc_AdminRouter extends Loco_hooks_Hookable {
             'debug' => 'Debug',
             // site-wide plugin configurations
             'config' => 'config_Settings',
+            'config-apis' => 'config_Apis',
             'config-user' => 'config_Prefs',
             'config-debug' => 'config_Debug',
             'config-version' => 'config_Version',
@@ -198,8 +192,9 @@ class Loco_mvc_AdminRouter extends Loco_hooks_Hookable {
             '{type}-debug' => 'bundle_Debug',
             'lang-view' => 'bundle_Locale',
             // file initialization
-            '{type}-msginit'   => 'init_InitPo',
-            '{type}-xgettext'  => 'init_InitPot',
+            '{type}-msginit' => 'init_InitPo',
+            '{type}-xgettext' => 'init_InitPot',
+            '{type}-upload' => 'init_Upload',
             // file resource views
             '{type}-file-view' => 'file_View',
             '{type}-file-edit' => 'file_Edit',
@@ -273,11 +268,11 @@ class Loco_mvc_AdminRouter extends Loco_hooks_Hookable {
         $page = null;
         $action = null;
         // empty action targets plugin root
-        if( ! $route ){
-            $route = 'loco';
+        if( ! $route || 'loco' === $route ){
+            $page = 'loco';
         }
         // support direct usage of page hooks
-        if( $url = menu_page_url( $route, false ) ){
+        else if( 'loco-' === substr($route,0,5) && menu_page_url($route,false) ){
             $page = $route;
         }
         // else split action into admin page (e.g. "loco-themes") and sub-action (e.g. "view-theme")
@@ -294,7 +289,7 @@ class Loco_mvc_AdminRouter extends Loco_hooks_Hookable {
         // sanitize extended route in debug mode only. useful in tests
         if( loco_debugging() ){
             $tmp = array();
-            $class = self::pageToClass( substr($page,5), $action, $tmp );
+            $class = self::pageToClass( (string) substr($page,5), $action, $tmp );
             if( ! $class ){
                 throw new UnexpectedValueException( sprintf('Invalid admin route: %s', json_encode($route) ) );
             }

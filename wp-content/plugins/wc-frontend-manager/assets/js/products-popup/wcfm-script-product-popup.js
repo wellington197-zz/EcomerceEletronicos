@@ -1,4 +1,5 @@
 product_manage_from_popup = true;
+$is_wcfm_product_popup_on = false;
 jQuery(document).ready(function($) {
 	// Popup Content Next-Prev Controllers
   $('#wcfm_product_popup_container').find('.wcfm-container').each(function() {
@@ -52,6 +53,7 @@ jQuery(document).ready(function($) {
   $('.wcfm_product_popup_button').click(function() {
     jQuery.colorbox( { inline:true, href: "#wcfm_product_popup_container", height: 525, width: $product_popup_width,
     		onComplete:function() {
+    			$is_wcfm_product_popup_on = true;
     			$('#wcfm_product_popup_container').find('.wcfm-collapse-content').attr('id', 'wcfm-main-contentainer');
     		}
     });

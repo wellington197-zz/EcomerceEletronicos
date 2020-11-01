@@ -1,4 +1,8 @@
 jQuery(document).ready(function($) {
+	wcfmInitLoginPopup();
+});
+
+function wcfmInitLoginPopup() {
   jQuery('.wcfm_login_popup').each( function() {
   	jQuery(this).click( function( event ) {
 			event.preventDefault();
@@ -82,4 +86,4 @@ jQuery(document).ready(function($) {
 			return false;
 		} );
   } );
-});
+}

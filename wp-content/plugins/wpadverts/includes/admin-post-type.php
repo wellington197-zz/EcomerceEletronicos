@@ -32,10 +32,8 @@ function adverts_save_post($ID = false, $post = false) {
         return $ID;
     }
     
-    $nonce = 'product_price_box_content_nonce';
-    
-    if ( !isset( $_POST[$nonce] ) || !wp_verify_nonce( $_POST[$nonce], basename( __FILE__ ) ) ) {
-        //return $ID;
+    if( ! wp_verify_nonce( adverts_request( "_post_id_nonce" ), "wpadverts-publish-" . $ID ) ) {
+        return $ID;
     }
     
     /* Get the post type object. */
@@ -46,7 +44,7 @@ function adverts_save_post($ID = false, $post = false) {
         return $ID;
     }
 
-    if ( !$post->post_type == 'advert' ) {
+    if ( ! wpadverts_post_type( $post->post_type ) ) {
         return $ID;
     }
 
@@ -99,42 +97,37 @@ function adverts_save_post($ID = false, $post = false) {
         
     }
     
+    
     // Load form data
     $form_scheme = apply_filters( "adverts_form_scheme", Adverts::instance()->get("form"), array() );
 
+    add_filter( "adverts_form_load", "adverts_remove_taxonomy_fields" );
+    
     $form = new Adverts_Form();
     $form->load( $form_scheme );
     $form->bind( stripslashes_deep( $_POST ) );
-    
-    $meta = array();
-    
-    // Find meta fields in the form
-    foreach($form->get_fields() as $field) {
-        
-        $c1 = ! property_exists("WP_Post", $field["name"]);
-        $c2 = ! taxonomy_exists($field["name"]);
-        $c3 = isset( $field["value"] );
-        
-        if( $c1 && $c2 && $c3 ) {
-            $meta[$field["name"]] = array("field"=>$field, "value"=>$field["value"]);
-        }
-    }  
-    
-    // Save meta data values
-    $fields = Adverts::instance()->get("form_field");
-    foreach($meta as $key => $data) {
 
-        $field = $data["field"];
-        $field_type = $field["type"];
-        $value = $data["value"];
+    remove_filter( "adverts_form_load", "adverts_remove_taxonomy_fields" );
+    
+    Adverts_Post::save( $form, $post, array(), true );
+    
+    adverts_force_featured_image( $ID );
+    
+}
 
-        $callback_save = $fields[$field_type]["callback_save"];
-
-        if( is_callable( $callback_save ) ) {
-            call_user_func( $callback_save, $ID, $key, $value );
+function adverts_remove_taxonomy_fields( $form ) {
+    
+    if( $form["name"] != "advert" ) {
+        return $form;
+    }
+    
+    foreach( $form["field"] as $k => $field ) {
+        if( $field["name"] == "advert_category" ) {
+            unset( $form["field"][$k] );
         }
     }
     
+    return $form;
 }
 
 /**
@@ -164,7 +157,7 @@ function adverts_save_post_validator( $ID, $post ) {
     }
     
     // Abort if not Adverts custom type
-    if ( $post->post_type != 'advert' ){
+    if ( ! wpadverts_post_type( $post->post_type ) ){
         return $ID;
     }
 
@@ -183,7 +176,9 @@ function adverts_save_post_validator( $ID, $post ) {
         
         if ( !$valid ) {
             // filter the query URL to change the published message
-            add_filter( 'redirect_post_location', create_function( '$location','return add_query_arg("message", "21", $location);' ) );
+            add_filter( 'redirect_post_location', function ($location) {
+                return add_query_arg("message", "21", $location);
+            });
         } 
     }
 }
@@ -198,7 +193,7 @@ function adverts_save_post_validator( $ID, $post ) {
  * @return array
  */
 function adverts_post_updated_messages( $messages ) {
-    $messages["advert"][21] = __( "Post updated, but some required data is not filled properly.", "adverts" );
+    $messages["advert"][21] = __( "Post updated, but some required data is not filled properly.", "wpadverts" );
 
     return $messages;
 }
@@ -217,8 +212,14 @@ function adverts_post_updated_messages( $messages ) {
 function adverts_admin_head() {
     global $post_type, $post;
 
+    if( isset( $_GET['post_type'] ) ) {
+        $pt = $_GET['post_type'];
+    } else {
+        $pt = null;
+    }
+    
     // Make sure this is Adverts post type
-    if (is_object($post) && ( ( isset($_GET['post_type']) && $_GET['post_type'] == 'advert') || ($post_type == 'advert') ) ):  
+    if (is_object($post) && ( wpadverts_post_type( $pt ) || wpadverts_post_type( $post_type ) ) ):  
     ?>
 
     <script language="Javascript">
@@ -287,7 +288,7 @@ function adverts_touch_time( $post_date, $tab_index = 0, $never_expires = false 
         </div>
         <div>
             <input type="checkbox" name="never_expires" id="never_expires" value="1" <?php if($never_expires): ?>checked="checked"<?php endif; ?> />
-            <label for="never_expires"><?php _e('Never Expires', 'adverts') ?></label>
+            <label for="never_expires"><?php _e('Never Expires', "wpadverts") ?></label>
         </div>
     </div>
     
@@ -323,7 +324,7 @@ function adverts_expiry_meta_box() {
     global $post, $pagenow;
     
     // Do this for adverts only.
-    if($post->post_type != 'advert') {
+    if( ! wpadverts_post_type( $post->post_type ) ) {
         return;
     }
     
@@ -339,7 +340,7 @@ function adverts_expiry_meta_box() {
     } else if( $pagenow != "post-new.php" ) {
         // _expiration_date meta not in DB, set expiration to 'never'
         $expiry = strtotime( current_time('mysql') . " +30 DAYS" );
-        $date = __("Never Expires", "adverts");
+        $date = __("Never Expires", "wpadverts");
         $touch_time = date( "Y-m-d H:i:s", $expiry );
         $never_expires = true;
     } else {
@@ -347,7 +348,7 @@ function adverts_expiry_meta_box() {
         $duration = intval( adverts_config( "config.visibility" ) );
         if( $duration == 0 ) {
             $expiry = strtotime( current_time('mysql') . " +30 DAYS" );
-            $date = __("Never Expires", "adverts");
+            $date = __("Never Expires", "wpadverts");
             $touch_time = date( "Y-m-d H:i:s", $expiry );
             $never_expires = true;
         } else {
@@ -360,9 +361,9 @@ function adverts_expiry_meta_box() {
     
     // Check if date is in the past or in the future and set correct label based on this.
     if( strtotime( date_i18n( "Y-m-d H:i:s" ) ) > $expiry ) {
-        $stamp = __( "Expired: <b>%s</b>", "adverts");
+        $stamp = __( "Expired: <b>%s</b>", "wpadverts");
     } else {
-        $stamp = __( "Expires: <b>%s</b>", "adverts");
+        $stamp = __( "Expires: <b>%s</b>", "wpadverts");
     }
 
     /* @todo: in a future select who can publish */
@@ -397,27 +398,22 @@ function adverts_data_box_content( $post ) {
 
     // Load form data
     $form_scheme = apply_filters( "adverts_form_scheme", Adverts::instance()->get("form"), array() );
-
+    
+    // adverts_form_load filter will load checksum fields
     $form = new Adverts_Form();
     $form->load( $form_scheme );
 
     // Get list of fields from post meta table
-    $bind = array();
-    foreach( $form->get_fields( array( "exclude"=>$exclude ) ) as $f ) {
-        $bind[$f["name"]] = get_post_meta( $post->ID, $f["name"], true );
-    }
-  
-    foreach( $form->get_fields( array( "exclude"=>$exclude ) ) as $f ) {
-        $value = get_post_meta( $post->ID, $f["name"], false );
-        if( empty( $value ) ) {
-            $bind[$f["name"]] = "";
-        } else if( count( $value) == 1 ) {
-            $bind[$f["name"]] = $value[0];
-        } else {
-            $bind[$f["name"]] = $value;
-        }
-    }
-  
+    include_once ADVERTS_PATH . 'includes/class-checksum.php';
+    $checksum = new Adverts_Checksum();
+    $checksum_keys = $checksum->get_integrity_keys( array( "is-wp-admin" => true, "user-role" => wp_get_current_user()->roles[0]  ) );
+
+    $bind = Adverts_Post::get_form_data($post, $form);
+    $bind["_wpadverts_checksum"] = $checksum_keys["checksum"];
+    $bind["_wpadverts_checksum_nonce"] = $checksum_keys["nonce"];
+    $bind["_post_id"] = $post->ID;
+    $bind["_post_id_nonce"] = wp_create_nonce( "wpadverts-publish-" . $post->ID );
+    
     // Bind data
     $form->bind( $bind );
   
@@ -428,7 +424,10 @@ function adverts_data_box_content( $post ) {
     }
 
   ?>
-
+    <?php foreach($form->get_fields( array( "type" => array( "adverts_field_hidden" ) ) ) as $field): ?>
+    <?php call_user_func( adverts_field_get_renderer($field), $field, $form ) ?>
+    <?php endforeach; ?>
+    
     <table class="form-table adverts-data-table">
 	<tbody>
         <?php foreach($form->get_fields( array( "exclude"=>$exclude ) ) as $field): ?>
@@ -445,12 +444,12 @@ function adverts_data_box_content( $post ) {
                     <label for="<?php esc_attr_e($field["name"]) ?>">
                         <?php echo esc_html($field["label"]) ?>
                         <?php if(adverts_field_is_required( $field ) ): ?>
-                        <span class="adverts-form-required"><?php _e( "(required)", "adverts" ) ?></span>
+                        <span class="adverts-form-required"><?php _e( "(required)", "wpadverts" ) ?></span>
                         <?php endif; ?>
                     </label>
                 </th>
                 <td>
-                    <?php call_user_func( adverts_field_get_renderer($field), $field) ?>
+                    <?php call_user_func( adverts_field_get_renderer($field), $field, $form ) ?>
                     <?php if( isset($field["error"]) && !empty($field["error"])): ?>
                     <ul class="adverts-error-list">
                         <?php foreach($field["error"] as $error): ?>
@@ -469,6 +468,28 @@ function adverts_data_box_content( $post ) {
 }
 
 /**
+ * Content box for gallery edition
+ * 
+ * @since 1.4.0
+ * @param WP_Post   $post   Post being edited.
+ */
+function adverts_data_box_gallery( $post ) {
+    
+    include_once ADVERTS_PATH . 'includes/class-checksum.php';
+    $checksum = new Adverts_Checksum();
+    $checksum_keys = $checksum->get_integrity_keys( array( "is-wp-admin" => true, "user-role" => wp_get_current_user()->roles[0]  ) );
+
+    $conf = array(
+        "_wpadverts_checksum" => $checksum_keys["checksum"],
+        "_wpadverts_checksum_nonce" => $checksum_keys["nonce"],
+        "_post_id" => $post->ID,
+        "_post_id_nonce" => wp_create_nonce( "wpadverts-publish-" . $post->ID )
+    );
+    
+    adverts_gallery_content( $post, $conf );
+}
+
+/**
  * Display 'Expired' state on Classifieds list
  * 
  * This functions shows Expired state in the wp-admin / Classifieds panel
@@ -481,8 +502,8 @@ function adverts_display_expired_state( $states ) {
      global $post;
      $arg = get_query_var( 'post_status' );
      if($arg != 'expired'){
-          if($post->post_status == 'expired'){
-               return array( __( 'Expired', 'adverts' ) );
+          if( $post instanceof WP_Post && $post->post_status == 'expired'){
+               return array( __( 'Expired', "wpadverts" ) );
           }
      }
     return $states;
@@ -514,9 +535,9 @@ function adverts_insert_post_data($data) {
 function adverts_data_box() {
     add_meta_box( 
         'adverts_data_box',
-        __( 'Additional Information', 'adverts' ),
+        __( 'Additional Information', "wpadverts" ),
         'adverts_data_box_content',
-        'advert',
+        wpadverts_get_post_types(),
         'normal',
         'low'
     );
@@ -531,9 +552,9 @@ function adverts_data_box() {
 function adverts_box_gallery() {
     add_meta_box( 
         'adverts_gallery',
-        __( 'Gallery', 'adverts' ),
-        'adverts_gallery_content',
-        'advert',
+        __( 'Gallery', "wpadverts" ),
+        'adverts_data_box_gallery',
+        wpadverts_get_post_types(),
         'normal',
         'high'
     );
@@ -554,7 +575,7 @@ function adverts_edit_columns( $columns ) {
         'title' => __( 'Title' ),
         'price' => __( 'Price' ),
         'author' => __( 'Author' ),
-        'expires' => __( 'Expires', 'adverts' ),
+        'expires' => __( 'Expires', "wpadverts" ),
         'date' => __( 'Date' )
     );
 
@@ -582,7 +603,7 @@ function adverts_manage_post_columns( $column, $post_id ) {
             
             // If expiry date not in DB, then ad never expires
             if( !$expires ) {
-                echo __( 'Never', 'adverts' );
+                echo __( 'Never', "wpadverts" );
                 break;
             }
 
@@ -598,7 +619,7 @@ function adverts_manage_post_columns( $column, $post_id ) {
             $h_time = mysql2date( __( 'Y/m/d' ), $m_time );
             
             if ( $time_diff < 0 ) {
-                $h_text = __( 'in %s', 'adverts' );
+                $h_text = __( 'in %s', "wpadverts" );
             } else {
                 $h_text = __( '%s ago' );
             }
@@ -615,7 +636,7 @@ function adverts_manage_post_columns( $column, $post_id ) {
 
             /* If empty then price is not set. */
             if ( empty( $price ) ) {
-                echo __( 'None', 'adverts' );
+                echo __( 'None', "wpadverts" );
             } else {
                 echo adverts_get_the_price( $post_id, $price);
             }
@@ -668,7 +689,7 @@ function adverts_admin_load() {
 function adverts_admin_sort( $vars ) {
 
     /* Check if we're viewing the 'advert' post type. */
-    if ( isset( $vars['post_type'] ) && 'advert' == $vars['post_type'] ) {
+    if ( isset( $vars['post_type'] ) && wpadverts_post_type( $vars['post_type'] ) ) {
 
         /* Check if 'orderby' is set to 'duration'. */
         if ( isset( $vars['orderby'] ) && 'price' == $vars['orderby'] ) {
@@ -708,7 +729,7 @@ function adverts_admin_sort( $vars ) {
 function adverts_admin_script() {
     global $post_type;
     
-    if( 'advert' != $post_type ) {
+    if( ! wpadverts_post_type( $post_type) ) {
         return;
     }
     
@@ -722,10 +743,10 @@ function adverts_admin_script() {
     wp_enqueue_script( 'suggest' );
     
     wp_localize_script( 'adverts-admin', 'adverts_admin_lang', array(
-        "expired" => __("Expired", "adverts"),
-        "expires_on" => __("Expires:", "adverts" ),
-        "expired_on" => __("Expired:", "adverts" ),
-        "suggest_box_info" => __("Start typing user name, email or login below, some suggestions will appear.", "adverts")
+        "expired" => __("Expired", "wpadverts"),
+        "expires_on" => __("Expires:", "wpadverts" ),
+        "expired_on" => __("Expired:", "wpadverts" ),
+        "suggest_box_info" => __("Start typing user name, email or login below, some suggestions will appear.", "wpadverts")
     ) );
     
     include_once ADVERTS_PATH . 'includes/gallery.php';

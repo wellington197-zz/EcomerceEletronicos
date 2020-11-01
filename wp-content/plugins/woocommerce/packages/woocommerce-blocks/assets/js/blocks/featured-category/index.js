@@ -2,8 +2,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { InnerBlocks } from '@wordpress/editor';
+import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
+import { DEFAULT_HEIGHT } from '@woocommerce/block-settings';
+import { Icon, folderStarred } from '@woocommerce/icons';
 
 /**
  * Internal dependencies
@@ -11,27 +13,28 @@ import { registerBlockType } from '@wordpress/blocks';
 import './style.scss';
 import './editor.scss';
 import Block from './block';
-import { IconFolderStar } from '../../components/icons';
+import { example } from './example';
 
 /**
  * Register and run the "Featured Category" block.
  */
 registerBlockType( 'woocommerce/featured-category', {
-	title: __( 'Featured Category', 'woo-gutenberg-products-block' ),
+	title: __( 'Featured Category', 'woocommerce' ),
 	icon: {
-		src: <IconFolderStar />,
+		src: <Icon srcElement={ folderStarred } />,
 		foreground: '#96588a',
 	},
 	category: 'woocommerce',
-	keywords: [ __( 'WooCommerce', 'woo-gutenberg-products-block' ) ],
+	keywords: [ __( 'WooCommerce', 'woocommerce' ) ],
 	description: __(
 		'Visually highlight a product category and encourage prompt action.',
-		'woo-gutenberg-products-block'
+		'woocommerce'
 	),
 	supports: {
 		align: [ 'wide', 'full' ],
 		html: false,
 	},
+	example,
 	attributes: {
 		/**
 		 * Alignment of content inside block.
@@ -69,7 +72,7 @@ registerBlockType( 'woocommerce/featured-category', {
 		 */
 		height: {
 			type: 'number',
-			default: wc_product_block_data.default_height,
+			default: DEFAULT_HEIGHT,
 		},
 
 		/**
@@ -107,7 +110,7 @@ registerBlockType( 'woocommerce/featured-category', {
 		 */
 		linkText: {
 			type: 'string',
-			default: __( 'Shop now', 'woo-gutenberg-products-block' ),
+			default: __( 'Shop now', 'woocommerce' ),
 		},
 
 		/**
@@ -124,10 +127,20 @@ registerBlockType( 'woocommerce/featured-category', {
 			type: 'boolean',
 			default: true,
 		},
+
+		/**
+		 * Category preview.
+		 */
+		previewCategory: {
+			type: 'object',
+			default: null,
+		},
 	},
 
 	/**
 	 * Renders and manages the block.
+	 *
+	 * @param {Object} props Props to pass to block.
 	 */
 	edit( props ) {
 		return <Block { ...props } />;

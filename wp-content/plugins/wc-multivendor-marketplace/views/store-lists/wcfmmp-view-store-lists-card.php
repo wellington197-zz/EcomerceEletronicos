@@ -33,7 +33,7 @@ if( $banner_type == 'video' ) {
 } else {
 	$banner          = $store_user->get_list_banner();
 	if( !$banner ) {
-		$banner = isset( $WCFMmp->wcfmmp_marketplace_options['store_list_default_banner'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_list_default_banner'] : $WCFMmp->plugin_url . 'assets/images/default_banner.jpg';
+		$banner = !empty( $WCFMmp->wcfmmp_marketplace_options['store_list_default_banner'] ) ? wcfm_get_attachment_url($WCFMmp->wcfmmp_marketplace_options['store_list_default_banner']) : $WCFMmp->plugin_url . 'assets/images/default_banner.jpg';
 		$banner = apply_filters( 'wcfmmp_list_store_default_bannar', $banner );
 	}
 }
@@ -47,11 +47,13 @@ $store_description = $store_user->get_shop_description();
 <li class="wcfmmp-single-store item woocommerce coloum-<?php echo $per_row; ?>">
 	<div class="store-wrapper">
 		<div class="store-content">
-			<?php if( $banner_type == 'video' ) { ?>
-				<div class="store-info"><?php echo preg_replace("/\s*[a-zA-Z\/\/:\.]*youtu(be.com\/watch\?v=|.be\/)([a-zA-Z0-9\-_]+)([a-zA-Z0-9\/\*\-\_\?\&\;\%\=\.]*)/i", "<iframe width=\"100%\" height=\"315\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" src=\"//www.youtube.com/embed/$2?iv_load_policy=3&enablejsapi=1&disablekb=1&autoplay=0&controls=0&showinfo=0&rel=0&loop=1&wmode=transparent&widgetid=1\" allowfullscreen></iframe>", $banner_video); ?></div>
-			<?php } else { ?>
-				<div class="store-info" style="background-image: url( '<?php echo $banner; ?>');"></div>
-			<?php } ?>
+		  <?php if( apply_filters( 'wcfmmp_is_allow_full_store_card_linked', false ) && apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) { ?><a href="<?php echo $store_url; ?>"><?php } ?>
+				<?php if( $banner_type == 'video' ) { ?>
+					<div class="store-info"><?php echo preg_replace("/\s*[a-zA-Z\/\/:\.]*youtu(be.com\/watch\?v=|.be\/)([a-zA-Z0-9\-_]+)([a-zA-Z0-9\/\*\-\_\?\&\;\%\=\.]*)/i", "<iframe width=\"100%\" height=\"315\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" src=\"//www.youtube.com/embed/$2?iv_load_policy=3&enablejsapi=1&disablekb=1&autoplay=0&controls=0&showinfo=0&rel=0&loop=1&wmode=transparent&widgetid=1\" allowfullscreen></iframe>", $banner_video); ?></div>
+				<?php } else { ?>
+					<div class="store-info" style="background-image: url( '<?php echo $banner; ?>');"></div>
+				<?php } ?>
+			<?php if( apply_filters( 'wcfmmp_is_allow_full_store_card_linked', false ) && apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) { ?></a><?php } ?>
 		</div>
 		<div class="store-footer">
 		
@@ -71,25 +73,42 @@ $store_description = $store_user->get_shop_description();
 				  </h2>
 					
 					<div class="bd_rating">
-						<?php $store_user->show_star_rating(); ?>
+						<?php if( apply_filters( 'wcfm_is_allow_review_rating', true ) ) { $store_user->show_star_rating(); } ?>
 						<div class="spacer"></div>
 						<div class="spacer"></div>
 					</div>
 					
-					<?php if ( $store_address && ( $store_info['store_hide_address'] == 'no' ) && $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $store_id, 'vendor_address' ) ): ?>
+					<?php if ( $store_address && ( $store_info['store_hide_address'] == 'no' ) && wcfm_vendor_has_capability( $store_id, 'vendor_address' ) ): ?>
 						<p class="store-address"><?php echo $store_address; ?></p>
 					<?php endif ?>
 					
-					<?php if ( !empty( $store_user->get_email() ) && ( $store_info['store_hide_email'] == 'no' ) && $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $store_id, 'vendor_email' ) ) { ?>
+					<?php if ( !empty( $store_user->get_email() ) && ( $store_info['store_hide_email'] == 'no' ) && wcfm_vendor_has_capability( $store_id, 'vendor_email' ) ) { ?>
 						<p class="store-phone">
 							<i class="wcfmfa fa-envelope" aria-hidden="true"></i> <?php echo esc_html( $store_user->get_email() ); ?>
 						</p>
 					<?php } ?>
 
-					<?php if ( !empty( $store_info['phone'] ) && ( $store_info['store_hide_phone'] == 'no' ) && $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $store_id, 'vendor_phone' ) ) { ?>
+					<?php if ( !empty( $store_info['phone'] ) && ( $store_info['store_hide_phone'] == 'no' ) && wcfm_vendor_has_capability( $store_id, 'vendor_phone' ) ) { ?>
 						<p class="store-phone">
 							<i class="wcfmfa fa-phone" aria-hidden="true"></i> <?php echo esc_html( $store_info['phone'] ); ?>
 						</p>
+					<?php } ?>
+					<?php if ( apply_filters( 'wcfmmp_is_allow_checkout_user_location', true ) && apply_filters( 'wcfm_is_allow_store_list_distance', true ) ) {
+					$distance = wcfmmp_get_user_vendor_distance( $store_id );	
+					$radius_unit   = isset( $WCFMmp->wcfmmp_marketplace_options['radius_unit'] ) ? $WCFMmp->wcfmmp_marketplace_options['radius_unit'] : 'km';
+					if( $distance ) {
+						?>
+						<p class="store-phone">
+							<i class="wcfmfa fa-map-marker-alt" aria-hidden="true"></i> <?php echo $distance . ' ' . $radius_unit . ' ' . __( 'away', 'wc-multivendor-marketplace' ); ?>
+						</p>
+					<?php } 
+					} ?>
+					<?php if ( apply_filters( 'wcfm_is_allow_store_list_product_count', false ) ) {
+					$total_products = wcfm_get_user_posts_count( $store_id, 'product', apply_filters( 'wcfm_limit_check_status', 'publish' ) );	
+					?>
+					<p class="store-phone">
+						<i class="wcfmfa fa-cube" aria-hidden="true"></i> <?php echo $total_products . ' ' . __( 'products', 'wc-frontend-manager' ); ?>
+					</p>
 					<?php } ?>
 					<?php if ( $store_description && apply_filters( 'wcfm_is_allow_store_list_about', false ) ) { ?>
 						<p class="store-phone">

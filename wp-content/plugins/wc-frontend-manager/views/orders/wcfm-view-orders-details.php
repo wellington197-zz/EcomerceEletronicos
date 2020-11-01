@@ -91,7 +91,7 @@ if( $is_wcfm_order_details_tax_line_item = apply_filters( 'wcfm_order_details_ta
 			$check_item = current( $line_items_fee );
 			$tax_data   = maybe_unserialize( isset( $check_item['line_tax_data'] ) ? $check_item['line_tax_data'] : '' );
 		}
-	
+		
 		$legacy_order     = ! empty( $order_taxes ) && empty( $tax_data ) && ! is_array( $tax_data );
 		$show_tax_columns = ! $legacy_order || sizeof( $order_taxes ) === 1;
 	}
@@ -202,6 +202,9 @@ do_action( 'before_wcfm_orders_details', $order_id );
 								echo $order_status;
 							?>
 						</p>
+						
+						<?php do_action( 'wcfm_after_order_status_edit_block', $order_id ); ?>
+						
 						<div class="wcfm-message" tabindex="-1"></div>
 					</div>
 			  <?php } ?>		
@@ -234,7 +237,12 @@ do_action( 'before_wcfm_orders_details', $order_id );
 						?>
 					</p>
 				<?php } ?>
-				<?php do_action( 'woocommerce_admin_order_data_after_order_details', $order ); ?>
+				
+				<?php 
+				if( apply_filters( 'wcfm_is_allow_woocommerce_admin_order_data_after_order_details', true ) ) {
+					do_action( 'woocommerce_admin_order_data_after_order_details', $order );
+				}
+				?>
 		
 				<p class="order_number">
 					<?php
@@ -280,9 +288,11 @@ do_action( 'before_wcfm_orders_details', $order_id );
 								<?php } ?>
 								
 								<?php if( apply_filters( 'wcfm_allow_customer_shipping_details', true ) || apply_filters( 'wcfm_is_allow_view_customer', true ) ) { ?>
-									<th>
-										<?php _e( 'Shipping Details', 'wc-frontend-manager' ); ?>
-									</th>
+									<?php if ( ( $order->needs_shipping_address() || $order->get_formatted_shipping_address() ) || ( ( !$order->needs_shipping_address() || !$order->get_formatted_shipping_address() ) && apply_filters( 'wcfm_is_allow_shipping_column_without_address', true ) ) ) { ?>
+										<th>
+											<?php _e( 'Shipping Details', 'wc-frontend-manager' ); ?>
+										</th>
+									<?php } ?>
 								<?php } ?>
 							</tr>
 						</thead>
@@ -324,62 +334,70 @@ do_action( 'before_wcfm_orders_details', $order_id );
 				
 											echo '</div>';
 				
-											do_action( 'woocommerce_admin_order_data_after_billing_address', $order );
+											if( apply_filters( 'wcfm_is_allow_order_data_after_billing_address', false ) ) {
+												do_action( 'woocommerce_admin_order_data_after_billing_address', $order );
+											}
 											?>
 									</td>
 								<?php } ?>
 								
 								<?php if( apply_filters( 'wcfm_allow_customer_shipping_details', true ) || apply_filters( 'wcfm_is_allow_view_customer', true ) ) { ?>
-									<td style="vertical-align:top;">
-										<?php
-											// Display values
-											echo '<div class="address">';
-											
-												if( apply_filters( 'wcfm_allow_customer_shipping_details', true ) ) {
-													if ( ( $order->needs_shipping_address() &&  $order->get_formatted_shipping_address() ) || apply_filters( 'wcfm_is_force_shipping_address', false ) ) {
-														echo '<p>' . wp_kses( $order->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
-													} else {
-														echo '<p class="none_set">' . __( 'No shipping address set.', 'wc-frontend-manager' ) . '</p>';
-													}
-												}
-				
-												if( apply_filters( 'wcfm_allow_view_customer_email', true ) ) {
-													if ( ! empty( $WCFM->library->shipping_fields ) ) {
-														foreach ( $WCFM->library->shipping_fields as $key => $field ) {
-															if ( isset( $field['show'] ) && false === $field['show'] ) {
-																continue;
-															}
-					
-															$field_name = 'shipping_' . $key;
-															
-															if( !apply_filters( 'wcfm_allow_view_customer_'.$field_name, true ) ) continue;
-					
-															if ( is_callable( array( $order, 'get_' . $field_name ) ) ) {
-																$field_value = $order->{"get_$field_name"}( 'edit' );
-															} else {
-																$field_value = $order->get_meta( '_' . $field_name );
-															}
-					
-															echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $field_value ) ) . '</p>';
+									<?php if ( ( $order->needs_shipping_address() || $order->get_formatted_shipping_address() ) || ( ( !$order->needs_shipping_address() || !$order->get_formatted_shipping_address() ) && apply_filters( 'wcfm_is_allow_shipping_column_without_address', true ) ) ) { ?>
+										<td style="vertical-align:top;">
+											<?php
+												// Display values
+												echo '<div class="address">';
+												
+													if( apply_filters( 'wcfm_allow_customer_shipping_details', true ) ) {
+														if ( ( $order->needs_shipping_address() && $order->get_formatted_shipping_address() ) || apply_filters( 'wcfm_is_force_shipping_address', false ) ) {
+															echo '<p>' . wp_kses( $order->get_formatted_shipping_address(), array( 'br' => array() ) ) . '</p>';
+														} else {
+															echo '<p class="none_set">' . __( 'No shipping address set.', 'wc-frontend-manager' ) . '</p>';
 														}
 													}
-												}
-				
-												if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
-													echo '<p><strong>' . __( 'Customer Provided Note', 'wc-frontend-manager' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+					
+													if( apply_filters( 'wcfm_allow_view_customer_email', true ) ) {
+														if ( ! empty( $WCFM->library->shipping_fields ) ) {
+															foreach ( $WCFM->library->shipping_fields as $key => $field ) {
+																if ( isset( $field['show'] ) && false === $field['show'] ) {
+																	continue;
+																}
+						
+																$field_name = 'shipping_' . $key;
+																
+																if( !apply_filters( 'wcfm_allow_view_customer_'.$field_name, true ) ) continue;
+						
+																if ( is_callable( array( $order, 'get_' . $field_name ) ) ) {
+																	$field_value = $order->{"get_$field_name"}( 'edit' );
+																} else {
+																	$field_value = $order->get_meta( '_' . $field_name );
+																}
+						
+																echo '<p><strong>' . esc_html( $field['label'] ) . ':</strong> ' . make_clickable( esc_html( $field_value ) ) . '</p>';
+															}
+														}
+													}
+					
+													if ( apply_filters( 'woocommerce_enable_order_notes_field', 'yes' == get_option( 'woocommerce_enable_order_comments', 'yes' ) ) && $post->post_excerpt ) {
+														echo '<p><strong>' . __( 'Customer Provided Note', 'wc-frontend-manager' ) . ':</strong> ' . nl2br( esc_html( $post->post_excerpt ) ) . '</p>';
+													}
+													
+												echo '</div>';
+												
+												if( apply_filters( 'wcfm_is_allow_order_data_after_shipping_address', false ) ) {
+													do_action( 'woocommerce_admin_order_data_after_shipping_address', $order );
 												}
 												
-											echo '</div>';
-											
-											if( apply_filters( 'wcfm_is_allow_order_data_after_shipping_address', true ) ) {
-												do_action( 'woocommerce_admin_order_data_after_shipping_address', $order );
-											}
-											?>
-									</td>
+												do_action( 'wcfm_order_details_after_shipping_address',  $order );
+												?>
+										</td>
+									<?php } ?>
 								<?php } ?>
 							</tbody>
 						</table>
 					<?php } ?>
+					
+					<?php do_action( 'wcfm_order_details_after_address',  $order ); ?>
 					
 					<?php
 					if( !wcfm_is_vendor() ) {
@@ -430,7 +448,7 @@ do_action( 'before_wcfm_orders_details', $order_id );
 							<th class="item sortable" data-sort="string-ins"><?php _e( 'Item', 'wc-frontend-manager' ); ?></th>
 							<?php do_action( 'woocommerce_admin_order_item_headers', $order ); ?>
 							<th class="item_cost sortable no_mob" data-sort="float"><?php _e( 'Cost', 'wc-frontend-manager' ); ?></th>
-							<th class="item_quantity sortable" data-sort="int"><?php _e( 'Qty', 'wc-frontend-manager' ); ?></th>
+							<th class="item_quantity wcfm_item_qty_heading sortable" data-sort="int"><?php _e( 'Qty', 'wc-frontend-manager' ); ?></th>
 							<?php if( $is_wcfm_order_details_line_total_head = apply_filters( 'wcfm_order_details_line_total_head', true ) ) { ?>
 								<th class="line_cost sortable" data-sort="float"><?php _e( 'Total', 'wc-frontend-manager' ); ?></th>
 							<?php } ?>
@@ -502,8 +520,18 @@ do_action( 'before_wcfm_orders_details', $order_id );
 									  <?php do_action( 'woocommerce_before_order_itemmeta', $item_id, $item, $_product ) ?>
 									  <?php do_action( 'woocommerce_order_item_meta_start', $item_id, $item, $order, false ); ?>
 										<?php wc_display_item_meta( $item ); ?>
-										<?php do_action( 'woocommerce_order_item_meta_end', $item_id, $item, $order, false ); ?>
-										<?php do_action( 'woocommerce_after_order_itemmeta', $item_id, $item, $_product ) ?>
+										<?php 
+										//if( !class_exists( 'WC_Deposits_Order_Item_Manager' ) || ( class_exists( 'WC_Deposits_Order_Item_Manager' ) && !WC_Deposits_Order_Item_Manager::is_deposit( $item ) ) ) {
+											do_action( 'woocommerce_order_item_meta_end', $item_id, $item, $order, false ); 
+										//}
+										?>
+										<?php 
+										if( !class_exists( 'WC_Deposits_Order_Item_Manager' ) || ( class_exists( 'WC_Deposits_Order_Item_Manager' ) && !WC_Deposits_Order_Item_Manager::is_deposit( $item ) && empty( $item['original_order_id'] ) ) ) {
+											do_action( 'woocommerce_after_order_itemmeta', $item_id, $item, $_product );
+										}
+										
+										do_action( 'wcfm_after_order_itemmeta', $item_id, $item, $_product, $order );
+										?>
 									</div>
 								</td>
 							
@@ -522,13 +550,13 @@ do_action( 'before_wcfm_orders_details', $order_id );
 										?>
 									</div>
 								</td>
-								<td class="" width="1%">
+								<td class="wcfm_item_qty" width="1%">
 									<div class="view">
 										<?php
 											echo '<small class="times">&times;</small> ' . ( $item->get_quantity() ? esc_html( $item->get_quantity() ) : '1' );
 							
 											if ( $refunded_qty = $order->get_qty_refunded_for_item( $item_id ) ) {
-												echo '<small class="refunded">-' . ( $refunded_qty * -1 ) . '</small>';
+												echo '<small class="refunded">-' . ( $refunded_qty * -1 ) . $item_id . '</small>';
 											}
 										?>
 									</div>
@@ -826,6 +854,8 @@ do_action( 'before_wcfm_orders_details', $order_id );
 										foreach ( $coupons as $item_id => $item ) {
 											$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_title = %s AND post_type = 'shop_coupon' AND post_status = 'publish' LIMIT 1;", $item->get_name() ) );
 					
+											if( apply_filters( 'wcfm_is_allow_show_only_vendor_coupon_to_vendors', true ) && wcfm_is_vendor() && ( !wcfm_get_vendor_id_by_post( $post_id ) || ( wcfm_get_vendor_id_by_post( $post_id ) && ($WCFMmp->vendor_id != wcfm_get_vendor_id_by_post( $post_id ) ) ) ) ) continue;
+											
 											$link = $post_id ? get_wcfm_coupons_manage_url( $post_id ) : get_wcfm_coupons_url();
 											
 											if( !apply_filters( 'wcfm_is_allow_manage_coupons', true ) || wcfm_is_vendor() ) { $link = '#'; }
@@ -914,18 +944,33 @@ do_action( 'before_wcfm_orders_details', $order_id );
 						
 						<?php if( ( $marketplece = wcfm_is_marketplace() ) && !wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_view_commission', true ) && apply_filters( 'wcfm_is_allow_commission_manage', true ) && !in_array( $current_order_status, array( 'failed', 'cancelled', 'refunded', 'request', 'proposal', 'proposal-sent', 'proposal-expired', 'proposal-rejected', 'proposal-canceled', 'proposal-accepted' ) ) ) { ?>
 						<tr>
-							<th class="label"><?php if( $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false ) ) { _e( 'Admin Fees', 'wc-frontend-manager' ); } else { _e( 'Vendor Commission', 'wc-frontend-manager' ); } ?>:</th>
+							<th class="label"><?php _e( 'Vendor(s) Earning', 'wc-frontend-manager' ); ?>:</th>
 							<td width="1%"></td>
 							<td class="total">
 								<div class="view">
 								  <?php 
 								  $commission = $WCFM->wcfm_vendor_support->wcfm_get_commission_by_order( $order->get_id() );
 									if( $commission ) {
+										echo  wc_price( $commission, array( 'currency' => $order->get_currency() ) );
+									} else {
+										echo  __( 'N/A', 'wc-frontend-manager' );
+									}
+								  ?>
+								 </div>
+							</td>
+						</tr>
+						<tr>
+							<th class="label"><?php _e( 'Admin Fee', 'wc-frontend-manager' ); ?>:</th>
+							<td width="1%"></td>
+							<td class="total">
+								<div class="view">
+								  <?php 
+									if( $commission ) {
 										$gross_sales  = (float) $order->get_total();
 										$total_refund = (float) $order->get_total_refunded();
-										if( $admin_fee_mode || ( $marketplece == 'dokan' ) ) {
+										//if( $admin_fee_mode || ( $marketplece == 'dokan' ) ) {
 											$commission = $gross_sales - $total_refund - $commission;
-										}
+										//}
 										echo  wc_price( $commission, array( 'currency' => $order->get_currency() ) );
 									} else {
 										echo  __( 'N/A', 'wc-frontend-manager' );

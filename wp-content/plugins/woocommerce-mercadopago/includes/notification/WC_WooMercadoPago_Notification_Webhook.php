@@ -1,6 +1,6 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
@@ -25,10 +25,11 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
     {
         parent::check_ipn_response();
         $data = $_GET;
+        header('HTTP/1.1 200 OK');
+
         if (isset($data['coupon_id']) && !empty($data['coupon_id'])) {
             if (isset($data['payer']) && !empty($data['payer'])) {
                 $response = $this->mp->check_discount_campaigns($data['amount'], $data['payer'], $data['coupon_id']);
-                header('HTTP/1.1 200 OK');
                 header('Content-Type: application/json');
                 echo json_encode($response);
             } else {
@@ -46,27 +47,28 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
             }
             exit(0);
         } else if (!isset($data['data_id']) || !isset($data['type'])) {
-            $this->log->write_log(__FUNCTION__, 'data_id or type not set: ' . json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $this->log->write_log(__FUNCTION__, 'data_id or type not set: ' .
+                json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             if (!isset($data['id']) || !isset($data['topic'])) {
-                $this->log->write_log(__FUNCTION__, 'Mercado Pago Request failure: ' . json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-                wp_die(__('The Mercado Pago request has failed', 'woocommerce-mercadopago'),'', array( 'response' => 422 ));
-            } else {
-                header('HTTP/1.1 200 OK');
+                $this->log->write_log(__FUNCTION__, 'Mercado Pago Request failure: ' .
+                    json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                $this->setResponse(422, null, "Mercado Pago Request failure");
             }
         } else {
             if ($data['type'] == 'payment') {
-                $access_token = array('access_token' => $this->mp->get_access_token());
-                $payment_info = $this->mp->get('/v1/payments/' . $data['data_id'], $access_token, false);
+                $access_token = $this->mp->get_access_token();
+                $payment_info = $this->mp->get('/v1/payments/' . $data['data_id'], array('Authorization' => 'Bearer ' . $access_token), false);
                 if (!is_wp_error($payment_info) && ($payment_info['status'] == 200 || $payment_info['status'] == 201)) {
                     if ($payment_info['response']) {
-                        header('HTTP/1.1 200 OK');
                         do_action('valid_mercadopago_ipn_request', $payment_info['response']);
+                        $this->setResponse(200, "OK", "Webhook Notification Successfull");
                     }
                 } else {
                     $this->log->write_log(__FUNCTION__, 'error when processing received data: ' . json_encode($payment_info, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
                 }
             }
         }
+        $this->setResponse(422, null, "Mercado Pago Invalid Requisition");
     }
 
     /**
@@ -74,30 +76,14 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
      */
     public function successful_request($data)
     {
-        $order = parent::successful_request($data);
-        $status = $this->process_status_mp_business($data, $order);
-        $this->log->write_log(__FUNCTION__, 'Changing order status to: ' . parent::get_wc_status_for_mp_status(str_replace('_', '', $status)));
-        $this->proccessStatus($status, $data, $order);
-    }
-
-    /**
-     * @param $order
-     */
-    public function process_cancel_order_meta_box_actions($order)
-    {
-        $payments = (method_exists($order, 'get_meta')) ? $order->get_meta('_Mercado_Pago_Payment_IDs') : get_post_meta($order->id, '_Mercado_Pago_Payment_IDs', true);
-        $this->log->write_log(__FUNCTION__, 'cancelling payments for ' . $payments);
-        // Canceling the order and all of its payments.
-        if ($this->mp != null && !empty($payments)) {
-            $payment_ids = explode(', ', $payments);
-            foreach ($payment_ids as $p_id) {
-                $response = $this->mp->cancel_payment($p_id);
-                $message = $response['response']['message'];
-                $status = $response['status'];
-                $this->log->write_log(__FUNCTION__, 'cancel payment of id ' . $p_id . ' => ' . ($status >= 200 && $status < 300 ? 'SUCCESS' : 'FAIL - ' . $message));
-            }
-        } else {
-            $this->log->write_log(__FUNCTION__, 'no payments or credentials invalid');
+        try {
+            $order = parent::successful_request($data);
+            $status = $this->process_status_mp_business($data, $order);
+            $this->log->write_log(__FUNCTION__, 'Changing order status to: ' .
+                parent::get_wc_status_for_mp_status(str_replace('_', '', $status)));
+            $this->proccessStatus($status, $data, $order);
+        } catch (Exception $e) {
+            $this->log->write_log(__FUNCTION__, $e->getMessage());
         }
     }
 
@@ -122,7 +108,7 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
             return;
         }
         if (isset($checkout_info['issuer_id']) && !empty($checkout_info['issuer_id'])) {
-            $issuer_id = (integer)($checkout_info['issuer_id']);
+            $issuer_id = (int)($checkout_info['issuer_id']);
         }
         if (isset($checkout_info['payment_method_id']) && !empty($checkout_info['payment_method_id'])) {
             $payment_method_id = $checkout_info['payment_method_id'];
@@ -157,9 +143,9 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
             $order->update_meta_data(
                 'Mercado Pago - Payment ' . $data['id'],
                 '[Date ' . date('Y-m-d H:i:s', strtotime($data['date_created'])) .
-                ']/[Amount ' . $data['transaction_amount'] .
-                ']/[Paid ' . $total_paid .
-                ']/[Refund ' . $total_refund . ']'
+                    ']/[Amount ' . $data['transaction_amount'] .
+                    ']/[Paid ' . $total_paid .
+                    ']/[Refund ' . $total_refund . ']'
             );
             $order->update_meta_data('_Mercado_Pago_Payment_IDs', $data['id']);
             $order->save();
@@ -176,9 +162,9 @@ class WC_WooMercadoPago_Notification_Webhook extends WC_WooMercadoPago_Notificat
                 $order->id,
                 'Mercado Pago - Payment ' . $data['id'],
                 '[Date ' . date('Y-m-d H:i:s', strtotime($data['date_created'])) .
-                ']/[Amount ' . $data['transaction_amount'] .
-                ']/[Paid ' . $total_paid .
-                ']/[Refund ' . $total_refund . ']'
+                    ']/[Amount ' . $data['transaction_amount'] .
+                    ']/[Paid ' . $total_paid .
+                    ']/[Refund ' . $total_refund . ']'
             );
             update_post_meta($order->id, '_Mercado_Pago_Payment_IDs', $data['id']);
         }

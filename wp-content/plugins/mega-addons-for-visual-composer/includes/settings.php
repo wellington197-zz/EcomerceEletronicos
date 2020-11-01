@@ -96,8 +96,8 @@
 				<th>Info Circle</th>
 				<td>
 					<div class="onoffswitch">
-					    <input type="checkbox" name="info_circle" class="onoffswitch-checkbox" id="myonoffswitch29" <?php echo check_status('info_circle', 'on') ?>>
-					    <label class="onoffswitch-label" for="myonoffswitch29">
+					    <input type="checkbox" name="info_circle" class="onoffswitch-checkbox" id="myonoffswitch8" <?php echo check_status('info_circle', 'on') ?>>
+					    <label class="onoffswitch-label" for="myonoffswitch8">
 					        <span class="onoffswitch-inner"></span>
 					        <span class="onoffswitch-switch"></span>
 					    </label>
@@ -211,8 +211,8 @@
 				<th>Highlight Box</th>
 				<td>
 					<div class="onoffswitch">
-					    <input type="checkbox" name="highlight_box" class="onoffswitch-checkbox" id="myonoffswitch26" <?php echo check_status('highlight_box', 'on') ?>>
-					    <label class="onoffswitch-label" for="myonoffswitch26">
+					    <input type="checkbox" name="highlight_box" class="onoffswitch-checkbox" id="myonoffswitch18" <?php echo check_status('highlight_box', 'on') ?>>
+					    <label class="onoffswitch-label" for="myonoffswitch18">
 					        <span class="onoffswitch-inner"></span>
 					        <span class="onoffswitch-switch"></span>
 					    </label>
@@ -293,8 +293,8 @@
 				<th>Image Swap</th>
 				<td>
 					<div class="onoffswitch">
-					    <input type="checkbox" name="img_swap" class="onoffswitch-checkbox" id="myonoffswitch27" <?php echo check_status('img_swap', 'on') ?>>
-					    <label class="onoffswitch-label" for="myonoffswitch27">
+					    <input type="checkbox" name="img_swap" class="onoffswitch-checkbox" id="myonoffswitch25" <?php echo check_status('img_swap', 'on') ?>>
+					    <label class="onoffswitch-label" for="myonoffswitch25">
 					        <span class="onoffswitch-inner"></span>
 					        <span class="onoffswitch-switch"></span>
 					    </label>
@@ -303,8 +303,21 @@
 				<th>Accordions</th>
 				<td>
 					<div class="onoffswitch">
-					    <input type="checkbox" name="accordion" class="onoffswitch-checkbox" id="myonoffswitch28" <?php echo check_status('accordion', 'on') ?>>
-					    <label class="onoffswitch-label" for="myonoffswitch28">
+					    <input type="checkbox" name="accordion" class="onoffswitch-checkbox" id="myonoffswitch26" <?php echo check_status('accordion', 'on') ?>>
+					    <label class="onoffswitch-label" for="myonoffswitch26">
+					        <span class="onoffswitch-inner"></span>
+					        <span class="onoffswitch-switch"></span>
+					    </label>
+					</div>
+				</td>
+			</tr>
+
+			<tr style="border-bottom: 1px solid #ddd;">
+				<th>Filterable Gallery</th>
+				<td>
+					<div class="onoffswitch">
+					    <input type="checkbox" name="filter_gallery" class="onoffswitch-checkbox" id="myonoffswitch27" <?php echo check_status('filter_gallery', 'on') ?>>
+					    <label class="onoffswitch-label" for="myonoffswitch27">
 					        <span class="onoffswitch-inner"></span>
 					        <span class="onoffswitch-switch"></span>
 					    </label>

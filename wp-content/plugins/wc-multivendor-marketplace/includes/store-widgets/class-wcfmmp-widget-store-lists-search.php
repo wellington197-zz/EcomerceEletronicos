@@ -35,7 +35,10 @@ class WCFMmp_Store_Lists_Search extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
 		
 		echo $before_widget;
 

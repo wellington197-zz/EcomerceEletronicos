@@ -50,7 +50,7 @@ class WCFM_Products_Controller {
 							'post_mime_type'   => '',
 							'post_parent'      => '',
 							//'author'	   => get_current_user_id(),
-							'post_status'      => array('draft', 'pending', 'publish', 'private'),
+							'post_status'      => array('draft', 'pending', 'publish', 'private', 'scheduled' ),
 							'suppress_filters' => 0 
 						);
 		$for_count_args = $args;
@@ -146,6 +146,13 @@ class WCFM_Products_Controller {
 		// Order by Price
 		if( isset( $_POST['order'] ) && isset( $_POST['order'][0] ) && isset( $_POST['order'][0]['column'] ) && ( $_POST['order'][0]['column'] == 6 ) ) {
 			$args['meta_key'] = '_price';
+			$args['orderby']  = 'meta_value_num';
+			$args['order']    = wc_clean($_POST['order'][0]['dir']);
+		}
+		
+		// Order by View Count
+		if( isset( $_POST['order'] ) && isset( $_POST['order'][0] ) && isset( $_POST['order'][0]['column'] ) && ( $_POST['order'][0]['column'] == 9 ) ) {
+			$args['meta_key'] = '_wcfm_product_views';
 			$args['orderby']  = 'meta_value_num';
 			$args['order']    = wc_clean($_POST['order'][0]['dir']);
 		}
@@ -410,6 +417,11 @@ class WCFM_Products_Controller {
 				if( $wcfm_products_single->post_status != 'publish' ) {
 					if( !wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_publish_products', true ) ) {
 						$actions .= '<a class="wcfm_product_approve wcfm-action-icon" href="#" data-proid="' . $wcfm_products_single->ID . '"><span class="wcfmfa fa-check-circle text_tip" data-tip="' . esc_attr__( 'Mark Approve / Publish', 'wc-frontend-manager' ) . '"></span></a>';
+						
+						$wcfm_review_product_notified = get_post_meta( $wcfm_products_single->ID, '_wcfm_review_product_notified', true );
+						if( $wcfm_review_product_notified ) {
+							$actions .= '<a class="wcfm_product_reject wcfm-action-icon" href="#" data-proid="' . $wcfm_products_single->ID . '"><span class="wcfmfa fa-times-circle text_tip" data-tip="' . esc_attr__( 'Mark Rejected', 'wc-frontend-manager' ) . '"></span></a>';	
+						}
 					}
 				}
 				

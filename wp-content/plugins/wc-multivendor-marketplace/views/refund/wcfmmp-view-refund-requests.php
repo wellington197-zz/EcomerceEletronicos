@@ -11,7 +11,7 @@
  
 global $WCFM, $WCFMmp;
 
-if( !apply_filters( 'wcfm_is_allow_refund_requests', true ) || wcfm_is_vendor() ) {
+if( !apply_filters( 'wcfm_is_allow_refund_requests', true ) ) {
 	wcfm_restriction_message_show( "Refund Requests" );
 	return;
 }
@@ -43,10 +43,12 @@ if( !apply_filters( 'wcfm_is_allow_refund_requests', true ) || wcfm_is_vendor() 
 			</select>
 			
 			<?php 
-			$vendor_arr = array();
-			$WCFM->wcfm_fields->wcfm_generate_form_field( array(
-																								"dropdown_vendor" => array( 'type' => 'select', 'options' => $vendor_arr, 'attributes' => array( 'style' => 'width: 150px;' ) )
-																								 ) );
+			if( !wcfm_is_vendor() ) {
+				$vendor_arr = array();
+				$WCFM->wcfm_fields->wcfm_generate_form_field( array(
+																									"dropdown_vendor" => array( 'type' => 'select', 'options' => $vendor_arr, 'attributes' => array( 'style' => 'width: 150px;' ) )
+																									 ) );
+			}
 			?>
 		</div>
 			
@@ -84,7 +86,7 @@ if( !apply_filters( 'wcfm_is_allow_refund_requests', true ) || wcfm_is_vendor() 
 			</div>
 			<div class="wcfm-clearfix"></div>
 			
-			<?php if( apply_filters( 'wcfm_is_allow_refund_requests_action', true ) ) { ?>
+			<?php if( apply_filters( 'wcfm_is_allow_refund_requests_action', true ) && !wcfm_is_vendor() ) { ?>
 				<div class="wcfm-container">
 					<div id="wcfm_withdrawal_requests_actions_expander" class="wcfm-content">
 						<?php

@@ -97,18 +97,14 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 		$total_items                    = 0;
 
 		$total_orders = array();
-
+		$gross_commission_ids = array();
+		$gross_total_refund_amount = 0;
 		foreach( $results as $data ) {
 
-			$total_orders[] = $data->order_id;
-			
 			if( $data->item_id ) {
 				try {
-					if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
-						$gross_sales_amount += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta(  $data->ID, 'gross_total' );
-					} else {
-						$gross_sales_amount += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta(  $data->ID, 'gross_sales_total' );
-					}
+					$total_orders[] = $data->order_id;
+					$gross_commission_ids[] = $data->ID;
 					
 					/*if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $vendor_id, $data->order_id ) ) {
 						$gross_sales_amount += (float) $data->item_total;
@@ -126,11 +122,12 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 					}*/
 					
 					// Deduct Refunded Amount
-					$gross_sales_amount -= (float) sanitize_text_field( $data->refunded_amount );
+					//$gross_sales_amount -= (float) sanitize_text_field( $data->refunded_amount );
 				} catch (Exception $e) {
 					continue;
 				}
 			}
+			
 			
 			$total_tax_amount               += (float) sanitize_text_field( $data->tax ) + (float) sanitize_text_field( $data->shipping_tax_amount );
 			$total_shipping_amount          += (float) sanitize_text_field( apply_filters( 'wcfmmmp_gross_sales_shipping_cost', $data->shipping, $vendor_id ) );
@@ -147,6 +144,13 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 				}
 			}
 		}
+		
+		if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
+			$gross_sales_amount = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $gross_commission_ids, 'gross_total' );
+		} else {
+			$gross_sales_amount = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $gross_commission_ids, 'gross_sales_total' );
+		}
+		$gross_sales_amount -= (float) $total_refund_amount;
 
 		$total_orders = count( array_unique( $total_orders ) );
 		$total_sales = $total_earned_commission_amount;
@@ -403,13 +407,14 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 			foreach( $results as $result ) {
 				$gross_sales = 0.00;
 				$commission_ids = explode( ",", $result->commission_ids );
-				foreach( $commission_ids as $commission_id ) {
-					if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
-						$gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_total' );
-					} else {
-						$gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_sales_total' );
-					}
+				
+				if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
+					$gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_total' );
+				} else {
+					$gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_sales_total' );
 				}
+				
+				
 				/*if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $vendor_id ) ) {
 					$gross_sales = (float) $result->total_item_total;
 				} else {
@@ -453,11 +458,17 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 			foreach ( $total_commission as $order_amount_key => $order_amount_value ) {
 				$total_earned_commission[ $order_amount_key ] = $order_amount_value;
 				if( $admin_fee_mode && isset ( $total_gross_sales[ $order_amount_key ] ) && isset ( $total_gross_sales[ $order_amount_key ][1] ) ) {
-					$total_earned_commission[ $order_amount_key ][1] = $total_gross_sales[ $order_amount_key ][1] - $total_earned_commission[ $order_amount_key ][1];
+					$total_earned_commission[ $order_amount_key ][1] = round( ($total_gross_sales[ $order_amount_key ][1] - $total_earned_commission[ $order_amount_key ][1]), 2 );
 				}
 			}
 		} else {
-			$total_earned_commission = $total_commission;
+			foreach ( $total_commission as $order_amount_key => $order_amount_value ) {
+				$total_earned_commission[ $order_amount_key ] = $order_amount_value;
+				if( isset ( $total_gross_sales[ $order_amount_key ] ) && isset ( $total_gross_sales[ $order_amount_key ][1] ) ) {
+					$total_earned_commission[ $order_amount_key ][1] = round( $total_earned_commission[ $order_amount_key ][1], 2 );
+				}
+			}
+			//$total_earned_commission = $total_commission;
 		}
 		
 		// Total Paid Commission
@@ -486,12 +497,10 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 			foreach( $results as $result ) {
 				$paid_gross_sales = 0.00;
 				$commission_ids = explode( ",", $result->commission_ids );
-				foreach( $commission_ids as $commission_id ) {
-					if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
-						$paid_gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_total' );
-					} else {
-						$paid_gross_sales += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_sales_total' );
-					}
+				if( apply_filters( 'wcfmmmp_gross_sales_respect_setting', true ) ) {
+					$paid_gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_total' );
+				} else {
+					$paid_gross_sales = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta_sum( $commission_ids, 'gross_sales_total' );
 				}
 				
 				/*if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $vendor_id ) ) {
@@ -523,11 +532,17 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 			foreach ( $total_commission as $order_amount_key => $order_amount_value ) {
 				$total_paid_commission[ $order_amount_key ] = $order_amount_value;
 				if( isset ( $paid_gross_sales[ $order_amount_key ] ) && isset ( $paid_gross_sales[ $order_amount_key ][1] ) ) {
-					$total_paid_commission[ $order_amount_key ][1] = $paid_gross_sales[ $order_amount_key ][1] - $total_paid_commission[ $order_amount_key ][1];
+					$total_paid_commission[ $order_amount_key ][1] = round( ($paid_gross_sales[ $order_amount_key ][1] - $total_paid_commission[ $order_amount_key ][1]), 2 );
 				}
 			}
 		} else {
-			$total_paid_commission = $total_commission;
+			foreach ( $total_commission as $order_amount_key => $order_amount_value ) {
+				$total_paid_commission[ $order_amount_key ] = $order_amount_value;
+				if( isset ( $paid_gross_sales[ $order_amount_key ] ) && isset ( $paid_gross_sales[ $order_amount_key ][1] ) ) {
+					$total_paid_commission[ $order_amount_key ][1] = round( $total_paid_commission[ $order_amount_key ][1], 2 );
+				}
+			}
+			//$total_paid_commission = $total_commission;
 		}
 		//$total_paid_commission = $total_commission;
 		
@@ -568,7 +583,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 								      <?php if( apply_filters( 'wcfm_sales_report_is_allow_gross_sales', true ) ) { ?>
 								      {
 												type: 'line',
-												label: "<?php _e( 'Gross Sales', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Gross Sales', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.blue,
 												borderWidth: 2,
@@ -579,7 +594,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php if( apply_filters( 'wcfm_sales_report_is_allow_earning', true ) ) { ?>
 											{
 												type: 'line',
-												label: "<?php if( $admin_fee_mode ) { _e( 'Admin Fees', 'wc-frontend-manager' ); } else { _e( 'Earning', 'wc-frontend-manager' ); } ?>",
+												label: "<?php if( $admin_fee_mode ) { esc_html_e( 'Admin Fees', 'wc-frontend-manager' ); } else { esc_html_e( 'Earning', 'wc-frontend-manager' ); } ?>",
 												backgroundColor: color(window.chartColors.green).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.green,
 												borderWidth: 2,
@@ -590,7 +605,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php if( apply_filters( 'wcfm_sales_report_is_allow_withdrawal', true ) ) { ?>
 											{
 												type: 'bar',
-												label: "<?php if( $admin_fee_mode ) { _e( 'Paid Fees', 'wc-frontend-manager' ); } else { _e( 'Withdrawal', 'wc-frontend-manager' ); } ?>",
+												label: "<?php if( $admin_fee_mode ) { esc_html_e( 'Paid Fees', 'wc-frontend-manager' ); } else { esc_html_e( 'Withdrawal', 'wc-frontend-manager' ); } ?>",
 												backgroundColor: color(window.chartColors.withdrawal).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.withdrawal,
 												borderWidth: 2,
@@ -600,7 +615,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php if( apply_filters( 'wcfm_sales_report_is_allow_refund', true ) ) { ?>
 											{
 												type: 'line',
-												label: "<?php _e( 'Refunds', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Refunds', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.refund).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.refund,
 												borderWidth: 2,
@@ -610,7 +625,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php if( $WCFMmp->wcfmmp_vendor->is_vendor_get_tax( $vendor_id ) && apply_filters( 'wcfm_sales_report_is_allow_tax', true ) ) { ?>
 											{
 												type: 'line',
-												label: "<?php _e( 'Tax Amounts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Tax Amounts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.tax).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.tax,
 												borderWidth: 2,
@@ -621,7 +636,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php if( $WCFMmp->wcfmmp_vendor->is_vendor_get_shipping( $vendor_id ) && apply_filters( 'wcfm_sales_report_is_allow_shipping', true ) ) { ?>
 											{
 												type: 'line',
-												label: "<?php _e( 'Shipping Amounts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Shipping Amounts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.shipping).alpha(0.2).rgbString(),
 												borderColor: window.chartColors.shipping,
 												borderWidth: 2,
@@ -631,26 +646,28 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 											<?php } ?>
 								      {
 												type: 'bar',
-												label: "<?php _e( 'Order Counts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Order Counts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.yellow).alpha(0.5).rgbString(),
 												borderColor: window.chartColors.yellow,
 												borderWidth: 2,
 												data: sales_data.order_counts.datas,
 											},
+											<?php if( apply_filters( 'wcfm_sales_report_is_allow_order_item_count', false ) ) { ?>
 											{
 												type: 'bar',
-												label: "<?php _e( 'Order Item Counts', 'wc-frontend-manager' ); ?>",
+												label: "<?php esc_html_e( 'Order Item Counts', 'wc-frontend-manager' ); ?>",
 												backgroundColor: color(window.chartColors.orange).alpha(0.5).rgbString(),
 												borderColor: window.chartColors.orange,
 												borderWidth: 2,
 												data: sales_data.order_item_counts.datas,
 											},
+											<?php } ?>
 											]
 						},
 						options: {
 							  responsive: true,
                 title:{
-                    text: "<?php _e( 'Sales Report by Date', 'wc-frontend-manager' ); ?>",
+                    text: "<?php esc_html_e( 'Sales Report by Date', 'wc-frontend-manager' ); ?>",
                     position: "bottom",
                     display: true
                 },
@@ -661,6 +678,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 								scales: {
 									xAxes: [{
 										type: "time",
+										barPercentage: 0.4,
 										time: {
 											format: timeFormat,
 											round: 'day',
@@ -668,7 +686,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 										},
 										scaleLabel: {
 											display: false,
-											labelString: "<?php _e( 'Date', 'wc-frontend-manager' ); ?>"
+											labelString: "<?php esc_html_e( 'Date', 'wc-frontend-manager' ); ?>"
 										},
 										ticks:{
 											display: $show_ticks
@@ -677,7 +695,7 @@ class WCFM_Marketplace_Report_Sales_By_Date extends WC_Admin_Report {
 									yAxes: [{
 										scaleLabel: {
 											display: false,
-											labelString: "<?php _e( 'Amount', 'wc-frontend-manager' ); ?>"
+											labelString: "<?php esc_html_e( 'Amount', 'wc-frontend-manager' ); ?>"
 										}
 									}]
 								},

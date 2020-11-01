@@ -41,7 +41,7 @@ jQuery(document).ready(function($) {
 			data    : data,
 			success :	function(response) {
 				// Intialize colorbox
-				jQuery.colorbox( { html: response, width: $popup_width,
+				jQuery.colorbox( { html: response, width: $large_popup_width, height: '70%',
 					onComplete:function() {
 						
 						if( jQuery('.anr_captcha_field').length > 0 ) {
@@ -50,19 +50,21 @@ jQuery(document).ready(function($) {
 							}
 						}
 						
+						initRefundInputEle();
+						
 						jQuery('#wcfm_refund_request').change(function() {
 							$wcfm_refund_request = $(this).val();
 							if( $wcfm_refund_request == 'full' ) {
-								$('.wcfm-refund-form-request-amount').addClass('wcfm_custom_hide');
+								$('.wcfm_refund_input_ele,.wcfm_refund_items_ele').addClass('wcfm_custom_hide');
 							} else {
-								$('.wcfm-refund-form-request-amount').removeClass('wcfm_custom_hide');
+								$('.wcfm_refund_input_ele,.wcfm_refund_items_ele').removeClass('wcfm_custom_hide');
 							}
 						}).change();
 				
 						// Intialize Quick Update Action
 						jQuery('#wcfm_refund_requests_submit_button').click(function(event) {
 							event.preventDefault();
-							jQuery('#wcfm_refund_requests_form').block({
+							jQuery('#wcfm_refund_form_wrapper').block({
 								message: null,
 								overlayCSS: {
 									background: '#fff',
@@ -73,7 +75,7 @@ jQuery(document).ready(function($) {
 							if( jQuery('#wcfm_refund_reason').val().length == 0 ) {
 								//alert(wcfm_refund_manage_messages.no_query);
 								jQuery('#wcfm_refund_requests_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + wcfm_refund_requests_messages.no_refund_reason).addClass('wcfm-error').slideDown();
-								jQuery('#wcfm_refund_requests_form').unblock();
+								jQuery('#wcfm_refund_form_wrapper').unblock();
 							} else {
 								var data = {
 									action                     : 'wcfm_ajax_controller',
@@ -104,7 +106,7 @@ jQuery(document).ready(function($) {
 												grecaptcha.reset();
 											}
 										}
-										jQuery('#wcfm_refund_requests_form').unblock();
+										jQuery('#wcfm_refund_form_wrapper').unblock();
 									}
 								} );
 							}
@@ -113,6 +115,30 @@ jQuery(document).ready(function($) {
 					}
 				});
 			}
+		});
+	}
+	
+	function initRefundInputEle() {
+		$('.wcfm_refund_input_qty').each(function() {
+			$(this).change(function() {
+				$item_id = $(this).data('item');
+				$input_qty = $(this).val();
+				$order_line_item = $('.order_line_item_'+$item_id);
+				
+				$item_cost = $order_line_item.find('.wcfm_refund_input_total').data('item_cost');
+				$max_cost = $order_line_item.find('.wcfm_refund_input_total').data('max_total');
+				$total_cost = $item_cost * $input_qty;
+				if( $total_cost > $max_cost ) $total_cost = $max_cost;
+				$order_line_item.find('.wcfm_refund_input_total').val($total_cost);
+				
+				$order_line_item.find('.wcfm_refund_input_tax').each(function() {
+					$tax_cost = $(this).data('item_tax');
+					$max_tax = $(this).data('max_tax');
+					$total_tax = $tax_cost * $input_qty;
+					if( $total_tax > $max_tax ) $total_tax = $max_tax;
+					$(this).val($total_tax);
+				});
+			});
 		});
 	}
 	

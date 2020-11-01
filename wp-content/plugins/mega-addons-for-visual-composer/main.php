@@ -33,8 +33,7 @@ class VC_MEGA
 		$saved_options = get_option('vc_save_data');
 		wp_enqueue_style( 'image-hover-effects-css', plugins_url( 'css/ihover.css' , __FILE__ ));
 		wp_enqueue_style( 'style-css', plugins_url( 'css/style.css' , __FILE__ ));
-		wp_enqueue_style( 'font-awesome-latest', plugins_url( 'css/font-awesome/css/font-awesome.css' , __FILE__ ));
-		wp_enqueue_script( 'front-js-na', plugins_url( 'js/script.js' , __FILE__ ), array('jquery', 'jquery-ui-core'));
+		wp_enqueue_style( 'font-awesome-latest', plugins_url( 'css/font-awesome/css/all.css' , __FILE__ ));
 	}
 
 	function vc_admin_script($slug) {
@@ -56,6 +55,8 @@ class VC_MEGA
 		if (isset($saved_options['info_box'])) {include 'render/infobox.php';}
 		if (isset($saved_options['advance_btn'])) {include 'render/advanced_btn.php'; include 'render/hoverbutton.php';}
 		if (isset($saved_options['team_prof'])) {include 'render/teamprofile.php';}
+		if (isset($saved_options['adv_carousel'])) {include 'render/tm_carousel_father.php';}
+		if (isset($saved_options['adv_carousel'])) {include 'render/tm_carousel_son.php';}
 		if (isset($saved_options['counter'])) {include 'render/statcounter.php';}
 		if (isset($saved_options['flip_box'])) {include 'render/flipbox.php';}
 		if (isset($saved_options['timeline'])) {include 'render/timeline_father.php';}
@@ -66,20 +67,20 @@ class VC_MEGA
 		if (isset($saved_options['social_icon'])) {include 'render/social_father.php';}
 		if (isset($saved_options['social_icon'])) {include 'render/social_son.php';}
 		if (isset($saved_options['popup'])) {include 'render/modalPopup.php';}
-		if (isset($saved_options['interactive_banner'])) {include 'render/interectivebanner.php';}
+		if (isset($saved_options['interactive_banner'])) {include 'render/interactivebanner.php';}
 		if (isset($saved_options['info_list'])) {include 'render/info_list_father.php';}
 		if (isset($saved_options['info_list'])) {include 'render/info_list_son.php';}
 		if (isset($saved_options['google_trend'])) {include 'render/googletrends.php';}
 		if (isset($saved_options['tooltip'])) {include 'render/tooltip_icons.php';}
 		if (isset($saved_options['testimonial'])) {include 'render/testimonial.php';}
-		if (isset($saved_options['adv_carousel'])) {include 'render/tm_carousel_father.php';}
-		if (isset($saved_options['adv_carousel'])) {include 'render/tm_carousel_son.php';}
 		if (isset($saved_options['heading'])) {include 'render/headings.php';}
 		if (isset($saved_options['highlight_box'])) {include 'render/highlight_box.php';}
 		if (isset($saved_options['img_swap'])) {include 'render/image_swap.php';}
 		if (isset($saved_options['accordion'])) {include 'render/accordion_father.php';}
 		if (isset($saved_options['accordion'])) {include 'render/accordion_son.php';}
 		if (isset($saved_options['info_circle'])) {include 'render/info_circle.php';}
+		if (isset($saved_options['filter_gallery'])) {include 'render/filterablegallery_wrap.php';}
+		if (isset($saved_options['filter_gallery'])) {include 'render/filtergallery.php';}
 		include 'includes/class-vc-number-param.php';
 	}
 
@@ -105,7 +106,7 @@ class VC_MEGA
 		<h3 style="font-weight: 100;">Enable/Disable Element</h3>
 		<div class="mega-addons-version">
 			<div class="dashicons-before dashicons-shield"></div>
-			<p>Version 3.1</p>
+			<p>Version 4.2.0</p>
 		</div>
 		<?php include 'includes/settings.php'; ?>
 	</div>
@@ -138,6 +139,7 @@ class VC_MEGA
 			 'info_box' 		=> 'on',
 			 'advance_btn' 		=> 'on',
 			 'team_prof' 		=> 'on',
+			 'adv_carousel' 	=> 'on',
 			 'counter' 			=> 'on',
 			 'flip_box' 		=> 'on',
 			 'timeline' 		=> 'on',
@@ -151,12 +153,12 @@ class VC_MEGA
 			 'google_trend' 	=> 'on',
 			 'tooltip' 			=> 'on',
 			 'testimonial' 		=> 'on',
-			 'adv_carousel' 	=> 'on',
 			 'heading' 			=> 'on',
 			 'highlight_box' 	=> 'on',
 			 'img_swap' 		=> 'on',
 			 'accordion' 		=> 'on',
 			 'info_circle' 		=> 'on',
+			 'filter_gallery' 	=> 'on',
 			);
 
 		update_option( 'vc_save_data', $vc_default_options);
@@ -167,7 +169,7 @@ class VC_MEGA
 	function showVcVersionNotice(){
 	    ?>
 	    <div class="notice notice-warning is-dismissible">
-	        <p>Please install <a href="https://codecanyon.net/item/visual-composer-page-builder-for-wordpress/242431?ref=nasir179125">WPBakery Page Builder</a> to use Mega Addons.</p>
+	        <p>Please install <a href="https://1.envato.market/A1QAx">WPBakery Page Builder</a> to use Mega Addons.</p>
 	    </div>
 	    <?php
 	}

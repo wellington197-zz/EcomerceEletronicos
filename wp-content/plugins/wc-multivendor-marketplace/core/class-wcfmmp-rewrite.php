@@ -18,7 +18,13 @@ class WCFMmp_Rewrites {
 	 * Hook into the functions
 	 */
 	public function __construct() {
-		$this->wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+		global $wp_query;
+		
+		if( function_exists( 'wcfm_get_option' ) ) {
+			$this->wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
+		} else {
+			$this->wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+		}
 		
 		add_action( 'init', array( $this, 'register_rule' ), 9 );
 		
@@ -27,8 +33,10 @@ class WCFMmp_Rewrites {
 		add_filter( 'template_include', array( $this, 'store_template' ), 9 );
 
 		add_filter( 'query_vars', array( $this, 'register_query_var' ) );
-		add_filter( 'pre_get_posts', array( $this, 'store_query_check' ), 9 );
-		add_filter( 'pre_get_posts', array( $this, 'store_query_filter' ), 20, 2 );
+		if( $wp_query ) {
+			add_action( 'pre_get_posts', array( $this, 'store_query_check' ), 9 );
+			add_action( 'pre_get_posts', array( $this, 'store_query_filter' ), 20, 2 );
+		}
 		add_action( 'woocommerce_product_query', array( $this, 'store_query_filter' ), 10, 2 );
 		
 		// WC Filter Term Query Store Filter
@@ -84,12 +92,12 @@ class WCFMmp_Rewrites {
 	 */
 	public function store_page_breadcrumb( $crumbs ) {
 		if (  wcfm_is_store_page() ) {
-			$author      = get_query_var( $this->wcfm_store_url );
+			$author      = apply_filters( 'wcfmmp_store_query_var', get_query_var( $this->wcfm_store_url ) );
 			$seller_info = get_user_by( 'slug', $author );
 			if( $seller_info ) {
 				$store_info = wcfmmp_get_store_info( $seller_info->data->ID );
 				if( $store_info ) {
-					$crumbs[1]   = array( ucwords($this->wcfm_store_url) , site_url().'/'.$this->wcfm_store_url );
+					$crumbs[1]   = array( __( ucwords($this->wcfm_store_url), 'wc-multivendor-marketplace' ) , site_url().'/'.$this->wcfm_store_url );
 					$crumbs[2]   = array( $store_info['store_name'], wcfmmp_get_store_url( $seller_info->data->ID ) );
 					if( $this->store_template_title() ) {
 						$crumbs[3]   = array( strip_tags( $this->store_template_title() ), '' );
@@ -118,6 +126,15 @@ class WCFMmp_Rewrites {
 			if( $seller_info ) {
 				$store_info = wcfmmp_get_store_info( $seller_info->data->ID );
 				return $store_info['store_name'];
+			} else {
+				$store_name   = get_query_var( $this->wcfm_store_url );
+				if( $store_name ) {
+					$seller_info  = get_user_by( 'slug', $store_name );
+					if( $seller_info ) {
+						$store_info = wcfmmp_get_store_info( $seller_info->data->ID );
+						return $store_info['store_name'];
+					}
+				}
 			}
 		}
 		
@@ -140,7 +157,7 @@ class WCFMmp_Rewrites {
 			if( $seller_info ) {
 				$store_info = wcfmmp_get_store_info( $seller_info->data->ID );
 				if( $store_info ) {
-					$crumbs[1]   = '<a href="' . site_url().'/'.$this->wcfm_store_url . '">' .  ucwords($this->wcfm_store_url) . '</a>';
+					$crumbs[1]   = '<a href="' . site_url().'/'.$this->wcfm_store_url . '">' .  __( ucwords($this->wcfm_store_url), 'wc-multivendor-marketplace' ) . '</a>';
 					$crumbs[2]   = '<a href="' . wcfmmp_get_store_url( $seller_info->data->ID ) . '">' . $store_info['store_name'] . '</a>';
 					if( $this->store_template_title() ) {
 						$crumbs[3]   = strip_tags( $this->store_template_title() );
@@ -367,11 +384,34 @@ class WCFMmp_Rewrites {
 				return get_404_template();
 			}
 			
+			// Disable Store URL Visit
+			if( apply_filters( 'wcfm_is_disable_store_url_access', false ) ) {
+				wp_safe_redirect( get_permalink( wc_get_page_id( 'shop' ) ) );
+				exit;
+			}
+			
 			// Check is store Online
 			$is_store_offline = get_user_meta( $store_user->ID, '_wcfm_store_offline', true );
 			$is_store_offline = apply_filters( 'wcfmmp_is_store_offline', $is_store_offline, $store_user->ID );
 			if ( $is_store_offline ) {
 				return get_404_template();
+			}
+			
+			// WCFM Marketplace Elementor Compatibility
+			$wcfmem_template = apply_filters( 'wcfmem_locate_store_template', '' );
+			if( $wcfmem_template ) return $wcfmem_template;
+			
+			// Dive Theme Builder Support
+			if( function_exists( 'et_theme_builder_frontend_override_template' ) ) {
+				$layouts         = et_theme_builder_get_template_layouts();
+				$override_header = et_theme_builder_overrides_layout( ET_THEME_BUILDER_HEADER_LAYOUT_POST_TYPE );
+				$override_footer = et_theme_builder_overrides_layout( ET_THEME_BUILDER_FOOTER_LAYOUT_POST_TYPE );
+				if ( $override_header || $override_footer ) {
+					add_action( 'get_header', 'et_theme_builder_frontend_override_header' );
+					add_action( 'get_footer', 'et_theme_builder_frontend_override_footer' );
+						
+					et_theme_builder_frontend_enqueue_styles( $layouts );
+				}
 			}
 			
 			if ( get_query_var( $this->store_endpoint('about') ) ) {
@@ -404,6 +444,11 @@ class WCFMmp_Rewrites {
 
 		$store_name   = urldecode( get_query_var( $this->wcfm_store_url ) );
 		$seller_info  = get_user_by( 'slug', $store_name );
+		
+		if( !$seller_info ) {
+			$store_name   = get_query_var( $this->wcfm_store_url );
+			$seller_info  = get_user_by( 'slug', $store_name );
+		}
 		
 		$store_url = '';
 		if( $seller_info ) {
@@ -447,6 +492,12 @@ class WCFMmp_Rewrites {
 		if (  wcfm_is_store_page() ) {
 			// Divi Theme Support
 			remove_action( 'pre_get_posts', 'et_builder_wc_pre_get_posts' );
+			
+			// Oxygen Builder Support
+			remove_filter( 'template_include', 'ct_css_output', 99 );
+			remove_filter( 'template_include', 'ct_determine_render_template', 98 );
+			remove_filter( 'template_include', 'ct_eval_condition_template', 100 );
+			remove_filter( 'template_include', 'oxygen_vsb_global_condition_eval_template', 100 );
 		}
 	}
 
@@ -462,6 +513,8 @@ class WCFMmp_Rewrites {
 	function store_query_filter( $query, $that = null ) {
 		global $wp_query, $WCFMmp;
 		
+		if( !$wp_query )
+      return;
 		
 		$store_name = apply_filters( 'wcfmmp_store_query_var', get_query_var( $this->wcfm_store_url ) );
 
@@ -477,7 +530,7 @@ class WCFMmp_Rewrites {
 				$store_info   = wcfmmp_get_store_info( $seller_info->data->ID );
 				
 				if( apply_filters( 'wcfmmp_is_allow_store_ppp', true ) ) {
-					$global_store_ppp = isset( $WCFMmp->wcfmmp_marketplace_options['store_ppp'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_ppp'] : get_option('posts_per_page');
+					$global_store_ppp = isset( $WCFMmp->wcfmmp_marketplace_options['store_ppp'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_ppp'] : get_option( 'posts_per_page', 12 );
 					$post_per_page = isset( $store_info['store_ppp'] ) && !empty( $store_info['store_ppp'] ) ? $store_info['store_ppp'] : $global_store_ppp;
 					$query->set( 'posts_per_page', apply_filters( 'wcfmmp_store_ppp', $post_per_page ) );
 				}
@@ -488,6 +541,7 @@ class WCFMmp_Rewrites {
 					$query->set( 'post_type', 'product' );
 					$query->set( 'wc_query', 'product_query' );
 				}
+				$query->set( 'post_status', 'publish' );
 				$query->set( 'author_name', $store_name );
 				$query->query['term_section'] = isset( $query->query['term_section'] ) ? $query->query['term_section'] : array();
 
@@ -537,10 +591,17 @@ class WCFMmp_Rewrites {
 				$query->set( 'page_id', 0 );
 				
 				if( defined( 'ELEMENTOR_VERSION' )  ) {
-					$query->is_single               = false;
-					$query->is_singular             = false;
-					$query->is_archive              = false;
-					$query->is_post_type_archive    = false;
+					if( apply_filters( 'wcfmmp_is_allow_elementor_is_single_reset', true ) )
+						$query->is_single               = false;
+					
+					if( apply_filters( 'wcfmmp_is_allow_elementor_is_singular_reset', true ) )
+						$query->is_singular             = false;
+					
+					if( apply_filters( 'wcfmmp_is_allow_elementor_is_archive_reset', true ) )
+						$query->is_archive              = false;
+					
+					if( apply_filters( 'wcfmmp_is_allow_elementor_is_post_type_archive_reset', true ) )
+						$query->is_post_type_archive    = false;
 				}
 				
 				//print_r($query);

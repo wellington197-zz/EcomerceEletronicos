@@ -24,11 +24,17 @@ class WCFMmp_Shortcode {
 		// WCFM Marketplace Store Carousel
 		add_shortcode('wcfm_stores_carousel', array(&$this, 'wcfmmp_stores_carousel_shortcode'));
 		
+		// WCFM Markeplace Store Sold By
+		add_shortcode('wcfm_store_sold_by', array(&$this, 'wcfmmp_store_sold_by_shortcode'));
+		
 		// WCFM Markeplace Store Info
 		add_shortcode('wcfm_store_info', array(&$this, 'wcfmmp_store_info_shortcode'));
 		
 		// WCFM Markeplace Store Hours
 		add_shortcode('wcfm_store_hours', array(&$this, 'wcfmmp_store_hours_shortcode'));
+		
+		// WCFM Markeplace Shipping Time
+		add_shortcode('wcfm_shipping_time', array(&$this, 'wcfmmp_shipping_time_shortcode'));
 		
 		// WCFM Markeplace More Offers
 		add_shortcode('wcfm_more_offers', array(&$this, 'wcfmmp_more_offers_shortcode'));
@@ -41,6 +47,9 @@ class WCFMmp_Shortcode {
 		
 		// WCFM Marketplace Store Instagram Widget
 		//add_shortcode('wcfm_store_instagram_feed', array(&$this, 'wcfmmp_store_instagram_widget_shortcode'));
+		
+		// Product List Vendor Filter
+		add_shortcode('wcfm_products_store_filter', array(&$this, 'wcfmmp_products_store_filter_shortcode'));
 	}
 
 	/**
@@ -53,7 +62,6 @@ class WCFMmp_Shortcode {
 		$defaults = array(
 				'per_page'           => 12,
 				'sidebar'            => 'yes',
-				'has_orderby'        => 'yes',
 				'orderby'            => 'newness_asc',
 				'filter'             => 'yes',
 				'search'             => 'yes',
@@ -64,23 +72,40 @@ class WCFMmp_Shortcode {
 				'map'                => 'yes',
 				'map_zoom'           => 5,
 				'auto_zoom'          => 'yes',
-				'per_row'            => 2,
+				'per_row'            => 3,
 				'includes'           => '',
 				'excludes'           => '',
 				'include_membership' => '',
 				'exclude_membership' => '',
+				'search_term'        => '',
+				'search_country'     => '',
+				'search_state'       => '',
+				'search_city'        => '',
+				'search_zip'         => '',
 				'search_category'    => '',
-				'has_product'        => '',
-				'theme'              => 'classic'
+				'store_category'     => '',
+				'theme'              => 'classic',
+				'has_orderby'        => 'yes',
+				'has_product'        => 'no',
+				'has_sidebar'        => 'yes',
+				'has_filter'         => 'yes',
+				'has_search'         => 'yes',
+				'has_category'       => 'yes',
+				'has_country'        => 'yes',
+				'has_state'          => 'yes',
+				'has_city'           => 'no',
+				'has_zip'            => 'no',
+				'has_radius'         => 'yes',
+				'has_map'            => 'yes',
 		);
 
 		$attr   = shortcode_atts( apply_filters( 'wcfmmp_stores_default_args', $defaults ), $atts );
 		$paged  = max( 1, get_query_var( 'paged' ) );
 		$length = apply_filters( 'wcfmmp_stores_per_page', $attr['per_page'] );
-		$offset = ( $paged - 1 ) * $length;
+		$offset = ( $paged - 1 ) * absint( $length );
 		
-		$search_country = '';
-		$search_state   = '';
+		$search_country = isset( $attr['search_country'] ) ? $attr['search_country'] : '';
+		$search_state   = isset( $attr['search_state'] ) ? $attr['search_state'] : '';
 		
 		// GEO Locate Support
 		if( apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ) ) {
@@ -100,13 +125,63 @@ class WCFMmp_Shortcode {
 		}
 
 		$orderby          = isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : apply_filters( 'wcfmmp_stores_default_orderby', $attr['orderby'] );
-		$search_term      = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : '';
+		$search_term      = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : $attr['search_term'];
+		
+		$search_country   = isset( $_GET['wcfmmp_store_country'] ) ? sanitize_text_field( $_GET['wcfmmp_store_country'] ) : '';
+		$search_state     = isset( $_GET['wcfmmp_store_state'] ) ? sanitize_text_field( $_GET['wcfmmp_store_state'] ) : '';
+		$search_city      = isset( $_GET['wcfmmp_store_city'] ) ? sanitize_text_field( $_GET['wcfmmp_store_city'] ) : $attr['search_city'];
+		$search_zip       = isset( $_GET['wcfmmp_store_zip'] ) ? sanitize_text_field( $_GET['wcfmmp_store_zip'] ) : $attr['search_zip'];
+		
 		$search_category  = isset( $_GET['wcfmmp_store_category'] ) ? sanitize_text_field( $_GET['wcfmmp_store_category'] ) : $attr['search_category'];
+		$store_category   = isset( $_GET['wcfmsc_store_categories'] ) ? sanitize_text_field( $_GET['wcfmsc_store_categories'] ) : $attr['store_category'];
 		
 		$search_category  = apply_filters( 'wcfmmp_stores_default_search_category', $search_category );
-		$has_product      = apply_filters( 'wcfmmp_stores_list_has_product', $attr['has_product'] );
+		$has_product      = apply_filters( 'wcfmmp_stores_list_has_product', wc_string_to_bool( $attr['has_product'] ) );
+		
+		$has_sidebar      = isset( $attr['sidebar'] ) ? $attr['sidebar'] : 'yes';
+		$has_sidebar      = isset( $attr['has_sidebar'] ) ? $attr['has_sidebar'] : $has_sidebar;
+		
+		$has_filter       = isset( $attr['filter'] ) ? $attr['filter'] : 'yes';
+		$has_filter       = isset( $attr['has_filter'] ) ? $attr['has_filter'] : $has_filter;
+		
+		$has_search       = isset( $attr['search'] ) ? $attr['search'] : 'yes';
+		$has_search       = isset( $attr['has_search'] ) ? $attr['has_search'] : $has_search;
+		
+		$has_category     = isset( $attr['category'] ) ? $attr['category'] : 'yes';
+		$has_category     = isset( $attr['has_category'] ) ? $attr['has_category'] : $has_category;
+		
+		$has_country      = isset( $attr['country'] ) ? $attr['country'] : 'yes';
+		$has_country      = isset( $attr['has_country'] ) ? $attr['has_country'] : $has_country;
+		
+		$has_state        = isset( $attr['state'] ) ? $attr['state'] : 'yes';
+		$has_state        = isset( $attr['has_state'] ) ? $attr['has_state'] : $has_state;
+		
+		$has_city         = isset( $attr['has_city'] ) ? $attr['has_city'] : 'no';
+		
+		$has_zip          = isset( $attr['has_zip'] ) ? $attr['has_zip'] : 'no';
+		
+		$has_radius       = isset( $attr['radius'] ) ? $attr['radius'] : 'yes';
+		$has_radius       = isset( $attr['has_radius'] ) ? $attr['has_radius'] : $has_radius;
+		
+		$has_map          = isset( $attr['map'] ) ? $attr['map'] : 'yes';
+		$has_map          = isset( $attr['has_map'] ) ? $attr['has_map'] : $has_map;
 		
 		$search_data     = array();
+		if( $store_category ) {
+			$search_data['wcfmsc_store_categories'] = $store_category;
+		}
+		if( $search_country ) {
+			$search_data['wcfmmp_store_country'] = $search_country;
+		}
+		if( $search_state ) {
+			$search_data['wcfmmp_store_state'] = $search_state;
+		}
+		if( $search_city ) {
+			$search_data['wcfmmp_store_city'] = $search_city;
+		}
+		if( $search_zip ) {
+			$search_data['wcfmmp_store_zip'] = $search_zip;
+		}
 		if( isset( $_POST['search_data'] ) ) {
 			parse_str($_POST['search_data'], $search_data);
 		} elseif( isset( $_GET['orderby'] ) ) {
@@ -152,17 +227,22 @@ class WCFMmp_Shortcode {
 		
 		// Radious Search
 		$enable_wcfm_storelist_radius  = isset( $WCFMmp->wcfmmp_marketplace_options['enable_wcfm_storelist_radius'] ) ? $WCFMmp->wcfmmp_marketplace_options['enable_wcfm_storelist_radius'] : 'no';
-		$radius = wc_string_to_bool( $attr['radius'] );
-		if( ( $enable_wcfm_storelist_radius == 'yes' ) && $radius ) $radius = true;
-		else $radius = false;
+		$has_radius = wc_string_to_bool( $has_radius);
+		if( ( $enable_wcfm_storelist_radius == 'yes' ) && $has_radius ) $has_radius = true;
+		else $has_radius = false;
 		$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-		if ( !$api_key ) $radius = false;
-		if( $radius ) {
-			$attr['country'] = 'no';
-			$attr['state'] = 'no';
+		$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+		if ( ($wcfm_map_lib == 'google') && empty( $api_key ) ) $has_radius = false;
+		if( $has_radius ) {
+			$has_country = 'no';
+			$has_state   = 'no';
+			$has_city    = 'no';
+			$has_zipcode = 'no';
 		}
-			
-
+		
+		$search_data = apply_filters( 'wcfmmp_stores_search_data', $search_data );
+		
 		$stores = $WCFMmp->wcfmmp_vendor->wcfmmp_search_vendor_list( true, $offset, $length, $search_term, $search_category, $search_data, $has_product, $includes );
 
 		$template_args = apply_filters( 'wcfmmp_stores_args', array(
@@ -173,22 +253,31 @@ class WCFMmp_Shortcode {
 				'excludes'        => $excludes,
 				'paged'           => $paged,
 				'image_size'      => 'full',
-				'has_product'     => $has_product,
-				'has_orderby'     => $attr['has_orderby'],
 				'orderby'         => $orderby,
-				'sidebar'         => wc_string_to_bool( $attr['sidebar'] ),
-				'filter'          => wc_string_to_bool( $attr['filter'] ),
-				'search'          => wc_string_to_bool( $attr['search'] ),
-				'category'        => wc_string_to_bool( $attr['category'] ),
-				'country'         => wc_string_to_bool( $attr['country'] ),
-				'state'           => wc_string_to_bool( $attr['state'] ),
-				'radius'          => $radius,
-				'map'             => wc_string_to_bool( $attr['map'] ),   
-				'map_zoom'        => $attr['map_zoom'],
-				'auto_zoom'       => $attr['auto_zoom'],
+				'search_term'     => $search_term,
+				'search_country'  => $search_country,
+				'search_state'    => $search_state,
+				'search_city'     => $search_city,
+				'search_zip'      => $search_zip,
+				'search_category' => $search_category,
+				'store_category'  => $store_category,
+				'search_data'     => $search_data,
+				'has_product'     => $has_product,
+				'has_orderby'     => wc_string_to_bool( $attr['has_orderby'] ),
+				'sidebar'         => wc_string_to_bool( $has_sidebar ),
+				'filter'          => wc_string_to_bool( $has_filter ),
+				'search'          => wc_string_to_bool( $has_search ),
+				'category'        => wc_string_to_bool( $has_category ),
+				'country'         => wc_string_to_bool( $has_country ),
+				'state'           => wc_string_to_bool( $has_state ),
+				'has_city'        => wc_string_to_bool( $has_city ),
+				'has_zip'         => wc_string_to_bool( $has_zip ),
+				'map'             => wc_string_to_bool( $has_map ), 
+				'radius'          => $has_radius,
+				'map_zoom'        => apply_filters( 'wcfmmp_map_default_zoom_level', $attr['map_zoom'] ),
+				'auto_zoom'       => wc_string_to_bool( apply_filters( 'wcfmmp_is_allow_map_auto_zoom', $attr['auto_zoom'] ) ),
 				'per_row'         => $attr['per_row'],
-				'theme'           => $attr['theme'],
-				'search_category' => $search_category
+				'theme'           => $attr['theme']
 		), $attr, $search_data );
 		
 		ob_start();
@@ -209,34 +298,93 @@ class WCFMmp_Shortcode {
 				'category'           => 'yes',
 				'country'            => 'yes',
 				'state'              => 'yes',
-				'radius'             => 'no',
+				'radius'             => 'yes',
 				'map'                => 'yes',
 				'map_zoom'           => 5,
 				'auto_zoom'          => 'yes',
 				'limit'              => 10,
-				'per_row'            => 2,
+				'per_row'            => 3,
 				'includes'           => '',
 				'excludes'           => '',
 				'include_membership' => '',
 				'exclude_membership' => '',
+				'search_term'        => '',
+				'search_city'        => '',
+				'search_zip'         => '',
 				'search_category'    => '',
-				'has_product'        => '',
+				'store_category'     => '',
+				'theme'              => 'classic',
+				'has_product'        => 'no',
+				'has_sidebar'        => 'yes',
+				'has_filter'         => 'yes',
+				'has_search'         => 'yes',
+				'has_category'       => 'yes',
+				'has_country'        => 'yes',
+				'has_state'          => 'yes',
+				'has_city'           => 'no',
+				'has_zip'            => 'no',
+				'has_radius'         => 'yes',
+				'has_map'            => 'yes',
 		);
 		
 		$attr   = shortcode_atts( apply_filters( 'wcfmmp_stores_map_default_args', $defaults ), $atts );
-
-		$filter           = isset( $attr['filter'] ) ? wc_string_to_bool( $attr['filter'] ) : '';
-		$search           = isset( $attr['search'] ) ? wc_string_to_bool( $attr['search'] ) : '';
-		$category         = isset( $attr['category'] ) ? wc_string_to_bool( $attr['category'] ) : '';
-		$country          = isset( $attr['country'] ) ? wc_string_to_bool( $attr['country'] ) : '';
-		$state            = isset( $attr['state'] ) ? wc_string_to_bool( $attr['state'] ) : '';
 		
-		$has_product      = apply_filters( 'wcfmmp_stores_list_has_product', $attr['has_product'] );
+		$search_term      = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : $attr['search_term'];
 		
-		$search_query     = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : '';
-		$search_category  = isset( $_GET['wcfmmp_store_category'] ) ? sanitize_text_field( $_GET['wcfmmp_store_category'] ) : '';
 		$search_country   = isset( $_GET['wcfmmp_store_country'] ) ? sanitize_text_field( $_GET['wcfmmp_store_country'] ) : '';
 		$search_state     = isset( $_GET['wcfmmp_store_state'] ) ? sanitize_text_field( $_GET['wcfmmp_store_state'] ) : '';
+		$search_city      = isset( $_GET['wcfmmp_store_city'] ) ? sanitize_text_field( $_GET['wcfmmp_store_city'] ) : $attr['search_city'];
+		$search_zip       = isset( $_GET['wcfmmp_store_zip'] ) ? sanitize_text_field( $_GET['wcfmmp_store_zip'] ) : $attr['search_zip'];
+		
+		$search_category  = isset( $_GET['wcfmmp_store_category'] ) ? sanitize_text_field( $_GET['wcfmmp_store_category'] ) : $attr['search_category'];
+		$store_category   = isset( $_GET['wcfmsc_store_categories'] ) ? sanitize_text_field( $_GET['wcfmsc_store_categories'] ) : $attr['store_category'];
+		
+		$has_product      = apply_filters( 'wcfmmp_stores_list_has_product', wc_string_to_bool( $attr['has_product'] ) );
+
+		$has_filter       = isset( $attr['filter'] ) ? $attr['filter'] : 'yes';
+		$has_filter       = isset( $attr['has_filter'] ) ? $attr['has_filter'] : $has_filter;
+		
+		$has_search       = isset( $attr['search'] ) ? $attr['search'] : 'yes';
+		$has_search       = isset( $attr['has_search'] ) ? $attr['has_search'] : $has_search;
+		
+		$has_category     = isset( $attr['category'] ) ? $attr['category'] : 'yes';
+		$has_category     = isset( $attr['has_category'] ) ? $attr['has_category'] : $has_category;
+		
+		$has_country      = isset( $attr['country'] ) ? $attr['country'] : 'yes';
+		$has_country      = isset( $attr['has_country'] ) ? $attr['has_country'] : $has_country;
+		
+		$has_state        = isset( $attr['state'] ) ? $attr['state'] : 'yes';
+		$has_state        = isset( $attr['has_state'] ) ? $attr['has_state'] : $has_state;
+		
+		$has_city         = isset( $attr['has_city'] ) ? $attr['has_city'] : 'no';
+		
+		$has_zip          = isset( $attr['has_zip'] ) ? $attr['has_zip'] : 'no';
+		
+		$has_radius       = isset( $attr['radius'] ) ? $attr['radius'] : 'yes';
+		$has_radius       = isset( $attr['has_radius'] ) ? $attr['has_radius'] : $has_radius;
+		
+		$has_map          = isset( $attr['map'] ) ? $attr['map'] : 'yes';
+		$has_map          = isset( $attr['has_map'] ) ? $attr['has_map'] : $has_map;
+		
+		$search_data     = array();
+		if( $store_category ) {
+			$search_data['wcfmsc_store_categories'] = $store_category;
+		}
+		if( $search_country ) {
+			$search_data['wcfmmp_store_country'] = $search_country;
+		}
+		if( $search_state ) {
+			$search_data['wcfmmp_store_state'] = $search_state;
+		}
+		if( $search_city ) {
+			$search_data['wcfmmp_store_city'] = $search_city;
+		}
+		if( $search_zip ) {
+			$search_data['wcfmmp_store_zip'] = $search_zip;
+		}
+		if( isset( $_POST['search_data'] ) ) {
+			parse_str($_POST['search_data'], $search_data);
+		}
 		
 		// Exclude Membership
 		$exclude_members = array();
@@ -277,47 +425,62 @@ class WCFMmp_Shortcode {
 		
 		// Radious Search
 		$enable_wcfm_storelist_radius  = isset( $WCFMmp->wcfmmp_marketplace_options['enable_wcfm_storelist_radius'] ) ? $WCFMmp->wcfmmp_marketplace_options['enable_wcfm_storelist_radius'] : 'no';
-		$radius = wc_string_to_bool( $attr['radius'] );
-		if( ( $enable_wcfm_storelist_radius == 'yes' ) && $radius ) $radius = true;
-		else $radius = false;
+		$has_radius = wc_string_to_bool( $has_radius);
+		if( ( $enable_wcfm_storelist_radius == 'yes' ) && $has_radius ) $has_radius = true;
+		else $has_radius = false;
 		$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-		if ( !$api_key ) $radius = false;
-		if( $radius ) {
-			$country = false;
-			$state = false;
+		$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+		if ( ($wcfm_map_lib == 'google') && empty( $api_key ) ) $has_radius = false;
+		if( $has_radius ) {
+			$has_country = 'no';
+			$has_state   = 'no';
+			$has_city    = 'no';
+			$has_zipcode = 'no';
 		}
+		
+		$stores = $WCFMmp->wcfmmp_vendor->wcfmmp_search_vendor_list( true, '', $attr['limit'], $search_term, $search_category, $search_data, $has_product, $includes );
 			
 
 		$template_args = apply_filters( 'wcfmmp_stores_map_args', array(
+			  'stores'          => $stores,
+			  'offset'          => 0,
 				'excludes'        => $excludes,
-				'filter'          => $attr['filter'],
-				'search'          => $search,
-				'category'        => $category,
-				'country'         => $country,
-				'state'           => $state,
-				'radius'          => $radius,
-				'search_query'    => $search_query,
-				'search_category' => $search_category,
+				'search_term'     => $search_term,
 				'search_country'  => $search_country,
 				'search_state'    => $search_state,
+				'search_city'     => $search_city,
+				'search_zip'      => $search_zip,
+				'search_category' => $search_category,
+				'store_category'  => $store_category,
+				'search_data'     => $search_data,
 				'pagination_base' => $pagination_base,
 				'has_product'     => $has_product,
+				'filter'          => wc_string_to_bool( $has_filter ),
+				'search'          => wc_string_to_bool( $has_search ),
+				'category'        => wc_string_to_bool( $has_category ),
+				'country'         => wc_string_to_bool( $has_country ),
+				'state'           => wc_string_to_bool( $has_state ),
+				'has_city'        => wc_string_to_bool( $has_city ),
+				'has_zip'         => wc_string_to_bool( $has_zip ),
+				'map'             => wc_string_to_bool( $has_map ), 
+				'radius'          => $has_radius,
+				'map_zoom'        => apply_filters( 'wcfmmp_map_default_zoom_level', $attr['map_zoom'] ),
+				'auto_zoom'       => wc_string_to_bool( apply_filters( 'wcfmmp_is_allow_map_auto_zoom', $attr['auto_zoom'] ) ),
 				'includes'        => $includes,
 				'per_row'         => $attr['per_row'],
 				'limit'           => $attr['limit'],
-				'map'             => 'yes',
-				'map_zoom'        => $attr['map_zoom'],
-				'auto_zoom'       => $attr['auto_zoom'],
-				'has_orderby'     => 'no',
-				'sidebar'         => 'no',
+				'orderby'         => '',
+				'has_orderby'     => wc_string_to_bool( 'no' ),
+				'sidebar'         => wc_string_to_bool( 'no' ),
 				'theme'           => 'simple'
 		) );
 		
 		ob_start();
 		echo '<div id="wcfmmp-stores-map-wrapper">';
 		$WCFMmp->template->get_template( 'store-lists/wcfmmp-view-store-lists-map.php', $template_args );
-		if( $filter ) {
-			if( $search || $radius || $category || $country || $state ) { $WCFMmp->template->get_template( 'store-lists/wcfmmp-view-store-lists-search-form.php', $template_args ); }
+		if( wc_string_to_bool( $has_filter ) ) {
+			if( wc_string_to_bool( $has_search ) || $has_radius || wc_string_to_bool( $has_category ) || wc_string_to_bool( $has_country ) || wc_string_to_bool( $has_state ) || wc_string_to_bool( $has_city ) || wc_string_to_bool( $has_zip ) ) { $WCFMmp->template->get_template( 'store-lists/wcfmmp-view-store-lists-search-form.php', $template_args ); }
 		}
 		echo '</div>';
 		echo '<div class="wcfm-clearfix"></div>';
@@ -337,12 +500,24 @@ class WCFMmp_Shortcode {
 				'category'           => 'yes',
 				'country'            => 'yes',
 				'state'              => 'yes',
-				'per_row'            => 5,
+				'has_category'       => 'yes',
+				'has_country'        => 'yes',
+				'has_state'          => 'yes',
+				'has_city'           => 'no',
+				'has_zip'            => 'no',
+				'has_loop'           => 'yes',
+				'has_autoplay'       => 'yes',
+				'has_nav'            => 'yes',
+				'per_row'            => 3,
 				'includes'           => '',
 				'excludes'           => '',
 				'include_membership' => '',
 				'exclude_membership' => '',
+				'search_term'        => '',
+				'search_city'        => '',
+				'search_zip'         => '',
 				'search_category'    => '',
+				'store_category'     => '',
 				'has_product'        => '',
 				'theme'              => 'classic'
 		);
@@ -372,17 +547,50 @@ class WCFMmp_Shortcode {
 			}
 		}
 
-		$search_term      = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : '';
+		$search_term      = isset( $_GET['wcfmmp_store_search'] ) ? sanitize_text_field( $_GET['wcfmmp_store_search'] ) : $attr['search_term'];
+		
+		$search_country   = isset( $_GET['wcfmmp_store_country'] ) ? sanitize_text_field( $_GET['wcfmmp_store_country'] ) : $search_country;
+		$search_state     = isset( $_GET['wcfmmp_store_state'] ) ? sanitize_text_field( $_GET['wcfmmp_store_state'] ) : $search_state;
+		$search_city      = isset( $_GET['wcfmmp_store_city'] ) ? sanitize_text_field( $_GET['wcfmmp_store_city'] ) : $attr['search_city'];
+		$search_zip       = isset( $_GET['wcfmmp_store_zip'] ) ? sanitize_text_field( $_GET['wcfmmp_store_zip'] ) : $attr['search_zip'];
+		
 		$search_category  = isset( $_GET['wcfmmp_store_category'] ) ? sanitize_text_field( $_GET['wcfmmp_store_category'] ) : $attr['search_category'];
+		$store_category   = isset( $_GET['wcfmsc_store_categories'] ) ? sanitize_text_field( $_GET['wcfmsc_store_categories'] ) : $attr['store_category'];
 		
 		$search_category  = apply_filters( 'wcfmmp_stores_default_search_category', $search_category );
 		$has_product      = apply_filters( 'wcfmmp_stores_list_has_product', $attr['has_product'] );
 		
+		$has_category     = isset( $attr['category'] ) ? $attr['category'] : 'yes';
+		$has_category     = isset( $attr['has_category'] ) ? $attr['has_category'] : $has_category;
+		
+		$has_country      = isset( $attr['country'] ) ? $attr['country'] : 'yes';
+		$has_country      = isset( $attr['has_country'] ) ? $attr['has_country'] : $has_country;
+		
+		$has_state        = isset( $attr['state'] ) ? $attr['state'] : 'yes';
+		$has_state        = isset( $attr['has_state'] ) ? $attr['has_state'] : $has_state;
+		
+		$has_city         = isset( $attr['has_city'] ) ? $attr['has_city'] : 'no';
+		
+		$has_zip          = isset( $attr['has_zip'] ) ? $attr['has_zip'] : 'no';
+		
 		$search_data     = array();
+		if( $store_category ) {
+			$search_data['wcfmsc_store_categories'] = $store_category;
+		}
+		if( $search_country ) {
+			$search_data['wcfmmp_store_country'] = $search_country;
+		}
+		if( $search_state ) {
+			$search_data['wcfmmp_store_state'] = $search_state;
+		}
+		if( $search_city ) {
+			$search_data['wcfmmp_store_city'] = $search_city;
+		}
+		if( $search_zip ) {
+			$search_data['wcfmmp_store_zip'] = $search_zip;
+		}
 		if( isset( $_POST['search_data'] ) ) {
 			parse_str($_POST['search_data'], $search_data);
-		} elseif( isset( $_GET['orderby'] ) ) {
-			$search_data = wp_unslash($_GET);
 		}
 		
 		// Exclude Membership
@@ -429,18 +637,66 @@ class WCFMmp_Shortcode {
 				'offset'          => $offset,
 				'includes'        => $includes,
 				'excludes'        => $excludes,
+				'search_term'     => $search_term,
+				'search_country'  => $search_country,
+				'search_state'    => $search_state,
+				'search_city'     => $search_city,
+				'search_zip'      => $search_zip,
+				'search_category' => $search_category,
+				'store_category'  => $store_category,
+				'search_data'     => $search_data,
 				'has_product'     => $has_product,
-				'category'        => wc_string_to_bool( $attr['category'] ),
-				'country'         => wc_string_to_bool( $attr['country'] ),
-				'state'           => wc_string_to_bool( $attr['state'] ),
+				'category'        => wc_string_to_bool( $has_category ),
+				'country'         => wc_string_to_bool( $has_country ),
+				'state'           => wc_string_to_bool( $has_state ),
+				'has_city'        => wc_string_to_bool( $has_city ),
+				'has_zip'         => wc_string_to_bool( $has_zip ),
+				'has_loop'        => wc_string_to_bool( $attr['has_loop'] ),
+				'has_autoplay'    => wc_string_to_bool( $attr['has_autoplay'] ),
+				'has_nav'         => wc_string_to_bool( $attr['has_nav'] ),
 				'per_row'         => $attr['per_row'],
-				'theme'           => $attr['theme'],
-				'search_category' => $search_category
+				'theme'           => $attr['theme']
 		), $attr, $search_data);
 		
 		ob_start();
 		$WCFMmp->template->get_template( 'store-lists/wcfmmp-view-store-lists-carousel.php', $template_args );
 		return ob_get_clean();
+	}
+	
+	/**
+	 * WCFM Marketplace Store Sold By Shortcode
+	 */
+	public function wcfmmp_store_sold_by_shortcode( $attr ) {
+		global $WCFM, $WCFMmp, $post;
+
+		if( !$post ) return;
+		if( !wcfm_is_vendor( $post->post_author ) ) return;
+		
+		$store_user   = wcfmmp_get_store( $post->post_author );
+		$store_info   = $store_user->get_shop_info();
+		
+		$is_store_offline = get_user_meta( $store_user->get_id(), '_wcfm_store_offline', true );
+		if ( $is_store_offline ) {
+			return;
+		}
+		
+		ob_start();
+		
+		do_action( 'wcfmmp_store_before_sidebar_info', $store_user->get_id() );
+		
+		$vendor_sold_by_template = $WCFMmp->wcfmmp_vendor->get_vendor_sold_by_template();
+		
+		if( $vendor_sold_by_template == 'advanced' ) {
+			$WCFMmp->template->get_template( 'sold-by/wcfmmp-view-sold-by-advanced.php', array( 'vendor_id' => $store_user->get_id() ) );
+		} else {
+			$WCFMmp->template->get_template( 'sold-by/wcfmmp-view-sold-by-simple.php', array( 'vendor_id' => $store_user->get_id() ) );
+		}
+		wp_enqueue_style( 'wcfmmp_product_css',  $WCFMmp->library->css_lib_url_min . 'store/wcfmmp-style-product.css', array(), $WCFMmp->version );
+
+		do_action( 'wcfmmp_store_after_sidebar_info', $store_user->get_id() );
+		
+		$content = ob_get_clean();
+		return $content;
 	}
 	
 	/**
@@ -453,7 +709,7 @@ class WCFMmp_Shortcode {
 		if ( isset( $attr['id'] ) && !empty( $attr['id'] ) ) { $store_id = absint($attr['id']); }
 		
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
@@ -463,6 +719,10 @@ class WCFMmp_Shortcode {
 		}
 		
 		if( is_product() ) {
+			$store_id = $post->post_author;
+		}
+		
+		if( !$store_id && is_single() && $post && is_object( $post ) && wcfm_is_vendor( $post->post_author ) ) {
 			$store_id = $post->post_author;
 		}
 		
@@ -477,10 +737,24 @@ class WCFMmp_Shortcode {
 			return;
 		}
 		
+		$label = '';
+		if ( isset( $attr['label'] ) && !empty( $attr['label'] ) ) { $label = $attr['label']; }
+		
+		$icon = '';
+		if ( isset( $attr['icon'] ) && !empty( $attr['icon'] ) ) { $icon = $attr['icon']; }
+		
 		$store_user  = wcfmmp_get_store( $store_id );
 		$store_info  = $store_user->get_shop_info();
 		
 		$content = '<div class="wcfmmp_store_info wcfmmp_store_info_' . $data_info . '">';
+		
+		if( $icon ) {
+			$content .= '<i style="display:inline-block" class="wcfmfa fa-' . $icon . ' wcfmmp_store_info_icon wcfmmp_store_info_iconl_' . $data_info . '"></i>&nbsp&nbsp';
+		}
+		
+		if( $label ) {
+			$content .= '<span style="display:inline-block" class="wcfmmp_store_info_label wcfmmp_store_info_label_' . $data_info . '">' . $label . '</span>:&nbsp';
+		}
 		
 		switch( $data_info ) {
 			case 'store_name':
@@ -492,15 +766,15 @@ class WCFMmp_Shortcode {
 				break;
 				
 			case 'store_address':
-				$content .= $store_user->get_address_string();
+				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_address_string();
 				break;
 				
 		  case 'store_email':
-				$content .= $store_user->get_email();
+				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_email() . '</span>';
 				break;
 			
 			case 'store_phone':
-				$content .=  $store_user->get_phone();
+				$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_phone() . '</span>';
 				break;
 				
 			case 'store_gravatar':
@@ -526,10 +800,12 @@ class WCFMmp_Shortcode {
 				
 			case 'store_location':
 				$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
+				$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+				if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
 				$store_lat    = isset( $store_info['store_lat'] ) ? esc_attr( $store_info['store_lat'] ) : 0;
 				$store_lng    = isset( $store_info['store_lng'] ) ? esc_attr( $store_info['store_lng'] ) : 0;
 	
-				if ( !empty( $api_key ) && !empty( $store_lat ) && !empty( $store_lng ) ) {
+				if ( ( ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) || ($wcfm_map_lib == 'leaflet') ) && !empty( $store_lat ) && !empty( $store_lng ) ) {
 					ob_start();
 					$WCFMmp->template->get_template( 'store/widgets/wcfmmp-view-store-location.php', array( 
 																												 'store_user' => $store_user, 
@@ -543,8 +819,7 @@ class WCFMmp_Shortcode {
 					if( !wcfmmp_is_store_page() ) {
 						wp_enqueue_style( 'wcfmmp_product_css',  $WCFMmp->library->css_lib_url . 'store/wcfmmp-style-product.css', array(), $WCFMmp->version );
 						wp_enqueue_script( 'wcfmmp_store_js', $WCFMmp->library->js_lib_url . 'store/wcfmmp-script-store.js', array('jquery' ), $WCFMmp->version, true );
-						$scheme  = is_ssl() ? 'https' : 'http';
-						wp_enqueue_script( 'wcfm-store-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places' );
+						$WCFMmp->library->load_map_lib();
 					}
 				}
 				break;
@@ -555,14 +830,25 @@ class WCFMmp_Shortcode {
 				$content .=  ob_get_clean();
 				break;
 				
+			case 'store_badges':
+				ob_start();
+				do_action('wcfmmp_single_product_sold_by_badges', $store_id );
+				$content .=  ob_get_clean();
+				break;
+				
 			case 'register_on':
 				$data_value = get_user_meta( $store_id, 'wcfm_register_on', true );
-				$content .=  date( wc_date_format(), $data_value );
+				if( $data_value ) {
+					$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . date( wc_date_format(), $data_value ) . '</span>';
+				}
 				break;
 				
 			default:
 				$data_value = get_user_meta( $store_id, $data_info, true );
-				$content .=  apply_filters( 'wcfmmp_additional_store_info', $data_value, $data_info, $store_id );
+				if( $data_value && is_array( $data_value ) ) {
+					$data_value = implode( ", ", $data_value );
+				}
+				$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . apply_filters( 'wcfmmp_additional_store_info', $data_value, $data_info, $store_id ) . '</span>';
 			  break;
 		}
 		
@@ -584,7 +870,7 @@ class WCFMmp_Shortcode {
 		if ( isset( $attr['id'] ) && !empty( $attr['id'] ) ) { $store_id = absint($attr['id']); }
 		
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = get_query_var( $wcfm_store_url );
 			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
@@ -640,6 +926,38 @@ class WCFMmp_Shortcode {
 	}
 	
 	/**
+	 * WCFM Marketplace Shipping Time Shortcode
+	 */
+	function wcfmmp_shipping_time_shortcode() {
+		global $WCFM, $WCFMmp, $post;
+  	
+  	if( !apply_filters( 'wcfm_is_allow_store_shipping', true ) ) return; 
+		if( !apply_filters( 'wcfm_is_allow_shipping_processing_time_info', true ) ) return;
+		if( !is_product() ) return;
+		
+		$wcfm_shipping_options = get_option( 'wcfm_shipping_options', array() );
+		$wcfmmp_store_shipping_enabled = isset( $wcfm_shipping_options['enable_store_shipping'] ) ? $wcfm_shipping_options['enable_store_shipping'] : 'yes';
+		if( $wcfmmp_store_shipping_enabled != 'yes' ) return;
+			
+		$vendor_id = 0;
+		$product_id = 0;
+		if( is_product() && $post && is_object( $post ) ) {
+			$product_id = $post->ID;
+			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+		}
+		if( !$product_id ) return;
+		if( !$WCFM || !$WCFM->frontend || !$WCFM->frontend->is_wcfm_needs_shipping( $product_id ) ) return;
+		if( !$vendor_id ) return;
+		
+		if( $WCFMmp->wcfmmp_vendor->is_vendor_sold_by( $vendor_id ) ) {
+			ob_start();
+			$WCFMmp->template->get_template( 'shipping/wcfmmp-view-shipping-info.php', array( 'vendor_id' => $vendor_id, 'product_id' => $product_id ) );
+			$content = ob_get_clean();
+			return $content;
+    }
+	}
+	
+	/**
 	 * WCFM Marketplace Store Hours Shortcode
 	 */
 	public function wcfmmp_more_offers_shortcode( $attr ) {
@@ -667,10 +985,10 @@ class WCFMmp_Shortcode {
 	public function wcfmmp_store_fb_widget_shortcode( $attr ) {
 		global $WCFM, $WCFMmp, $wp, $WCFM_Query, $post;
 		
+		$store_id  = 0;
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = get_query_var( $wcfm_store_url );
-			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
 				$store_user = get_user_by( 'slug', $store_name );
 			}
@@ -729,10 +1047,10 @@ class WCFMmp_Shortcode {
 	public function wcfmmp_store_twitter_widget_shortcode( $attr ) {
 		global $WCFM, $WCFMmp, $wp, $WCFM_Query, $post;
 		
+		$store_id  = 0;
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = get_query_var( $wcfm_store_url );
-			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
 				$store_user = get_user_by( 'slug', $store_name );
 			}
@@ -789,10 +1107,10 @@ class WCFMmp_Shortcode {
 	public function wcfmmp_store_instagram_widget_shortcode( $attr ) {
 		global $WCFM, $WCFMmp, $wp, $WCFM_Query, $post;
 		
+		$store_id  = 0;
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = get_query_var( $wcfm_store_url );
-			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
 				$store_user = get_user_by( 'slug', $store_name );
 			}
@@ -825,6 +1143,23 @@ class WCFMmp_Shortcode {
 		$content .= ob_get_clean();
 		
 		return $content;
+	}
+	
+	/**
+	 * WCFM Marketplace Product List Store Filter Widget Shortcode
+	 */
+	function wcfmmp_products_store_filter_shortcode( $attr ) {
+		global $WCFM, $WCFMmp, $wp;
+
+		if ( ! is_shop() && ! is_product_taxonomy() ) {
+				return;
+		}
+		
+		$args = array(); // For future use
+		
+		ob_start();
+		$WCFMmp->template->get_template( 'product-geolocate/wcfmmp-view-product-lists-vendor-filter.php', $args );
+		return ob_get_clean();
 	}
 	
 	/**

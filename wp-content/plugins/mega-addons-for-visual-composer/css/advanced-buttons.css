@@ -1,4 +1,9 @@
-.mega-uae-btn {
+/* 
+This was all taken from 
+https://tympanus.net/Development/ButtonStylesInspiration/
+*/
+
+.maw_advanced_btn {
     float: left;
     display: block;
     padding: 7px 20px;
@@ -17,21 +22,21 @@
     text-align: center;
 }
 
-.mega-uae-btn.btn_block {
+.maw_advanced_btn.btn_block {
     width: 100%;
 }
 
-.mega-uae-btn.hvr-fade {
-    -webkit-transition: all .2s;
-    -moz-transition: all .2s;
-    transition: all .2s
+.maw_advanced_btn.hvr-fade {
+    -webkit-transition: all .4s;
+    -moz-transition: all .4s;
+    transition: all .4s
 }
 
-.mega-uae-btn:focus {
+.maw_advanced_btn:focus {
     outline: 0
 }
 
-.mega-uae-btn>span {
+.maw_advanced_btn>span {
     vertical-align: middle
 }
 .push_button{
@@ -51,10 +56,15 @@
     -moz-transition: all 0.1s;
     transition: all 0.1s;
     
-        -webkit-box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
-        -moz-box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
-        box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
+    -moz-box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
+    box-shadow: 0 0 0 1px #84261a inset, 0 0 0 2px rgba(255,255,255,0.15) inset, 0 8px 0 0 #84261a, 0 5px 8px 1px rgba(0,0,0,0.5);
 }
+
+.maw_advanced_btn .button__icon {
+    line-height: unset;
+}
+
 .push_button:hover {
   text-decoration: none;
 }
@@ -64,74 +74,6 @@
     box-shadow: 0px 2px 0px transparent !important;
     position:relative;
     top:7px;
-}
-
-.bg-1 .mega-uae-btn {
-    color: #37474f;
-    border-color: #37474f
-}
-
-.bg-2 .mega-uae-btn {
-    color: #eceff1;
-    border-color: #eceff1
-}
-
-.bg-3 .mega-uae-btn {
-    color: #fff;
-    border-color: #fff
-}
-
-.button--size-s {
-    font-size: 14px
-}
-
-.button--size-m {
-    font-size: 16px
-}
-
-.button--size-l {
-    font-size: 18px
-}
-
-.button--text-upper {
-    letter-spacing: 2px;
-    text-transform: uppercase
-}
-
-.button--text-thin {
-    font-weight: 300
-}
-
-.button--text-medium {
-    font-weight: 500
-}
-
-.button--text-thick {
-    font-weight: 600
-}
-
-.button--round-s {
-    border-radius: 5px
-}
-
-.button--round-m {
-    border-radius: 15px
-}
-
-.button--round-l {
-    border-radius: 40px
-}
-
-.button--border-thin {
-    border: 1px solid
-}
-
-.button--border-medium {
-    border: 2px solid
-}
-
-.button--border-thick {
-    border: 3px solid
 }
 
 .button--winona {
@@ -151,7 +93,7 @@
     top: 0;
     left: 0;
     opacity: 0;
-    color: #3f51b5;
+    /*color: #3f51b5;*/
     -webkit-transform: translate3d(0, 25%, 0);
     transform: translate3d(0, 25%, 0)
 }
@@ -199,40 +141,41 @@
     transform: translate3d(0, -25%, 0)
 }
 
+.button--ujarak::before {
+    content: '';
+    height: 100%;
+    z-index: -1;
+    position: absolute;
+    top: 0;
+    left: 0
+}
+
 .button--ujarak {
     -webkit-transition: border-color .4s, color .4s;
     transition: border-color .4s, color .4s;
     overflow: hidden
 }
 
-.button--ujarak .advanced-btn-before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
+.button--ujarak::before {
     width: 100%;
-    height: 100%;
     background: #37474f;
-    z-index: -1;
     opacity: 0;
     -webkit-transform: scale3d(.7, 1, 1);
     transform: scale3d(.7, 1, 1);
     -webkit-transition: -webkit-transform .4s, opacity .4s;
-    transition: transform .4s, opacity .4s;
-    -webkit-transition-timing-function: cubic-bezier(.2, 1, .3, 1);
-    transition-timing-function: cubic-bezier(.2, 1, .3, 1)
+    transition: transform .4s, opacity .4s
 }
 
-.button--ujarak.button--round-s .advanced-btn-before {
+.button--ujarak.button--round-s::before {
     border-radius: 2px
 }
 
-.button--ujarak.button--inverted .advanced-btn-before {
-    background: #7986cb
+.button--ujarak.button--inverted::before {
+    background: #7986CB
 }
 
 .button--ujarak,
-.button--ujarak .advanced-btn-before {
+.button--ujarak::before {
     -webkit-transition-timing-function: cubic-bezier(.2, 1, .3, 1);
     transition-timing-function: cubic-bezier(.2, 1, .3, 1)
 }
@@ -243,11 +186,11 @@
 }
 
 .button--ujarak.button--inverted:hover {
-    color: #37474f;
+    color: #37474F;
     border-color: #fff
 }
 
-.button--ujarak:hover .advanced-btn-before {
+.button--ujarak:hover::before {
     opacity: 1;
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0)
@@ -261,7 +204,7 @@
     transition-timing-function: cubic-bezier(.2, 1, .3, 1)
 }
 
-.button--wayra .advanced-btn-before {
+.button--wayra::before {
     content: '';
     position: absolute;
     top: 0;
@@ -272,10 +215,10 @@
     z-index: -1;
     -webkit-transform: rotate3d(0, 0, 1, -45deg) translate3d(0, -3em, 0);
     transform: rotate3d(0, 0, 1, -45deg) translate3d(0, -3em, 0);
-    -webkit-transform-origin: 0 100%;
-    transform-origin: 0 100%;
-    -webkit-transition: -webkit-transform .3s, opacity .3s, background-color .3s;
-    transition: transform .3s, opacity .3s, background-color .3s
+    -webkit-transform-origin: 0% 100%;
+    transform-origin: 0% 100%;
+    -webkit-transition: -webkit-transform 0.3s, opacity 0.3s, background-color 0.3s;
+    transition: transform 0.3s, opacity 0.3s, background-color 0.3s;
 }
 
 .button--wayra:hover {
@@ -288,86 +231,17 @@
     border-color: #fff
 }
 
-.button--wayra:hover .advanced-btn-before {
+.button--wayra:hover::before {
     opacity: 1;
     background-color: #3f51b5;
     -webkit-transform: rotate3d(0, 0, 1, 0deg);
     transform: rotate3d(0, 0, 1, 0deg);
-    -webkit-transition-timing-function: cubic-bezier(.2, 1, .3, 1);
-    transition-timing-function: cubic-bezier(.2, 1, .3, 1)
+    -webkit-transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
+    transition-timing-function: cubic-bezier(0.2, 1, 0.3, 1);
 }
 
 .button--wayra.button--inverted:hover .advanced-btn-before {
     background-color: #fff
-}
-
-.button--tamaya {
-    overflow: hidden;
-    color: #7986cb
-}
-
-.button--tamaya.button--inverted {
-    color: #37474f;
-    border-color: #37474f
-}
-
-.button--tamaya::after,
-.button--tamaya::before {
-    content: attr(data-text);
-    position: absolute;
-    width: 100%;
-    height: 50%;
-    left: 0;
-    background: #7986cb;
-    color: #fff;
-    overflow: hidden;
-    -webkit-transition: -webkit-transform .3s;
-    transition: transform .3s;
-    -webkit-transition-timing-function: cubic-bezier(.2, 1, .3, 1);
-    transition-timing-function: cubic-bezier(.2, 1, .3, 1)
-}
-
-.button--tamaya.button--inverted::after,
-.button--tamaya.button--inverted::before {
-    background: #fff;
-    color: #37474f
-}
-
-.button--tamaya::before {
-    top: 0;
-    padding-top: 1em
-}
-
-.button--tamaya::after {
-    bottom: 0;
-    line-height: 0
-}
-
-.button--tamaya>span {
-    display: block;
-    -webkit-transform: scale3d(.2, .2, 1);
-    transform: scale3d(.2, .2, 1);
-    opacity: 0;
-    -webkit-transition: -webkit-transform .3s, opacity .3s;
-    transition: transform .3s, opacity .3s;
-    -webkit-transition-timing-function: cubic-bezier(.2, 1, .3, 1);
-    transition-timing-function: cubic-bezier(.2, 1, .3, 1)
-}
-
-.button--tamaya:hover::before {
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0)
-}
-
-.button--tamaya:hover::after {
-    -webkit-transform: translate3d(0, 100%, 0);
-    transform: translate3d(0, 100%, 0)
-}
-
-.button--tamaya:hover>span {
-    opacity: 1;
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1)
 }
 
 .button--rayen {
@@ -422,11 +296,12 @@
 
 .button--pipaluk {
     padding: 1.5em 3em;
-    color: #fff
+    color: #fff;
+    background: none !important;
 }
 
 .button--pipaluk.button--inverted {
-    color: #7986cb
+    color: #7986cb;
 }
 
 .button--pipaluk::after,
@@ -679,8 +554,8 @@
     transition-timing-function: cubic-bezier(.7, 0, .9, 1)
 }
 
-.button--isi .button__icon {
-    vertical-align: middle
+.button--isi {
+    vertical-align: middle;
 }
 
 .button--isi>span {
@@ -753,6 +628,10 @@
     transition: background-color .3s ease-in, color .3s ease-in
 }
 
+.button--saqui .icon__left, .button--saqui .icon__right {
+    display: none;
+}
+
 .button--saqui.button--inverted {
     background: #fff;
     color: #37474f
@@ -764,8 +643,8 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    padding: 1em 2em;
+    /*height: 100%;*/
+    /*padding: 1em 2em;*/
     color: #37474f;
     -webkit-transform-origin: -25% 50%;
     transform-origin: -25% 50%;
@@ -1261,234 +1140,6 @@
     transform: scale3d(.8, .8, 1)
 }
 
-.button--itzel {
-    border: none;
-    padding: 0;
-    overflow: hidden;
-    width: 255px
-}
-
-.button--itzel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 2px solid;
-    border-radius: inherit;
-    -webkit-clip-path: polygon(0 0, 0 100%, 35% 100%, 35% 60%, 65% 60%, 65% 100%, 100% 100%, 100% 0);
-    clip-path: url(../index.html#clipBox);
-    -webkit-transform: translate3d(0, 100%, 0) translate3d(0, -2px, 0);
-    transform: translate3d(0, 100%, 0) translate3d(0, -2px, 0);
-    -webkit-transform-origin: 50% 100%;
-    transform-origin: 50% 100%
-}
-
-.button--itzel.button--border-thin::before {
-    border: 1px solid;
-    -webkit-transform: translate3d(0, 100%, 0) translate3d(0, -1px, 0);
-    transform: translate3d(0, 100%, 0) translate3d(0, -1px, 0)
-}
-
-.button--itzel.button--border-thick::before {
-    border: 3px solid;
-    -webkit-transform: translate3d(0, 100%, 0) translate3d(0, -3px, 0);
-    transform: translate3d(0, 100%, 0) translate3d(0, -3px, 0)
-}
-
-.button--itzel .button__icon,
-.button--itzel::before {
-    -webkit-transition: -webkit-transform .3s;
-    transition: transform .3s;
-    -webkit-transition-timing-function: cubic-bezier(.75, 0, .125, 1);
-    transition-timing-function: cubic-bezier(.75, 0, .125, 1)
-}
-
-.button--itzel .button__icon {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    padding: 20px;
-    font-size: 20px;
-    -webkit-transform: translate3d(-50%, 0, 0);
-    transform: translate3d(-50%, 0, 0)
-}
-
-.button--itzel>span {
-    display: block;
-    padding: 20px;
-    -webkit-transition: -webkit-transform .3s, opacity .3s;
-    transition: transform .3s, opacity .3s;
-    -webkit-transition-delay: .3s;
-    transition-delay: .3s
-}
-
-.button--itzel:hover::before {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0)
-}
-
-.button--itzel:hover .button__icon {
-    -webkit-transition-delay: .1s;
-    transition-delay: .1s;
-    -webkit-transform: translate3d(-50%, -100%, 0);
-    transform: translate3d(-50%, -100%, 0)
-}
-
-.button--itzel:hover>span {
-    opacity: 0;
-    -webkit-transform: translate3d(0, -50%, 0);
-    transform: translate3d(0, -50%, 0);
-    -webkit-transition-delay: 0s;
-    transition-delay: 0s
-}
-
-.button--naira {
-    padding: 0;
-    overflow: hidden;
-    -webkit-transition: background-color .3s;
-    transition: background-color .3s
-}
-
-.button--naira::before {
-    content: '';
-    position: absolute;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: #37474f;
-    top: -50%;
-    z-index: -1;
-    -webkit-transform: translate3d(0, -100%, 0) rotate3d(0, 0, 1, -10deg);
-    transform: translate3d(0, -100%, 0) rotate3d(0, 0, 1, -10deg)
-}
-
-.button--naira.button--inverted::before {
-    background: #7986cb
-}
-
-.button--naira-up::before {
-    -webkit-transform: translate3d(0, 100%, 0) rotate3d(0, 0, 1, 10deg);
-    transform: translate3d(0, 100%, 0) rotate3d(0, 0, 1, 10deg)
-}
-
-.button--naira>span {
-    display: block
-}
-
-.button--naira .button__icon {
-    position: absolute;
-    top: 4px;
-    width: 100%;
-    left: 0;
-    color: #fff;
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0)
-}
-
-.button--naira-up .button__icon {
-    -webkit-transform: translate3d(0, 100%, 0);
-    transform: translate3d(0, 100%, 0)
-}
-
-.button--naira .button__icon,
-.button--naira>span {
-    text-align: center;
-    -webkit-transition: -webkit-transform .3s;
-    transition: transform .3s;
-    -webkit-transition-timing-function: cubic-bezier(.75, 0, .125, 1);
-    transition-timing-function: cubic-bezier(.75, 0, .125, 1)
-}
-
-.button--naira:hover::before {
-    -webkit-animation: anim-naira-1 .3s forwards ease-in;
-    animation: anim-naira-1 .3s forwards ease-in
-}
-
-.button--naira-up:hover::before {
-    -webkit-animation: anim-naira-2 .3s forwards ease-in;
-    animation: anim-naira-2 .3s forwards ease-in
-}
-
-@-webkit-keyframes anim-naira-1 {
-    50% {
-        -webkit-transform: translate3d(0, -50%, 0) rotate3d(0, 0, 1, -10deg);
-        transform: translate3d(0, -50%, 0) rotate3d(0, 0, 1, -10deg);
-        -webkit-animation-timing-function: ease-out;
-        animation-timing-function: ease-out
-    }
-    100% {
-        -webkit-transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg);
-        transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg)
-    }
-}
-
-@keyframes anim-naira-1 {
-    50% {
-        -webkit-transform: translate3d(0, -50%, 0) rotate3d(0, 0, 1, -10deg);
-        transform: translate3d(0, -50%, 0) rotate3d(0, 0, 1, -10deg);
-        -webkit-animation-timing-function: ease-out;
-        animation-timing-function: ease-out
-    }
-    100% {
-        -webkit-transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg);
-        transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg)
-    }
-}
-
-@-webkit-keyframes anim-naira-2 {
-    50% {
-        -webkit-transform: translate3d(0, 50%, 0) rotate3d(0, 0, 1, 10deg);
-        transform: translate3d(0, 50%, 0) rotate3d(0, 0, 1, 10deg);
-        -webkit-animation-timing-function: ease-out;
-        animation-timing-function: ease-out
-    }
-    100% {
-        -webkit-transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg);
-        transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg)
-    }
-}
-
-@keyframes anim-naira-2 {
-    50% {
-        -webkit-transform: translate3d(0, 50%, 0) rotate3d(0, 0, 1, 10deg);
-        transform: translate3d(0, 50%, 0) rotate3d(0, 0, 1, 10deg);
-        -webkit-animation-timing-function: ease-out;
-        animation-timing-function: ease-out
-    }
-    100% {
-        -webkit-transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg);
-        transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg)
-    }
-}
-
-.button--naira:hover {
-    background-color: #37474f;
-    -webkit-transition: background-color 0s .3s;
-    transition: background-color 0s .3s
-}
-
-.button--naira.button--inverted:hover {
-    background-color: #7986cb
-}
-
-.button--naira:hover .button__icon {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0)
-}
-
-.button--naira:hover>span {
-    opacity: 0;
-    -webkit-transform: translate3d(0, 100%, 0);
-    transform: translate3d(0, 100%, 0)
-}
-
-.button--naira-up:hover>span {
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0)
-}
-
 .button--quidel {
     background: #7986cb;
     color: #7986cb;
@@ -1686,4 +1337,48 @@
     background: #3f51b5;
     border-color: #3f51b5;
     color: #fff
+}
+
+.button--float {
+    display: inline-block;
+    color: #1e73be;
+    text-align: center;
+    font-size: 16px;
+    padding: 15px 25px;
+    -webkit-border-radius: 30px;
+    border-radius: 50px;
+    border: 2px solid #1e73be;
+    position: relative;
+    text-decoration: none;
+    -webkit-transition: all .2s;
+    transition: all .2s;
+}
+
+.button--float:hover {
+    background: #1e73be;
+    color: #ffffff;
+}
+
+.button--float i {
+    position: absolute;
+    left: auto;
+    right: 25px;
+    top: 50%;
+    opacity: 0;
+    width: auto;
+    height: auto;
+    -webkit-transition: all .25s;
+    transition: all .25s;
+    -webkit-transform: translate(0,-50%);
+    -ms-transform: translate(0,-50%);
+    transform: translate(0,-50%);
+}
+
+.button--float:hover i {
+    right: 20px;
+    opacity: 1;
+}
+
+.button--float:hover {
+    padding-right: 45px;
 }

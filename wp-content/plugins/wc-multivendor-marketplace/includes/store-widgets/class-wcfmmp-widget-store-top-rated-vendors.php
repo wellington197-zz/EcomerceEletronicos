@@ -31,8 +31,11 @@ class WCFMmp_Store_Top_Rated_Vendors extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
-		$number       = $instance['number'];
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
+		$number       = !empty( $instance['number'] ) ? $instance['number'] : 10;
     
     $vendors = $WCFMmp->wcfmmp_vendor->wcfmmp_get_vendor_list( true, '', $number, '', '', 'DESC', 'avg_review_rating' );
     if ( isset( $vendors ) && count($vendors) ) {

@@ -45,7 +45,7 @@ class WCFM_Enquiry_Shortcode {
 			$vendor_id = get_query_var( 'author' );
 		}
 		
-		if( !$vendor_id && $post && is_object( $post ) && wcfm_is_vendor( $post->post_author ) ) {
+		if( !$vendor_id && is_single() && $post && is_object( $post ) && wcfm_is_vendor( $post->post_author ) ) {
 			$vendor_id = $post->post_author;
 		}
 		

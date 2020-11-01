@@ -45,10 +45,6 @@
 	width: 100% !important;
 }
 
-#wcfm-main-contentainer .select2-container {
-	margin-bottom: 5px;
-}
-
 #wcfm-main-contentainer input[type="number"].wcfm-text {
 	padding: 2px;
 }
@@ -134,17 +130,17 @@
 #wcfm-main-contentainer .wcfm_email_verified .wcfm_email_verified_input { float: left; width: 150px; }
 #wcfm-main-contentainer .wcfm_email_verified .wcfm_email_verified_button { float: left; margin-top: 0px; padding: 5px !important; }
 
-#passowrd_strength{margin-left:35%;font-style:italic;font-weight:bold;font-size:12px;margin-top:-10px;margin-bottom:15px;letter-spacing: 1px;}
-#passowrd_strength.short{
+#password_strength{margin-left:35%;font-style:italic;font-weight:bold;font-size:12px;margin-top:-10px;margin-bottom:15px;letter-spacing: 1px;}
+#password_strength.short{
 	color:#e83e8c;
 }
-#passowrd_strength.weak{
+#password_strength.weak{
 	color:#f86c6b;
 }
-#passowrd_strength.good{
+#password_strength.good{
 	color:#ffc107;
 }
-#passowrd_strength.strong{
+#password_strength.strong{
 	color: #4dbd74;
 }
 
@@ -180,7 +176,7 @@
 		margin-right: 5% !important;
 	}
 	
-	#wcfm-main-contentainer .wcfm_email_verified, #passowrd_strength {
+	#wcfm-main-contentainer .wcfm_email_verified, #password_strength {
 		margin-left: 5px;
 	}
 }

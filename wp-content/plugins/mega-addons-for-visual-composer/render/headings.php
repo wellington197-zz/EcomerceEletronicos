@@ -10,8 +10,8 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 		extract( shortcode_atts( array(
 			'style'			=>		'theme1',
 			'style2'		=>		'icon',
-			'linewidth'		=>		'230',
-			'borderwidth'	=>		'2',
+			'linewidth'		=>		'170',
+			'borderwidth'	=>		'4',
 			'borderclr'		=>		'#000',
 			'lineheight'	=>		'1',
 			'icon'			=>		'',
@@ -22,6 +22,10 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 			'title'			=>		'',
 			'titlesize'		=>		'22',
 			'titleclr'		=>		'#000',
+			'font_family' 	=>		'',
+			'font_weight' 	=>		'normal',
+			'transform' 	=>		'default',
+			'text_style' 	=>		'default',
 		), $atts ) );
 		if ($image_id != '') {
 			$image_url = wp_get_attachment_url( $image_id );		
@@ -32,8 +36,8 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 		<div id="mega-line-container">
 			<?php if ($style == 'theme1') { ?>
 				<div class="mega-line-top" style="text-align: <?php echo $align; ?>;">  
-			        <span style="width: <?php echo $linewidth; ?>px; border: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>;">
+			        <span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div>
@@ -44,11 +48,11 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 			<?php if ($style == 'theme2') { ?>
 			    <div class="mega-line-center" style="text-align: <?php echo $align; ?>;">  
-		        	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>;">
+		        	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
-		        		<span style="width: <?php echo $linewidth; ?>px; border: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
+		        		<span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
 		        	</div>
 		        	<div>
 			        	<?php echo $content ?>
@@ -58,13 +62,13 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 		    <?php if ($style == 'theme3') { ?>
 			    <div class="mega-line-bottom" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
 			        	<?php echo $content ?>
 			        </div>
-			        <span style="width: <?php echo $linewidth; ?>px; border: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
+			        <span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
 			    </div>
 		    <?php } ?>
 
@@ -79,7 +83,7 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 		        		<img src="<?php echo $image_url; ?>">
 		        	<?php } ?>
 		        	</div>
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; margin-bottom: -15px;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; margin-bottom: -15px; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div>
@@ -90,7 +94,7 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 		    <?php if ($style == 'theme5') { ?>
 			    <div id="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
@@ -111,7 +115,7 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 		    <?php if ($style == 'theme6') { ?>
 				<div id="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
@@ -164,7 +168,7 @@ vc_map( array(
 			"description" 	=> __('set in pixel. default: 230', 'heading'),
 			"dependency" => array('element' => "style", 'value' => array('theme1', 'theme2', 'theme3')),
 			"suffix" 		=> 	'px',
-			"value"			=>	"230",
+			"value"			=>	"170",
 			'max' 			=> 	"",
 			"group" 		=> 	"General",
 		),
@@ -175,7 +179,7 @@ vc_map( array(
 			"param_name" 	=> "borderwidth",
 			"description" 	=> __('set in pixel. default: 2', 'heading'),
 			"dependency" => array('element' => "style", 'value' => array('theme1', 'theme2', 'theme3')),
-			"value"			=>	"2",
+			"value"			=>	"4",
 			"suffix" 		=> 'px',
 			"group" 		=> "General",
 		),
@@ -252,6 +256,14 @@ vc_map( array(
 		// Heading Section
 
 		array(
+			"type" 			=> "textfield",
+			"heading" 		=> __( 'Title', 'heading' ),
+			"param_name" 	=> "title",
+			"value"			=>	"Title Here",
+			"group" 		=> "Heading",
+		),
+
+		array(
 			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Heading Alignment', 'heading' ),
 			"param_name" 	=> "align",
@@ -267,23 +279,18 @@ vc_map( array(
 			"type" 			=> "vc_number",
 			"heading" 		=> __( 'Line Height', 'heading' ),
 			"param_name" 	=> "lineheight",
+			"edit_field_class" => "vc_col-sm-6",
 			"description" 	=> __('margin between line and headings', 'heading'),
 			"value"			=>	"1",
 			"group" 		=> "Heading",
 		),
 
-		array(
-			"type" 			=> "textfield",
-			"heading" 		=> __( 'Title', 'heading' ),
-			"param_name" 	=> "title",
-			"value"			=>	"Title Here",
-			"group" 		=> "Heading",
-		),
 
 		array(
 			"type" 			=> "vc_number",
-			"heading" 		=> __( 'Title Font Size', 'heading' ),
+			"heading" 		=> __( 'Title [Font Size]', 'heading' ),
 			"param_name" 	=> "titlesize",
+			"edit_field_class" => "vc_col-sm-6",
 			"value"			=>	"22",
 			"suffix" 		=> 'px',
 			"group" 		=> "Heading",
@@ -295,6 +302,69 @@ vc_map( array(
 			"param_name" 	=> "titleclr",
 			"value"			=>	"#000",
 			"group" 		=> "Heading",
+		),
+
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_urls",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Typography</span>', 'ihover' ),
+			"group" 		=> 'Heading',
+		),
+
+		array(
+			"type" 			=> "textfield",
+			"heading" 		=> __( 'Font Family Name', 'button' ),
+			"param_name" 	=> "font_family",
+			"group" 		=> 'Heading',
+		),
+
+		array(
+			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Font Weight', 'button' ),
+			"param_name" 	=> "font_weight",
+			"group" 		=> 'Heading',
+			"value"			=>	array(
+				"100"		=>		"100",
+				"200"		=>		"200",
+				"300"		=>		"300",
+				"400"		=>		"400",
+				"500"		=>		"500",
+				"600"		=>		"600",
+				"700"		=>		"700",
+				"800"		=>		"800",
+				"900"		=>		"900",
+				"Default"	=>		"default",
+				"Normal"	=>		"normal",
+				"Bold"		=>		"bold",
+			)
+		),
+
+		array(
+			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Transform', 'button' ),
+			"param_name" 	=> "transform",
+			"group" 		=> 'Heading',
+			"value"			=>	array(
+				"Default"		=>		"default",
+				"Uppercase"		=>		"uppercase",
+				"Lowercase"		=>		"lowercase",
+				"Capitalize"	=>		"capitalize",
+				"Normal"		=>		"normal",
+			)
+		),
+
+		array(
+			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Style', 'button' ),
+			"param_name" 	=> "text_style",
+			"group" 		=> 'Heading',
+			"value"			=>	array(
+				"Default"		=>		"default",
+				"Normal"		=>		"normal",
+				"Italic"		=>		"italic",
+				"Oblique"		=>		"oblique",
+			)
 		),
 
 		// Description section 

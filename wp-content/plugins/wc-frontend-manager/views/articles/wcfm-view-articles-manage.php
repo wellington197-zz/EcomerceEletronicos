@@ -38,7 +38,7 @@ if( isset( $wp->query_vars['wcfm-articles-manage'] ) && empty( $wp->query_vars['
 }
 
 $article_id = 0;
-$article = array();
+$wcfm_articles_single = array();
 $title = '';
 $excerpt = '';
 $description = '';
@@ -59,6 +59,11 @@ if( isset( $wp->query_vars['wcfm-articles-manage'] ) && !empty( $wp->query_vars[
 		
 		$title = $wcfm_articles_single->post_title;
 		
+		if( $wcfm_articles_single->post_type != 'post' ) {
+			wcfm_restriction_message_show( "Invalid Article" );
+			return;
+		}
+		
 		$excerpt = wpautop( $wcfm_articles_single->post_excerpt );
 		$description = wpautop( $wcfm_articles_single->post_content );
 		
@@ -75,8 +80,8 @@ if( isset( $wp->query_vars['wcfm-articles-manage'] ) && !empty( $wp->query_vars[
 		
 		// Article Images
 		$featured_img = (get_post_thumbnail_id($article_id)) ? get_post_thumbnail_id($article_id) : '';
-		if($featured_img) $featured_img = wp_get_attachment_url($featured_img);
-		if(!$featured_img) $featured_img = '';
+		//if($featured_img) $featured_img = wp_get_attachment_url($featured_img);
+		//if(!$featured_img) $featured_img = '';
 		
 		// Article Categories
 		$pcategories = get_the_terms( $article_id, 'category' );
@@ -150,7 +155,7 @@ if( $wpeditor && $rich_editor ) {
 			}
 			
 			if( $has_new = apply_filters( 'wcfm_add_new_article_sub_menu', true ) ) {
-				echo '<a id="add_new_article_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_articles_manage_url().'" data-tip="' . __('Add New Article', 'wc-frontend-manager') . '"><span class="wcfmfa fa-cube"></span><span class="text">' . __( 'Add New', 'wc-frontend-manager') . '</span></a>';
+				echo '<a id="add_new_article_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_articles_manage_url().'" data-tip="' . __('Add New Article', 'wc-frontend-manager') . '"><span class="wcfmfa fa-file-pdf"></span><span class="text">' . __( 'Add New', 'wc-frontend-manager') . '</span></a>';
 			}
 			?>
 			
@@ -329,7 +334,7 @@ if( $wpeditor && $rich_editor ) {
 												if( $article_taxonomy->public && $article_taxonomy->show_ui && $article_taxonomy->meta_box_cb && $article_taxonomy->hierarchical ) {
 													// Fetching Saved Values
 													$taxonomy_values_arr = array();
-													if($article && !empty($article)) {
+													if($wcfm_articles_single && !empty($wcfm_articles_single)) {
 														$taxonomy_values = get_the_terms( $article_id, $article_taxonomy->name );
 														if( !empty($taxonomy_values) ) {
 															foreach($taxonomy_values as $pkey => $ptaxonomy) {
@@ -442,6 +447,7 @@ if( $wpeditor && $rich_editor ) {
 				}
 				?>
 			</div>
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_articles_manage' ); ?>" />
 		</form>
 		<?php
 		do_action( 'after_wcfm_articles_manage' );

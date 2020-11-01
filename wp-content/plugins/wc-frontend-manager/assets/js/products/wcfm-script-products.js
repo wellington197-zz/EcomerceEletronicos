@@ -36,7 +36,7 @@ jQuery(document).ready(function($) {
 										{ "targets": 6, "orderable" : true },
 										{ "targets": 7, "orderable" : false },
 										{ "targets": 8, "orderable" : false },
-										{ "targets": 9, "orderable" : false },
+										{ "targets": 9, "orderable" : true },
 										{ "targets": 10, "orderable" : true },
 										{ "targets": 11, "orderable" : false },
 										{ "targets": 12, "orderable" : false },
@@ -117,6 +117,42 @@ jQuery(document).ready(function($) {
 		var data = {
 			action : 'wcfm_product_approve',
 			proid : item.data('proid')
+		}	
+		jQuery.ajax({
+			type:		'POST',
+			url: wcfm_params.ajax_url,
+			data: data,
+			success:	function(response) {
+				if($wcfm_products_table) $wcfm_products_table.ajax.reload();
+				jQuery('#wcfm-products_wrapper').unblock();
+			}
+		});
+	}
+	
+	// Reject Product
+	$( document.body ).on( 'updated_wcfm-products', function() {
+		$('.wcfm_product_reject').each(function() {
+			$(this).click(function(event) {
+				event.preventDefault();
+				var rconfirm = prompt(wcfm_dashboard_messages.product_reject_confirm);
+				if(rconfirm) rejectWCFMProduct($(this), rconfirm);
+				return false;
+			});
+		});
+	});
+	
+	function rejectWCFMProduct( item, rconfirm ) {
+		jQuery('#wcfm-products_wrapper').block({
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6
+			}
+		});
+		var data = {
+			action : 'wcfm_product_reject',
+			proid  : item.data('proid'),
+			reason : rconfirm
 		}	
 		jQuery.ajax({
 			type:		'POST',

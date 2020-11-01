@@ -69,6 +69,7 @@ if( wcfm_is_vendor() ) {
 																									 ) );
 			}
 			?>
+			<?php $WCFM->library->wcfm_date_range_picker_field(); ?>
 		</div>
 	  
 		<?php do_action( 'before_wcfm_reverse_withdrawal_requests' ); ?>
@@ -83,8 +84,9 @@ if( wcfm_is_vendor() ) {
 								<th><?php _e( 'Order ID', 'wc-frontend-manager' ); ?></th>
 								<th><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager' ) ); ?></th>
 								<th><?php _e( 'Gross Total', 'wc-frontend-manager' ); ?></th>
-								<th><?php _e( 'Commission', 'wc-frontend-manager' ); ?></th>
-								<th><?php _e( 'Balance', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( 'Vendor Earning', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( 'Admin Fee', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_reverse_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>
@@ -95,8 +97,9 @@ if( wcfm_is_vendor() ) {
 								<th><?php _e( 'Order ID', 'wc-frontend-manager' ); ?></th>
 								<th><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager' ) ); ?></th>
 								<th><?php _e( 'Gross Total', 'wc-frontend-manager' ); ?></th>
-								<th><?php _e( 'Commission', 'wc-frontend-manager' ); ?></th>
-								<th><?php _e( 'Balance', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( 'Vendor Earning', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( 'Admin Fee', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_reverse_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>

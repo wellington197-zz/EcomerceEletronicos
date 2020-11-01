@@ -55,6 +55,7 @@ class WCFM_Notices_Controller {
 		$filtered_notice_count = 0;
 		$wcfm_notices_count = wp_count_posts('wcfm_notice');
 		$notice_count = ( $wcfm_notices_count->publish + $wcfm_notices_count->pending + $wcfm_notices_count->draft );
+		if( wcfm_is_vendor() ) { $notice_count = $wcfm_notices_count->publish; }
 		// Get Filtered Post Count
 		$args['posts_per_page'] = -1;
 		$args['offset'] = 0;

@@ -56,7 +56,7 @@ function adext_featured_meta_box() {
     global $post, $pagenow;
     
     // Do this for adverts only.
-    if($post->post_type != 'advert') {
+    if( ! wpadverts_post_type( $post ) ) {
         return;
     }
     
@@ -68,7 +68,7 @@ function adext_featured_meta_box() {
         <label>
             <?php wp_nonce_field( "adext_featured_nonce", "_adext_is_featured_nonce", false ) ?>
             <input type="checkbox" name="_is_featured" value="1" <?php checked( $post->menu_order, "1" ) ?>/> 
-            <?php _e( "Display this listing as featured.", "adverts" ) ?>
+            <?php _e( "Display this listing as featured.", "wpadverts" ) ?>
         </label>
     </div>
 
@@ -99,7 +99,7 @@ function adext_featured_post_data( $data, $postarr ) {
         return $data;
     }
         
-    if ( $data["post_type"] != 'advert' ) {
+    if ( ! wpadverts_post_type( $data["post_type"] ) ) {
         return $data;
     }
     
@@ -158,7 +158,7 @@ function adext_featured_form_load( $form ) {
         "validator" => array( ),
         "max_choices" => 1,
         "options" => array(
-            array( "value"=> "1", "text"=> __( "Feature this ad - it will be styled differently and sticky", "adverts" ) ),
+            array( "value"=> "1", "text"=> __( "Feature this ad - it will be styled differently and sticky", "wpadverts" ) ),
         )
     );
     
@@ -249,11 +249,11 @@ function adext_featured_order_create( $data ) {
 function adext_featured_post_state( $states ) {
     global $post;
 
-    if( $post->post_type == 'advert' && $post->menu_order > 0 ) {
+    if( $post && wpadverts_post_type( $post->post_type ) && $post->menu_order > 0 ) {
 
         $span = new Adverts_Html("span", array(
             "class" => "dashicons dashicons-flag",
-            "title" => __( 'Featured', 'adverts' ),
+            "title" => __( "Featured", "wpadverts" ),
             "style" => "font-size: 18px"
         ));
         $span->forceLongClosing(true);
@@ -289,7 +289,7 @@ function adext_featured_payment( $post_id ) {
 
     <span class="adverts-listing-type-feature-featured">
         <span class="adverts-icon-flag"></span>
-        <?php esc_html_e( "Featured", "adverts" ) ?>
+        <?php esc_html_e( "Featured", "wpadverts" ) ?>
     </span>
 
     <?php
@@ -312,7 +312,7 @@ function adext_featured_manage_list_status( $post ) {
     }
     
     ?>
-    <span class="adverts-inline-icon adverts-inline-icon-info adverts-icon-flag" title="<?php _e("Featured", "adverts") ?>"></span>
+    <span class="adverts-inline-icon adverts-inline-icon-info adverts-icon-flag" title="<?php _e("Featured", "wpadverts") ?>"></span>
     <?php 
 }
 

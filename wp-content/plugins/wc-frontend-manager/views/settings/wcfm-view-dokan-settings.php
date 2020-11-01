@@ -55,10 +55,10 @@ if( $state && isset( $states[$country] ) && is_array( $states[$country] ) ) {
 if( $state ) $state_options[$state] = $state;
 
 // Gravatar image
-$gravatar_url = $gravatar ? wp_get_attachment_url( $gravatar ) : '';
+$gravatar_url = $gravatar;// ? wp_get_attachment_url( $gravatar ) : '';
 
 // banner URL
-$banner_url = $banner ? wp_get_attachment_url( $banner ) : '';
+$banner_url = $banner;// ? wp_get_attachment_url( $banner ) : '';
 
 $paypal = isset( $vendor_data['payment']['paypal']['email'] ) ? esc_attr( $vendor_data['payment']['paypal']['email'] ) : '' ;
 $skrill = isset( $vendor_data['payment']['skrill']['email'] ) ? esc_attr( $vendor_data['payment']['skrill']['email'] ) : '' ;

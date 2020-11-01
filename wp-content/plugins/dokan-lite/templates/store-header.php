@@ -66,20 +66,20 @@ if ( 'layout3' === $profile_layout ) {
                     <?php } ?>
 
                     <ul class="dokan-store-info">
-                        <?php if ( isset( $store_address ) && !empty( $store_address ) ) { ?>
+                        <?php if ( ! dokan_is_vendor_info_hidden( 'address' ) && isset( $store_address ) && !empty( $store_address ) ) { ?>
                             <li class="dokan-store-address"><i class="fa fa-map-marker"></i>
-                                <?php echo $store_address; ?>
+                                <?php echo wp_kses_post( $store_address ); ?>
                             </li>
                         <?php } ?>
 
-                        <?php if ( !empty( $store_user->get_phone() ) ) { ?>
+                        <?php if ( ! dokan_is_vendor_info_hidden( 'phone' ) && ! empty( $store_user->get_phone() ) ) { ?>
                             <li class="dokan-store-phone">
                                 <i class="fa fa-mobile"></i>
                                 <a href="tel:<?php echo esc_html( $store_user->get_phone() ); ?>"><?php echo esc_html( $store_user->get_phone() ); ?></a>
                             </li>
                         <?php } ?>
 
-                        <?php if ( $store_user->show_email() == 'yes' ) { ?>
+                        <?php if ( ! dokan_is_vendor_info_hidden( 'email' ) && $store_user->show_email() == 'yes' ) { ?>
                             <li class="dokan-store-email">
                                 <i class="fa fa-envelope-o"></i>
                                 <a href="mailto:<?php echo esc_attr( antispambot( $store_user->get_email() ) ); ?>"><?php echo esc_attr( antispambot( $store_user->get_email() ) ); ?></a>
@@ -88,7 +88,7 @@ if ( 'layout3' === $profile_layout ) {
 
                         <li class="dokan-store-rating">
                             <i class="fa fa-star"></i>
-                            <?php echo dokan_get_readable_seller_rating( $store_user->get_id() ); ?>
+                            <?php echo wp_kses_post( dokan_get_readable_seller_rating( $store_user->get_id() ) ); ?>
                         </li>
 
                         <?php if ( $show_store_open_close == 'on' && $dokan_store_time_enabled == 'yes') : ?>

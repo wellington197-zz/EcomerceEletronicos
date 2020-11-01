@@ -3,6 +3,7 @@ $order_status = '';
 $filter_by_date = '';
 $order_product = '';
 $commission_status = '';
+$order_vendor = '';
 $delivery_boy = '';
 var orderTableRefrsherTime = '';
 
@@ -60,7 +61,7 @@ jQuery(document).ready(function($) {
 																		{
 																			extend: 'pdfHtml5',
 																			orientation: 'landscape',
-																			pageSize: 'LEGAL',
+																			pageSize: 'LEGAL'
 																		},
 																		{
 																			extend: 'excelHtml5',
@@ -93,6 +94,7 @@ jQuery(document).ready(function($) {
 				d.filter_date_to    = $filter_date_to,  
 				d.order_product     = $order_product,  
 				d.commission_status = $commission_status,
+				d.order_vendor       = $order_vendor,
 				d.delivery_boy      = $delivery_boy
 			},
 			"complete" : function () {
@@ -130,6 +132,14 @@ jQuery(document).ready(function($) {
 		});
 	}
 	
+	// Vendor Filter
+	if( $('#dropdown_vendor').length > 0 ) {
+		$('#dropdown_vendor').on('change', function() {
+			$order_vendor = $('#dropdown_vendor').val();
+			$wcfm_orders_table.ajax.reload();
+		}).select2( $wcfm_vendor_select_args );
+	}
+	
 	// Delivery Boy Filter
 	if( $('#wcfm_delivery_boy').length > 0 ) {
 		$('#wcfm_delivery_boy').on('change', function() {
@@ -145,7 +155,7 @@ jQuery(document).ready(function($) {
 			orderTableRefrsherTime = setTimeout(function() {
 				$wcfm_orders_table.ajax.reload();
 				orderTableRefrsher();
-			}, 30000 );
+			}, wcfm_orders_auto_refresher.duration  );
 		}
 	}
 	orderTableRefrsher();

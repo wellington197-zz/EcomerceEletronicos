@@ -6,7 +6,7 @@
  */
 
 global $virtue, $post;
-$map              = get_post_meta( $post->ID, '_kad_contact_map', true ); 
+$page_map         = get_post_meta( $post->ID, '_kad_contact_map', true );
 $form_math        = get_post_meta( $post->ID, '_kad_contact_form_math', true );
 $contactformtitle = get_post_meta( $post->ID, '_kad_contact_form_title', true );
 $form             = get_post_meta( $post->ID, '_kad_contact_form', true );
@@ -64,19 +64,19 @@ if ( isset( $_POST['submitted'] ) && isset( $_POST['virtue_contact_nounce'] ) ) 
 			$comment_error = __( 'Please enter a message.', 'virtue-toolkit' );
 			$has_error     = true;
 		} else {
-			$comments = wp_kses_post( wp_unslash( $_POST['comments'] ) );
+			$contact_comments = wp_kses_post( wp_unslash( $_POST['comments'] ) );
 		}
 
 		if ( ! isset( $has_error ) ) {
 
-			if ( isset( $virtue_premium['contact_email'] ) ) {
-				$email_to = $virtue_premium['contact_email'];
+			if ( isset( $virtue['contact_email'] ) ) {
+				$email_to = $virtue['contact_email'];
 			} else {
 				$email_to = get_option( 'admin_email' );
 			}
 			$sitename = get_bloginfo( 'name' );
 			$subject  = '[' . $sitename . '  ' . __( 'Contact', 'virtue-toolkit' ) . '] ' . __( 'From ', 'virtue-toolkit' ) . $name;
-			$body     = __( 'Name', 'virtue-toolkit' ) . ':' . $name . "\n\n" . 'Email:' . $email . "\n\n" . 'Comments:' . $comments;
+			$body     = __( 'Name', 'virtue-toolkit' ) . ':' . $name . "\n\n" . 'Email:' . $email . "\n\n" . 'Comments:' . $contact_comments;
 			$headers  = 'Content-Type: text/plain; charset=UTF-8' . "\r\n";
 			$headers .= 'Content-Transfer-Encoding: 8bit' . "\r\n";
 			$headers .= 'From: ' . $name . ' <' . $email . '>' . "\r\n";
@@ -93,7 +93,7 @@ if ( isset( $_POST['submitted'] ) && isset( $_POST['virtue_contact_nounce'] ) ) 
  */
 do_action( 'virtue_page_title_container' );
 
-if ( $map == 'yes' ) {
+if ( 'yes' == $page_map ) {
 	$address = get_post_meta( $post->ID, '_kad_contact_address', true );
 	$maptype = get_post_meta( $post->ID, '_kad_contact_maptype', true );
 	$height  = get_post_meta( $post->ID, '_kad_contact_mapheight', true );

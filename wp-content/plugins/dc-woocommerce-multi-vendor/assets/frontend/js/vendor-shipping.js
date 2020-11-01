@@ -58,7 +58,7 @@
                 zoneID = $(event.currentTarget).data('zoneId');
             }
 
-            let ajaxRequest = $.ajax({
+            var ajaxRequest = $.ajax({
                 method: 'post',
                 url: wcmp_vendor_shipping_script_data.ajaxurl,
                 data: {
@@ -116,7 +116,7 @@
                 var data = {
                     action: 'wcmp-add-shipping-method',
                     zoneID: zoneId,
-                    method: shippingMethod
+                    method: shippingMethod,
                 };
 
                 $('#wcmp_shipping_method_add_button').block({
@@ -162,7 +162,7 @@
                     action: 'wcmp-vendor-configure-shipping-method',
                     zoneId: zoneId,
                     instanceId: instanceId,
-                    methodId: methodId
+                    methodId: methodId,
                 };
                 
             var ajaxRequest = $.ajax({
@@ -237,7 +237,7 @@
                 var data = data = {
                     action: 'wcmp-delete-shipping-method',
                     zoneID: zoneId,
-                    instance_id: instance_id
+                    instance_id: instance_id,
                 };
 
                 if (zoneId == '') {
@@ -266,6 +266,7 @@
         limitZoneLocation: function (event) {
             if ($('#limit_zone_location').is(':checked')) {
                 $('.hide_if_zone_not_limited').show();
+                $('#select_zone_states').select2();
             } else {
                 $('.hide_if_zone_not_limited').hide();
             }

@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 global $WCFM, $WCFMmp;
 
-$wcfm_shop_description = apply_filters( 'woocommerce_short_description', $store_user->get_shop_description() );
+$wcfm_shop_description = apply_filters( 'wcfmmp_store_about', apply_filters( 'woocommerce_short_description', $store_user->get_shop_description() ), $store_user->get_shop_description() );
 
 ?>
 

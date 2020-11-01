@@ -263,9 +263,11 @@ class WCFM_Capability {
   	global $WCFM;
   	$manage_products = ( isset( $this->wcfm_capability_options['submit_products'] ) ) ? $this->wcfm_capability_options['submit_products'] : 'no';
   	$manage_products = ( isset( $this->wcfm_capability_options['manage_products'] ) ) ? $this->wcfm_capability_options['manage_products'] : $manage_products;
-  	if( $manage_products == 'yes' ) return false;
+  	$manage_articles = ( isset( $this->wcfm_capability_options['submit_articles'] ) ) ? $this->wcfm_capability_options['submit_articles'] : 'no';
+  	if( $manage_products == 'yes' && $manage_articles == 'yes' ) return false;
   	$add_products = ( isset( $this->wcfm_capability_options['add_products'] ) ) ? $this->wcfm_capability_options['add_products'] : 'no';
-  	if( $add_products == 'yes' ) return false;
+  	$add_articles = ( isset( $this->wcfm_capability_options['add_articles'] ) ) ? $this->wcfm_capability_options['add_articles'] : 'no';
+  	if( $add_products == 'yes' && $add_articles == 'yes' ) return false;
   	
   	// Limit Restriction
   	$current_user_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );

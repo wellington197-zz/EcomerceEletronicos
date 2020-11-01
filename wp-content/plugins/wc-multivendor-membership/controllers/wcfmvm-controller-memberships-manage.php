@@ -142,6 +142,23 @@ class WCFMvm_Memberships_Manage_Controller {
 				// Membership Users
 				$membership_users = (array) get_post_meta( $new_membership_id, 'membership_users', true );
 				
+				// Correct Membership User Count
+				if( !empty( $membership_users ) && is_array( $membership_users ) ) {
+					foreach( $membership_users as $member_id ) {
+						$vendor_user = get_userdata( $member_id );
+						$vendor_membership = get_user_meta( $member_id, 'wcfm_membership', true );
+						if( !$vendor_user || !$vendor_membership || !wcfm_is_valid_membership( $vendor_membership ) || ( $vendor_membership != $new_membership_id ) || !wcfm_is_vendor( $member_id ) ) {
+							if( ( $key = array_search( $member_id, $membership_users ) ) !== false ) {
+								unset( $membership_users[$key] );
+							}
+						}
+					}
+					update_post_meta( $new_membership_id, 'membership_users', $membership_users );
+				} else {
+					$membership_users = array();
+					update_post_meta( $new_membership_id, 'membership_users', $membership_users );
+				}
+				
 				// Update Membership Commission
 				if( isset( $wcfm_membership_manager_form_data['commission'] ) ) {
 					$is_marketplace = wcfm_is_marketplace();
@@ -235,12 +252,30 @@ class WCFMvm_Memberships_Manage_Controller {
 								}
 								$wcfm_vendor_groups[] = $associated_group;
 								update_user_meta( $member_id, '_wcfm_vendor_group', $wcfm_vendor_groups  );
+								update_user_meta( $member_id, '_wcfm_vendor_group_list', implode( ",", array_unique( $wcfm_vendor_groups ) ) );
 							}
 						}
 						if( $old_associated_group ) {
 							update_post_meta( $old_associated_group, '_group_vendors', $old_group_vendors );
 						}
 						update_post_meta( $associated_group, '_group_vendors', $group_vendors );
+					}
+					
+					// Correct Associate Group Vendors Count
+					$associated_group_vendors = get_post_meta( $associated_group, '_group_vendors', true );
+					if( !empty( $associated_group_vendors ) && is_array( $associated_group_vendors ) ) {
+						foreach( $associated_group_vendors as $member_id ) {
+							$vendor_user = get_userdata( $member_id );
+							if( !$vendor_user || !wcfm_is_vendor( $member_id ) ) {
+								if( ( $key = array_search( $member_id, $associated_group_vendors ) ) !== false ) {
+									unset( $associated_group_vendors[$key] );
+								}
+							}
+						}
+						update_post_meta( $associated_group, '_group_vendors', $associated_group_vendors );
+					} else {
+						$associated_group_vendors = array();
+						update_post_meta( $associated_group, '_group_vendors', $associated_group_vendors );
 					}
 					
 					update_post_meta( $new_membership_id, 'associated_group', $wcfm_membership_manager_form_data['associated_group'] );
@@ -258,6 +293,26 @@ class WCFMvm_Memberships_Manage_Controller {
 				// Memvership Application Reject Rule
 				if( isset( $wcfm_membership_manager_form_data['vendor_reject_rule'] ) ) {
 					update_post_meta( $new_membership_id, 'vendor_reject_rule', $wcfm_membership_manager_form_data['vendor_reject_rule'] );
+				}
+				
+				// Thank You page content
+				if( isset( $_POST['free_thankyou_content'] ) ) {
+					wcfm_update_post_meta( $new_membership_id, 'free_thankyou_content', stripslashes( html_entity_decode( $_POST['free_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ) );
+				}
+				
+				// On Approval Thank You page content
+				if( isset( $_POST['subscription_thankyou_content'] ) ) {
+					wcfm_update_post_meta( $new_membership_id, 'subscription_thankyou_content', stripslashes( html_entity_decode( $_POST['subscription_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ) );
+				}
+				
+				// Welcome Email Subject
+				if( isset( $wcfm_membership_manager_form_data['subscription_welcome_email_subject'] ) ) {
+					wcfm_update_post_meta( $new_membership_id, 'subscription_welcome_email_subject', $wcfm_membership_manager_form_data['subscription_welcome_email_subject'] );
+				}
+				
+				// Welcome Email Content
+				if( isset( $_POST['subscription_welcome_email_content'] ) ) {
+					wcfm_update_post_meta( $new_membership_id, 'subscription_welcome_email_content', stripslashes( html_entity_decode( $_POST['subscription_welcome_email_content'], ENT_QUOTES, 'UTF-8' ) ) );
 				}
 				
 				// Hook for additional processing

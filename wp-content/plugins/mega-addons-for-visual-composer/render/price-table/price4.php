@@ -11,7 +11,7 @@
         <?php echo $content; ?>
       </div>
       <div class="plan-select">
-        <a href="<?php echo $btn_url; ?>" style="font-size: <?php echo $btnsize; ?>px; background: <?php echo $top_bg; ?>;"><?php echo $btn_text; ?></a>
+        <a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" style="font-size: <?php echo $btnsize; ?>px; background: <?php echo $top_bg; ?>;"><?php echo $btn_text; ?></a>
       </div>
     </div>
   </div>

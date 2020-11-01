@@ -10,6 +10,7 @@ jQuery( document ).ready( function( $ ){
 			setValue: function(s) {
 				this.value = s;
 			},
+			startOfWeek: wcfm_drp_options.startOfWeek,
 			showShortcuts: true,
 			showTopbar: true,
 			singleMonth: false,

@@ -76,6 +76,16 @@ class WCFMmp_Sell_Items_Catalog_Controller {
 																		'operator' => 'IN'
 																	);
 			}
+		} else {
+			$product_types = apply_filters( 'wcfm_product_types', array('simple' => __('Simple Product', 'wc-frontend-manager'), 'variable' => __('Variable Product', 'wc-frontend-manager'), 'grouped' => __('Grouped Product', 'wc-frontend-manager'), 'external' => __('External/Affiliate Product', 'wc-frontend-manager') ) );
+			if( !empty( $product_types ) ) {
+				$args['tax_query'][] = array(
+																			'taxonomy' => 'product_type',
+																			'field' => 'slug',
+																			'terms' => array_keys( $product_types ),
+																			'operator' => 'IN'
+																		);
+			}
 		}
 		
 		if( isset($_POST['product_cat']) && !empty($_POST['product_cat']) ) {
@@ -258,7 +268,7 @@ class WCFMmp_Sell_Items_Catalog_Controller {
 				
 				// Store
 				$vendor_name = '&ndash;';
-				$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $wcfm_products_single->ID );
+				$vendor_id = wcfm_get_vendor_id_by_post( $wcfm_products_single->ID );
 				$store_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( $vendor_id );
 				if( $store_name ) {
 					$vendor_name = $store_name;

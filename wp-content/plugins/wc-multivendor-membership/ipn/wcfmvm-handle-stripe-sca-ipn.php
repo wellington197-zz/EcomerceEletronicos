@@ -118,7 +118,7 @@ class wcfm_stripe_sca_ipn_handler {
 				if( $wcfm_membership ) {
 					update_user_meta( $member_id, 'wcfm_membership_paymode', 'stripe' );
 					$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
-					if( $required_approval == 'no' ) {
+					if( $required_approval != 'yes' ) {
 						$WCFMvm->register_vendor( $member_id );
 						$WCFMvm->store_subscription_data( $member_id, 'stripe', $txn_id, 'stripe_subscription', 'Completed', $token );
 					} else {

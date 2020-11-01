@@ -27,6 +27,7 @@ $vendor_arr = array();
 
 $bfirst_name = '';
 $blast_name  = '';
+$bcompany_name = '';
 $bphone = '';
 $baddr_1 = '';
 $baddr_2 = '';
@@ -38,6 +39,7 @@ $bzip = '';
 $same_as_billing = 'yes';
 $sfirst_name = ''; 
 $slast_name = '';
+$scompany_name = '';
 $saddr_1 = '';
 $saddr_2 = '';
 $scountry = '';
@@ -73,6 +75,7 @@ if( isset( $wp->query_vars['wcfm-customers-manage'] ) && !empty( $wp->query_vars
 		
 		$bfirst_name = get_user_meta( $customer_id, 'billing_first_name', true );
 		$blast_name  = get_user_meta( $customer_id, 'billing_last_name', true );
+		$bcompany_name = get_user_meta( $customer_id, 'billing_company', true );
 		$bphone  = get_user_meta( $customer_id, 'billing_phone', true );
 		$baddr_1  = get_user_meta( $customer_id, 'billing_address_1', true );
 		$baddr_2  = get_user_meta( $customer_id, 'billing_address_2', true );
@@ -84,6 +87,7 @@ if( isset( $wp->query_vars['wcfm-customers-manage'] ) && !empty( $wp->query_vars
 		$same_as_billing = get_user_meta( $customer_id, 'same_as_billing', true ) ? get_user_meta( $customer_id, 'same_as_billing', true ) : 'yes';
 		$sfirst_name = get_user_meta( $customer_id, 'shipping_first_name', true );
 		$slast_name  = get_user_meta( $customer_id, 'shipping_last_name', true );
+		$scompany_name = get_user_meta( $customer_id, 'shipping_company', true );
 		$saddr_1  = get_user_meta( $customer_id, 'shipping_address_1', true );
 		$saddr_2  = get_user_meta( $customer_id, 'shipping_address_2', true );
 		$scountry  = get_user_meta( $customer_id, 'shipping_country', true );
@@ -199,6 +203,7 @@ do_action( 'before_wcfm_customers_manage' );
 									$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_customer_fields_billing', array(
 																																																		"bfirst_name" => array('label' => __('First Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $bfirst_name ),
 																																																		"blast_name" => array('label' => __('Last Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $blast_name ),
+																																																		"bcompany_name" => array( 'label' => __('Company Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele ', 'label_class' => 'wcfm_ele wcfm_title', 'value' => $bcompany_name),
 																																																		"bphone" => array('label' => __('Phone', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $bphone ),
 																																																		"baddr_1" => array('label' => __('Address 1', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $baddr_1 ),
 																																																		"baddr_2" => array('label' => __('Address 2', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $baddr_2 ),
@@ -223,6 +228,7 @@ do_action( 'before_wcfm_customers_manage' );
 																																																	"same_as_billing" => array('label' => __('Same as Billing', 'wc-frontend-manager') , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title wcfm_ele', 'value' => 'yes', 'dfvalue' => $same_as_billing ),
 																																																	"sfirst_name" => array('label' => __('First Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_title wcfm_ele same_as_billing_ele', 'value' => $sfirst_name ),
 																																																	"slast_name" => array('label' => __('Last Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_title wcfm_ele same_as_billing_ele', 'value' => $slast_name ),
+																																																	"scompany_name" => array( 'label' => __('Company Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_ele wcfm_title same_as_billing_ele', 'value' => $scompany_name),
 																																																	"saddr_1" => array('label' => __('Address 1', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_title wcfm_ele same_as_billing_ele', 'value' => $saddr_1 ),
 																																																	"saddr_2" => array('label' => __('Address 2', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_title wcfm_ele same_as_billing_ele', 'value' => $saddr_2 ),
 																																																	"scountry" => array('label' => __('Country', 'wc-frontend-manager') , 'type' => 'country', 'class' => 'wcfm-select wcfm_ele same_as_billing_ele', 'label_class' => 'wcfm_title wcfm_ele same_as_billing_ele', 'attributes' => array( 'style' => 'width: 60%;' ), 'value' => $scountry ),
@@ -246,6 +252,7 @@ do_action( 'before_wcfm_customers_manage' );
 			  
 				<input type="submit" name="submit-data" value="<?php _e( 'Submit', 'wc-frontend-manager' ); ?>" id="wcfm_customer_submit_button" class="wcfm_submit_button" />
 			</div>
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_customers_manage' ); ?>" />
 			<?php
 			do_action( 'after_wcfm_customers_manage' );
 			?>

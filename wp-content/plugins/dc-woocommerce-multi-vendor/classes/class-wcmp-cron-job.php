@@ -70,7 +70,11 @@ class WCMp_Cron_Job {
             foreach ($commissions as $commission) {
                 $commission_id = $commission->ID;
                 $vendor_term_id = get_post_meta($commission_id, '_commission_vendor', true);
-                $commission_to_pay[$vendor_term_id][] = $commission_id;
+                $order_id = get_post_meta( $commission_id ,'_commission_order_id', true );
+                $order = wc_get_order( $order_id );
+                if( is_a( $order, 'WC_Order' ) && !in_array( $order->get_status(), apply_filters( 'wcmp_cron_mass_payment_exclude_order_statuses',array( 'failed', 'cancelled' ) ) ) ) {
+                    $commission_to_pay[$vendor_term_id][] = $commission_id;
+                }
             }
         }
         foreach ($commission_to_pay as $vendor_term_id => $commissions) {
@@ -133,7 +137,7 @@ class WCMp_Cron_Job {
                     if ($vendor_weekly_orders && count($vendor_weekly_orders) > 0) {
                         foreach ($vendor_weekly_orders as $key => $data) {
                             if ($data->commission_id != 0 && $data->commission_id != '') {
-                                $order_data[$data->commission_id] = $data->order_id;
+                                $order_data[$data->commission_id] = $key;
                             }
                         }
                         if (count($order_data) > 0) {
@@ -209,7 +213,7 @@ class WCMp_Cron_Job {
                     if ($vendor_monthly_orders && count($vendor_monthly_orders) > 0) {
                         foreach ($vendor_monthly_orders as $key => $data) {
                             if ($data->commission_id != 0 && $data->commission_id != '') {
-                                $order_data[$data->commission_id] = $data->order_id;
+                                $order_data[$data->commission_id] = $key;
                             }
                         }
                         if (count($order_data) > 0) {

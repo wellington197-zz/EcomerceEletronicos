@@ -8,6 +8,7 @@ jQuery(document).ready(function($) {
 			animation: $(this).data('anim'),
 			animationDuration: $(this).data('speed'),
 			side: $(this).data('position'),
+			interactive: $(this).data('interactive'),
 		});
 	});
 });

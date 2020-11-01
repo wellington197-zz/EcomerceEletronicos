@@ -3,18 +3,18 @@ Contributors: wclovers
 Tags: woocommerce membership, subscription, members, multivendor marketplace, multi vendor 
 Donate link: https://www.paypal.me/wclovers/25usd
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.5
 WC requires at least: 3.0
-WC tested up to: 3.7.0
+WC tested up to: 4.4.0
 Requires PHP: 5.6
-Stable tag: 2.7.1
+Stable tag: 2.9.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A simple woocommerce memberships plugin for offering free and premium subscription for your multi-vendor marketplace - WC Marketplace, WC Vendors & Dokan.
+A simple woocommerce memberships plugin for offering free and premium subscription for your multi-vendor marketplace - WCFM Marketplace, WC Vendors & Dokan.
 
 == Description ==
-A simple woocommerce memberships plugin for offering FREE AND PREMIUM SUBSCRIPTION for your multi-vendor marketplace (WC Marketplace, WC Vendors, WC Product Vendors & Dokan).
+A simple woocommerce memberships plugin for offering FREE AND PREMIUM SUBSCRIPTION for your multi-vendor marketplace (WCFM Marketplace, WC Vendors, WC Product Vendors & Dokan).
 
 You may set up unlimited membership levels (example: free, silver, gold etc) with different pricing plan, capabilities and commission.
 
@@ -34,7 +34,6 @@ You may set up unlimited membership levels (example: free, silver, gold etc) wit
 WooCommerce Multivaendor Membership works with all popular marketplace add-ons -
 
 🔖 [WooCommerce Multivendor Marketplace](https://wordpress.org/plugins/wc-multivendor-marketplace/)
-🔖 WC Marketplace
 🔖 WC Vendors and WC Vednors PRO
 🔖 Dokan Lite and Dokan PRO
 🔖 WooCommerce Product Vendors
@@ -101,7 +100,7 @@ Just to mention, it works as a add-on for [WooCommerce Frontend Manager](https:/
 
 = Feedback = 
 
-All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
+All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6-12 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
 
 It is extremely disheartening when trigger happy users downrate a plugin for no fault of the plugin. 
 
@@ -155,6 +154,119 @@ NONE.
 17. Membership Details - Cancel & Upgrade
 
 == Changelog ==
+
+= 2.9.4 =
+*Updated - 28/08/2020*
+
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Tweak   - Registration form uploaded files saved as WP attachment 
+* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
+* Fixed   - Dashboard membership table wrong vendor count display issue resolved 
+
+= 2.9.3 =
+*Updated - 12/08/2020*
+
+* Enhance - WP 5.5 compatibility added
+* Enhance - Membership setting page not loading issue resolved 
+
+= 2.9.2 =
+*Updated - 02/08/2020*
+
+* Enhance - WooCommerce 4.3+ compatibility added
+* Fixed   - Membership emails not respecting notification setting issue resolved 
+
+= 2.9.1 =
+*Updated - 09/06/2020*
+
+* Enhance - WooCommerce 4.2+ compatibility added
+* Fixed   - Membership plan "One time subscription" restrction check not working issue resolved 
+* Fixed   - Store customer support address not populate using registration address issue resolved 
+
+= 2.9.0 =
+*Updated - 13/05/2020*
+
+* Enhance - WooCommerce 4.1+ compatibility added
+* Enhance - Welcome Email "{store}", "{store_name}", "{store_url}" dynamic parameters support added 
+* Enhance - Registration form display improved
+* Enhance - Registration form responsive and RTL CSS improved
+
+= 2.8.6 =
+*Updated - 17/04/2020*
+
+* Enhance - Membership module option added - Manager from WCFM Admin Setting -> Modules
+* Fixed   - Vendor registration "Address" field not properly saved for GEO search issue resolved
+
+= 2.8.5 =
+*Updated - 08/04/2020*
+
+* Fixed - Membership plan table feature value display issue resolved
+
+= 2.8.4 =
+*Updated - 06/04/2020*
+
+* Enhance - Membership subscription renewal notification added
+
+= 2.8.3 =
+*Updated - 15/03/2020*
+
+* Enhance - WooCommerce 4.0+ compatibility added
+* Enhance - WP 5.4+ compatibility added
+* Enhance - Membership payment setting fields mask added
+
+= 2.8.2 =
+*Updated - 07/03/2020*
+
+* Enhance - Membership and registration page Divi Builder support added
+
+= 2.8.1 =
+*Updated - 08/02/2020*
+
+* Enhance - WC 3.9+ compatibility added
+* Enhance - Membership wise different "Thank You" page content option added
+* Enhance - Membership wise different "Welcome Email" content option added
+* Fixed   - Password mis-match error showing "undefined" message issue resolved
+* Fixed   - Vendor Registration "required approval" setting not working issue resolved
+
+= 2.8.0 =
+*Updated - 18/01/2020*
+
+* Enhance - WP Offload Media Pro compatibility added
+* Fixed   - WCFM_Dependencies missing issue resolved
+
+= 2.7.6 =
+*Updated - 08/01/2020*
+
+* Enhance - Verification email override template added
+* Enhance - Custom SMS verification filters added
+
+= 2.7.5 =
+*Updated - 21/12/2019*
+
+* Enhance - Vendor registration custom fields "multi-select" type field support added
+* Enhance - Netgsm SMS plugin support added for vendor registration OTP verification
+* Enhance - WPML sites membership using "WC Products" non-default langugage subscription thank you page redirect support added
+* Enhance - Registration form RTL display improved
+* Tweak   - Integrate payment gateway "Stripe" rename to "Credit or Debit Card (Stripe)"
+* Fixed   - Periodic scheduler initialize issue resolved
+
+= 2.7.4 =
+*Updated - 21/11/2019*
+
+* Fixed   - On membership cancel archived/draft products able to re-publish issue resolved
+* Fixed   - Vendors able to import more than product limit capability issue resolved
+* Fixed   - Without product limit vendor able to import product issue resolved
+
+= 2.7.3 =
+*Updated - 22/10/2019*
+
+* Enhance - Subcription button URL support added
+* Fixed   - On membership change/switch Affiliate User Role reset issue resolved
+
+= 2.7.2 =
+*Updated - 03/10/2019*
+
+* Enhance - Product and Vendor Registration custom filed "HTML Block" field type support added
+* Fixed   - On membership switch "store slug" reset issue resolved
 
 = 2.7.1 =
 *Updated - 22/09/2019*
@@ -593,14 +705,15 @@ NONE.
 * Enhance - Membership Plan table redefined
 
 = 1.0.1 =
-* Basic set up version release
+* Basic set up version release                                      
 
 = 1.0.0 =
 * Initial version release
 
 == Upgrade Notice ==
 
-= 2.7.1 =
-* Enhance - "Never Expire" membership plans extend option disabled
-* Enhance - On membership switch confirmation form custom data fields removed
-* Fixed   - On membership switch "store slug" reset issue resolved
+= 2.9.4 =
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Tweak   - Registration form uploaded files saved as WP attachment 
+* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
+* Fixed   - Dashboard membership table wrong vendor count display issue resolved 

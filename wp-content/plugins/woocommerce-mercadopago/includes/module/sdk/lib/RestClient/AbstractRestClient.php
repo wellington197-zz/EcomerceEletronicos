@@ -1,10 +1,21 @@
 <?php
 
 /**
+ * Part of Woo Mercado Pago Module
+ * Author - Mercado Pago
+ * Developer
+ * Copyright - Copyright(c) MercadoPago [https://www.mercadopago.com]
+ * License - https://www.gnu.org/licenses/gpl.html GPL version 2 or higher
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+/**
  * Class AbstractRestClient
  */
 class AbstractRestClient
-{   
+{
     public static $email_admin = '';
     public static $site_locale = '';
     public static $check_loop = 0;
@@ -16,11 +27,14 @@ class AbstractRestClient
      */
     public static function execAbs($request, $url)
     {
-        $connect = self::build_request($request, $url);
-      
-        return self::execute($request, $connect);
+        try {
+            $connect = self::build_request($request, $url);
+            return self::execute($request, $connect);
+        } catch (Exception $e) {
+            return null;
+        }
     }
-    
+
     /**
      * @param $request
      * @return false|resource
@@ -41,19 +55,18 @@ class AbstractRestClient
         }
 
         $headers = array('accept: application/json');
-        if ($request['method'] == 'POST' ) {
-            $headers[] = 'x-product-id:' . WC_WooMercadoPago_Constants::PRODUCT_ID;
+        if ($request['method'] == 'POST') {
+            $headers[] = 'x-product-id:' . (WC_WooMercadoPago_Module::is_mobile() ? WC_WooMercadoPago_Constants::PRODUCT_ID_MOBILE : WC_WooMercadoPago_Constants::PRODUCT_ID_DESKTOP);
             $headers[] = 'x-platform-id:' . WC_WooMercadoPago_Constants::PLATAFORM_ID;
-            $headers[] = 'x-integrator-id:' . WC_WooMercadoPago_Module::get_sponsor_id();       
+            $headers[] = 'x-integrator-id:' . get_option('_mp_integrator_id', null);
         }
+
         $json_content = true;
         $form_content = false;
         $default_content_type = true;
 
         if (isset($request['headers']) && is_array($request['headers'])) {
             foreach ($request['headers'] as $h => $v) {
-                $h = strtolower($h);
-                $v = strtolower($v);
                 if ($h == 'content-type') {
                     $default_content_type = false;
                     $json_content = $v == 'application/json';
@@ -115,82 +128,17 @@ class AbstractRestClient
     {
         $response = null;
         $api_result = curl_exec($connect);
-        $api_http_code = curl_getinfo($connect, CURLINFO_HTTP_CODE);
-
-        if ($api_result === FALSE) {
-            throw new WC_WooMercadoPago_Exception (curl_error($connect));
+        if (curl_errno($connect)) {
+            throw new WC_WooMercadoPago_Exception(curl_error($connect));
         }
+        $api_http_code = curl_getinfo($connect, CURLINFO_HTTP_CODE);
 
         if ($api_http_code != null && $api_result != null) {
             $response = array('status' => $api_http_code, 'response' => json_decode($api_result, true));
         }
 
-        if ($response != null && $response['status'] >= 400 && self::$check_loop == 0) {
-            try {
-                self::$check_loop = 1;
-                $message = null;
-                $payloads = null;
-                $endpoint = null;
-                $errors = array();
-                if (isset($response['response'])) {
-                    if (isset($response['response']['message'])) {
-                        $message = $response['response']['message'];
-                    }
-                    if (isset($response['response']['cause'])) {
-                        $message .= json_encode($response['response']['cause']);
-                    }
-                }
-                if ($request != null) {
-                    if (isset($request['data'])) {
-                        if ($request['data'] != null) {
-                            $payloads = json_encode($request['data']);
-                        }
-                    }
-                    if (isset($request['uri'])) {
-                        if ($request['uri'] != null) {
-                            $endpoint = $request['uri'];
-                        }
-                    }
-                }
-                $errors[] = array(
-                    'endpoint' => $endpoint,
-                    'message' => $message,
-                    'payloads' => $payloads
-                );
-                self::sendErrorLog($response['status'], $errors, WC_WooMercadoPago_Constants::VERSION);
-            } catch (Exception $e) {
-                throw new WC_WooMercadoPago_Exception('Error to call API LOGS' . $e);
-            }
-        }
-
-        self::$check_loop = 0;
         curl_close($connect);
         return $response;
-    }
-
-    /**
-     * @param $code
-     * @param $errors
-     * @return array|null
-     * @throws WC_WooMercadoPago_Exception
-     */
-    public static function sendErrorLog($code, $errors)
-    {
-        $data = array(
-            'code' => $code,
-            'module' => WC_WooMercadoPago_Constants::PLATAFORM_ID,
-            'module_version' => WC_WooMercadoPago_Constants::VERSION,
-            'url_store' => $_SERVER['HTTP_HOST'],
-            'errors' => $errors,
-            'email_admin' => self::$email_admin,
-            'country_initial' => self::$site_locale
-        );
-        $request = array(
-            'uri' => '/modules/log',
-            'data' => $data
-        );
-        $result_response = MeLiRestClient::post($request);
-        return $result_response;
     }
 
     /**

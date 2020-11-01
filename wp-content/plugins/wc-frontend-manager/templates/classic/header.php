@@ -22,7 +22,9 @@ if( !apply_filters( 'wcfm_is_allow_template_header', true ) ) return;
 			$blog_link  = get_bloginfo( 'url' );
 			?>
 			<div class="wcfm-site-name">
-				<a href="<?php echo $blog_link; ?>"><?php echo $blog_title; ?></a>
+			  <?php do_action( 'wcfm_dasboard_header_before' ); ?>
+				<a class="wcfm_header_site_name" href="<?php echo $blog_link; ?>"><?php echo $blog_title; ?></a>
+				<?php do_action( 'wcfm_dasboard_header_after' ); ?>
 			</div>
 		</div>
 	</div>

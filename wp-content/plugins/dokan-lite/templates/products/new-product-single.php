@@ -1,5 +1,8 @@
 <?php
 
+use WeDevs\Dokan\Walkers\CategoryDropdownSingle;
+use WeDevs\Dokan\Walkers\TaxonomyDropdown;
+
 global $post;
 
 $from_shortcode = false;
@@ -58,7 +61,7 @@ if ( ! $from_shortcode ) {
 }
 
 if ( ! empty( $_GET['errors'] ) ) {
-    Dokan_Template_Products::$errors = $_GET['errors'];
+    dokan()->dashboard->templates->products->set_errors( array_map( 'sanitize_text_field', wp_unslash( $_GET['errors'] ) ) );
 }
 
 /**
@@ -119,11 +122,11 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
             </header><!-- .entry-header -->
 
             <div class="product-edit-new-container product-edit-container">
-                <?php if ( Dokan_Template_Products::$errors ) { ?>
+                <?php if ( dokan()->dashboard->templates->products->has_errors() ) { ?>
                     <div class="dokan-alert dokan-alert-danger">
                         <a class="dokan-close" data-dismiss="alert">&times;</a>
 
-                        <?php foreach ( Dokan_Template_Products::$errors as $error) { ?>
+                        <?php foreach ( dokan()->dashboard->templates->products->get_errors() as $error ) { ?>
                             <strong><?php esc_html_e( 'Error!', 'dokan-lite' ); ?></strong> <?php echo esc_html( $error ) ?>.<br>
                         <?php } ?>
                     </div>
@@ -190,11 +193,20 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
 
                                             <div class="content-half-part regular-price">
                                                 <label for="_regular_price" class="form-label"><?php esc_html_e( 'Price', 'dokan-lite' ); ?>
-                                                    <span class="vendor-earning" data-commission="<?php echo esc_attr( dokan_get_seller_percentage( dokan_get_current_user_id(), $post_id ) ); ?>" data-commission_type="<?php echo esc_attr( dokan_get_commission_type( dokan_get_current_user_id(), $post_id ) ); ?>">( <?php esc_html_e( ' You Earn : ', 'dokan-lite' ) ?><?php echo esc_html( get_woocommerce_currency_symbol() ); ?><span class="vendor-price">0.00</span> )</span>
+                                                    <span
+                                                        class="vendor-earning simple-product"
+                                                        data-commission="<?php echo esc_attr( dokan()->commission->get_earning_by_product( $post_id ) ); ?>"
+                                                        data-product-id="<?php echo esc_attr( $post_id ); ?>">
+                                                            ( <?php esc_html_e( ' You Earn : ', 'dokan-lite' ) ?><?php echo esc_html( get_woocommerce_currency_symbol() ); ?>
+                                                                <span class="vendor-price">
+                                                                    <?php echo esc_html( wc_format_localized_price( esc_attr( dokan()->commission->get_earning_by_product( $post_id ) ) ) ); ?>
+                                                                </span>
+                                                            )
+                                                    </span>
                                                 </label>
                                                 <div class="dokan-input-group">
                                                     <span class="dokan-input-group-addon"><?php echo esc_html( get_woocommerce_currency_symbol() ); ?></span>
-                                                    <?php dokan_post_input_box( $post_id, '_regular_price', array( 'class' => 'dokan-product-regular-price', 'placeholder' => __( '0.00', 'dokan-lite' ) ), 'number' ); ?>
+                                                    <?php dokan_post_input_box( $post_id, '_regular_price', array( 'class' => 'dokan-product-regular-price', 'placeholder' => __( '0.00', 'dokan-lite' ) ), 'price' ); ?>
                                                 </div>
                                             </div>
 
@@ -207,7 +219,7 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
 
                                                 <div class="dokan-input-group">
                                                     <span class="dokan-input-group-addon"><?php echo esc_html( get_woocommerce_currency_symbol() ); ?></span>
-                                                    <?php dokan_post_input_box( $post_id, '_sale_price', array( 'class' => 'dokan-product-sales-price','placeholder' => __( '0.00', 'dokan-lite' ) ), 'number' ); ?>
+                                                    <?php dokan_post_input_box( $post_id, '_sale_price', array( 'class' => 'dokan-product-sales-price','placeholder' => __( '0.00', 'dokan-lite' ) ), 'price' ); ?>
                                                 </div>
                                             </div>
                                         </div>
@@ -222,18 +234,20 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
                                             <div class="content-half-part from">
                                                 <div class="dokan-input-group">
                                                     <span class="dokan-input-group-addon"><?php esc_html_e( 'From', 'dokan-lite' ); ?></span>
-                                                    <input type="text" name="_sale_price_dates_from" class="dokan-form-control datepicker" value="<?php echo esc_attr( $_sale_price_dates_from ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" placeholder="<?php esc_html_e( 'YYYY-MM-DD', 'dokan-lite' ); ?>">
+                                                    <input type="text" name="_sale_price_dates_from" class="dokan-form-control dokan-start-date" value="<?php echo esc_attr( $_sale_price_dates_from ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" placeholder="<?php esc_html_e( 'YYYY-MM-DD', 'dokan-lite' ); ?>">
                                                 </div>
                                             </div>
 
                                             <div class="content-half-part to">
                                                 <div class="dokan-input-group">
                                                     <span class="dokan-input-group-addon"><?php esc_html_e( 'To', 'dokan-lite' ); ?></span>
-                                                    <input type="text" name="_sale_price_dates_to" class="dokan-form-control datepicker" value="<?php echo esc_attr( $_sale_price_dates_to ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" placeholder="<?php esc_html_e( 'YYYY-MM-DD', 'dokan-lite' ); ?>">
+                                                    <input type="text" name="_sale_price_dates_to" class="dokan-form-control dokan-end-date" value="<?php echo esc_attr( $_sale_price_dates_to ); ?>" maxlength="10" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])" placeholder="<?php esc_html_e( 'YYYY-MM-DD', 'dokan-lite' ); ?>">
                                                 </div>
                                             </div>
                                         </div><!-- .sale-schedule-container -->
                                     </div>
+
+                                    <?php do_action( 'dokan_product_edit_after_pricing', $post, $post_id ); ?>
 
                                     <?php if ( dokan_get_option( 'product_category_style', 'dokan_selling', 'single' ) == 'single' ): ?>
                                         <div class="dokan-form-group">
@@ -259,7 +273,7 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
                                                 'class'            => 'product_cat dokan-form-control dokan-select2',
                                                 'exclude'          => '',
                                                 'selected'         => $product_cat,
-                                                'walker'           => new DokanCategoryWalker( $post_id )
+                                                'walker'           => new CategoryDropdownSingle( $post_id )
                                             );
 
                                             wp_dropdown_categories( apply_filters( 'dokan_product_cat_dropdown_args', $category_args ) );
@@ -287,7 +301,7 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
                                                 'exclude'          => '',
                                                 'selected'         => $term,
                                                 'echo'             => 0,
-                                                'walker'           => new DokanTaxonomyWalker( $post_id )
+                                                'walker'           => new TaxonomyDropdown( $post_id )
                                             ) ) );
 
                                             echo str_replace( '<select', '<select data-placeholder="' . esc_html__( 'Select product category', 'dokan-lite' ) . '" multiple="multiple" ', $drop_down_category ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
@@ -299,26 +313,19 @@ do_action( 'dokan_dashboard_wrap_before', $post, $post_id );
                                         <label for="product_tag" class="form-label"><?php esc_html_e( 'Tags', 'dokan-lite' ); ?></label>
                                         <?php
                                         require_once DOKAN_LIB_DIR.'/class.taxonomy-walker.php';
-                                        $term = wp_get_post_terms( $post_id, 'product_tag', array( 'fields' => 'ids') );
-                                        $selected = ( $term ) ? $term : array();
-                                        $drop_down_tags = wp_dropdown_categories( array(
-                                            'show_option_none' => __( '', 'dokan-lite' ),
-                                            'hierarchical'     => 1,
-                                            'hide_empty'       => 0,
-                                            'name'             => 'product_tag[]',
-                                            'id'               => 'product_tag',
-                                            'taxonomy'         => 'product_tag',
-                                            'title_li'         => '',
-                                            'class'            => 'product_tags dokan-form-control dokan-select2',
-                                            'exclude'          => '',
-                                            'selected'         => $selected,
-                                            'echo'             => 0,
-                                            'walker'           => new DokanTaxonomyWalker( $post_id )
-                                        ) );
+                                        $terms = wp_get_post_terms( $post_id, 'product_tag', array( 'fields' => 'all' ) );
 
-                                        echo str_replace( '<select', '<select data-placeholder="' . esc_html__( 'Select product tags', 'dokan-lite' ) . '" multiple="multiple" ', $drop_down_tags ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
-
+                                        $drop_down_tags = array(
+                                            'hide_empty' => 0,
+                                        );
                                         ?>
+                                        <select multiple="multiple" name="product_tag[]" id="product_tag_search" class="product_tag_search product_tags dokan-form-control dokan-select2" data-placeholder="<?php esc_attr_e( 'Select tags', 'dokan-lite' ); ?>">
+                                            <?php if ( ! empty( $terms ) ) : ?>
+                                                <?php foreach ( $terms as $tax_term ) : ?>
+                                                    <option value="<?php echo esc_attr( $tax_term->term_id ); ?>" selected="selected" ><?php echo esc_html( $tax_term->name ); ?></option>
+                                                <?php endforeach ?>
+                                            <?php endif ?>
+                                        </select>
                                     </div>
 
                                     <?php do_action( 'dokan_product_edit_after_product_tags', $post, $post_id ); ?>

@@ -305,7 +305,25 @@ class WCMp_Vendor {
             $link = get_term_link(absint($this->term_id), $WCMp->taxonomy->taxonomy_name);
         }
 
-        return $link;
+        return apply_filters( 'wcmp_vendor_permalink', $link, $this );
+    }
+    
+    /**
+     * get_id function
+     * @access public
+     * @return integer 
+     */
+    public function get_id() {
+        return $this->id;
+    }
+    
+    /**
+     * get_term_id function
+     * @access public
+     * @return integer 
+     */
+    public function get_term_id() {
+        return $this->term_id;
     }
 
     /**
@@ -332,6 +350,48 @@ class WCMp_Vendor {
         $args = wp_parse_args($args, $default);
         return get_posts( apply_filters( 'wcmp_get_vendor_products_query_args', $args, $this->term_id ) );
     }
+    
+    /**
+     * Get all products ids belonging to vendor
+     * @param $clauses SQL clauses
+     * @return arr Array of product ids
+     */
+    public function get_products_ids( $clauses = array() ) {
+        global $wpdb;
+        $default_clauses = array(
+            'fields'    => $wpdb->prefix.'posts.ID',
+            'where'     => "AND ".$wpdb->prefix."posts.post_status = 'publish' ",
+            'groupby'   => $wpdb->prefix.'posts.ID',
+            'orderby'   => $wpdb->prefix.'posts.post_date DESC',
+            'limits'    => ''
+        );
+        $clauses = apply_filters( 'wcmp_get_products_ids_clauses_request', wp_parse_args( $clauses, $default_clauses ) );
+        $fields   = isset( $clauses['fields'] ) ? $clauses['fields'] : '';
+        $where    = isset( $clauses['where'] ) ? $clauses['where'] : '';
+        $groupby  = isset( $clauses['groupby'] ) ? $clauses['groupby'] : '';
+        $orderby  = isset( $clauses['orderby'] ) ? $clauses['orderby'] : '';
+        $limits   = isset( $clauses['limits'] ) ? $clauses['limits'] : '';
+        $sql = "SELECT
+                $fields
+            FROM
+                {$wpdb->prefix}posts
+            LEFT JOIN {$wpdb->prefix}term_relationships ON(
+                    {$wpdb->prefix}posts.ID = {$wpdb->prefix}term_relationships.object_id
+                )
+            LEFT JOIN {$wpdb->prefix}term_taxonomy ON(
+                {$wpdb->prefix}term_relationships.term_taxonomy_id = {$wpdb->prefix}term_taxonomy.term_taxonomy_id
+            )
+            WHERE
+                1 = 1 AND(
+                    {$wpdb->prefix}term_taxonomy.term_id IN( $this->term_id )
+                ) AND {$wpdb->prefix}posts.post_author IN( $this->id ) AND {$wpdb->prefix}posts.post_type = 'product' $where
+            GROUP BY
+                $groupby
+            ORDER BY
+                $orderby $limits";
+
+        return apply_filters( 'wcmp_get_products_ids', $wpdb->get_results( $sql ), $clauses, $this->id );
+    }
 
     /**
      * get_orders function
@@ -342,38 +402,82 @@ class WCMp_Vendor {
         if (!$no_of) {
             $no_of = -1;
         }
-        $vendor_id = $this->term_id;
-        $commissions = false;
-        $order_id = array();
+        $vendor_id = $this->id;
+        $order_ids = $vendor_orders = array();
         if ($vendor_id > 0) {
             $args = array(
-                'post_type' => 'dc_commission',
-                'post_status' => array('publish', 'private'),
-                'posts_per_page' => (int) $no_of,
+                'author'            => $vendor_id,
+                'posts_per_page'    => $no_of,
                 'meta_query' => array(
                     array(
-                        'key' => '_commission_vendor',
-                        'value' => absint($vendor_id),
+                        'key' => '_commissions_processed',
+                        'value' => 'yes',
                         'compare' => '='
                     )
                 )
             );
-            if ($offset) {
+            if ( $offset ) {
                 $args['offset'] = $offset;
             }
-            if ($more_args) {
-                $args = wp_parse_args($more_args, $args);
+            if ( $more_args ) {
+                $args = wp_parse_args( $more_args, $args );
             }
+            
+            $vendor_orders = wcmp_get_orders( $args );
+        }
+
+        if ( $vendor_orders ) {
+            foreach ( $vendor_orders as $order_id ) {
+                if(get_post_status( $order_id ) === 'wc-cancelled') continue;
+                $commission_id = get_post_meta( $order_id, '_commission_id', true );
+                $order_ids[$commission_id] = $order_id;
+            }
+        }
+        return $order_ids;
+    }
+    
+    /**
+     * get_unpaid_orders function
+     * @access public
+     * @return array with order id
+     */
+    public function get_unpaid_orders($no_of = false, $offset = false, $more_args = false) {
+        if (!$no_of) {
+            $no_of = -1;
+        }
+        $vendor_id = $this->id;
+        $order_ids = $commissions = array();
+        if ($vendor_id > 0) {
+            $args = array(
+                'post_type'         => 'dc_commission',
+                'post_status'       => array('publish', 'private'),
+                'posts_per_page'    => (int) $no_of,
+                'fields'            => 'ids',
+                'meta_query'        => array(
+                    array(
+                        'key'       => '_commission_vendor',
+                        'value'     => absint( $this->term_id ),
+                        'compare'   => '='
+                    )
+                )
+            );
+            if ( $offset ) {
+                $args['offset'] = $offset;
+            }
+            if ( $more_args ) {
+                $args = wp_parse_args( $more_args, $args );
+            }
+            
             $commissions = get_posts($args);
         }
 
-        if ($commissions) {
-            $order_id = array();
-            foreach ($commissions as $commission) {
-                $order_id[$commission->ID] = get_post_meta($commission->ID, '_commission_order_id', true);
+        if ( $commissions ) {
+            foreach ( $commissions as $commission_id ) {
+                $order_id = get_post_meta( $commission_id, '_commission_order_id', true );
+                $order_ids[$commission_id] = $order_id;
             }
         }
-        return $order_id;
+        return $order_ids;
     }
 
     /**
@@ -428,33 +532,25 @@ class WCMp_Vendor {
     public function get_vendor_orders_by_product($vendor_term_id, $product_id) {
         $order_dtl = array();
         if ($product_id && $vendor_term_id) {
-            $commissions = false;
+            $vendor_id = get_term_meta( $vendor_term_id, '_vendor_user_id', true );
             $args = array(
-                'post_type' => 'dc_commission',
-                'post_status' => array('publish', 'private'),
-                'posts_per_page' => -1,
-                'order' => 'asc',
-                'meta_query' => array(
-                    array(
-                        'key' => '_commission_vendor',
-                        'value' => absint($vendor_term_id),
-                        'compare' => '='
-                    ),
-                    array(
-                        'key' => '_commission_product',
-                        'value' => absint($product_id),
-                        'compare' => 'LIKE'
-                    ),
-                ),
+                'author' => $vendor_id,
+                'post_status' => array( 'wc-processing', 'wc-completed' )
             );
-            $commissions = get_posts($args);
-            if (!empty($commissions)) {
-                foreach ($commissions as $commission) {
-                    $order_dtl[] = get_post_meta($commission->ID, '_commission_order_id', true);
+            $orders = wcmp_get_orders( $args, 'object' );
+            
+            if( $orders ) {
+                foreach( $orders as $order ) {
+                    foreach( $order->get_items() as $item ) {
+                        $item_id = ( $item->get_variation_id() ) ? $item->get_variation_id() : $item->get_product_id();
+                        if( $product_id === $item_id ) {
+                            $order_dtl[] = $order->get_id();
+                        }
+                    }
                 }
             }
         }
-        return $order_dtl;
+        return apply_filters( 'wcmp_get_vendor_orders_by_product', $order_dtl, $vendor_term_id, $product_id );
     }
 
     /**
@@ -527,9 +623,12 @@ class WCMp_Vendor {
                 </td>
                 <td scope="col" style="text-align:left; border: 1px solid #eee;">
                     <?php
-                    $commission = $item->get_meta('_vendor_item_commission', true);
-                    echo wc_price($commission);
-                   
+                    if ($is_ship) {
+                        echo $order->get_formatted_line_subtotal($item);
+                    } else {
+                        $commission = $item->get_meta('_vendor_item_commission', true);
+                        echo wc_price($commission);
+                    }
                     ?>
                 </td>
                 <?php do_action('wcmp_after_vendor_order_item_table', $item, $order, $vendor_id, $is_ship); ?>
@@ -900,10 +999,17 @@ class WCMp_Vendor {
                     'is_trashed' => ''
                 );
                 $args = apply_filters('get_vendor_orders_reports_of_default_query_args', wp_parse_args($args, $defaults));
-                $vendor_orders = $wpdb->get_results(
-                        $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wcmp_vendor_orders WHERE vendor_id=%d AND `created` BETWEEN %s AND %s AND `is_trashed`=%d", $args['vendor_id'], $args['start_date'], $args['end_date'], $args['is_trashed']
-                        )
+                $query = array(
+                    'author' => $args['vendor_id'],
+                    'date_query' => array(
+                        array(
+                            'after'     => $args['start_date'],
+                            'before'    => $args['end_date'],
+                            'inclusive' => true,
+                        ),
+                    )
                 );
+                $vendor_orders = wcmp_get_orders( $query, 'object' );
                 $reports = $vendor_orders;
                 break;
         }
@@ -934,7 +1040,7 @@ class WCMp_Vendor {
         //$wpdb->query("UPDATE {$wpdb->prefix}wcmp_vendor_orders SET shipping_status = '1' WHERE order_id = $order_id and vendor_id = $this->id");
         do_action('wcmp_vendors_vendor_ship', $order_id, $this->term_id);
         $order = wc_get_order($order_id);
-        $comment_id = $order->add_order_note(__('Vendor ', 'dc-woocommerce-multi-vendor') . $this->page_title . __(' has shipped his part of order to customer.', 'dc-woocommerce-multi-vendor') . '<br><span>' . __('Tracking Url : ', 'dc-woocommerce-multi-vendor') . '</span> <a target="_blank" href="' . $tracking_url . '">' . $tracking_url . '</a><br><span>' . __('Tracking Id : ', 'dc-woocommerce-multi-vendor') . '</span>' . $tracking_id, '1', true);
+        $comment_id = $order->add_order_note(__('Vendor ', 'dc-woocommerce-multi-vendor') . $this->page_title . __(' has shipped his part of order to customer.', 'dc-woocommerce-multi-vendor') . '<br><span>' . __('Tracking Url : ', 'dc-woocommerce-multi-vendor') . '</span> <a target="_blank" href="' . $tracking_url . '">' . $tracking_url . '</a><br><span>' . __('Tracking Id : ', 'dc-woocommerce-multi-vendor') . '</span>' . $tracking_id, 0, true);
         // update comment author & email
         wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $this->page_title, 'comment_author_email' => $this->user_data->user_email));
         add_comment_meta($comment_id, '_vendor_id', $this->id);
@@ -1009,14 +1115,17 @@ class WCMp_Vendor {
             foreach ($posts_array as $post) {
                 // deleted by vendor
                 if (!in_array($post->ID, $dismiss_notices_ids_array)) {
-                    $announcements['all'][$post->ID] = $post;
-                    // readed by vendor
-                    if (in_array($post->ID, $readed_notices_ids_array)) {
-                        $post->is_read = true;
-                        $announcements['read'][$post->ID] = $post;
-                    } else {
-                        $post->is_read = false;
-                        $announcements['unread'][$post->ID] = $post;
+                    $notify_vendors = !empty(get_post_meta( $post->ID, '_wcmp_vendor_notices_vendors', true )) ? get_post_meta( $post->ID, '_wcmp_vendor_notices_vendors', true ) : get_wcmp_vendors( array(), 'ids' );
+                    if($notify_vendors && in_array($vendor_id, $notify_vendors)) {
+                        $announcements['all'][$post->ID] = $post;
+                        // readed by vendor
+                        if (in_array($post->ID, $readed_notices_ids_array)) {
+                            $post->is_read = true;
+                            $announcements['read'][$post->ID] = $post;
+                        } else {
+                            $post->is_read = false;
+                            $announcements['unread'][$post->ID] = $post;
+                        }
                     }
                 } else {
                     $post->is_read = false;

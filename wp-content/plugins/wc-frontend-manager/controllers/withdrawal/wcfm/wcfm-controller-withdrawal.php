@@ -36,6 +36,17 @@ class WCFM_Withdrawal_Controller {
 		$length = wc_clean($_POST['length']);
 		$offset = wc_clean($_POST['start']);
 		
+		$start_date = '';
+    $end_date = '';
+    
+    if( isset($_POST['start_date']) && !empty($_POST['start_date']) ) {
+    	$start_date = date('Y-m-d', strtotime(wc_clean($_POST['start_date'])) );
+    }
+    
+    if( isset($_POST['end_date']) && !empty($_POST['end_date']) ) {
+    	$end_date = date('Y-m-d', strtotime(wc_clean($_POST['end_date'])) );
+    }
+		
 		$the_orderby = ! empty( $_POST['orderby'] ) ? sanitize_text_field( $_POST['orderby'] ) : 'order_id';
 		$the_order   = ( ! empty( $_POST['order'] ) && 'asc' === $_POST['order'] ) ? 'ASC' : 'DESC';
 
@@ -49,6 +60,9 @@ class WCFM_Withdrawal_Controller {
 		$sql .= " AND commission.refund_status != 'requested'";
 		$sql .= ' AND `is_withdrawable` = 1 AND `is_auto_withdrawal` = 0 AND `is_refunded` = 0 AND `is_trashed` = 0';
 		if( $withdrawal_thresold ) $sql .= " AND commission.created <= NOW() - INTERVAL {$withdrawal_thresold} DAY";
+		if( $start_date && $end_date ) {
+			$sql .= " AND DATE( commission.created ) BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+		}
 		
 		$filtered_withdrawal_count = $wpdb->get_var( $sql );
 		if( !$filtered_withdrawal_count ) $filtered_withdrawal_count = 0;
@@ -61,6 +75,9 @@ class WCFM_Withdrawal_Controller {
 		$sql .= " AND commission.refund_status != 'requested'";
 		$sql .= ' AND `is_withdrawable` = 1 AND `is_auto_withdrawal` = 0 AND `is_refunded` = 0 AND `is_trashed` = 0';
 		if( $withdrawal_thresold ) $sql .= " AND commission.created <= NOW() - INTERVAL {$withdrawal_thresold} DAY";
+		if( $start_date && $end_date ) {
+			$sql .= " AND DATE( commission.created ) BETWEEN '" . $start_date . "' AND '" . $end_date . "'";
+		}
 		$sql .= " ORDER BY `{$the_orderby}` {$the_order}";
 		$sql .= " LIMIT {$length}";
 		$sql .= " OFFSET {$offset}";
@@ -80,6 +97,23 @@ class WCFM_Withdrawal_Controller {
 			foreach($wcfm_withdrawals_array as $wcfm_withdrawals_single) {
 				$order_id = $wcfm_withdrawals_single->order_id;
 				
+				$order = wc_get_order( $order_id );
+				if( !is_a( $order , 'WC_Order' ) ) continue;
+				
+				try {
+				  $line_item = new WC_Order_Item_Product( absint( $wcfm_withdrawals_single->item_id ) );
+				  
+				  // Refunded Items Skipping
+				  if( $refunded_qty = $order->get_qty_refunded_for_item( absint( $wcfm_withdrawals_single->item_id ) ) ) {
+				  	$refunded_qty = $refunded_qty * -1;
+				  	if( $line_item->get_quantity() == $refunded_qty ) {
+				  		continue;
+				  	}
+				  }
+				}  catch (Exception $e) {
+					continue;
+				}
+				
 				if( apply_filters( 'wcfm_is_show_commission_restrict_check', false, $order_id, $wcfm_withdrawals_single ) ) continue;
 				
 				// Status
@@ -90,7 +124,7 @@ class WCFM_Withdrawal_Controller {
 				}
 				
 				// Order ID
-				$wcfm_withdrawals_json_arr[$index][] = apply_filters( 'wcfm_commission_order_label_display', '<a class="wcfm_dashboard_item_title withdrawal_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $order_id ) .'"># ' . $order_id . '</a>', $order_id, $wcfm_withdrawals_single );
+				$wcfm_withdrawals_json_arr[$index][] = apply_filters( 'wcfm_commission_order_label_display', '<a class="wcfm_dashboard_item_title withdrawal_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $order_id ) .'"># ' . wcfm_get_order_number( $order_id ) . '</a>', $order_id, $wcfm_withdrawals_single );
 				
 				// Commission ID
 				$wcfm_withdrawals_json_arr[$index][] = '<span class="wcfm_dashboard_item_title"># ' . $wcfm_withdrawals_single->ID . '</span>'; 
@@ -103,6 +137,9 @@ class WCFM_Withdrawal_Controller {
 				
 				// Payment
 				$wcfm_withdrawals_json_arr[$index][] = wc_price( (float) $wcfm_withdrawals_single->total_commission - (float) $wcfm_withdrawals_single->withdraw_charges );  
+				
+				// Additional Info
+				$wcfm_withdrawals_json_arr[$index][] = apply_filters( 'wcfm_withdrawal_additonal_data', '&ndash;', $wcfm_withdrawals_single->ID, $wcfm_withdrawals_single->order_id, $wcfm_withdrawals_single->vendor_id );
 				
 				// Date
 				$wcfm_withdrawals_json_arr[$index][] = apply_filters( 'wcfm_commission_date_display', date_i18n( wc_date_format() . ' ' . wc_time_format(), strtotime( $wcfm_withdrawals_single->created ) ), $order_id, $wcfm_withdrawals_single );

@@ -55,8 +55,20 @@ class WCFMmp_Product_Multivendor {
 		// Clone Multi selling product - bulk
 		add_action('wp_ajax_wcfmmp_product_multivendor_bulk_clone', array( &$this, 'wcfmmp_product_multivendor_bulk_clone' ) );
 		
+		// Product More Offers Table Sorting
+		add_action('wp_ajax_wcfmmp_more_offers_sorting', array( &$this, 'wcfmmp_more_offers_sorted_table' ) );
+		add_action('wp_ajax_nopriv_wcfmmp_more_offers_sorting', array( &$this, 'wcfmmp_more_offers_sorted_table' ) );
+		
 		// Product Loop Duplicate Product Hide
 		add_action('woocommerce_product_query', array( &$this, 'wcfmmp_product_loop_duplicate_hide' ) );
+		
+		// Product Widget Duplicate Product Hide
+		add_filter( 'woocommerce_shortcode_products_query', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
+		add_filter( 'woocommerce_recently_viewed_products_widget_query_args', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
+		add_filter( 'woocommerce_products_widget_query_args', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
+		add_filter( 'electro_get_products_query_args', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
+		add_filter( 'electro_wc_live_search_query_args', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
+		add_filter( 'electro_get_top_rated_products_query_args', array( &$this, 'wcfmmp_product_widget_duplicate_hide' ) );
 		
 		// On Product Delete Reset Multi selling product
 		add_action( 'delete_post', array( &$this, 'wcfmmp_delete_product_association' ) );
@@ -160,7 +172,7 @@ class WCFMmp_Product_Multivendor {
 	  	case 'wcfm-sell-items-catalog':
 	  		$WCFM->library->load_select2_lib();
       	$WCFM->library->load_datatable_lib();
-      	wp_enqueue_script( 'wcfmmp_sell_items_catalog_js', $WCFMmp->library->js_lib_url . 'product_multivendor/wcfmmp-script-sell-items-catalog.js', array('jquery'), $WCFMmp->version, true );
+      	wp_enqueue_script( 'wcfmmp_sell_items_catalog_js', $WCFMmp->library->js_lib_url_min . 'product_multivendor/wcfmmp-script-sell-items-catalog.js', array('jquery'), $WCFMmp->version, true );
       	
       	$wcfm_screen_manager_data = array();
       	if( apply_filters( 'wcfm_sell_items_catalog_additonal_data_hidden', true ) ) {
@@ -247,9 +259,13 @@ class WCFMmp_Product_Multivendor {
   	
   	if( !apply_filters( 'wcfmmp_is_allow_single_product_multivendor', true ) ) return;
   	
+  	if( !apply_filters( 'wcfmmp_is_allow_single_product_multivendor_by_vendor', true, $WCFMmp->vendor_id ) ) return;
+  	
   	if( !apply_filters( 'wcfm_is_allow_manage_products', true ) || !apply_filters( 'wcfm_is_allow_add_products', true ) ) return;
   	if( !apply_filters( 'wcfm_is_allow_product_limit', true ) ) return;
   	if( !apply_filters( 'wcfm_is_allow_space_limit', true ) ) return;
+  	
+  	if( !method_exists( $product, 'get_id' ) ) return;
   	
   	$product_id = $product->get_id();
   	if( !$product_id ) {
@@ -257,8 +273,17 @@ class WCFMmp_Product_Multivendor {
 				$product_id = $post->ID;
 			}
   	}
+  	
+  	$wcfm_capability_options = apply_filters( 'wcfm_capability_options_rules', get_option( 'wcfm_capability_options', array() ) );
+  	$product_type = $product->get_type();
+  	if( isset( $wcfm_capability_options[$product_type] ) ) return;
+  	
+  	if( !apply_filters( 'wcfmmp_is_allow_single_product_multivendor_by_product', true, $product_id ) ) return;
   
   	$product_author = get_post_field( 'post_author', $product_id );
+  	
+  	if( !apply_filters( 'wcfmmp_is_allow_single_product_multivendor_by_product_vendor', true, $product_author ) ) return;
+  	
   	if( $WCFMmp->vendor_id == $product_author ) return;
   	
   	if( $this->is_already_selling( $product_id ) ) return;
@@ -422,6 +447,18 @@ class WCFMmp_Product_Multivendor {
 				)
 		);
 		
+		// For Variations
+		$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription', 'pw-gift-card' ) );
+		if( in_array( $duplicate->get_type(), $wcfm_variable_product_types ) ) {
+			foreach ( $duplicate->get_children() as $child_id ) {
+				$arg = array(
+					'ID' => $child_id,
+					'post_author' => $WCFMmp->vendor_id,
+				);
+				wp_update_post( $arg );
+			}
+		}
+		
 		// Update WCFMmp Product Multi-vendor Table
 		$parent_product_id = 0;
 		$multi_selling = get_post_meta( $product_id, '_has_multi_selling', true );
@@ -460,20 +497,103 @@ class WCFMmp_Product_Multivendor {
   }
   
   /**
+   * WCFMmp More Offers Table Sorted
+   */
+  function wcfmmp_more_offers_sorted_table() {
+  	global $WCFM, $WCFMmp, $wpdb;
+  	
+  	if ( !empty( $_POST['product_id'] ) ) {
+  		$product_id = absint( $_POST['product_id'] );
+  		$sorting    = sanitize_title( $_POST['sorting'] );
+  		
+  		ob_start();
+  		$WCFMmp->template->get_template( 'product_multivendor/wcfmmp-view-more-offers-loop.php', array( 'product_id' => $product_id, 'sorting' => $sorting ) );
+  		echo ob_get_clean();
+  	}
+  	
+  	die;
+  }
+  
+  /**
    * WC Product Loop Duplicate Product Hide
    */
   function wcfmmp_product_loop_duplicate_hide( $q ) {
   	global $WCFM, $wpdb;
-		if( !wcfm_is_store_page() && apply_filters( 'wcfm_is_allow_product_loop_duplicate_hide', false ) ) {
-			$more_offers = $wpdb->get_results( "SELECT * FROM `{$wpdb->prefix}wcfm_marketplace_product_multivendor`" );
+		
+  	if( !wcfm_is_store_page() && apply_filters( 'wcfm_is_allow_product_loop_duplicate_hide', true ) ) {
+			$more_offers = $wpdb->get_results( "SELECT GROUP_CONCAT(product_id) as products, parent_product_id FROM `{$wpdb->prefix}wcfm_marketplace_product_multivendor` GROUP BY parent_product_id" );
+			
 			$exclude = array();
-			foreach ($more_offers as $key => $value) {
-				if( !in_array( $value->parent_product_id , $more_offers ) ) {
-					$exclude[] = $value->product_id;
+			if( !empty( $more_offers ) ) {
+				foreach ($more_offers as $key => $value) {
+					$product_ids = $value->products . ',' . $value->parent_product_id;
+					
+					$sql = "SELECT product_id, stock_status, stock_quantity FROM {$wpdb->wc_product_meta_lookup} wc_product_meta_lookup WHERE product_id IN ({$product_ids})  ORDER BY wc_product_meta_lookup.min_price ASC";
+					$product_metas = $wpdb->get_results( $sql );
+					
+					if( !empty( $product_metas ) ) {
+						$is_first = true;
+						foreach( $product_metas  as $pmkey => $product_meta ) {
+							if( $product_meta->stock_status == 'outofstock' ) continue;
+							$post_status = get_post_status( $product_meta->product_id );
+							if( $post_status != 'publish' ) continue;
+							if( $is_first ) {
+								$is_first = false;
+								continue;
+							}
+							$exclude[] = $product_meta->product_id;
+						}
+					}
 				}
 			}
-			$q->set( 'post__not_in', $exclude );
+			
+			if( !empty( $exclude ) ) {
+				$q->set( 'post__not_in', $exclude );
+			}
 		}
+  }
+  
+  /**
+   * WC Product Widget Duplicate Product Hide
+   */
+  function wcfmmp_product_widget_duplicate_hide( $query_args ) {
+  	global $WCFM, $wpdb;
+		if( !wcfm_is_store_page() && apply_filters( 'wcfm_is_allow_product_loop_duplicate_hide', true ) ) {
+			$more_offers = $wpdb->get_results( "SELECT GROUP_CONCAT(product_id) as products, parent_product_id FROM `{$wpdb->prefix}wcfm_marketplace_product_multivendor` GROUP BY parent_product_id" );
+			
+			$exclude = array();
+			if( !empty( $more_offers ) ) {
+				foreach ($more_offers as $key => $value) {
+					$product_ids = $value->products . ',' . $value->parent_product_id;
+					
+					$sql = "SELECT product_id, stock_status, stock_quantity FROM {$wpdb->wc_product_meta_lookup} wc_product_meta_lookup WHERE product_id IN ({$product_ids})  ORDER BY wc_product_meta_lookup.min_price ASC";
+					$product_metas = $wpdb->get_results( $sql );
+					
+					if( !empty( $product_metas ) ) {
+						$is_first = true;
+						foreach( $product_metas  as $pmkey => $product_meta ) {
+							if( $product_meta->stock_status == 'outofstock' ) continue;
+							$post_status = get_post_status( $product_meta->product_id );
+							if( $post_status != 'publish' ) continue;
+							if( $is_first ) {
+								$is_first = false;
+								continue;
+							}
+							$exclude[] = $product_meta->product_id;
+						}
+					}
+				}
+			}
+			
+			if( !empty( $exclude ) ) {
+				if( isset( $query_args['post__in'] ) ) {
+					$query_args['post__in'] = array_diff( $query_args['post__in'], $exclude );
+				} else {
+					$query_args['post__not_in'] = $exclude;
+				}
+			}
+		}
+  	return $query_args;
   }
   
   /**
@@ -506,11 +626,11 @@ class WCFMmp_Product_Multivendor {
  		global $WCFM, $WCFMmp, $wp, $WCFM_Query;
  		
  		if( is_product() ) {
- 			if( !wcfm_is_vendor() ) return;
+ 			//if( !wcfm_is_vendor() ) return;
  			
  			$WCFM->library->load_blockui_lib();
  			
- 			wp_enqueue_script( 'wcfm_product_multivendor_js', $WCFMmp->library->js_lib_url . 'product_multivendor/wcfmmp-script-product-multivendor.js', array('jquery' ), $WCFM->version, true );
+ 			wp_enqueue_script( 'wcfm_product_multivendor_js', $WCFMmp->library->js_lib_url_min . 'product_multivendor/wcfmmp-script-product-multivendor.js', array('jquery' ), $WCFM->version, true );
  		}
  	}
  	

@@ -25,16 +25,16 @@ class WCFMmp_Shipping {
 		add_action( 'woocommerce_single_product_summary',	array( &$this, 'wcfmmp_shipping_info' ), 32 );
     
     // split woocommerce shipping packages
-    add_filter('woocommerce_cart_shipping_packages', array(&$this, 'wcfmmp_split_shipping_packages'), 0);
+    add_filter('woocommerce_cart_shipping_packages', array(&$this, 'wcfmmp_split_shipping_packages'), 0 );
 
     // Add extra vendor_id to shipping packages
     add_action('woocommerce_checkout_create_order_shipping_item', array(&$this, 'wcfmmp_add_meta_date_in_shipping_package'), 10, 3);
 
     // Rename woocommerce shipping packages
-    add_filter('woocommerce_shipping_package_name', array(&$this, 'wcfmmp_shipping_package_name'), 10, 3);
+    add_filter('woocommerce_shipping_package_name', array(&$this, 'wcfmmp_shipping_package_name'), 500, 3 );
 
     //Hide Admin Shipping If vendor Shipping is available
-    add_filter( 'woocommerce_package_rates', array(&$this, 'wcfmmp_hide_admin_shipping' ), 100 );
+    add_filter( 'woocommerce_package_rates', array(&$this, 'wcfmmp_hide_admin_shipping' ), 100, 2 );
 
     //Hide Order Shipping If local picup selected for all Vendors
     add_filter( 'woocommerce_order_needs_shipping_address', array(&$this, 'wcfmmp_hide_shipping_address_if_local_pickup' ), 100, 3  );
@@ -74,10 +74,10 @@ class WCFMmp_Shipping {
         $wcfmmp_country_rates = array();
         $wcfmmp_state_rates   = array(); 
         foreach( $wcfm_settings_form['wcfmmp_shipping_rates'] as $wcfmmp_shipping_rates ) {
-          if( $wcfmmp_shipping_rates['wcfmmp_country_to'] ) {
-            if( $wcfmmp_shipping_rates['wcfmmp_shipping_state_rates'] && !empty( $wcfmmp_shipping_rates['wcfmmp_shipping_state_rates'] ) ) {
+          if( isset( $wcfmmp_shipping_rates['wcfmmp_country_to'] ) ) {
+            if( isset( $wcfmmp_shipping_rates['wcfmmp_shipping_state_rates'] ) && !empty( $wcfmmp_shipping_rates['wcfmmp_shipping_state_rates'] ) ) {
               foreach( $wcfmmp_shipping_rates['wcfmmp_shipping_state_rates'] as $wcfmmp_shipping_state_rates ) {
-                if( $wcfmmp_shipping_state_rates['wcfmmp_state_to'] ) {
+                if( isset( $wcfmmp_shipping_state_rates['wcfmmp_state_to'] ) ) {
                   $wcfmmp_state_rates[$wcfmmp_shipping_rates['wcfmmp_country_to']][$wcfmmp_shipping_state_rates['wcfmmp_state_to']] = $wcfmmp_shipping_state_rates['wcfmmp_state_to_price'];
                 }
               }
@@ -158,6 +158,10 @@ class WCFMmp_Shipping {
     if(!empty( $wcfm_settings_form['wcfmmp_shipping']['_wcfmmp_user_shipping_type']) && $wcfm_settings_form['wcfmmp_shipping']['_wcfmmp_user_shipping_type'] == 'by_weight') {
       //print_r($wcfm_settings_form);
       
+      if( isset( $wcfm_settings_form['wcfmmp_shipping_by_weight'] ) ) {
+				update_user_meta( $user_id, '_wcfmmp_shipping_by_weight', $wcfm_settings_form['wcfmmp_shipping_by_weight'] );
+			}
+      
       $wcfmmp_country_weight_rates   = array(); 
       $wcfmmp_country_weight_mode = array();
       $wcfmmp_country_weight_unit_cost = array();
@@ -180,6 +184,19 @@ class WCFMmp_Shipping {
       //print_r($wcfmmp_country_rates);
       
     }
+    
+    // By Distance settings save
+    if(!empty( $wcfm_settings_form['wcfmmp_shipping']['_wcfmmp_user_shipping_type']) && $wcfm_settings_form['wcfmmp_shipping']['_wcfmmp_user_shipping_type'] == 'by_distance') {
+      //print_r($wcfm_settings_form);
+      
+      if( isset( $wcfm_settings_form['wcfmmp_shipping_by_distance'] ) ) {
+				update_user_meta( $user_id, '_wcfmmp_shipping_by_distance', $wcfm_settings_form['wcfmmp_shipping_by_distance'] );
+			}
+			
+			if( isset( $wcfm_settings_form['wcfmmp_shipping_by_distance_rates'] ) ) {
+				update_user_meta( $user_id, '_wcfmmp_shipping_by_distance_rates', $wcfm_settings_form['wcfmmp_shipping_by_distance_rates'] );
+			}
+    }
   }
   
   /**
@@ -199,37 +216,14 @@ class WCFMmp_Shipping {
 		$product_id = 0;
 		if( is_product() && $post && is_object( $post ) ) {
 			$product_id = $post->ID;
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 		}
 		if( !$product_id ) return;
 		if( !$WCFM->frontend->is_wcfm_needs_shipping( $product_id ) ) return;
 		if( !$vendor_id ) return;
 		
 		if( $WCFMmp->wcfmmp_vendor->is_vendor_sold_by( $vendor_id ) ) {
-		
-			$wcfmmp_shipping          = get_user_meta( $vendor_id, '_wcfmmp_shipping', true );
-			$processing_times         = wcfmmp_get_shipping_processing_times();
-			$processing_time          = isset($wcfmmp_shipping['_wcfmmp_pt']) ? $wcfmmp_shipping['_wcfmmp_pt'] : '';
-			$processing_time          = get_post_meta( $product_id, '_wcfmmp_processing_time', true ) ? get_post_meta( $product_id, '_wcfmmp_processing_time', true ) : $processing_time;
-			
-			if( isset( $wcfmmp_shipping['_wcfmmp_user_shipping_enable'] ) && $processing_time && isset( $processing_times[$processing_time] ) ) {
-				echo '<div class="wcfm_clearfix"></div><div class="wcfmmp_shipment_processing_display">'. __( 'Item will be shipped in', 'wc-multivendor-marketplace' ) . ' ' . $processing_times[$processing_time] .'</div><div class="wcfm_clearfix"></div>';
-			}
-		
-			if( !apply_filters( 'wcfm_is_allow_product_free_shipping_info', true ) ) return;
-		
-      /*$type             = $wcfmmp_shipping['_wcfmmp_user_shipping_type'];
-      $is_free_shipping = false;
-      $min_amount       = 0;
-      foreach ( $shipping_methods as $key => $method ) {
-        if ( 'free_shipping' == $method['id'] && 'yes' == $method['enabled'] ) {
-          $is_free_shipping = true;
-          $min_amount = (isset( $method['settings']['min_amount'] ) ) ? $method['settings']['min_amount'] : 0;
-        }
-      }
-			if( ( !empty($type) && $type == 'by_zone' ) && $is_free_shipping && ( $min_amount > 0 ) ) {
-				echo '<div class="wcfmmp_shipment_processing_display">'. sprintf( __ ('Free shipping available for shopping more than <b>%s%d</b>.', 'wc-multivendor-marketplace'), get_woocommerce_currency_symbol(), $min_amount ) .'</div>';
-			}*/
+			$WCFMmp->template->get_template( 'shipping/wcfmmp-view-shipping-info.php', array( 'vendor_id' => $vendor_id, 'product_id' => $product_id ) );
     }
   }
   
@@ -243,7 +237,7 @@ class WCFMmp_Shipping {
     // Reset all packages
     global $WCFM;
     
-    if( apply_filters( 'wcfm_is_allow_store_shipping', true ) ) {
+    if( apply_filters( 'wcfm_is_allow_store_shipping', true ) && class_exists( 'WCFMmp_Store' ) ) {
     
 			$wcfm_shipping_options = get_option( 'wcfm_shipping_options', array() );
 			$wcfmmp_store_shipping_enabled = isset( $wcfm_shipping_options['enable_store_shipping'] ) ? $wcfm_shipping_options['enable_store_shipping'] : 'yes';
@@ -257,7 +251,7 @@ class WCFMmp_Shipping {
 					if ($item['data']->needs_shipping()) {
 						$product_id = $item['product_id'];
 		
-						$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+						$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 						if ($vendor_id && wcfmmp_is_shipping_enabled($vendor_id)) {
 							$split_packages[$vendor_id][] = $item;
 						} else {
@@ -317,6 +311,17 @@ class WCFMmp_Shipping {
 								'address_2'     => WC()->customer->get_shipping_address_2()
 							)
 						);
+					}
+					
+					if( apply_filters( 'wcfmmp_is_allow_checkout_user_location', true ) ) {
+						$wcfmmp_user_location     = WC()->session->get( '_wcfmmp_user_location' );
+						$wcfmmp_user_location_lat = WC()->session->get( '_wcfmmp_user_location_lat' );
+						$wcfmmp_user_location_lng = WC()->session->get( '_wcfmmp_user_location_lng' );
+						if( $wcfmmp_user_location ) {
+							$packages[$vendor_id]['wcfmmp_user_location']     = $wcfmmp_user_location;
+							$packages[$vendor_id]['wcfmmp_user_location_lat'] = $wcfmmp_user_location_lat;
+							$packages[$vendor_id]['wcfmmp_user_location_lng'] = $wcfmmp_user_location_lng;
+						}
 					}
 				}
 			}
@@ -423,7 +428,11 @@ class WCFMmp_Shipping {
 					$line_total_tax     = wp_list_pluck( $package['contents'], 'line_tax', null );
 					$discount_tax_total = array_sum( $line_subtotal_tax ) - array_sum( $line_total_tax );
 		
-					$total = array_sum( $line_subtotal ) + array_sum( $line_subtotal_tax );
+					if( apply_filters( 'wcfmmp_free_shipping_threshold_consider_tax', true ) ) {
+						$total = array_sum( $line_subtotal ) + array_sum( $line_subtotal_tax );
+					} else {
+						$total = array_sum( $line_subtotal );
+					}
 		
 					if ( WC()->cart->display_prices_including_tax() ) {
 						$total = round( $total - ( $discount_total + $discount_tax_total ), wc_get_price_decimals() );
@@ -438,6 +447,7 @@ class WCFMmp_Shipping {
 							if ( 'free_shipping' == $method['id'] && 'yes' == $method['enabled'] ) {
 								$is_available = true;
 								$min_amount = (isset( $method['settings']['min_amount'] ) ) ? $method['settings']['min_amount'] : 0;
+								$min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount, $vendor_id );
 							}
 						}
 					}
@@ -446,13 +456,46 @@ class WCFMmp_Shipping {
 					  $wcfmmp_shipping_by_country = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_country', true );
 					  $is_available = true;
 					  $min_amount = isset($wcfmmp_shipping_by_country['_free_shipping_amount']) ? $wcfmmp_shipping_by_country['_free_shipping_amount'] : 0;
-					  $min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount );
+					  $min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount, $vendor_id );
 					}
 					
-					$more_to_free_shipping_text_enable = apply_filters('more_to_free_shipping_text_enable', true);
-					if( ( !empty($type) && $type != 'by_weight' ) && $more_to_free_shipping_text_enable && $is_available && ( ( $min_amount > 0 ) && ($total < $min_amount ) ) ) {
+					if( $type == 'by_weight' ) {
+					  $wcfmmp_shipping_by_weight = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_weight', true );
+					  $is_available = true;
+					  $min_amount = isset($wcfmmp_shipping_by_weight['_free_shipping_amount']) ? $wcfmmp_shipping_by_weight['_free_shipping_amount'] : 0;
+					  $min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount, $vendor_id );
+					}
+					
+					if( $type == 'by_distance' ) {
+					  $wcfmmp_shipping_by_distance = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_distance', true );
+					  $is_available = true;
+					  $min_amount = isset($wcfmmp_shipping_by_distance['_free_shipping_amount']) ? $wcfmmp_shipping_by_distance['_free_shipping_amount'] : 0;
+					  $min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount, $vendor_id );
+					  
+					  $distance = wcfmmp_get_user_vendor_distance( $vendor_id );
+					  $radius_unit   = isset( $WCFMmp->wcfmmp_marketplace_options['radius_unit'] ) ? $WCFMmp->wcfmmp_marketplace_options['radius_unit'] : 'km';
+					  
+					  $wcfmmp_shipping_by_distance = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_distance', true );
+					  $max_distance = isset($wcfmmp_shipping_by_distance['_max_distance']) ? $wcfmmp_shipping_by_distance['_max_distance'] : '';
+					  
+					  $shipping_label_str .= '&#10;';
+						$shipping_label_str .= '(';
+						if( $distance ) {
+							$shipping_label_str .= __( 'Distance', 'wc-multivendor-marketplace') . ': ' . $distance . $radius_unit;
+						}
+						if( $max_distance ) {
+							if( $distance ) {
+								$shipping_label_str .= ', ';
+							}
+							$shipping_label_str .= __( 'Deliver upto', 'wc-multivendor-marketplace') . ': ' . $max_distance . $radius_unit;
+						}
+						$shipping_label_str .= ')';
+					}
+					
+					$more_to_free_shipping_text_enable = apply_filters( 'wcfmmp_more_to_free_shipping_text_enable', true );
+					if( !empty($type) && $more_to_free_shipping_text_enable && $is_available && ( ( $min_amount > 0 ) && ($total < $min_amount ) ) ) {
 						$shipping_label_str .= '&#10;';
-						$shipping_label_str .= '(' . sprintf( __( 'Shop for %s%d more to get free shipping', 'wc-multivendor-marketplace' ), get_woocommerce_currency_symbol(), ( $min_amount - $total ) ) . ')';
+						$shipping_label_str .= '(' . sprintf( __( 'Shop for %s%s more to get free shipping', 'wc-multivendor-marketplace' ), get_woocommerce_currency_symbol(), round( ($min_amount - $total), 2 ) ) . ')';
 					}
 				}
 				
@@ -514,30 +557,40 @@ class WCFMmp_Shipping {
    * @param array $rates
    * @return array
    */
-  public function wcfmmp_hide_admin_shipping( $rates ) {
+  public function wcfmmp_hide_admin_shipping( $rates, $package ) {
     //print_r($rates); die;
     $free_shipping_available = false;
     $wcfmmp_shipping = array();
-    foreach ( $rates as $rate_id => $rate ) {
-      if ( 'wcfmmp_product_shipping_by_country' === $rate->method_id || 'wcfmmp_product_shipping_by_zone' === $rate->method_id || 'wcfmmp_product_shipping_by_weight' === $rate->method_id ) {
-        $id = explode(":", $rate_id, 2);
-        $id = $id[0];
-        if($id === 'free_shipping') {
-          $free_shipping_available = apply_filters( 'wcfm_is_allow_hide_other_shipping_if_free', true );
-        }
-        $wcfmmp_shipping[ $rate_id ] = $rate;  
-      }
-    }
     
-    if($free_shipping_available) {
-      foreach ( $wcfmmp_shipping as $rate_id => $rate ) { 
-        $id = explode(":", $rate_id, 2);
-        $id = $id[0];
-        if($id !== 'free_shipping') {
-          unset($wcfmmp_shipping[$rate_id]);
-        }
-      }
-    }
+    if( apply_filters( 'wcfm_is_allow_hide_admin_shipping_for_vendor_shipping', true ) ) {
+			if( isset( $package['vendor_id'] ) ) {
+				foreach ( $rates as $rate_id => $rate ) {
+					if ( 'wcfmmp_product_shipping_by_country' === $rate->method_id || 'wcfmmp_product_shipping_by_zone' === $rate->method_id || 'wcfmmp_product_shipping_by_weight' === $rate->method_id || 'wcfmmp_product_shipping_by_distance' === $rate->method_id ) {
+						$id = explode(":", $rate_id, 2);
+						$id = $id[0];
+						if($id === 'free_shipping') {
+							$free_shipping_available = apply_filters( 'wcfm_is_allow_hide_other_shipping_if_free', true );
+						}
+						$wcfmmp_shipping[ $rate_id ] = $rate;  
+					}
+				}
+				
+				if($free_shipping_available) {
+					foreach ( $wcfmmp_shipping as $rate_id => $rate ) { 
+						$id = explode(":", $rate_id, 2);
+						$id = $id[0];
+						if( !in_array( $id, array( 'free_shipping', 'local_pickup' ) ) ) {
+							unset($wcfmmp_shipping[$rate_id]);
+						}
+					}
+				}
+				
+				if( !apply_filters( 'wcfm_is_allow_admin_shipping_if_no_vendor_shipping', true ) ) {
+					$rates = array();
+				}
+			}
+		}
+    
     return ! empty( $wcfmmp_shipping ) ? $wcfmmp_shipping : $rates;
   }
 

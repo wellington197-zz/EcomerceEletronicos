@@ -94,7 +94,7 @@ class WCFMmp_Store_Setup {
 			unset( $default_steps['payment'] );
 		}
 		
-		if( !apply_filters( 'wcfm_is_pref_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) ) {
+		if( !apply_filters( 'wcfm_is_pref_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_setup_policy_settings', true ) ) {
 			unset( $default_steps['policy'] );
 		}
 		
@@ -115,8 +115,8 @@ class WCFMmp_Store_Setup {
 		$this->step = $current_step ? sanitize_key($current_step) : current(array_keys($this->steps));
 		$suffix = defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ? '' : '.min';
 		wp_register_script('jquery-blockui', WC()->plugin_url() . '/assets/js/jquery-blockui/jquery.blockUI' . $suffix . '.js', array('jquery'), '2.70', true);
-		wp_register_script( 'selectWoo', WC()->plugin_url() . '/assets/js/selectWoo/selectWoo.full' . $suffix . '.js', array( 'jquery' ), '1.0.0' );
-		wp_register_script( 'wc-enhanced-select', WC()->plugin_url() . '/assets/js/admin/wc-enhanced-select' . $suffix . '.js', array( 'jquery', 'selectWoo' ), WC_VERSION );
+		//wp_register_script( 'selectWoo', WC()->plugin_url() . '/assets/js/selectWoo/selectWoo.full' . $suffix . '.js', array( 'jquery' ), '1.0.0' );
+		//wp_register_script( 'wc-enhanced-select', WC()->plugin_url() . '/assets/js/admin/wc-enhanced-select' . $suffix . '.js', array( 'jquery', 'selectWoo' ), WC_VERSION );
 		wp_localize_script(
 			'wc-enhanced-select',
 			'wc_enhanced_select_params',
@@ -140,6 +140,10 @@ class WCFMmp_Store_Setup {
 		wp_enqueue_style( 'wc-setup', WC()->plugin_url() . '/assets/css/wc-setup.css', array('dashicons', 'install'), WC_VERSION);
 		wp_enqueue_style( 'wcfm-setup', $WCFM->plugin_url . 'assets/css/setup/wcfm-style-dashboard-setup.css', array('wc-setup'), $WCFM->version );
 		
+		if( is_rtl() ) {
+			wp_enqueue_style( 'wcfm-setup-rtl', $WCFM->plugin_url . 'assets/css/setup/wcfm-style-dashboard-setup-rtl.css', array('wcfm-setup'), $WCFM->version );
+		}
+		
 		// WCFM Custom CSS
 		$upload_dir      = wp_upload_dir();
 		$wcfm_style_custom = get_option( 'wcfm_style_custom' );
@@ -148,8 +152,8 @@ class WCFMmp_Store_Setup {
 		}
 		
 		wp_register_script('wcfm-setup', $WCFM->plugin_url . 'assets/js/setup/wcfm-script-setup.js', array('jquery'), $WCFM->version);
-		wp_register_script( 'wc-enhanced-select', WC()->plugin_url() . '/assets/js/admin/wc-enhanced-select' . $suffix . '.js', array( 'jquery', 'selectWoo' ), WC_VERSION );
-		wp_register_script('wc-setup', WC()->plugin_url() . '/assets/js/admin/wc-setup' . $suffix . '.js', array('jquery', 'wc-enhanced-select', 'jquery-blockui', 'wp-util', 'jquery-tiptip'), WC_VERSION);
+		//wp_register_script( 'wc-enhanced-select', WC()->plugin_url() . '/assets/js/admin/wc-enhanced-select' . $suffix . '.js', array( 'jquery', 'selectWoo' ), WC_VERSION );
+		wp_register_script('wc-setup', WC()->plugin_url() . '/assets/js/admin/wc-setup' . $suffix . '.js', array('jquery', 'jquery-blockui', 'wp-util', 'jquery-tiptip'), WC_VERSION);
 		wp_localize_script('wc-setup', 'wc_setup_params', array(
 				'locale_info' => json_encode(include( WC()->plugin_path() . '/i18n/locale-info.php' )),
 		));
@@ -162,6 +166,7 @@ class WCFMmp_Store_Setup {
 		//wp_enqueue_editor();
 		
 		$WCFM->library->load_collapsible_lib();
+		$WCFM->library->load_select2_lib();
 		$WCFM->library->load_upload_lib();
 		
 		wp_register_script( 'wcfm_menu_js', $WCFM->library->js_lib_url . 'wcfm-script-menu.js', array('jquery'), $WCFM->version, true );
@@ -176,15 +181,22 @@ class WCFMmp_Store_Setup {
 					
 		$scheme  = is_ssl() ? 'https' : 'http';
 		$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-
-		if ( $api_key ) {
-			//wp_register_script( 'jquery-ui' );
-			//wp_register_script( 'jquery-ui-autocomplete' );
-		
-			wp_register_script( 'wcfm-wcfmmarketplace-setting-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', array(), $WCFM->version, true );
-		}
+		$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+		$WCFMmp->library->load_map_lib();
 		
 		wp_register_script( 'wcfm_settings_js', $WCFM->library->js_lib_url . 'settings/wcfm-script-settings.js', array('jquery'), $WCFM->version, true );
+		wp_localize_script( 'wcfm_settings_js', 'wcfm_setting_options', array( 'default_tab' => apply_filters( 'wcfm_setting_default_tab', 'wcfm_settings_dashboard_head' ) ) );
+		
+		// Default Map Location
+		$default_geolocation = isset( $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] ) ? $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] : array();
+		$default_lat         = isset( $default_geolocation['lat'] ) ? esc_attr( $default_geolocation['lat'] ) : apply_filters( 'wcfmmp_map_default_lat', 30.0599153 );
+		$default_lng         = isset( $default_geolocation['lng'] ) ? esc_attr( $default_geolocation['lng'] ) : apply_filters( 'wcfmmp_map_default_lng', 31.2620199 );
+		$default_zoom        =  apply_filters( 'wcfmmp_map_default_zoom_level', 15 );
+		
+		$store_icon = apply_filters( 'wcfmmp_map_store_icon', $WCFMmp->plugin_url . 'assets/images/wcfmmp_map_icon.png', 0, '' );
+		
+		wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
 		
 		if (!empty($_POST['save_step']) && isset($this->steps[$this->step]['handler'])) {
 				call_user_func($this->steps[$this->step]['handler'], $this);
@@ -242,13 +254,15 @@ class WCFMmp_Store_Setup {
 		global $WCFM, $WCFMmp;
 		
 		$logo = get_option( 'wcfm_site_logo' ) ? get_option( 'wcfm_site_logo' ) : '';
-		$logo_image_url = wp_get_attachment_url( $logo );
+		$logo_image_url = wcfm_get_attachment_url( $logo );
 		
 		if ( !$logo_image_url ) {
 			$logo_image_url = apply_filters( 'wcfmmp_store_default_logo', $WCFM->plugin_url . 'assets/images/wcfmmp-blue.png' );
 		}
 		
 		$logo_image_url = apply_filters( 'wcfmmp_store_setup_logo', $logo_image_url );
+		
+		remove_action( 'wp_enqueue_scripts', 'et_builder_wc_load_scripts', 15 );
 		
 		?>
 		<!DOCTYPE html>
@@ -261,7 +275,7 @@ class WCFMmp_Store_Setup {
 				<?php wp_head(); ?>
 				
 				<?php
-				wp_enqueue_script( 'wc-enhanced-select' );
+				//wp_enqueue_script( 'wc-enhanced-select' );
 				wp_enqueue_script( 'wc-setup' );
 				wp_enqueue_script( 'wcfm-setup' );
 				wp_enqueue_script( 'collapsible_js');
@@ -321,12 +335,14 @@ class WCFMmp_Store_Setup {
 	 */
 	public function wcfmmp_store_setup_introduction() {
 		?>
-		<h1><?php printf( __("Welcome to %s!", 'wc-multivendor-marketplace'), get_bloginfo('title') ); ?></h1>
-		<p><?php printf( __('Thank you for choosing %s! This quick setup wizard will help you to configure the basic settings and you will have your store ready in no time.', 'wc-multivendor-marketplace'), get_bloginfo('title') ); ?></p>
-		<p><?php esc_html_e("If you don't want to go through the wizard right now, you can skip and return to the dashboard. You may setup your store from dashboard &rsaquo; setting anytime!", 'wc-multivendor-marketplace'); ?></p>
+		<h1><?php echo apply_filters( 'wcfm_store_setup_welcome_heading', sprintf( __("Welcome to %s!", 'wc-multivendor-marketplace'), get_bloginfo('title') ) ); ?></h1>
+		<p><?php echo apply_filters( 'wcfm_store_setup_welcome_message', sprintf( __('Thank you for choosing %s! This quick setup wizard will help you to configure the basic settings and you will have your store ready in no time.', 'wc-multivendor-marketplace'), get_bloginfo('title') ) ); ?></p>
+		<p><?php echo esc_html( apply_filters( 'wcfm_store_setup_welcome_footer', __( "If you don't want to go through the wizard right now, you can skip and return to the dashboard. You may setup your store from dashboard &rsaquo; setting anytime!", 'wc-multivendor-marketplace' ) ) ); ?></p>
 		<p class="wc-setup-actions step">
 			<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button-primary button button-large button-next wcfm_submit_button"><?php esc_html_e("Let's go!", 'wc-frontend-manager'); ?></a>
-			<a href="<?php echo esc_url(get_wcfm_url()); ?>" class="button button-large"><?php esc_html_e('Not right now', 'wc-frontend-manager'); ?></a>
+			<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?> 
+			  <a href="<?php echo esc_url(get_wcfm_url()); ?>" class="button button-large"><?php esc_html_e('Not right now', 'wc-frontend-manager'); ?></a>
+			<?php } ?>
 		</p>
 		<?php
 	}
@@ -432,12 +448,14 @@ class WCFMmp_Store_Setup {
 																																															"street_2" => array('label' => __('Store Address 2', 'wc-multivendor-marketplace'), 'placeholder' => __('Apartment, suite, unit etc. (optional)', 'wc-frontend-manager'), 'name' => 'vendor_data[address][street_2]', 'type' => 'text', 'in_table' => 'yes', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $street_2 ),
 																																															"city" => array('label' => __('Store City/Town', 'wc-multivendor-marketplace'), 'placeholder' => __('Town / City', 'wc-frontend-manager'), 'name' => 'vendor_data[address][city]', 'type' => 'text', 'in_table' => 'yes', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $city ),
 																																															"zip" => array('label' => __('Store Postcode/Zip', 'wc-multivendor-marketplace'), 'placeholder' => __('Postcode / Zip', 'wc-frontend-manager'), 'name' => 'vendor_data[address][zip]', 'type' => 'text', 'in_table' => 'yes', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $zip, 'attributes' => array( 'min' => '1', 'step'=> '1' ) ),
-																																															"country" => array('label' => __('Store Country', 'wc-multivendor-marketplace'), 'name' => 'vendor_data[address][country]', 'type' => 'country', 'in_table' => 'yes', 'wrapper_class' => 'store_address_wrap', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'value' => $country ),
-																																															"state" => array('label' => __('Store State/County', 'wc-multivendor-marketplace'), 'name' => 'vendor_data[address][state]', 'type' => 'select', 'in_table' => 'yes', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'options' => $state_options, 'value' => $state ),
+																																															"country" => array('label' => __('Store Country', 'wc-multivendor-marketplace'), 'name' => 'vendor_data[address][country]', 'type' => 'country', 'in_table' => 'yes', 'wrapper_class' => 'store_address_wrap', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array(  'style' => 'width:100%' ), 'custom_attributes' => array( 'required' => true ), 'value' => $country ),
+																																															"state" => array('label' => __('Store State/County', 'wc-multivendor-marketplace'), 'name' => 'vendor_data[address][state]', 'type' => 'select', 'in_table' => 'yes', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'attributes' => array(  'style' => 'width:100%' ),  'options' => $state_options, 'value' => $state ),
 																																															), $user_id ) );
 					
 						$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-						if ( $api_key ) {
+						$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+						if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+						if ( apply_filters( 'wcfm_is_allow_store_map_location', true ) && ( ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) || ($wcfm_map_lib == 'leaflet') ) ) {
 							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_location', array(
 																																																				"find_address" => array( 'label' => __( 'Find Location', 'wc-frontend-manager' ), 'placeholder' => __( 'Type an address to find', 'wc-frontend-manager' ), 'name' => 'vendor_data[find_address]', 'type' => 'text', 'in_table' => 'yes', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $map_address ),
 																																																				"withdrawal_setting_break_1" => array( 'label' => __('Store Location', 'wc-multivendor-marketplace'), 'type' => 'html', 'in_table' => 'yes', 'value' => '<div class="wcfm-marketplace-google-map" id="wcfm-marketplace-map"></div>' ),
@@ -458,7 +476,9 @@ class WCFMmp_Store_Setup {
 			?>
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+				  <a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -605,19 +625,26 @@ class WCFMmp_Store_Setup {
 							$user_email = $the_user->user_email;
 							
 							// Show OAuth link
-							$authorize_request_body = array(
-								'response_type' => 'code',
-								'scope' => 'read_write',
-								'client_id' => $client_id,
-								'redirect_uri' => add_query_arg( array( 'store-setup' => 'yes', 'step' => 'payment' ), home_url() ),
-								'state' => $user_id,
-								'stripe_user' => array( 
-																			'email'         => $user_email,
-																			'url'           => wcfmmp_get_store_url( $user_id ),
-																			'business_name' => $store_name
-																			)
-							);
-							$url = 'https://connect.stripe.com/oauth/authorize?' . http_build_query($authorize_request_body);
+							$authorize_request_body = apply_filters( 'wcfm_stripe_authorize_request_params', array(
+																												'response_type' => 'code',
+																												'scope' => 'read_write',
+																												'client_id' => $client_id,
+																												'redirect_uri' => add_query_arg( array( 'store-setup' => 'yes', 'step' => 'payment' ), home_url() ),
+																												'state' => $user_id,
+																												'stripe_user' => array( 
+																																							'email'         => $user_email,
+																																							'url'           => wcfmmp_get_store_url( $user_id ),
+																																							'business_name' => $store_name,
+																																							'first_name'    => $the_user->first_name,
+																																							'last_name'     => $the_user->last_name
+																																							)
+																											), $user_id );
+							if( apply_filters( 'wcfm_is_allow_stripe_express_api', true ) ) {
+								$authorize_request_body['suggested_capabilities'] = array( 'transfers', 'card_payments' );
+								$url = 'https://connect.stripe.com/express/oauth/authorize?' . http_build_query($authorize_request_body);
+							} else {
+								$url = 'https://connect.stripe.com/oauth/authorize?' . http_build_query($authorize_request_body);
+							}
 							$stripe_connect_url = $WCFM->plugin_url . 'assets/images/blue-on-light.png';
 							
 							?>
@@ -649,7 +676,9 @@ class WCFMmp_Store_Setup {
 			
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+					<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -709,7 +738,9 @@ class WCFMmp_Store_Setup {
 			?>
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+					<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -766,7 +797,9 @@ class WCFMmp_Store_Setup {
 			</table>
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+					<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -852,7 +885,9 @@ class WCFMmp_Store_Setup {
 			</table>
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+					<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -899,7 +934,9 @@ class WCFMmp_Store_Setup {
 			</table>
 			<p class="wc-setup-actions step">
 				<input type="submit" class="button-primary button button-large button-next wcfm_submit_button" value="<?php esc_attr_e('Continue', 'wc-frontend-manager'); ?>" name="save_step" />
-				<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php if( apply_filters( 'wcfm_is_allow_store_setup_step_skip', true ) ) { ?>
+					<a href="<?php echo esc_url($this->get_next_step_link()); ?>" class="button button-large button-next"><?php esc_html_e('Skip this step', 'wc-frontend-manager'); ?></a>
+				<?php } ?>
 				<?php wp_nonce_field('wcfm-setup'); ?>
 			</p>
 		</form>
@@ -912,13 +949,13 @@ class WCFMmp_Store_Setup {
 	public function wcfmmp_store_setup_ready() {
 		global $WCFM;
 		?>
-		<h1><?php esc_html_e('We are done!', 'wc-frontend-manager'); ?></h1>
+		<h1><?php esc_html_e( apply_filters( 'wcfm_store_setup_complete_heading', __( 'We are done!', 'wc-frontend-manager' ) ) ); ?></h1>
 		<div class="woocommerce-message-wcfm woocommerce-tracker">
-		<p><?php echo esc_html( apply_filters( 'wcfm_store_setup_complete_message', __( "Your store is ready. It's time to experience the things more Easily and Peacefully. Add your products and start counting sales, have fun!!", 'wc-multivendor-marketplace') ) ); ?></p>
+		<p><?php echo esc_html( apply_filters( 'wcfm_store_setup_complete_message', __( "Your store is ready. It's time to experience the things more Easily and Peacefully. Add your products and start counting sales, have fun!!", 'wc-multivendor-marketplace' ) ) ); ?></p>
 		</div>
 		<div class="wc-setup-next-steps">
 		  <p class="wc-setup-actions step">
-			  <a class="button button-primary button-large wcfm_submit_button" href="<?php echo esc_url( get_wcfm_url() ); ?>"><?php esc_html_e( "Let's go to Dashboard", 'wc-frontend-manager' ); ?></a>
+			  <a class="button button-primary button-large wcfm_submit_button" href="<?php echo apply_filters( 'wcfm_store_setup_complete_button_url', esc_url( get_wcfm_url() ) ); ?>"><?php esc_html_e( apply_filters( 'wcfm_store_setup_complete_button', __( "Let's go to the Dashboard", 'wc-frontend-manager' ) ) ); ?></a>
 			</p>
 		</div>
 		<?php
@@ -972,12 +1009,21 @@ class WCFMmp_Store_Setup {
 			}
 		}
 		
+		// Save Store Name
+		if(isset($wcfm_setup_data['store_name']) && !empty($wcfm_setup_data['store_name'])) {
+			update_user_meta( $user_id, 'store_name', $wcfm_setup_data['store_name'] );
+			update_user_meta( $user_id, 'wcfmmp_store_name', $wcfm_setup_data['store_name'] );
+		}
+		
 		update_user_meta( $user_id, 'wcfmmp_profile_settings', $wcfm_setup_data );
 		
 		if( isset( $_POST['shop_description'] ) ) {
 			$shop_description = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['shop_description'], ENT_QUOTES, 'UTF-8' ) ) );
 			update_user_meta( $user_id, '_store_description', $shop_description );
 		}
+		
+		do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
 		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;
@@ -1001,6 +1047,9 @@ class WCFMmp_Store_Setup {
 		$wcfm_setup_data = array_merge( $vendor_data, $wcfm_setup_data );
 		
 		update_user_meta( $user_id, 'wcfmmp_profile_settings', $wcfm_setup_data );
+		
+		do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
 		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;
@@ -1036,6 +1085,9 @@ class WCFMmp_Store_Setup {
 		
 		update_user_meta( $user_id, 'wcfm_policy_vendor_options', $wcfm_policy_vendor_options );
 		
+		//do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		//do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
+		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;
 	}
@@ -1062,6 +1114,9 @@ class WCFMmp_Store_Setup {
 		$wcfm_setup_data = array_merge( $vendor_data, $wcfm_setup_data );
 		
 		update_user_meta( $user_id, 'wcfmmp_profile_settings', $wcfm_setup_data );
+		
+		do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
 		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;
@@ -1100,6 +1155,9 @@ class WCFMmp_Store_Setup {
 		
 		wcfm_update_user_meta( $user_id, 'wcfm_seo_vendor_options', $wcfm_setup_data['store_seo'] );
 		
+		do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
+		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;
 	}
@@ -1122,6 +1180,9 @@ class WCFMmp_Store_Setup {
 		$wcfm_setup_data = array_merge( $vendor_data, $wcfm_setup_data );
 		
 		update_user_meta( $user_id, 'wcfmmp_profile_settings', $wcfm_setup_data );
+		
+		do_action( 'wcfm_vendor_settings_update', $user_id, $wcfm_setup_data );
+		do_action( 'wcfm_wcfmmp_settings_update', $user_id, $wcfm_setup_data );
 		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;

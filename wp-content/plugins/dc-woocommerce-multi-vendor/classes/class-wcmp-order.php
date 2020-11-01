@@ -20,6 +20,7 @@ class WCMp_Order {
         // Add extra vendor_id to shipping packages
         add_action('woocommerce_checkout_create_order_line_item', array(&$this, 'add_meta_date_in_order_line_item'), 10, 4);
         add_action('woocommerce_checkout_create_order_shipping_item', array(&$this, 'add_meta_date_in_shipping_package'), 10, 4);
+        add_action('woocommerce_analytics_update_order_stats', array(&$this, 'woocommerce_analytics_remove_suborder'));
         
         if (is_wcmp_version_less_3_4_0()) {
             
@@ -34,6 +35,7 @@ class WCMp_Order {
             add_filter('woocommerce_my_account_my_orders_query', array($this, 'woocommerce_my_account_my_orders_query'), 99);
             add_filter('woocommerce_my_account_my_orders_columns', array($this, 'woocommerce_my_account_my_orders_columns'), 99);
             add_action('woocommerce_my_account_my_orders_column_wcmp_suborder', array($this, 'woocommerce_my_account_my_orders_column_wcmp_suborder'), 99);
+            add_filter( 'woocommerce_customer_available_downloads', array($this, 'woocommerce_customer_available_downloads'), 99);
             add_action('wcmp_frontend_enqueue_scripts', array($this, 'wcmp_frontend_enqueue_scripts'));
             if( !is_user_wcmp_vendor( get_current_user_id() ) ) {
                 add_filter('manage_shop_order_posts_columns', array($this, 'wcmp_shop_order_columns'), 99);
@@ -47,10 +49,18 @@ class WCMp_Order {
             add_action('woocommerce_saved_order_items', array(&$this, 'wcmp_create_orders_from_backend'), 10, 2 );
             add_action('woocommerce_checkout_order_processed', array(&$this, 'wcmp_create_orders'), 10, 3);
             add_action('woocommerce_after_checkout_validation', array($this, 'wcmp_check_order_awaiting_payment'));
+            add_action( 'woocommerce_rest_insert_shop_order_object',array($this,'wcmp_create_orders_via_rest_callback'), 10, 3 );
+            // Add product for sub order
+            add_action( 'woocommerce_ajax_order_items_added',array($this, 'woocommerce_ajax_order_items_added'), 10, 2 );
+            add_action( 'woocommerce_before_delete_order_item',array($this, 'woocommerce_before_delete_order_item') );
             // Order Refund
             add_action('woocommerce_order_refunded', array($this, 'wcmp_order_refunded'), 10, 2);
             add_action('woocommerce_refund_deleted', array($this, 'wcmp_refund_deleted'), 10, 2);
-            add_action('woocommerce_create_refund', array( $this, 'wcmp_create_refund' ), 10, 2);
+            // Customer Refund request
+            add_action( 'woocommerce_order_details_after_order_table', array( $this, 'wcmp_refund_btn_customer_my_account'), 10 );
+            add_action( 'wp', array( $this, 'wcmp_handler_cust_requested_refund' ) );
+            add_action( 'add_meta_boxes', array( $this, 'wcmp_refund_order_status_customer_meta' ) );
+            add_action( 'save_post', array( $this, 'wcmp_refund_order_status_save' ) );
             $this->init_prevent_trigger_vendor_order_emails();
             // Order Trash 
             add_action( 'trashed_post', array( $this, 'trash_wcmp_suborder' ), 10, 1 );
@@ -66,6 +76,9 @@ class WCMp_Order {
             add_filter( 'woocommerce_order_item_get_formatted_meta_data', array($this, 'woocommerce_hidden_order_item_get_formatted_meta_data'), 99 );
             add_action( 'woocommerce_order_status_changed', array($this, 'wcmp_vendor_order_status_changed_actions'), 99, 3 );
             add_action( 'woocommerce_rest_shop_order_object_query', array($this, 'wcmp_exclude_suborders_from_rest_api_call'), 99, 2 );
+            add_filter( "woocommerce_rest_shop_order_object_query", array($this, 'wcmp_suborder_hide' ), 99 , 2 );
+            // customer list report section
+            add_filter( "woocommerce_customer_get_total_spent_query", array($this, 'woocommerce_customer_exclude_suborder_query' ), 10 , 2 );
         }
     }
 
@@ -77,7 +90,7 @@ class WCMp_Order {
      */
 
     public function add_meta_date_in_order_line_item($item, $item_key, $values, $order) {
-        if ( $order && wp_get_post_parent_id( $order->get_id() ) == 0 ) {
+        if ( $order && wp_get_post_parent_id( $order->get_id() ) == 0 || (function_exists('wcs_is_subscription') && wcs_is_subscription( $order )) ) {
             $general_cap = apply_filters('wcmp_sold_by_text', __('Sold By', 'dc-woocommerce-multi-vendor'));
             $vendor = get_wcmp_product_vendors($item['product_id']);
             if ($vendor) {
@@ -93,11 +106,32 @@ class WCMp_Order {
      * @param sting $package_key as $vendor_id
      */
     public function add_meta_date_in_shipping_package($item, $package_key, $package, $order) {
-        if (!wcmp_get_order($order->get_id()) && is_user_wcmp_vendor($package_key)) {
-            $item->add_meta_data('vendor_id', $package_key, true);
+        $vendor_id = ( isset( $package['vendor_id'] ) && $package['vendor_id'] ) ? $package['vendor_id'] : $package_key;
+        if (!wcmp_get_order($order->get_id()) && is_user_wcmp_vendor($vendor_id)) {
+            $item->add_meta_data('vendor_id', $vendor_id, true);
             $package_qty = array_sum(wp_list_pluck($package['contents'], 'quantity'));
             $item->add_meta_data('package_qty', $package_qty, true);
             do_action('wcmp_add_shipping_package_meta_data');
+        }
+    }
+
+    /**
+     * 
+     * Woocommerce admin dashboard restrict dual order report 
+     */
+    public function woocommerce_analytics_remove_suborder($order_id){
+        global $wpdb;
+        if (wp_get_post_parent_id($order_id)) {
+            $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $order_id ) );
+            \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
+        }
+        // Only for version 3.5.4
+        $post_id = $wpdb->get_results("SELECT order_id FROM {$wpdb->prefix}wc_order_stats WHERE (parent_id != 0)");
+        if (!empty($post_id)) {
+           foreach ($post_id as $key => $value) {
+                $wpdb->delete( $wpdb->prefix.'wc_order_stats', array( 'order_id' => $value->order_id ) );
+                \WC_Cache_Helper::get_transient_version( 'woocommerce_reports', true );
+            } 
         }
     }
 
@@ -182,11 +216,6 @@ class WCMp_Order {
     }
     
     public function woocommerce_email_enabled($enabled, $object ){
-//        $is_editpost_action = ! empty( $_REQUEST['action'] ) && in_array( $_REQUEST['action'], array('editpost','edit') );
-//
-//        if ( $is_editpost_action && ! empty( $_REQUEST['post_ID'] ) && wp_get_post_parent_id( $_REQUEST['post_ID'] ) == 0 && $object instanceof WC_Order && $_REQUEST['post_ID'] != $object->get_id() ) {
-//            return false;
-//        }
         if(!$object) return $enabled;
         $is_vendor_order = ($object) ? wcmp_get_order($object->get_id()) : false;
         $is_migrated_order = get_post_meta($object->get_id(), '_order_migration', true);
@@ -216,7 +245,7 @@ class WCMp_Order {
     public function wcmp_show_shop_order_columns($column, $post_id) {
         switch ($column) {
             case 'wcmp_suborder' :
-                $wcmp_suborders = $this->get_suborders($post_id);
+                $wcmp_suborders = get_wcmp_suborders($post_id);
 
                 if ($wcmp_suborders) {
                     echo '<ul class="wcmp-order-vendor" style="margin:0px;">';
@@ -291,11 +320,101 @@ class WCMp_Order {
     public function wcmp_create_orders_from_backend( $order_id, $items ){
         $order = wc_get_order($order_id);
         if(!$order) return;
+
+        $items = $order->get_items();
+        foreach ($items as $key => $value) {
+            if ( $order || (function_exists('wcs_is_subscription') && wcs_is_subscription( $order )) ) {
+                $general_cap = apply_filters('wcmp_sold_by_text', __('Sold By', 'dc-woocommerce-multi-vendor'));
+                $vendor = get_wcmp_product_vendors($value['product_id']);
+                if ($vendor) {
+                    if ( !wc_get_order_item_meta( $key, '_vendor_id' ) ) 
+                        wc_add_order_item_meta($key, '_vendor_id', $vendor->id);
+                    
+                    if ( !wc_get_order_item_meta( $key, $general_cap ) ) 
+                        wc_add_order_item_meta($key, $general_cap, $vendor->page_title);
+                }
+            }
+        }
+        
         $has_sub_order = get_post_meta($order_id, 'has_wcmp_sub_order', true) ? true : false;
         if($has_sub_order) return;
         $this->wcmp_create_orders($order_id, array(), $order, true);
     }
+    
+    public function wcmp_create_orders_via_rest_callback( $order, $request, $creating ) {
+        global $WCMp;
+        $items = $order->get_items();
+        foreach ($items as $key => $value) {
+            if ( $order && wp_get_post_parent_id( $order->get_id() ) == 0 || (function_exists('wcs_is_subscription') && wcs_is_subscription( $order )) ) {
+                $general_cap = apply_filters('wcmp_sold_by_text', __('Sold By', 'dc-woocommerce-multi-vendor'));
+                $vendor = get_wcmp_product_vendors($value['product_id']);
+                if ($vendor) {
+                    wc_add_order_item_meta($key, '_vendor_id', $vendor->id);
+                    wc_add_order_item_meta($key, $general_cap, $vendor->page_title);
+                }
+            }
+        }
+        if( $order && get_post_meta( $order->get_id(), '_created_via', true ) !== 'rest-api' ) return;
+        $this->wcmp_create_orders($order->get_id(), array(), $order, true);
+    }
 
+    public function woocommerce_ajax_order_items_added( $added_items, $order ) {
+        foreach ( $added_items as $item_id => $item_data ) {
+            $parent_order = wc_get_order( wp_get_post_parent_id( $order->get_id() ) );
+            $suborder_id = false;
+            $suborders = get_wcmp_suborders($order->get_id());
+            if (!empty($suborders)) {
+                foreach ($suborders as $key_order => $value_order) {
+                    $vendor_of_order = get_post_meta( $value_order->get_id(), '_vendor_id', true );
+                    if ($vendor_of_order == get_wcmp_product_vendors($item_data->get_product_id())->id) {
+                        $suborder_id = $value_order->get_id();
+                    }
+                }
+            }
+            $item = new WC_Order_Item_Product();
+            $product = wc_get_product( $item_data->get_product_id() );
+            $item->set_props(
+                array(
+                    'quantity'     => $item_data->get_quantity(),
+                    'variation'    => $item_data->get_variation_id(),
+                    'subtotal'     => $item_data->get_subtotal(),
+                    'total'        => $item_data->get_total(),
+                    'subtotal_tax' => $item_data->get_subtotal_tax(),
+                    'total_tax'    => $item_data->get_total_tax(),
+                    'taxes'        => $item_data->get_taxes(),
+                    )
+                );
+            if ( $product ) {
+                $item->set_props(
+                    array(
+                        'name'         => $product->get_name(),
+                        'tax_class'    => $product->get_tax_class(),
+                        'product_id'   => $product->is_type( 'variation' ) ? $product->get_parent_id() : $product->get_id(),
+                        'variation_id' => $product->is_type( 'variation' ) ? $product->get_id() : 0,
+                        )
+                    );
+            }
+            $item->set_backorder_meta();
+            if ($parent_order) {
+                $parent_order->add_item( $item );
+                $parent_order->save();
+                $parent_order->calculate_totals();
+            } elseif ($suborders && $suborder_id) {
+                $suborder_object = wc_get_order( $suborder_id );
+                $suborder_object->add_item( $item );
+                $suborder_object->save();
+                $suborder_object->calculate_totals();
+            }
+        }
+    }
+    
+    public function woocommerce_before_delete_order_item( $item_id ) {
+        global $WCMp;
+        $parent_item_id = $WCMp->order->get_vendor_parent_order_item_id($item_id);
+        if ($parent_item_id) {
+            wc_delete_order_item( $parent_item_id );
+        }
+    }
     /**
      * Create a new vendor order programmatically
      *
@@ -363,8 +482,10 @@ class WCMp_Order {
         self::create_wcmp_order_line_items($vendor_order, $args);
         if( $data_migration ){
             self::create_wcmp_order_shipping_lines($vendor_order, array(), array(), $args, $data_migration);
+            self::create_wcmp_order_coupon_lines( $vendor_order, array(), $args );
         }else{
             self::create_wcmp_order_shipping_lines($vendor_order, WC()->session->get('chosen_shipping_methods'), WC()->shipping->get_packages(), $args, $data_migration);
+            self::create_wcmp_order_coupon_lines( $vendor_order, WC()->cart, $args );
         }
         
         //self::create_wcmp_order_tax_lines( $vendor_order, $args );
@@ -403,7 +524,7 @@ class WCMp_Order {
             update_post_meta($vendor_order_id, $key, get_post_meta($order->get_id(), $key, true));
         }
 
-        update_post_meta($vendor_order_id, '_order_version', $WCMp->version);
+        update_post_meta($vendor_order_id, '_wcmp_order_version', $WCMp->version);
         update_post_meta($vendor_order_id, '_vendor_id', absint($args['vendor_id']));
         update_post_meta($vendor_order_id, '_created_via', 'wcmp_vendor_order');
         
@@ -512,10 +633,11 @@ class WCMp_Order {
         if(!$migration){
         
             foreach ($packages as $package_key => $package) {
-                if ($package_key == $vendor_id && isset($chosen_shipping_methods[$package_key], $package['rates'][$chosen_shipping_methods[$package_key]])) {
+                $pkg_vendor_id = ( isset( $package['vendor_id'] ) && $package['vendor_id'] ) ? $package['vendor_id'] : $package_key;
+                if ($pkg_vendor_id == $vendor_id && isset($chosen_shipping_methods[$package_key], $package['rates'][$chosen_shipping_methods[$package_key]])) {
                     $shipping_rate = $package['rates'][$chosen_shipping_methods[$package_key]];
                     $item = new WC_Order_Item_Shipping();
-                    $item->legacy_package_key = $package_key; // @deprecated For legacy actions.
+                    $item->legacy_package_key = $pkg_vendor_id; // @deprecated For legacy actions.
                     $item->set_props(
                             array(
                                 'method_title' => $shipping_rate->label,
@@ -532,10 +654,13 @@ class WCMp_Order {
                         $item->add_meta_data($key, $value, true);
                     }
 
-                    $item->add_meta_data('vendor_id', $package_key, true);
+                    $item->add_meta_data('vendor_id', $pkg_vendor_id, true);
                     $package_qty = array_sum(wp_list_pluck($package['contents'], 'quantity'));
                     $item->add_meta_data('package_qty', $package_qty, true);
-
+                    // add parent item_id in meta
+                    $parent_shipping_item_id = get_vendor_parent_shipping_item_id( $parent_order_id, $vendor_id );
+                    if( $parent_shipping_item_id ) $item->add_meta_data('_vendor_order_shipping_item_id', $parent_shipping_item_id );
+                    
                     /**
                      * Action hook to adjust item before save.
                      *
@@ -574,12 +699,58 @@ class WCMp_Order {
                         $shipping->add_meta_data('vendor_id', $vendor_id, true);
                         $package_qty = $item->get_meta('package_qty', true);
                         $shipping->add_meta_data('package_qty', $package_qty, true);
-
+                        // add parent item_id in meta
+                        $item->add_meta_data('_vendor_order_shipping_item_id', $item_id );
                         $order->add_item($shipping);
                     }
                 }
             }
         }
+    }
+    
+    /**
+     * Add coupon lines to the order.
+     *
+     * @param WC_Order $order Order Instance.
+     * @param WC_Cart  $cart  Cart instance.
+     * @param WCMp Order $args  Arguments.
+     */
+    public static function create_wcmp_order_coupon_lines( $order, $cart, $args ) {
+        // Find cart products
+        $cart_product_ids = array();
+        if ( $order && $order->get_items() ) :
+            foreach ( $order->get_items() as $item_id => $item_values ) {
+                $cart_product_ids[] = $item_values->get_product_id();
+            }
+        endif;
+        if( $cart && $cart->get_coupons() ) :
+            foreach ( $cart->get_coupons() as $code => $coupon ) {
+                if( !in_array( $coupon->get_discount_type(), apply_filters( 'wcmp_order_available_coupon_types', array( 'fixed_product', 'percent', 'fixed_cart' ), $order, $cart ) ) ) continue;
+                $coupon_products = explode(",", get_post_meta( $coupon->get_id(), 'product_ids', true ) );
+                $match_coupon_product = array_intersect($cart_product_ids, $coupon_products);
+                if (!$match_coupon_product) continue;                
+                $item = new WC_Order_Item_Coupon();
+                $item->set_props(
+                    array(
+                        'code'         => $code,
+                        'discount'     => $cart->get_coupon_discount_amount( $code ),
+                        'discount_tax' => $cart->get_coupon_discount_tax_amount( $code ),
+                    )
+                );
+                // Avoid storing used_by - it's not needed and can get large.
+                $coupon_data = $coupon->get_data();
+                unset( $coupon_data['used_by'] );
+                $item->add_meta_data( 'coupon_data', $coupon_data );
+                /**
+                 * Action hook to adjust item before save.
+                 *
+                 * @since 3.4.3
+                 */
+                do_action( 'wcmp_checkout_create_order_coupon_item', $item, $code, $coupon, $order, $args );
+                // Add item to order and save.
+                $order->add_item( $item );
+            }
+        endif;
     }
 
     /**
@@ -623,29 +794,6 @@ class WCMp_Order {
         }
     }
 
-    /**
-     * Get suborders if available.
-     *
-     * @param int $order_id.
-     * @param array $args.
-     * @return object suborders.
-     */
-    public function get_suborders($order_id, $args = array()) {
-        $default = array(
-            'post_parent' => $order_id,
-            'post_type' => 'shop_order',
-            'numberposts' => -1,
-            'post_status' => 'any'
-        );
-        $args = wp_parse_args($args, $default);
-        $orders = array();
-        $posts = get_posts($args);
-        foreach ($posts as $post) {
-            $orders[] = wc_get_order($post->ID);
-        }
-        return $orders;
-    }
-
     public function wcmp_parent_order_to_vendor_order_status_synchronization($order_id, $old_status, $new_status) {
         if(!$order_id) return;
         // Check order have status
@@ -654,14 +802,14 @@ class WCMp_Order {
             $new_status = $order->get_status('edit');
         }
         
-        $status_to_sync = apply_filters('wcmp_parent_order_to_vendor_order_statuses_to_sync',array('on-hold', 'pending', 'processing'));
+        $status_to_sync = apply_filters('wcmp_parent_order_to_vendor_order_statuses_to_sync',array('on-hold', 'pending', 'processing', 'cancelled', 'failed'));
         if( in_array($new_status, $status_to_sync) ) :
             if (wp_get_post_parent_id( $order_id ) || get_post_meta($order_id, 'wcmp_vendor_order_status_synchronized', true))
                 return false;
             
             remove_action( 'woocommerce_order_status_completed', 'wc_paying_customer' );
             // Check if order have sub-order
-            $wcmp_suborders = $this->get_suborders($order_id);
+            $wcmp_suborders = get_wcmp_suborders($order_id);
 
             if ($wcmp_suborders) {
                 foreach ($wcmp_suborders as $suborder) {
@@ -681,7 +829,7 @@ class WCMp_Order {
             remove_action('woocommerce_order_status_changed', array($this, 'wcmp_parent_order_to_vendor_order_status_synchronization'), 90, 3);
             $status_to_sync = apply_filters('wcmp_vendor_order_to_parent_order_statuses_to_sync',array('completed', 'refunded'));
 
-            $wcmp_suborders = $this->get_suborders( $parent_order_id );
+            $wcmp_suborders = get_wcmp_suborders( $parent_order_id );
             $new_status_count  = 0;
             $suborder_count    = count( $wcmp_suborders );
             $suborder_statuses = array();
@@ -723,7 +871,7 @@ class WCMp_Order {
 //                                $check += $suborder_statuses[ $status ];
 //                            }
 //                        }
-                        if( count($status == 1) && isset($status[0]) ) {
+                        if( count($status) == 1 && isset($status[0]) ) {
                             $parent_order->update_status( $new_status, _x( "Sync from vendor's suborders: ", 'Order note', 'dc-woocommerce-multi-vendor' ) );
                         }
                     }
@@ -740,8 +888,8 @@ class WCMp_Order {
         // Resume the unpaid order if its pending
         if ($order_id > 0) {
             $order = wc_get_order($order_id);
-            if ($order->has_status(array('pending', 'failed'))) {
-                $wcmp_suborders = $this->get_suborders($order_id);
+            if ($order && $order->has_status(array('pending', 'failed'))) {
+                $wcmp_suborders = get_wcmp_suborders($order_id);
                 if ($wcmp_suborders) {
                     foreach ($wcmp_suborders as $suborder) {
                         $commission_id = get_post_meta( $suborder->get_id(), '_commission_id', true );
@@ -777,18 +925,18 @@ class WCMp_Order {
             $restock_refunded_items = !empty($_POST['restock_refunded_items']) && $_POST['restock_refunded_items'] === 'true' ? true : false;
             $order = wc_get_order($order_id);
             $parent_order_total = wc_format_decimal($order->get_total());
-            $wcmp_suborders = $this->get_suborders($order_id);
+            $wcmp_suborders = get_wcmp_suborders($order_id);
 
             //calculate line items total from parent order
             foreach ($line_item_totals as $item_id => $total) {
                 // check if there have vendor line item to refund
                 $item = $order->get_item($item_id);
-                if($item->get_meta('_vendor_id') && $total != 0) $create_vendor_refund = true;
+                if( ( $item->get_meta('_vendor_id') || $item->get_meta('vendor_id') ) && $total != 0) $create_vendor_refund = true;
                 $parent_line_item_refund += wc_format_decimal($total);
             }
             
             foreach ($wcmp_suborders as $suborder) {
-                $suborder_items_ids = array_keys($suborder->get_items());
+                $suborder_items_ids = array_keys($suborder->get_items( array( 'line_item', 'fee', 'shipping' ) ));
                 $suborder_total = wc_format_decimal($suborder->get_total());
                 $max_refund = wc_format_decimal($suborder_total - $suborder->get_total_refunded());
                 $child_line_item_refund = 0;
@@ -816,7 +964,6 @@ class WCMp_Order {
                 }
 
                 foreach ($line_item_totals as $item_id => $total) {
-                    
                     $child_item_id = $this->get_vendor_order_item_id($item_id);
                     if ($child_item_id && in_array($child_item_id, $suborder_items_ids)) {
                         $total = wc_format_decimal($total);
@@ -853,7 +1000,7 @@ class WCMp_Order {
                     $create_refund = $suborder_total_refund > 0 ? true : false;
                 }
 
-                if ($create_vendor_refund && $create_refund) {
+                if ($create_vendor_refund && $create_refund && $suborder_total_refund != 0 ) {
                     // Create the refund object
                     $refund = wc_create_refund(array(
                         'amount' => $suborder_total_refund,
@@ -862,6 +1009,7 @@ class WCMp_Order {
                         'line_items' => $line_items,
                         )
                     );
+                    do_action( 'wcmp_order_refunded', $order->get_id(), $refund->get_id() );
                     if($refund)
                         add_post_meta($refund->get_id(), '_parent_refund_id', $parent_refund_id);
                 }
@@ -937,41 +1085,13 @@ class WCMp_Order {
         }
     }
     
-    /**
-     * Handle a refund before save.
-     */
-    public static function wcmp_create_refund($refund, $args) {
-        
-        $order = wc_get_order( $args['order_id'] );
-        
-        if ( ! $order ) {
-            throw new Exception( __( 'Invalid vendor order ID.', 'dc-woocommerce-multi-vendor' ) );
-        }
-        if(is_wcmp_vendor_order($order)) :
-            
-            $remaining_refund_amount = $order->get_remaining_refund_amount();
-            $remaining_refund_items  = $order->get_remaining_refund_items();
-            $refund_item_count       = 0;
-
-            // Trigger notification emails.
-            if ( ( $remaining_refund_amount - $args['amount'] ) > 0 || ( $order->has_free_item() && ( $remaining_refund_items - $refund_item_count ) > 0 ) ) {
-                $email_refund = WC()->mailer()->emails['WC_Email_Customer_Refunded_Order'];
-                $email_refund->trigger_partial( $order->get_id(), $refund->get_id() );
-                do_action( 'wcmp_vendor_order_partially_refunded', $order->get_id(), $refund->get_id() );
-            } else {
-                if ( is_null( $args['reason'] ) ) {
-                    $refund->set_reason( __( 'Order fully refunded', 'dc-woocommerce-multi-vendor' ) );
-                }
-                $email_refund = WC()->mailer()->emails['WC_Email_Customer_Refunded_Order'];
-                $email_refund->trigger_full( $order->get_id(), $refund->get_id() );
-                do_action( 'wcmp_vendor_order_fully_refunded', $order->get_id(), $refund->get_id() );
-            }
-        endif;
-    }
-    
     public function get_vendor_order_item_id( $item_id ) {
         global $wpdb;
         $vendor_item_id = $wpdb->get_var( $wpdb->prepare( "SELECT order_item_id FROM {$wpdb->order_itemmeta} WHERE meta_key=%s AND meta_value=%d", '_vendor_order_item_id', absint( $item_id ) ) );
+        // check for shipping
+        if( !$vendor_item_id ){
+            $vendor_item_id = $wpdb->get_var( $wpdb->prepare( "SELECT order_item_id FROM {$wpdb->order_itemmeta} WHERE meta_key=%s AND meta_value=%d", '_vendor_order_shipping_item_id', absint( $item_id ) ) );
+        }
         return $vendor_item_id;
     }
 
@@ -1049,7 +1169,7 @@ class WCMp_Order {
     
     public function trash_wcmp_suborder( $order_id ) {
         if ( wp_get_post_parent_id( $order_id ) == 0 ) {
-            $wcmp_suborders = $this->get_suborders($order_id);
+            $wcmp_suborders = get_wcmp_suborders($order_id);
             if ( $wcmp_suborders ) {
                 foreach ( $wcmp_suborders as $suborder ) {
                     wp_trash_post( $suborder->get_id() );
@@ -1060,7 +1180,7 @@ class WCMp_Order {
     
     public function delete_wcmp_suborder( $order_id ) {
         if ( wp_get_post_parent_id( $order_id ) == 0 ) {
-            $wcmp_suborders = $this->get_suborders($order_id);
+            $wcmp_suborders = get_wcmp_suborders($order_id);
             if ( $wcmp_suborders ) {
                 foreach ( $wcmp_suborders as $suborder ) {
                     $commission_id = get_post_meta( $suborder->get_id(), '_commission_id', true );
@@ -1119,7 +1239,7 @@ class WCMp_Order {
     }
     
     public function woocommerce_my_account_my_orders_column_wcmp_suborder( $order ) {
-        $wcmp_suborders = $this->get_suborders($order->get_id());
+        $wcmp_suborders = get_wcmp_suborders($order->get_id());
 
         if ($wcmp_suborders) {
             echo '<ul class="wcmp-order-vendor" style="margin:0px;list-style:none;">';
@@ -1135,6 +1255,15 @@ class WCMp_Order {
             echo '<span class="na">&ndash;</span>';
         }
     }
+
+    public function woocommerce_customer_available_downloads( $downloads ) {
+       $parent_downloads = array();
+       foreach( $downloads as $download ) {
+           if( !wp_get_post_parent_id( $download['order_id'] ) )
+               $parent_downloads[] = $download;
+       }
+       return $parent_downloads;
+   }
     
     public function wcmp_frontend_enqueue_scripts(){
         if(is_account_page()){
@@ -1258,6 +1387,7 @@ class WCMp_Order {
         if( !$order_id || !is_wcmp_vendor_order( $order_id ) ) return;
         if( $new_status == 'cancelled' ){
             $commission_id = get_post_meta( $order_id, '_commission_id', true );
+            do_action( 'wcmp_vendor_order_on_cancelled_commission', $commission_id, $order_id );
             if( $commission_id ) wp_trash_post( $commission_id );
         }
     }
@@ -1267,7 +1397,260 @@ class WCMp_Order {
             $args['parent'] = ( isset( $args['parent'] ) && $args['parent'] ) ? $args['parent'][] = 0 : array( 0 );
         if( apply_filters( 'wcmp_fetch_all_suborders_from_rest_api_call', false, $args, $request ) )
             $args['parent_exclude'] = ( isset( $args['parent_exclude'] ) && $args['parent_exclude'] ) ? $args['parent_exclude'][] = 0 : array( 0 );
+        
+        if( apply_filters( 'wcmp_remove_suborders_from_rest_api_call', true, $args, $request ) ) {
+            $suborders = wcmp_get_orders( array(), 'ids', true );
+            $args['post__not_in'] = array( $suborders );
+        }
         return apply_filters( 'wcmp_exclude_suborders_from_rest_api_call_query_args', $args, $request );
     }
 
+    public function wcmp_refund_btn_customer_my_account( $order ){
+        global $WCMp;
+        if( !is_wc_endpoint_url( 'view-order' ) ) return;
+        if( !wcmp_get_order( $order->get_id() ) ) return;
+        $refund_settings = get_option( 'wcmp_payment_refund_payment_settings_name', true );
+        if ( isset( $refund_settings['disable_refund_customer_end'] ) && $refund_settings['disable_refund_customer_end'] == 'Enable' ) return;
+        $refund_reason_options = ( isset( $refund_settings['refund_order_msg'] ) && $refund_settings['refund_order_msg'] ) ? explode( "||", $refund_settings['refund_order_msg'] ) : array();
+        $refund_button_text = apply_filters( 'wcmp_customer_my_account_refund_request_button_text', __( 'Request a refund', 'dc-woocommerce-multi-vendor' ), $order );
+        // Print refund messages, if any
+        if( wcmp_get_customer_refund_order_msg( $order, $refund_settings ) ) {
+            $msg_data = wcmp_get_customer_refund_order_msg( $order, $refund_settings );
+            $type = isset( $msg_data['type'] ) ? $msg_data['type'] : 'info';
+            ?>
+            <div class="woocommerce-Message woocommerce-Message--<?php echo $type; ?> woocommerce-<?php echo $type; ?>">
+                <?php echo $msg_data['msg']; ?>
+            </div>
+            <?php
+            return;
+        }
+        ?>
+        <p><button type="button" class="button" id="cust_request_refund_btn" name="cust_request_refund_btn" value="<?php echo $refund_button_text; ?>"><?php echo $refund_button_text; ?></button></p>
+        <div id="wcmp-myac-order-refund-wrap" class="wcmp-myac-order-refund-wrap">
+            <form method="POST">
+            <?php wp_nonce_field( 'customer_request_refund', 'cust-request-refund-nonce' ); ?>
+            <fieldset>
+                <legend><?php echo apply_filters( 'wcmp_customer_my_account_refund_reason_label', __('Please mention your reason for refund', 'dc-woocommerce-multi-vendor'), $order ); ?></legend>
+
+                <?php 
+                if( $refund_reason_options ) {
+                    foreach( $refund_reason_options as $index => $reason ) {
+                        echo '<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                        <label class="refund_reason_option" for="refund_reason_option-'.$index.'">
+                            <input type="radio" class="woocommerce-Input input-radio" name="refund_reason_option" id="refund_reason_option-'.$index.'" value="'.$index.'" />
+                            '.esc_html( $reason ).'
+                        </label></p>';
+                    }
+                    // Add others reason
+                    echo '<p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                        <label class="refund_reason_option" for="refund_reason_option-other">
+                            <input type="radio" class="woocommerce-Input input-radio" name="refund_reason_option" id="refund_reason_option-other" value="others" />
+                            '.__( 'Others reason', 'dc-woocommerce-multi-vendor' ).'
+                        </label></p>';
+                        ?>
+                    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide cust-rr-other">
+                        <label for="refund_reason_other"><?php _e( 'Refund reason', 'dc-woocommerce-multi-vendor' ); ?></label>
+                        <input type="text" class="woocommerce-Input input-text" name="refund_reason_other" id="refund_reason_other" autocomplete="off" />
+                    </p>
+                        <?php
+                }else{
+                    ?>
+                    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                        <label for="refund_reason_other"><?php _e( 'Refund reason', 'dc-woocommerce-multi-vendor' ); ?></label>
+                        <input type="text" class="woocommerce-Input input-text" name="refund_reason_other" id="refund_reason_other" autocomplete="off" />
+                    </p>
+                    <?php
+                }
+                ?>
+                <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                    <label for="additional_info"><?php _e( 'Provide additional information', 'dc-woocommerce-multi-vendor' ); ?></label>
+                    <textarea class="woocommerce-Input input-text" name="refund_request_addi_info" id="refund_request_addi_info"></textarea>
+                </p>
+                
+                <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
+                    <button type="submit" class="button" name="cust_request_refund_sbmt" value="<?php _e( 'Submit', 'dc-woocommerce-multi-vendor' ); ?>"><?php _e( 'Submit', 'dc-woocommerce-multi-vendor' ); ?></button>
+                </p>
+            </fieldset>
+            </form>
+        </div>
+        <?php
+        // scripts
+        wp_add_inline_script( 'woocommerce', '( function( $ ) {
+            $("#wcmp-myac-order-refund-wrap").hide();
+            $("#wcmp-myac-order-refund-wrap .cust-rr-other").hide();
+            $("#wcmp-myac-order-refund-wrap .refund_reason_option input").on("click", function(){
+                var others_checked = $("input:radio[name=refund_reason_option]:checked").val();
+                if(others_checked == "others"){
+                    $("#wcmp-myac-order-refund-wrap .cust-rr-other").show();
+                }else{
+                    $("#wcmp-myac-order-refund-wrap .cust-rr-other").hide();
+                }
+            });
+			$("#cust_request_refund_btn").click(function(){
+				$("#wcmp-myac-order-refund-wrap").slideToggle();
+			});
+		} )( jQuery );' );
+    }
+
+    public function wcmp_handler_cust_requested_refund() {
+        global $wp;
+        $nonce_value = wc_get_var( $_REQUEST['cust-request-refund-nonce'], wc_get_var( $_REQUEST['_wpnonce'], '' ) ); // @codingStandardsIgnoreLine.
+
+		if ( ! wp_verify_nonce( $nonce_value, 'customer_request_refund' ) ) {
+			return;
+        }
+        // If no refund reason is selected
+        if ( !isset( $_REQUEST['refund_reason_option'] ) ) {
+            wc_add_notice( __( 'Kindly choose a refund reason', 'dc-woocommerce-multi-vendor' ) , 'error' );
+            return;
+        }
+        if( !isset( $wp->query_vars['view-order'] ) ) return;
+        $order_id = $wp->query_vars['view-order'];
+        $order = wc_get_order( $order_id );
+        $reason_option = isset( $_REQUEST['refund_reason_option'] ) ? wc_clean( wp_unslash($_REQUEST['refund_reason_option'])) : '';
+        $refund_reason_other = isset( $_REQUEST['refund_reason_other'] ) ? wc_clean( wp_unslash($_REQUEST['refund_reason_other'])) : '';
+        $refund_request_addi_info = isset( $_REQUEST['refund_request_addi_info'] ) ? wc_clean( wp_unslash($_REQUEST['refund_request_addi_info'])) : '';
+        $refund_settings = get_option( 'wcmp_payment_refund_payment_settings_name', true );
+        $refund_reason_options = ( isset( $refund_settings['refund_order_msg'] ) && $refund_settings['refund_order_msg'] ) ? explode( "||", $refund_settings['refund_order_msg'] ) : array();
+        $refund_reason = (( $reason_option == 'others' ) ? $refund_reason_other : isset( $refund_reason_options[$reason_option] )) ? $refund_reason_options[$reason_option] : ''; 
+        $refund_details = array(
+            'refund_reason' => $refund_reason,
+            'addi_info' => $refund_request_addi_info,
+        );
+        // update customer refunt request 
+        update_post_meta( $order_id, '_customer_refund_order', 'refund_request' );
+        $comment_id = $order->add_order_note( __('Customer requested a refund '.$order_id.' .', 'dc-woocommerce-multi-vendor') );
+        // user info
+        $user_info = get_userdata(get_current_user_id());
+        wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+        // parent order
+        $parent_order_id = wp_get_post_parent_id($order->get_id());
+        $parent_order = wc_get_order( $parent_order_id );
+        $comment_id_parent = $parent_order->add_order_note( __('Customer requested a refund for '.$order_id.'.', 'dc-woocommerce-multi-vendor') );
+        wp_update_comment(array('comment_ID' => $comment_id_parent, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+        $mail = WC()->mailer()->emails['WC_Email_Customer_Refund_Request'];
+        // order vendor
+        $vendor_id = get_post_meta( $order_id, '_vendor_id', true );
+        $vendor_user_info = get_userdata($vendor_id);
+        $mail->trigger( $vendor_user_info->user_email, $order_id, $refund_details );
+        wc_add_notice( __( 'Refund request successfully placed.', 'dc-woocommerce-multi-vendor' ) );
+    }
+
+    public function wcmp_refund_order_status_customer_meta(){
+        global $post;
+        if( $post && $post->post_type != 'shop_order' ) return;
+        if( !wcmp_get_order( $post->ID ) ) return;
+        add_meta_box( 'refund_status_customer', __('Customer refund status', 'dc-woocommerce-multi-vendor'),  array( $this, 'wcmp_order_customer_refund_dd' ), 'shop_order', 'side', 'core' );
+    }
+
+    public function wcmp_order_customer_refund_dd(){
+        global $post;
+        $refund_status = get_post_meta( $post->ID, '_customer_refund_order', true ) ? get_post_meta( $post->ID, '_customer_refund_order', true ) : '';
+        $refund_statuses = array( 
+            '' => __('Refund Status','dc-woocommerce-multi-vendor'),
+            'refund_request' => __('Refund Requested', 'dc-woocommerce-multi-vendor'), 
+            'refund_accept' => __('Refund Accepted','dc-woocommerce-multi-vendor'), 
+            'refund_reject' => __('Refund Rejected','dc-woocommerce-multi-vendor') 
+        );
+        ?>
+        <select id="refund_order_customer" name="refund_order_customer" onchange='refund_admin_reason(this.value);'>
+            <?php foreach ( $refund_statuses as $key => $value ) { ?>
+            <option value="<?php echo $key; ?>" <?php selected( $refund_status, $key ); ?> ><?php echo $value; ?></option>
+            <?php } ?>
+        </select>
+        <div class="reason_select_by_admin" id="reason_select_by_admin" style='display:none;'>
+            <label for="additional_massage"><?php _e( 'Please Provide Some Reason', 'dc-woocommerce-multi-vendor' ); ?></label>
+            <textarea class="woocommerce-Input input-text" name="refund_admin_reason_text" id="refund_admin_reason_text"></textarea>
+        </div>
+        <button type="submit" class="button cust-refund-status button-default" name="cust_refund_status" value="<?php echo __('Update status', 'dc-woocommerce-multi-vendor'); ?>"><?php echo __('Update status', 'dc-woocommerce-multi-vendor'); ?></button>
+        <script>
+            function refund_admin_reason(val){
+                var element = document.getElementById('reason_select_by_admin');
+                if( val == 'refund_accept' || val == 'refund_reject' )
+                    element.style.display='block';
+                else  
+                    element.style.display='none';
+            }
+        </script>
+        <?php
+    }
+
+    public function wcmp_refund_order_status_save( $post_id ){
+        global $post;
+        if( $post && $post->post_type != 'shop_order' ) return;
+        if( !wcmp_get_order( $post_id ) ) return;
+        if( !isset( $_POST['cust_refund_status'] ) ) $post_id;
+        if( isset( $_POST['refund_order_customer'] ) && $_POST['refund_order_customer'] ) {
+            update_post_meta( $post_id, '_customer_refund_order', wc_clean( wp_unslash( $_POST['refund_order_customer'] ) ) );
+            // trigger customer email
+            if( in_array( $_POST['refund_order_customer'], array( 'refund_reject', 'refund_accept' ) ) ) {
+
+                $refund_details = array(
+                    'admin_reason' => isset( $_POST['refund_admin_reason_text'] ) ? $_POST['refund_admin_reason_text'] : '',
+                    );
+                
+                $order_status = '';
+                if( $_POST['refund_order_customer'] == 'refund_accept' ) {
+                    $order_status = __( 'accepted', 'dc-woocommerce-multi-vendor' );
+                }elseif( $_POST['refund_order_customer'] == 'refund_reject') {
+                    $order_status = __( 'rejected', 'dc-woocommerce-multi-vendor' );
+                }
+                // Comment note for suborder
+                $order = wc_get_order( $post_id );
+                $comment_id = $order->add_order_note( __('Site admin '.$order_status.' refund request for order #'.$post_id.' .', 'dc-woocommerce-multi-vendor') );
+                // user info
+                $user_info = get_userdata(get_current_user_id());
+                wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+                // Comment note for parent order
+                $parent_order_id = wp_get_post_parent_id($post_id);
+                $parent_order = wc_get_order( $parent_order_id );
+                $comment_id_parent = $parent_order->add_order_note( __('Site admin '.$order_status.' refund request for order #'.$post_id.'.', 'dc-woocommerce-multi-vendor') );
+                wp_update_comment(array('comment_ID' => $comment_id_parent, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+                $mail = WC()->mailer()->emails['WC_Email_Customer_Refund_Request'];
+                $mail->trigger( $_POST['_billing_email'], $post_id, $refund_details, 'customer' );
+            }
+        }
+    }
+
+    public function wcmp_suborder_hide( $args, $request ){
+        $woocommerce_orders = wcmp_get_orders();
+        $suborders = array();
+        foreach ($woocommerce_orders as $key => $value) {
+            if( wp_get_post_parent_id( $value ) ) {
+                $suborders[] = $value;
+            }
+        }
+        $args['post__not_in'] = array( $suborders );
+        return $args;
+    }
+
+    public function woocommerce_customer_exclude_suborder_query( $query, $customer ) {
+        global $wpdb;
+        $statuses = array_map( 'esc_sql', wc_get_is_paid_statuses() );
+        $query = "SELECT SUM(meta2.meta_value)
+        FROM $wpdb->posts as posts
+        LEFT JOIN {$wpdb->postmeta} AS meta ON posts.ID = meta.post_id
+        LEFT JOIN {$wpdb->postmeta} AS meta2 ON posts.ID = meta2.post_id
+        WHERE   meta.meta_key       = '_customer_user'
+        AND     meta.meta_value     = '" . esc_sql( $customer->get_id() ) . "'
+        AND     posts.post_type     = 'shop_order'
+        AND     posts.post_parent   = 0
+        AND     posts.post_status   IN ( 'wc-" . implode( "','wc-", $statuses ) . "' )
+        AND     meta2.meta_key      = '_order_total'";
+        return $query;
+    }
+
+    public function get_vendor_parent_order_item_id( $item_id ) {
+        global $wpdb;
+        $vendor_item_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->order_itemmeta} WHERE meta_key=%s AND order_item_id=%d", '_vendor_order_item_id', absint( $item_id ) ) );
+        // check for shipping
+        if( !$vendor_item_id ){
+            $vendor_item_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM {$wpdb->order_itemmeta} WHERE meta_key=%s AND order_item_id=%d", '_vendor_order_shipping_item_id', absint( $item_id ) ) );
+        }
+        return $vendor_item_id;
+    }
 }

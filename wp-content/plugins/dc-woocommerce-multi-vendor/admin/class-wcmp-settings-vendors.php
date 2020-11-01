@@ -36,8 +36,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
     		'products' => __( 'Products', 'dc-woocommerce-multi-vendor' ),
     		'status' => __( 'Status', 'dc-woocommerce-multi-vendor' ),
 		];
-	
-		return $columns;
+		return apply_filters('wcmp_list_table_vendors_columns', $columns);	
 	}
 	
 	/**
@@ -70,9 +69,11 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
     function column_username( $item ) {
     	$name_link = sprintf('?page=%s&action=%s&ID=%s', $_GET['page'], 'edit', $item['ID']);
     	$action = 'bulk-' . $this->_args['plural'];
+    	$delete_url = self_admin_url('users.php?action=delete&user='.$item['ID']);
+    	$delete_url = str_replace( '&amp;', '&', wp_nonce_url( $delete_url, 'bulk-users' ) );
     	$actions = array(
 			'edit'=> sprintf('<a href="' . $name_link . '">' . __( 'Edit', 'dc-woocommerce-multi-vendor' ) . '</a>'),
-			'delete'=> sprintf('<a href="?page=%s&action=%s&ID=%s&_wpnonce=%s">' . __( 'Delete', 'dc-woocommerce-multi-vendor' ) . '</a>', $_GET['page'], 'delete', $item['ID'], wp_create_nonce($action) ),
+			'delete'=> '<a href="'.$delete_url.'">' . __( 'Delete', 'dc-woocommerce-multi-vendor' ) . '</a>',
 			'shop' => sprintf('<a href="' . $item['permalink'] . '">' . __( 'Shop', 'dc-woocommerce-multi-vendor' ) . '</a>'),
         );
         
@@ -101,9 +102,9 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 		$option = $screen->get_option('per_page', 'option');
 		$per_page = get_user_meta($user, $option, true);
 		
-		$search = ( isset( $_REQUEST['s'] ) ) ? $_REQUEST['s'] : false;
+		$search = ( isset( $_REQUEST['s'] ) ) ? wc_clean($_REQUEST['s']) : false;
 		
-		$query_role = ( !empty( $_GET['role'] ) ? $_GET['role'] : 'all');
+		$query_role = ( !empty( $_GET['role'] ) ? wc_clean($_GET['role']) : 'all');
 		
 		if($query_role == 'approved') {
 			$roles_in_array = array('dc_vendor');
@@ -161,7 +162,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 			$vendor_permalink = ''; 
 			$status = "";
 			if($vendor) {
-				$vendor_products = $vendor->get_products(array('fields' => 'ids'));
+				$vendor_products = $vendor->get_products_ids();
 				$vendor_permalink = $vendor->permalink;
 				$product_count = count($vendor_products);
 			}
@@ -178,10 +179,8 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 				$status = "<p class='vendor-status rejected-vendor'>" . __('Rejected', 'dc-woocommerce-multi-vendor') . "</p>";
 			} else if(in_array('dc_pending_vendor', $user->roles)) {
 				$status = "<p class='vendor-status pending-vendor'>" . __('Pending', 'dc-woocommerce-multi-vendor') . "</p>";
-			}
-			
-			
-			$user_list[$user->data->ID] = array(
+			}	
+			$user_list[$user->data->ID] = apply_filters('wcmp_list_table_vendors_columns_data', array(
 							'ID' => $user->data->ID,
 							'name' => $user->data->display_name,
 							'email' => $user->data->user_email,
@@ -190,7 +189,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 							'status' => $status,
 							'permalink' => $vendor_permalink,
 							'username' => $user->data->user_login
-							);
+							), $user);
 		}
 		$this->_column_headers = array($columns, $hidden, $sortable);
 		usort( $user_list, array( &$this, 'usort_reorder' ) );
@@ -231,24 +230,10 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 	
 	public function process_bulk_action() {
 		if ( 'delete' === $this->current_action() ) {
-			$nonce = esc_attr( $_REQUEST['_wpnonce'] );
-			$action = 'bulk-' . $this->_args['plural'];
-			if ( ! wp_verify_nonce( $nonce, $action ) ) {
-				wp_die( __('You are not permitted to do this', 'dc-woocommerce-multi-vendor') );
-			}  else {
-				if(isset($_GET['ID'])) {
-					if(is_array($_GET['ID'])) {
-						foreach($_GET['ID'] as $id) {
-							wp_delete_user( absint( $id ) );
-						}
-					} else if(absint($_GET['ID']) > 0){
-						wp_delete_user( absint($_GET['ID']) );
-					}
-				}
-				
-				wp_redirect( $_SERVER['HTTP_REFERER'] );
-				exit;
-			}
+		 	$delete_url = self_admin_url('users.php?action=delete&users[]=' . implode( '&users[]=', $_GET['ID'] ));
+    		$delete_url = str_replace( '&amp;', '&', wp_nonce_url( $delete_url, 'bulk-users' ) );
+			wp_safe_redirect ($delete_url);
+			exit();
 		}
 		do_action('wcmp_vendor_process_bulk_action', $this->current_action(), $_REQUEST);
 	}
@@ -345,20 +330,21 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 		
 		if(isset($_POST['wcmp_vendor_submit'])) {
 			if($_POST['wcmp_vendor_submit'] == 'update' && isset($_POST['user_id']) && $_POST['user_id'] > 0) {
-				$user_id = $_POST['user_id'];
-				
+				$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+				//save shipping at admin end
+				$WCMp->vendor_dashboard->save_vendor_shipping( absint( $_GET['ID'] ), $_POST );
 				$errors = new WP_Error();
 				$vendor = get_wcmp_vendor($user_id);
 				if($vendor) {
 					$userdata = array(
 						'ID' => $user_id,
-						'user_login' => $_POST['user_login'],
-						'user_pass' => $_POST['password'],
-						'user_email' => $_POST['user_email'],
-						'user_nicename' => $_POST['user_nicename'],
-						'display_name' => $_POST['display_name'],
-						'first_name' => $_POST['first_name'],
-						'last_name' => $_POST['last_name'],
+						'user_login' => isset( $_POST['user_login'] ) ? sanitize_user( $_POST['user_login'] ) : '',
+						'user_pass' => isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '',
+						'user_email' => isset( $_POST['user_email'] ) ? sanitize_email( $_POST['user_email'] ) : '',
+						'user_nicename' => isset( $_POST['user_nicename'] ) ? sanitize_text_field( wp_unslash( $_POST['user_nicename'] ) ) : '',
+						'display_name' => isset( $_POST['display_name'] ) ? sanitize_text_field( wp_unslash( $_POST['display_name'] ) ) : '',
+						'first_name' => isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '',
+						'last_name' => isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '',
 					);
 					
 					$user_id = wp_update_user( $userdata ) ;
@@ -375,21 +361,21 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 								if (!$vendor->update_page_slug(wc_clean($value))) {
 									$errors->add('vendor_slug_exists', __('Slug already exists', 'dc-woocommerce-multi-vendor'));
 								}
-                                                        } else if($key === "vendor_country") {
-                                                            $country_code = $value;
-                                                            $country_data = WC()->countries->get_countries();
+                                            } else if($key === "vendor_country") {
+                                                            $country_code = wc_clean( wp_unslash( $value ) );
+                                                            $country_data = wc_clean( wp_unslash( WC()->countries->get_countries() ) );
                                                             $country_name = ( isset( $country_data[ $country_code ] ) ) ? $country_data[ $country_code ] : $country_code; //To get country name by code
                                                             update_user_meta($user_id, '_' . $key, $country_name);
                                                             update_user_meta($user_id, '_' . $key . '_code', $country_code);
 							} else if($key === "vendor_state") {
-                                                            $country_code = $_POST['vendor_country'];
-                                                            $state_code = $value;
-                                                            $state_data = WC()->countries->get_states($country_code);
+                                                            $country_code = isset( $_POST['vendor_country'] ) ? wc_clean( wp_unslash( $_POST['vendor_country'] ) ) : '';
+                                                            $state_code = wc_clean( wp_unslash( $value ) );
+                                                            $state_data = wc_clean( wp_unslash( WC()->countries->get_states($country_code) ) );
                                                             $state_name = ( isset( $state_data[$state_code] ) ) ? $state_data[$state_code] : $state_code; //to get State name by state code
                                                             update_user_meta($user_id, '_' . $key, $state_name);
                                                             update_user_meta($user_id, '_' . $key . '_code', $state_code);
                                                         } else if(substr($key, 0, strlen("vendor_")) === "vendor_") {
-								update_user_meta($user_id, "_" . $key, $value);
+								update_user_meta($user_id, "_" . $key, wc_clean( wp_unslash( $value ) ) );
 							}
 						} else {
 							if(substr($key, 0, strlen("vendor_")) === "vendor_") {
@@ -398,6 +384,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 						}
 					}
 				}
+				do_action('wcmp_vendor_details_update', $_POST, $vendor);
 				if ( is_wp_error( $errors ) && ! empty( $errors->errors ) ) {
 					$error_string = $errors->get_error_message();
 					echo '<div id="message" class="error"><p>' . $error_string . '</p></div>';
@@ -406,13 +393,13 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 				}
 			} else if($_POST['wcmp_vendor_submit'] == 'add_new') {
 				$userdata = array(
-					'user_login' => $_POST['user_login'],
-					'user_pass' => $_POST['password'],
-					'user_email' => $_POST['user_email'],
-					'user_nicename' => $_POST['user_nicename'],
-					'first_name' => $_POST['first_name'],
-					'last_name' => $_POST['last_name'],
-					'role' => 'dc_vendor'
+					'user_login' => isset( $_POST['user_login'] ) ? sanitize_user( $_POST['user_login'] ) : '',
+					'user_pass' => isset( $_POST['password'] ) ? sanitize_text_field( wp_unslash( $_POST['password'] ) ) : '',
+					'user_email' => isset( $_POST['user_email'] ) ? sanitize_email( $_POST['user_email'] ) : '',
+					'user_nicename' => isset( $_POST['user_nicename'] ) ? sanitize_text_field( wp_unslash( $_POST['user_nicename'] ) ) : '',
+					'first_name' => isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '',
+					'last_name' => isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '',
+					'role' => 'dc_vendor',
 				);
 				$user_id = wp_insert_user( $userdata ) ;
 				if ( is_wp_error( $user_id ) ) {
@@ -420,7 +407,9 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 					echo '<div id="message" class="error"><p>' . $error_string . '</p></div>';
                                         $user_id = null;
 				} else {
-					if(isset($_POST['vendor_profile_image']) && $_POST['vendor_profile_image'] != '') update_user_meta($user_id, "_vendor_profile_image", $_POST['vendor_profile_image']);
+                                        $email = WC()->mailer()->emails['WC_Email_Vendor_New_Account'];
+                                        $email->trigger( $user_id, $userdata['user_pass'], false);
+					if(isset($_POST['vendor_profile_image']) && $_POST['vendor_profile_image'] != '') update_user_meta($user_id, "_vendor_profile_image", absint( $_POST['vendor_profile_image']));
 					echo '<div class="notice notice-success"><p>' . __( 'Vendor successfully created!', 'dc-woocommerce-multi-vendor' ) . '</p></div>';
 				}
                                 wp_safe_redirect(apply_filters('wcmp_add_new_vendor_redirect_url', admin_url('admin.php?page=vendors&action=edit&ID='.$user_id)));
@@ -430,6 +419,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 		
 		$is_approved_vendor = false;
 		$is_new_vendor_form = false;
+		$vendor_obj = null;
 		$display_name_option = array();
 				
         if( 'edit' === $this->current_action() || 'add_new' === $this->current_action() ) {
@@ -459,9 +449,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 							"user_id" => array('label' => '', 'type' => 'hidden', 'id' => 'user_id', 'label_for' => 'user_id', 'name' => 'user_id', 'value' => isset($user->ID)? $user->ID : ''),
 						);
 				$store_tab_options = array();
-				
-				$vendor_obj = null;
-				
+								
 				if( is_user_wcmp_vendor($_GET['ID']) ) {
 					$is_approved_vendor = true;
 					$vendor_obj = get_wcmp_vendor($_GET['ID']);
@@ -614,6 +602,9 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 					<li> 
 						<a href="#vendor-application"><span class="dashicons dashicons-id-alt"></span> <?php echo __('Vendor Application', 'dc-woocommerce-multi-vendor'); ?></a>
 					</li>
+					<li> 
+						<a href="#vendor-shipping"><span class="dashicons dashicons-id-alt"></span> <?php echo __('Vendor Shipping', 'dc-woocommerce-multi-vendor'); ?></a>
+					</li>
 					<?php } 
 					do_action('wcmp_vendor_preview_tabs_post', $is_approved_vendor);
 					?>
@@ -624,21 +615,21 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 					if($is_approved_vendor || $is_new_vendor_form) { ?>
 					<div id="personal-detail">
 						<h2><?php echo __('Personal Information', 'dc-woocommerce-multi-vendor'); ?></h2>
-						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_personal_tab_options", $personal_tab_options));?>
+						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_personal_tab_options", $personal_tab_options, $vendor_obj));?>
 					</div>
 					<?php } ?>
 					<?php if($is_approved_vendor) { ?>
 					<div id="store">
 						<h2><?php echo __('Store Settings', 'dc-woocommerce-multi-vendor'); ?></h2>
-						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_store_tab_options", $store_tab_options));?>
+						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_store_tab_options", $store_tab_options, $vendor_obj));?>
 					</div>
 					<div id="social">
 						<h2><?php echo __('Social Information', 'dc-woocommerce-multi-vendor'); ?></h2>
-						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_social_tab_options", $social_tab_options));?>
+						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_social_tab_options", $social_tab_options, $vendor_obj));?>
 					</div>
 					<div id="payment">
 						<h2><?php echo __('Payment Method', 'dc-woocommerce-multi-vendor'); ?></h2>
-						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_payment_tab_options", $payment_tab_options));?>
+						<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_payment_tab_options", $payment_tab_options, $vendor_obj));?>
 					</div>
 					<?php } ?>
 					<?php if(!$is_new_vendor_form) { ?>
@@ -704,6 +695,71 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 							}
 						?>
 					</div>
+					<div id="vendor-shipping">
+						<table class="wcmp-shipping-zones wc-shipping-zones widefat">
+							<thead>
+								<tr>
+									<th><?php esc_html_e('Zone name', 'dc-woocommerce-multi-vendor'); ?></th>
+									<th><?php esc_html_e('Region(s)', 'dc-woocommerce-multi-vendor'); ?></th>
+									<th><?php esc_html_e('Shipping method(s)', 'dc-woocommerce-multi-vendor'); ?></th>
+									<th><?php esc_html_e('Actions', 'dc-woocommerce-multi-vendor'); ?></th>
+								</tr>
+							</thead>
+							<tbody class="wcmp-shipping-zone-rows wc-shipping-zone-rows">
+								<?php $vendor_all_shipping_zones = wcmp_get_shipping_zone();
+								if (!empty($vendor_all_shipping_zones)) {
+									foreach ($vendor_all_shipping_zones as $key => $vendor_shipping_zones) {
+										?>
+										<tr data-id="0" class="wc-shipping-zone-worldwide">
+											<td class="wc-shipping-zone-name">
+												<a href="JavaScript:void(0);" data-vendor_id="<?php echo esc_attr($_GET['ID']); ?>" data-zone-id="<?php echo esc_attr($vendor_shipping_zones['zone_id']); ?>" class="vendor_edit_zone modify-shipping-methods"><?php esc_html_e($vendor_shipping_zones['zone_name'], 'dc-woocommerce-multi-vendor'); ?></a> 
+											</td>
+											<td class="wc-shipping-zone-region"><?php esc_html_e($vendor_shipping_zones['formatted_zone_location'], 'dc-woocommerce-multi-vendor'); ?></td>
+											<td class="wc-shipping-zone-methods">
+												<ul class="wcmp-shipping-zone-methods">
+													<?php
+													$vendor_shipping_methods = $vendor_shipping_zones['shipping_methods'];
+													$vendor_shipping_methods_titles = array();
+													if ($vendor_shipping_methods) :
+														foreach ($vendor_shipping_methods as $key => $shipping_method) {
+															$class_name = 'yes' === $shipping_method['enabled'] ? 'method_enabled' : 'method_disabled';
+															$vendor_shipping_methods_titles[] = "<li class='wcmp-shipping-zone-method wc-shipping-zone-method $class_name'>" . $shipping_method['title'] . "</li>";
+														}
+														endif;
+														//$vendor_shipping_methods_titles = array_column($vendor_shipping_methods, 'title');
+														$vendor_shipping_methods_titles = implode('', $vendor_shipping_methods_titles);
+
+														if (empty($vendor_shipping_methods)) {
+															?>
+															<li class="wcmp-shipping-zone-method wc-shipping-zone-method"><?php _e('No shipping methods offered to this zone.', 'dc-woocommerce-multi-vendor'); ?> </li>
+															<?php } else { ?>
+															<?php _e($vendor_shipping_methods_titles, 'dc-woocommerce-multi-vendor'); ?>
+															<?php } ?>
+														</ul>
+													</td>
+													<td>
+														<div class="col-actions">
+															<span class="view">
+																<a href="JavaScript:void(0);" data-vendor_id="<?php echo $_GET['ID']; ?>" data-zone-id="<?php echo $vendor_shipping_zones['zone_id']; ?>" class="vendor_edit_zone modify-shipping-methods" title="<?php _e('Edit', 'dc-woocommerce-multi-vendor'); ?>"><?php _e('Edit', 'dc-woocommerce-multi-vendor'); ?></a>
+															</span> 
+														</div>
+													</td>
+												</tr>
+												<?php
+											}
+								} else {
+									?>
+									<tr>
+										<td colspan="3"><?php _e('No shipping zone found for configuration. Please contact with admin for manage your store shipping', 'dc-woocommerce-multi-vendor'); ?></td>
+									</tr>
+								<?php }	?>
+							</tbody>
+						</table>
+						<!-- For Gettting new data -->
+						<table class="form-table wcmp-shipping-zone-settings wc-shipping-zone-settings">
+						</table>
+					</div>
+					
 					<?php }
 					do_action('wcmp_vendor_preview_tabs_form_post', $is_approved_vendor);
 					?>
@@ -729,7 +785,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 							// Do Nothing
 						} else if(in_array('dc_pending_vendor', $user->roles)) {
 							$button_html = '<div class="wcmp-vendor-modal-main">
-												<textarea class="pending-vendor-note form-control" data-note-author-id="' . get_current_user_id() . '"placeholder="' . __( 'Optional note for acceptance / rejection', 'dc-woocommerce-multi-vendor' ) . '" name=""></textarea>
+												<textarea class="pending-vendor-note form-control" data-note-author-id="' . get_current_user_id() . '"placeholder="' . esc_attr_e( 'Optional note for acceptance / rejection', 'dc-woocommerce-multi-vendor' ) . '" name=""></textarea>
 												<div id="wc-backbone-modal-dialog">
 													<button class="button button-primary wcmp-action-button vendor-approve-btn wcmp-primary-btn" data-vendor-id="' . $user->ID . '" data-ajax-action="activate_pending_vendor">' . __('Approve', 'dc-woocommerce-multi-vendor') . '</button>
 													<button class="button button-primary wcmp-action-button vendor-reject-btn pull-right" data-vendor-id="' . $user->ID . '" data-ajax-action="reject_pending_vendor">' . __('Reject', 'dc-woocommerce-multi-vendor') . '</button>

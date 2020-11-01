@@ -6,6 +6,11 @@
 	resize: vertical;
 }
 
+.show_order_items {
+	font-size: 18px;
+	color: #e83e8c;
+}
+
 .order-status, .booking-status, .appointment-status {
   font-size: 20px;	
 }

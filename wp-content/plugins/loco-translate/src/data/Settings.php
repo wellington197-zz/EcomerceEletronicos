@@ -11,11 +11,19 @@
  * @property array $jsx_alias Registered extensions for scanning JavaScript/JSX files (disabled by default)
  * @property bool $fs_persist Whether to remember file system credentials in session
  * @property int $fs_protect Prevent modification of files in system folders (0:off, 1:warn, 2:block)
+ * @property int $pot_protect Prevent modification of POT files (0:off, 1:warn, 2:block)
  * @property string $max_php_size Skip PHP source files this size or larger
  * @property bool $po_utf8_bom Whether to prepend PO and POT files with UTF-8 byte order mark
  * @property string $po_width PO/POT file maximum line width (wrapping) zero to disable
  * @property bool $jed_pretty Whether to pretty print JSON JED files
- * @property bool $ajax_files Whether to submit PO data as concrete files
+ * @property bool $ajax_files Whether to submit PO data as concrete files (requires Blob support in Ajax)
+ *
+ * @property string $deepl_api_key API key for DeepL Translator
+ * @property string $google_api_key API key for Google Translate
+ * @property string $yandex_api_key API key for Yandex.Translate
+ * @property string $microsoft_api_key API key for Microsoft Translator text API
+ * @property string $microsoft_api_region API region for Microsoft Translator text API
+ *
  */
 class Loco_data_Settings extends Loco_data_Serializable {
 
@@ -24,7 +32,7 @@ class Loco_data_Settings extends Loco_data_Serializable {
      * @var Loco_data_Settings
      */
     private static $current;
-    
+
 
     /**
      * Available options and their defaults
@@ -40,11 +48,17 @@ class Loco_data_Settings extends Loco_data_Serializable {
         'jsx_alias' => array(),
         'fs_persist' => false,
         'fs_protect' => 1,
+        'pot_protect' => 1,
         'max_php_size' => '100K',
         'po_utf8_bom' => false,
         'po_width' => '79',
         'jed_pretty' => false,
-        'ajax_files' => false,
+        'ajax_files' => true,
+        'deepl_api_key' => '',
+        'google_api_key' => '',
+        'yandex_api_key' => '',
+        'microsoft_api_key' => '',
+        'microsoft_api_region' => 'global',
     );
 
 
@@ -100,26 +114,7 @@ class Loco_data_Settings extends Loco_data_Serializable {
      * {@inheritdoc}
      */
     public function offsetSet( $prop, $value ){
-        if( ! isset(self::$defaults[$prop]) ){
-            throw new InvalidArgumentException('Invalid option, '.$prop );
-        }
-        $default = self::$defaults[$prop];
-        // cast to same type as default
-        if( is_bool($default) ){
-            $value = (bool) $value;
-        }
-        else if( is_int($default) ){
-            $value = (int) $value;
-        }
-        else if( is_array($default) ){
-            if( ! is_array($value) ){
-                // TODO use a standard CSV split for array values?
-                $value = preg_split( '/[\s,]+/', trim($value), -1, PREG_SPLIT_NO_EMPTY );
-            }
-        }
-        else {
-            $value = (string) $value;
-        }
+        $value = parent::cast($prop,$value,self::$defaults);
         parent::offsetSet( $prop, $value );
     }
 
@@ -140,7 +135,8 @@ class Loco_data_Settings extends Loco_data_Serializable {
      * @return bool whether settings where previously saved
      */
     public function fetch(){
-        if( $data = get_option('loco_settings') ){
+        $data = get_option('loco_settings');
+        if( is_array($data) ){
             $copy = new Loco_data_Settings;
             $copy->setUnserialized($data);
             // preserve any defaults not in previously saved data
@@ -157,54 +153,57 @@ class Loco_data_Settings extends Loco_data_Serializable {
 
 
     /**
-     * Run migration in case plugin has been upgraded from 1.x => 2.x since settings last saved
+     * Run migration in case plugin has been upgraded since settings last saved
      * @return bool whether upgrade has occurred
      */
     public function migrate(){
-        $existed = (bool) get_option('loco_settings');
-        // migrate 1.x branch settings if first run of 2.x
-        if( ! $existed ){
-            $this->gen_hash = get_option('loco-translate-gen_hash','0');
-            $this->use_fuzzy = get_option('loco-translate-use_fuzzy', '1' );
-            $this->num_backups = get_option('loco-translate-num_backups','1');
+        $updated = false;
+        // Always update version number in settings after an upgrade
+        $old = $this->version;
+        $new = loco_plugin_version();
+        if( version_compare($old,$new,'<') ){
             $this->persist();
+            $updated = true;
+            // feature alerts:
+            if( '2.4.' === substr($new,0,4) && '2.4.' !== substr($old,0,4) ){
+                Loco_error_AdminNotices::info( __('Loco Translate 2.4 supports third party translation providers. Set up your API keys in the plugin settings!','loco-translate') )
+                   ->addLink( Loco_mvc_AdminRouter::generate('config-apis'), __('Settings','loco-translate') )
+                   ->addLink( apply_filters('loco_external','https://localise.biz/wordpress/plugin/manual/providers'), __('Documentation','loco-translate') );
+            }
         }
-        // running of plugin in 1.x legacy mode is disabled as of 2.0.15
-        if( false !== get_option('loco-branch',false) ){
-            delete_option('loco-branch');
-            delete_option('loco-translate-gen_hash');
-            delete_option('loco-translate-use_fuzzy');
-            delete_option('loco-translate-num_backups');
-        }
-        return ! $existed;
+        return $updated;
     }
 
 
     /**
-     * Populate all settings from raw postdata.
+     * Populate ALL settings from raw postdata.
      * @param array posted setting values
+     * @param array optional filter to restrict modifiable values
      * @return Loco_data_Settings
      */
-    public function populate( array $data ){
-        // set all keys present in array
+    public function populate( array $data, $filter = null ){
+        // set all keys present in posted data
         foreach( $data as $prop => $value ){
             try {
-                $this->offsetSet( $prop, $value );
+                if( is_null($filter) || in_array($prop,$filter,true) ) {
+                    $this->offsetSet( $prop, $value );
+                }
             }
             catch( InvalidArgumentException $e ){
                 // skipping invalid key
             }
         }
-        // set missing boolean keys as false, because checkboxes
-        if( $missing = array_diff_key(self::$defaults,$data) ){
-            foreach( $missing as $prop => $default ){
-                if( is_bool($default) ){
-                    parent::offsetSet( $prop, false );
-                }
-                
+        // set missing boolean keys as false, because unchecked checkboxes won't post anything
+        $defaults = self::$defaults;
+        if( is_array($filter) ){
+            $defaults = array_intersect_key( array_flip($filter) ,$defaults);
+        }
+        foreach( array_diff_key($defaults,$data) as $prop => $default ){
+            if( is_bool($default) ){
+                parent::offsetSet( $prop, false );
             }
         }
-        // enforce missing values that must have a default
+        // enforce missing values that must have a default, but were passed empty
         foreach( array('php_alias','max_php_size','po_width') as $prop ){
             if( isset($data[$prop]) && '' === $data[$prop] ){
                 parent::offsetSet( $prop, self::$defaults[$prop] );
@@ -213,8 +212,8 @@ class Loco_data_Settings extends Loco_data_Serializable {
 
         return $this;
     }
-    
-    
+
+
     /**
      * Map a file extension to registered types, defaults to "php"
      * @param string

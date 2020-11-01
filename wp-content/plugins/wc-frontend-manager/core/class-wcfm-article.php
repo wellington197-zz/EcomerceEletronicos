@@ -143,7 +143,7 @@ class WCFM_Article {
 	    	wp_enqueue_script( 'wcfm_articles_js', $WCFM->library->js_lib_url . 'articles/wcfm-script-articles.js', array('jquery', 'dataTables_js'), $WCFM->version, true );
 	    	
 	    	// Screen manager
-	    	$wcfm_screen_manager = (array) get_option( 'wcfm_screen_manager' );
+	    	$wcfm_screen_manager = get_option( 'wcfm_screen_manager', array() );
 	    	$wcfm_screen_manager_data = array();
 	    	if( isset( $wcfm_screen_manager['article'] ) ) $wcfm_screen_manager_data = $wcfm_screen_manager['article'];
 	    	if( !isset( $wcfm_screen_manager_data['admin'] ) ) {
@@ -156,6 +156,7 @@ class WCFM_Article {
 				} else {
 					$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
 				}
+				$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'articles' );
 	    	wp_localize_script( 'wcfm_articles_js', 'wcfm_articles_screen_manage', $wcfm_screen_manager_data );
       break;
       

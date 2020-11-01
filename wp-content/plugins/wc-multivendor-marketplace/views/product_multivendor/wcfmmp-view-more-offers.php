@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 global $WCFM, $WCFMmp, $product, $wpdb;
 
+if( !method_exists( $product, 'get_id' ) ) return;
+
 $product_id = $product->get_id();
 
 $parent_product_id = 0;
@@ -30,6 +32,8 @@ if( $multi_parent ) {
 
 $more_offers = $wpdb->get_results( "SELECT * FROM `{$wpdb->prefix}wcfm_marketplace_product_multivendor` WHERE `parent_product_id` = $parent_product_id" );
 
+$more_offers = apply_filters( 'wcfmmp_more_offers_products', $more_offers, $parent_product_id );
+
 $button_style     = '';
 $hover_color      = '';
 $hover_text_color = '#ffffff';
@@ -47,33 +51,33 @@ if( !empty( $wcfm_store_color_settings ) ) {
 }
 
 if( !empty( $more_offers ) ) {
+	do_action( 'wcfmmp_more_offers_content_before', $parent_product_id );
 	?>
 	<div class="wcfmmp_product_mulvendor_container">		
-		<div class="wcfmmp_product_mulvendor_row wcfmmp_product_mulvendor_rowhead">
-			<div class="wcfmmp_product_mulvendor_rowsub "><?php _e('Store', 'wc-multivendor-marketplace'); ?></div>
-			<div class="wcfmmp_product_mulvendor_rowsub"><?php _e('Price', 'wc-multivendor-marketplace'); ?></div>
-			<div class="wcfmmp_product_mulvendor_rowsub"><?php _e('Details', 'wc-multivendor-marketplace'); ?></div>
-			<div class="wcfm_clearfix"></div>
-		</div>			
-		<?php
-		// Adding Parent Product in Table
-		if( $product_id != $parent_product_id ) {
-			$store_id         = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $parent_product_id );
-			$WCFMmp->template->get_template( 'product_multivendor/wcfmmp-view-more-offer-single.php', array( 'offer_product_id' => $parent_product_id, 'store_id' => $store_id, 'button_style' => $button_style ) );
-		}
+	
+	  <?php if( apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) { ?>
+	  	<?php do_action( 'wcfmmp_more_offers_sorting_form_before', $parent_product_id ); ?>
+			<form class="woocommerce-spmv-ordering" method="POST">
+				<select name="spmv_orderby" class="orderby" aria-label="Shop order" data-product_id="<?php echo $product_id; ?>">
+					<option value="menu_order"><?php _e( 'Default sorting', 'woocommerce' ); ?></option>
+					<option value="popularity"><?php _e( 'Sort by popularity', 'woocommerce' ); ?></option>
+					<option value="date"><?php _e( 'Sort by latest', 'woocommerce' ); ?></option>
+					<option value="price"><?php _e( 'Sort by price: low to high', 'woocommerce' ); ?></option>
+					<option value="price-desc"><?php _e( 'Sort by price: high to low', 'woocommerce' ); ?></option>
+				</select>
+			</form>
+			<?php do_action( 'wcfmmp_more_offers_sorting_form_after', $parent_product_id ); ?>
+			<div class="wcfm-clearfix"></div>
+	  <?php } ?>
+	
+	  <?php $WCFMmp->template->get_template( 'product_multivendor/wcfmmp-view-more-offers-loop.php', array( 'product_id' => $product_id, 'sorting' => 'price' ) ); ?>
 		
-		foreach( $more_offers as $more_offer ) {
-			$offer_product_id = absint($more_offer->product_id);
-			if( ( $product_id == $offer_product_id ) && apply_filters( 'wcfmmp_is_allow_skip_current_product_from_more_offers', true ) ) continue;
-			$store_id         = absint($more_offer->vendor_id);
-			$WCFMmp->template->get_template( 'product_multivendor/wcfmmp-view-more-offer-single.php', array( 'offer_product_id' => $offer_product_id, 'store_id' => $store_id, 'button_style' => $button_style ) );
-		}
-		?>
 		<?php if( $hover_color ) { ?>
 			<style>a.wcfmmp_product_multivendor_action_button:hover{background: <?php echo $hover_color; ?> !important;background-color: <?php echo $hover_color; ?> !important;border-bottom-color: <?php echo $hover_color; ?> !important;color: <?php echo $hover_text_color; ?> !important;}</style>
 		<?php } ?>
 	</div>
 	<?php
+	do_action( 'wcfmmp_more_offers_content_after', $parent_product_id );
 } else {
 	_e( 'No more offers for this product!', 'wc-multivendor-marketplace' );
 }

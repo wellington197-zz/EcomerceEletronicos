@@ -45,8 +45,9 @@ class WCFMmp_Reviews_Submit_Controller {
 			$author_email = $userdata->user_email;
 			
 			$review_title       = '';
-			$review_description = apply_filters( 'wcfm_editor_content_before_save', strip_tags( wcfm_stripe_newline( $wcfm_store_review_data['wcfmmp_store_review_comment'] ) ) );
-			$review_description = esc_sql( wp_unslash( $review_description ) );
+			$review_description      = apply_filters( 'wcfm_editor_content_before_save', strip_tags( wcfm_stripe_newline( $wcfm_store_review_data['wcfmmp_store_review_comment'] ) ) );
+			$review_description_mail = wp_unslash( $review_description );
+			$review_description      = esc_sql( wp_unslash( $review_description ) );
 			
 			
 			$review_rating = 0;

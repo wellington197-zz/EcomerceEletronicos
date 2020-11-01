@@ -22,6 +22,7 @@ jQuery(document).ready(function($) {
 										{ responsivePriority: 2 },
 										{ responsivePriority: 1 },
 										{ responsivePriority: 3 },
+										{ responsivePriority: 3 },
 										{ responsivePriority: 6 },
 										{ responsivePriority: 2 }
 								],
@@ -35,6 +36,7 @@ jQuery(document).ready(function($) {
 										{ "targets": 7, "orderable" : false },
 										{ "targets": 8, "orderable" : false },
 										{ "targets": 9, "orderable" : false },
+										{ "targets": 10, "orderable" : false },
 									],
 		'ajax': {
 			"type"   : "POST",
@@ -75,8 +77,8 @@ jQuery(document).ready(function($) {
 	
 	// Screen Manager
 	$( document.body ).on( 'updated_wcfm-payments', function() {
-		//$.each(wcfm_orders_screen_manage, function( column, column_val ) {
-		  $wcfm_payments_table.column(3).visible( false );
-		//} );
+		$.each(wcfm_payments_screen_manage, function( column, column_val ) {
+		  $wcfm_payments_table.column(column).visible( false );
+		} );
 	});
 } );

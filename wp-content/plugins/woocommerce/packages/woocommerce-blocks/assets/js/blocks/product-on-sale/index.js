@@ -4,28 +4,28 @@
 import { __ } from '@wordpress/i18n';
 import { createBlock, registerBlockType } from '@wordpress/blocks';
 import { without } from 'lodash';
-import Gridicon from 'gridicons';
-
+import { Icon, tag } from '@woocommerce/icons';
 /**
  * Internal dependencies
  */
 import Block from './block';
+import './editor.scss';
 import { deprecatedConvertToShortcode } from '../../utils/deprecations';
 import sharedAttributes, {
 	sharedAttributeBlockTypes,
 } from '../../utils/shared-attributes';
 
 registerBlockType( 'woocommerce/product-on-sale', {
-	title: __( 'On Sale Products', 'woo-gutenberg-products-block' ),
+	title: __( 'On Sale Products', 'woocommerce' ),
 	icon: {
-		src: <Gridicon icon="tag" />,
+		src: <Icon srcElement={ tag } />,
 		foreground: '#96588a',
 	},
 	category: 'woocommerce',
-	keywords: [ __( 'WooCommerce', 'woo-gutenberg-products-block' ) ],
+	keywords: [ __( 'WooCommerce', 'woocommerce' ) ],
 	description: __(
-		'Display a grid of on sale products.',
-		'woo-gutenberg-products-block'
+		'Display a grid of products currently on sale.',
+		'woocommerce'
 	),
 	supports: {
 		align: [ 'wide', 'full' ],
@@ -40,6 +40,11 @@ registerBlockType( 'woocommerce/product-on-sale', {
 		orderby: {
 			type: 'string',
 			default: 'date',
+		},
+	},
+	example: {
+		attributes: {
+			isPreview: true,
 		},
 	},
 	transforms: {
@@ -72,6 +77,8 @@ registerBlockType( 'woocommerce/product-on-sale', {
 
 	/**
 	 * Renders and manages the block.
+	 *
+	 * @param {Object} props Props to pass to block.
 	 */
 	edit( props ) {
 		return <Block { ...props } />;

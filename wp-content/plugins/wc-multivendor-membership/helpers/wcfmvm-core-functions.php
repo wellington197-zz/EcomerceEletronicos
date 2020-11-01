@@ -21,7 +21,7 @@ if(!function_exists('wcfmvm_wcfm_inactive_notice')) {
 
 if(!function_exists('wcfm_allowed_membership_user_roles')) {
 	function wcfm_allowed_membership_user_roles() { 
-		$allowed_membership_user_roles = apply_filters( 'wcfm_allowed_membership_user_roles',  array( 'disable_vendor', 'vendor', 'dc_vendor', 'seller', 'wcfm_vendor', 'wc_product_vendors_admin_vendor', 'customer', 'subscriber', 'editor', 'contributor', 'author', 'bbp_participant' ) );
+		$allowed_membership_user_roles = apply_filters( 'wcfm_allowed_membership_user_roles',  array( 'disable_vendor', 'vendor', 'dc_vendor', 'seller', 'wcfm_vendor', 'wc_product_vendors_admin_vendor', 'customer', 'subscriber', 'editor', 'contributor', 'author', 'bbp_participant', 'wcfm_affiliate' ) );
 		return $allowed_membership_user_roles;
 	}
 }
@@ -147,6 +147,12 @@ if(!function_exists('get_wcfm_registration_page')) {
 	}
 }
 
+if(!function_exists('get_wcfm_registration_url')) {
+	function get_wcfm_registration_url() {
+		return apply_filters( 'wcfm_registration_url', get_wcfm_registration_page() );
+	}
+}
+
 if(!function_exists('get_wcfm_membership_url')) {
 	function get_wcfm_membership_url() {
 		return apply_filters( 'wcfm_membership_home', get_wcfm_membership_page() );
@@ -157,7 +163,7 @@ if(!function_exists('get_wcfm_membership_payment_methods')) {
 	function get_wcfm_membership_payment_methods() {
 		$wcfm_membership_payment_methods = array( 
 			                                      'paypal'        => __( 'PayPal', 'wc-multivendor-membership' ), 
-			                                      'stripe'        => __( 'Stripe', 'wc-multivendor-membership' ), 
+			                                      'stripe'        => __( 'Credit or Debit Card (Stripe)', 'wc-multivendor-membership' ), 
 			                                      'bank_transfer' => __( 'Bank Transfer', 'wc-multivendor-membership' ) 
 			                                      );
 		return apply_filters( 'wcfm_membership_payment_methods', $wcfm_membership_payment_methods );
@@ -296,6 +302,15 @@ if(!function_exists('get_wcfm_memberships_settings_url')) {
 	}
 }
 
+if(!function_exists('get_wcfmvm_emails')) {
+	function get_wcfmvm_emails() {
+		$wcfmvm_emails = array( 
+												   'email-verification'      => __( 'Email Verification', 'wc-multivendor-membership' ),
+												);
+		return apply_filters( 'wcfmvm_emails', $wcfmvm_emails );
+	}
+}
+
 if(!function_exists('get_wcfmvm_membership_manage_messages')) {
 	function get_wcfmvm_membership_manage_messages() {
 		global $WCFMvm;
@@ -345,6 +360,9 @@ if(!function_exists('get_wcfmvm_membership_payment_messages')) {
 
 if(!function_exists('get_wcfm_free_membership')) {
 	function get_wcfm_free_membership() {
+		
+		if( !apply_filters( 'wcfm_is_pref_membership', true ) ) return 0;
+		
 		$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
 			
 		$membership_type_settings = array();
@@ -395,6 +413,37 @@ if(!function_exists('wcfmvm_membership_tax_price')) {
 			$price += wc_format_decimal( $price * ($tax_percent/100) );
 		}
 		return apply_filters( 'wcfmvm_membership_tax_price', $price );
+	}
+}
+
+if(!function_exists('wcfm_membership_features_table')) {
+	function wcfm_membership_features_table( $wcfm_membership, $with_heading = true ) {
+		$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
+		$membership_feature_lists = array();
+		if( isset( $wcfm_membership_options['membership_features'] ) ) $membership_feature_lists = $wcfm_membership_options['membership_features'];
+		$features = (array) get_post_meta( $wcfm_membership, 'features', true );
+		
+		$wcfm_plan_details = '';
+		if( !empty( $membership_feature_lists ) ) {
+			if( $with_heading ) {
+				$wcfm_plan_details .= '<h2>' . __( 'Plan Details', 'wc-multivendor-membership' ) . '</h2>';
+			}
+			$wcfm_plan_details .= '<table width="100%" style="width:100%;">';
+			foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
+				if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
+					$feature_val = '';
+					$feature_name = sanitize_title($membership_feature_list['feature']);
+					if( !empty( $features ) && isset( $features[$feature_name] ) && !empty( $features[$feature_name] ) ) $feature_val = $features[$feature_name];
+					if( !empty( $features ) && !$feature_val && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
+					if( !$feature_val ) $feature_val = 'x';
+					$wcfm_plan_details .= '<tr><td colspan="3" style="background-color: #eeeeee;padding: 1em 1.41575em;line-height: 1.5;">'. wcfm_removeslashes( __( $membership_feature_list['feature'], 'WCfM' ) ) . '</td>';
+					$wcfm_plan_details .= '<td colspan="5" style="background-color: #f8f8f8;padding: 1em;">' . __( $feature_val, 'WCfM' ) . '</td></tr>';
+				}
+			}
+			$wcfm_plan_details .= '</table><br />';
+		}
+		
+		return apply_filters( 'wcfm_membership_features_table_html', $wcfm_plan_details, $wcfm_membership, $membership_feature_lists );
 	}
 }
 

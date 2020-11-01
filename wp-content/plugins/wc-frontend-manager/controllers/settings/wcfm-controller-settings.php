@@ -23,6 +23,15 @@ class WCFM_Settings_Controller {
 		$wcfm_settings_form_data = array();
 	  parse_str($_POST['wcfm_settings_form'], $wcfm_settings_form);
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_settings_form['wcfm_nonce'] ) && !empty( $wcfm_settings_form['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_settings_form['wcfm_nonce'], 'wcfm_settings' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  $options = get_option( 'wcfm_options' );
 	  
 	  // WCFM form custom validation filter
@@ -248,9 +257,9 @@ class WCFM_Settings_Controller {
 		
 		// Save Product Type wise categories
 		if( isset( $wcfm_settings_form['wcfm_product_type_categories'] ) ) {
-			update_option( 'wcfm_product_type_categories', $wcfm_settings_form['wcfm_product_type_categories'] );
+			wcfm_update_option( 'wcfm_product_type_categories', $wcfm_settings_form['wcfm_product_type_categories'] );
 		} else {
-			update_option( 'wcfm_product_type_categories', array() );
+			wcfm_update_option( 'wcfm_product_type_categories', array() );
 		}
 		
 	  update_option( 'wcfm_options', $options );

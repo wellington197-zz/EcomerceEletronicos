@@ -72,6 +72,11 @@ class WCFMmp_Shipping_By_Weight extends WC_Shipping_Method {
       return;
     }
     
+    $wcfmmp_shipping_by_weight = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_weight', true );
+				 
+	  $wcfmmp_free_shipping_amount = isset($wcfmmp_shipping_by_weight['_free_shipping_amount']) ? $wcfmmp_shipping_by_weight['_free_shipping_amount'] : '';
+	  $wcfmmp_free_shipping_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $wcfmmp_free_shipping_amount, $vendor_id );
+    
     $wcfmmp_country_weight_rates = get_user_meta( $vendor_id, '_wcfmmp_country_weight_rates', true );
     
     $wcfmmp_country_weight_mode  = get_user_meta( $vendor_id, '_wcfmmp_country_weight_mode', true );
@@ -99,24 +104,58 @@ class WCFMmp_Shipping_By_Weight extends WC_Shipping_Method {
     
 
      if ( $products ) {
-        $amount = $this->calculate_per_seller( $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $weight_mode_for_country ,$unit_cost_for_country );
-     }
-
-     $tax_rate = ( $this->tax_status == 'none' ) ? false : '';
-     
-     if( !$amount ) {
-     	 $this->title = __('Free Shipping', 'wc-multivendor-marketplace');
-     }
-
-     $rate = array(
-         'id'    => $this->id . ':1',
-         'label' => $this->title,
-         'cost'  => $amount,
-         'taxes' => $tax_rate
-     );
-     
-     // Register the rate
-     $this->add_rate( $rate );
+				$amount = $this->calculate_per_seller( $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $weight_mode_for_country, $unit_cost_for_country, $wcfmmp_free_shipping_amount );
+	
+			 $tax_rate = ( $this->tax_status == 'none' ) ? false : '';
+			 
+			 if( !$amount ) {
+				 $this->title = __('Free Shipping', 'wc-multivendor-marketplace');
+			 }
+	
+			 $rate = array(
+					 'id'    => $this->id . ':1',
+					 'label' => $this->title,
+					 'cost'  => $amount,
+					 'taxes' => $tax_rate
+			 );
+			 
+			 // Register the rate
+			 $this->add_rate( $rate );
+			 
+			 // Local Pickup Method Check
+			 $wcfmmp_shipping_by_weight = get_user_meta( $vendor_id, '_wcfmmp_shipping_by_weight', true );
+			 $enable_local_pickup = isset($wcfmmp_shipping_by_weight['_enable_local_pickup']) ? 'yes' : '';
+			 $local_pickup_cost = isset($wcfmmp_shipping_by_weight['_local_pickup_cost']) ? $wcfmmp_shipping_by_weight['_local_pickup_cost'] : '';
+			 if( $enable_local_pickup ) {
+			 	 $address = wcfm_get_vendor_store_address_by_vendor( $vendor_id );
+			 	 $rate = array(
+						 'id'    => 'local_pickup:1',
+						 'label' => apply_filters( 'wcfmmp_local_pickup_shipping_option_label', __('Pickup from Store', 'wc-multivendor-marketplace')  . ' ('.$address.')', $vendor_id ),
+						 'cost'  => $local_pickup_cost,
+						 'taxes' => $tax_rate
+				 );
+		
+				 // Register the rate
+				 $this->add_rate( $rate );
+			 }
+			 
+			 // Free Shipping Method Check
+			 if( $amount ) {
+			 	 $amount = $this->calculate_per_seller( $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $weight_mode_for_country, $unit_cost_for_country, $wcfmmp_free_shipping_amount, true );
+			 	 
+			 	 if( !$amount ) {
+			 	 	 $rate = array(
+							 'id'    => 'free_shipping:1',
+							 'label' => __('Free Shipping', 'wc-multivendor-marketplace'),
+							 'cost'  => $amount,
+							 'taxes' => $tax_rate
+					 );
+			
+					 // Register the rate
+					 $this->add_rate( $rate );
+			 	 }
+			 }
+		 }
   }
   
   /**
@@ -191,7 +230,7 @@ class WCFMmp_Shipping_By_Weight extends WC_Shipping_Method {
   *
   * @return float
   */
-  public function calculate_per_seller( $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $weight_mode_for_country ,$unit_cost_for_country ) {
+  public function calculate_per_seller( $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $weight_mode_for_country, $unit_cost_for_country, $wcfmmp_free_shipping_amount = '', $is_consider_free_threshold = false ) {
     $amount = $default_cost_for_country;
     $price = array();
     
@@ -210,11 +249,34 @@ class WCFMmp_Shipping_By_Weight extends WC_Shipping_Method {
           continue;
         }
 
-
+        $products_total_cost = 0;
         foreach ( $products as $product ) {
           if($product['data']->has_weight())
             $total_weight += ( $product['data']->get_weight() * $product['quantity'] );
+          
+					$line_subtotal      = (float) $product['line_subtotal'];
+					$line_total         = (float) $product['line_total'];
+					$discount_total     = $line_subtotal - $line_total;
+					$line_subtotal_tax  = (float) $product['line_subtotal_tax'];
+					$line_total_tax     = (float) $product['line_tax'];
+					$discount_tax_total = $line_subtotal_tax - $line_total_tax;
+					
+					if( apply_filters( 'wcfmmp_free_shipping_threshold_consider_tax', true ) ) {
+						$total = $line_subtotal + $line_subtotal_tax;
+					} else {
+						$total = $line_subtotal;
+					}
+					
+					if ( WC()->cart->display_prices_including_tax() ) {
+					 $products_total_cost += round( $total - ( $discount_total + $discount_tax_total ), wc_get_price_decimals() );
+					} else {
+					 $products_total_cost += round( $total - $discount_total, wc_get_price_decimals() );
+					}
         }
+        
+        if( $is_consider_free_threshold && $wcfmmp_free_shipping_amount && ( $wcfmmp_free_shipping_amount <= $products_total_cost ) ) {
+				 return apply_filters( 'wcfmmp_shipping_weight_calculate_amount', 0, $price, $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $total_weight, $weight_mode_for_country, $unit_cost_for_country );
+			 }
       }
     }
     
@@ -243,7 +305,7 @@ class WCFMmp_Shipping_By_Weight extends WC_Shipping_Method {
 			$amount = $selected_rule['price'];
 		} 
 		
-    return apply_filters( 'wcfmmp_shipping_weight_calculate_amount', $amount, $price, $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $total_weight, $weight_mode_for_country ,$unit_cost_for_country );
+    return apply_filters( 'wcfmmp_shipping_weight_calculate_amount', $amount, $price, $products, $destination_country, $destination_state, $weight_array_for_country, $default_cost_for_country, $total_weight, $weight_mode_for_country, $unit_cost_for_country );
   }
   
 }

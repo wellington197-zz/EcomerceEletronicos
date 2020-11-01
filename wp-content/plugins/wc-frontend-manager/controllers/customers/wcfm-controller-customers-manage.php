@@ -26,6 +26,15 @@ class WCFM_Customers_Manage_Controller {
 	  $wcfm_customer_messages = get_wcfm_customers_manage_messages();
 	  $has_error = false;
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_customer_form_data['wcfm_nonce'] ) && !empty( $wcfm_customer_form_data['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_customer_form_data['wcfm_nonce'], 'wcfm_customers_manage' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  if(isset($wcfm_customer_form_data['user_name']) && !empty($wcfm_customer_form_data['user_name'])) {
 	  	if(isset($wcfm_customer_form_data['user_email']) && !empty($wcfm_customer_form_data['user_email'])) {
 				$customer_id = 0;
@@ -76,7 +85,7 @@ class WCFM_Customers_Manage_Controller {
 															'first_name'     => $wcfm_customer_form_data['first_name'],
 															'last_name'      => $wcfm_customer_form_data['last_name'],
 															'user_pass'      => $password,
-															'role'           => 'customer',
+															'role'           => apply_filters( 'wcfm_added_customer_user_role', 'customer' ),
 															'ID'             => $customer_id
 															);
 					if( $is_update ) {
@@ -100,6 +109,7 @@ class WCFM_Customers_Manage_Controller {
 							$wcfm_customer_billing_fields = array( 
 																						'billing_first_name'  => 'bfirst_name',
 																						'billing_last_name'   => 'blast_name',
+																						'billing_company'     => 'bcompany_name',
 																						'billing_phone'       => 'bphone',
 																						'billing_address_1'   => 'baddr_1',
 																						'billing_address_2'   => 'baddr_2',
@@ -119,6 +129,7 @@ class WCFM_Customers_Manage_Controller {
 								$wcfm_customer_billing_shipping_fields = array( 
 																					'shipping_first_name'  => 'bfirst_name',
 																					'shipping_last_name'   => 'blast_name',
+																					'shipping_company'     => 'bcompany_name',
 																					'shipping_address_1'   => 'baddr_1',
 																					'shipping_address_2'   => 'baddr_2',
 																					'shipping_country'     => 'bcountry',
@@ -134,6 +145,7 @@ class WCFM_Customers_Manage_Controller {
 								$wcfm_customer_shipping_fields = array( 
 																							'shipping_first_name'  => 'sfirst_name',
 																							'shipping_last_name'   => 'slast_name',
+																							'shipping_company'     => 'scompany_name',
 																							'shipping_address_1'   => 'saddr_1',
 																							'shipping_address_2'   => 'saddr_2',
 																							'shipping_country'     => 'scountry',

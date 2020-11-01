@@ -29,7 +29,7 @@ global $WCFM, $WCFMmp;
 		<li><a href="<?php echo wcfmmp_generate_social_url( $store_info['social']['instagram'], 'instagram' ); ?>" target="_blank"><i class="fab fa-instagram" aria-hidden="true" target="_blank"></i></a></li>
 	<?php } ?>
 	<?php if( isset( $store_info['social']['pinterest'] ) && !empty( $store_info['social']['pinterest'] ) ) { ?>
-		<li><a href="<?php echo wcfmmp_generate_social_url( $store_info['social']['instagram'], 'pinterest' ); ?>" target="_blank"><i class="fab fa-pinterest" aria-hidden="true" target="_blank"></i></a></li>
+		<li><a href="<?php echo wcfmmp_generate_social_url( $store_info['social']['pinterest'], 'pinterest' ); ?>" target="_blank"><i class="fab fa-pinterest" aria-hidden="true" target="_blank"></i></a></li>
 	<?php } ?>
 	<?php if( isset( $store_info['social']['youtube'] ) && !empty( $store_info['social']['youtube'] ) ) { ?>
 		<li><a href="<?php echo wcfmmp_generate_social_url( $store_info['social']['youtube'], 'youtube' ); ?>" target="_blank"><i class="fab fa-youtube" aria-hidden="true" target="_blank"></i></a></li>

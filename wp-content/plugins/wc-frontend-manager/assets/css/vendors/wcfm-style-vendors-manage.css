@@ -300,6 +300,8 @@ textarea.wcfm-textarea {
 	margin-left: 35%;
 }
 
+div.wcfm-collapse-content .wcfm-content h2{float:none !important;}
+
 @media only screen and (max-width: 640px) {
 	#wcfm-main-contentainer .wcfm_vendor_manage_change_vendor {
 		margin-left: -50px;

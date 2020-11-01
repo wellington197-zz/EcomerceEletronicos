@@ -11,6 +11,7 @@
     border-top: 0px;
     border-right: 0px;
     z-index: 10011;
+    overflow-y: auto;
 	}
 	
 	#wcfm_menu .wcfm_menu_items {
@@ -90,7 +91,6 @@
   }
   #wcfm-main-contentainer .wcfm-menu-fixed {
   	top: 55px;
-  	overflow-y: auto;
   }
 }
 

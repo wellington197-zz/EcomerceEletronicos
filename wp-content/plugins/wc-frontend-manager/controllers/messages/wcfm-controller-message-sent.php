@@ -26,7 +26,11 @@ class WCFM_Message_Sent_Controller {
 		if( wcfm_is_vendor() ) { 
 			$author_is_admin = 0;
 			$author_is_vendor = 1;
-			$message_to = 0; // Receive to Only Store Admin
+			$message_to = 0; // Receive to Only Site Admin
+		} elseif( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) {
+			$author_is_admin = 0;
+			$author_is_vendor = 1;
+			$message_to = 0; // Receive to Only Site Admin
 		} else {
 			$author_is_admin = 1;
 			$author_is_vendor = 0;

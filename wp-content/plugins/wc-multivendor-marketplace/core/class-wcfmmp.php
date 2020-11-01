@@ -105,14 +105,15 @@ class WCFMmp {
 		// Init Text Domain
 		$this->load_plugin_textdomain();
 		
-		$this->wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
 		
 		$this->vendor_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
 		
 		if( function_exists( 'wcfm_get_option' ) ) {
+			$this->wcfm_store_url               = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$this->wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
 			$this->wcfmmp_store_endpoints       = wcfm_get_option( 'wcfm_store_endpoints', array() );
 		} else {
+			$this->wcfm_store_url               = get_option( 'wcfm_store_url', 'store' );
 			$this->wcfmmp_marketplace_options   = get_option( 'wcfm_marketplace_options', array() );
 			$this->wcfmmp_store_endpoints       = get_option( 'wcfm_store_endpoints', array() );
 		}
@@ -269,12 +270,8 @@ class WCFMmp {
 		}
 		
 		// Marketplace Ledger Load
-		if( apply_filters( 'wcfm_is_pref_ledger_book', true ) ) {
-			if (!is_admin() || defined('DOING_AJAX')) {
-				$this->load_class('ledger');
-				$this->wcfmmp_ledger = new WCFMmp_Ledger();
-			}
-		}
+		$this->load_class('ledger');
+		$this->wcfmmp_ledger = new WCFMmp_Ledger();
 		
 		// Marketplace Store Hours Load
 		if( apply_filters( 'wcfm_is_pref_store_hours', true ) ) {
@@ -343,6 +340,10 @@ class WCFMmp {
 	 * List of WCFM Marketplace modules
 	 */
 	function get_wcfmmp_modules( $wcfm_modules ) {
+		
+		$wcfmmp_module_index = array_search( 'refund', array_keys( $wcfm_modules ) );
+		if( !$wcfmmp_module_index ) { $wcfmmp_module_index = 4; } else { $wcfmmp_module_index += 1; }
+		
 		$wcfmmp_modules = array(
 			                    'reviews'             	=> array( 'label' => __( 'Reviews', 'wc-multivendor-marketplace' ) ),
 			                    'store_hours'           => array( 'label' => __( 'Store Hours', 'wc-multivendor-marketplace' ) ),
@@ -351,7 +352,11 @@ class WCFMmp {
 			                    'product_mulivendor'    => array( 'label' => __( 'Product Multivendor', 'wc-multivendor-marketplace' ), 'hints' => __( "Keep this enable to allow vendors to sell other vendors' products, single product multiple seller.", 'wc-multivendor-marketplace' ) ),
 			                    'sell_items_catalog'    => array( 'label' => __( 'Add to My Store Catalog', 'wc-multivendor-marketplace' ), 'hints' => __( "Other vendors' products catalog, vendors will able to add those directly to their store.", 'wc-multivendor-marketplace' ) ),
 													);
-		$wcfm_modules = array_merge( $wcfm_modules, $wcfmmp_modules );
+		
+		$wcfm_modules = array_slice($wcfm_modules, 0, $wcfmmp_module_index, true) +
+																$wcfmmp_modules +
+																array_slice($wcfm_modules, $wcfmmp_module_index, count($wcfm_modules) - 1, true) ;
+		
 		return $wcfm_modules;
 	}
 	
@@ -428,6 +433,23 @@ class WCFMmp {
 									$no_of_commission = count( $wcfm_commissions );
 									
 									foreach( $wcfm_commissions as $wcfm_commission ) {
+										$order = wc_get_order( $wcfm_commission->order_id );
+										if( !is_a( $order , 'WC_Order' ) ) continue;
+								
+										try {
+											$line_item = new WC_Order_Item_Product( absint( $wcfm_commission->item_id ) );
+											
+											// Refunded Items Skipping
+											if( $refunded_qty = $order->get_qty_refunded_for_item( absint( $wcfm_commission->item_id ) ) ) {
+												$refunded_qty = $refunded_qty * -1;
+												if( $line_item->get_quantity() == $refunded_qty ) {
+													continue;
+												}
+											}
+										}  catch (Exception $e) {
+											continue;
+										}
+										
 										if( $order_ids ) $order_ids .= ',';
 										$order_ids .= $wcfm_commission->order_id;
 										
@@ -635,7 +657,8 @@ class WCFMmp {
 		require_once ( $WCFMmp->plugin_path . 'helpers/class-wcfmmp-install.php' );
 		$WCFMmp_Install = new WCFMmp_Install();
 		
-		update_option('wcfmmp_installed', 1);
+		update_option( 'wcfmmp_updated_3_3_10', 1 );
+		update_option( 'wcfmmp_installed', 1 );
 	}
 	
 	/**
@@ -649,7 +672,15 @@ class WCFMmp {
 		
 		$wcfm_marketplace_tables = $wpdb->query( "SHOW tables like '{$wpdb->prefix}wcfm_marketplace_reverse_withdrawal_meta'");
 		if( !$wcfm_marketplace_tables ) {
+			delete_option( 'wcfmmp_updated_3_3_10' );
 			delete_option( 'wcfmmp_table_install' );
+		}
+		
+		if( !get_option( 'wcfmmp_updated_3_3_10' ) ) {
+			delete_option( 'wcfmmp_table_install' );
+			require_once ( $WCFMmp->plugin_path . 'helpers/class-wcfmmp-install.php' );
+			$WCFMmp_Install = new WCFMmp_Install();
+			update_option( 'wcfmmp_updated_3_3_10', 1 );
 		}
 		
 		if ( !get_option("wcfmmp_page_install") || !get_option("wcfmmp_table_install") ) {

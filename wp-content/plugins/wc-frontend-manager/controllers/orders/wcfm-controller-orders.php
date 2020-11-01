@@ -23,6 +23,8 @@ class WCFM_Orders_Controller {
 		$length = wc_clean($_POST['length']);
 		$offset = wc_clean($_POST['start']);
 		
+		$filtering_on = false;
+		
 		$args = array(
 							'posts_per_page'   => $length,
 							'offset'           => $offset,
@@ -43,7 +45,12 @@ class WCFM_Orders_Controller {
 						);
 		if( isset( $_POST['search'] ) && !empty( $_POST['search']['value'] )) {
 			$wc_order_ids = wc_order_search( $_POST['search']['value'] );
-			$args['post__in'] = $wc_order_ids;
+			if( !empty( $wc_order_ids ) ) {
+				$args['post__in'] = $wc_order_ids;
+			} else {
+				$args['post__in'] = array(0);
+			}
+			$filtering_on = true;
 		} else {
 			if ( ! empty( $_POST['filter_date_form'] ) && ! empty( $_POST['filter_date_to'] ) ) {
 				$fyear  = absint( substr( $_POST['filter_date_form'], 0, 4 ) );
@@ -67,6 +74,25 @@ class WCFM_Orders_Controller {
 																										),
 																		'inclusive' => true
 																);
+				$filtering_on = true;
+			}
+			
+			if ( ! empty( $_POST['order_vendor'] ) ) {
+				$sql  = "SELECT order_id FROM {$wpdb->prefix}wcfm_marketplace_orders";
+				$sql .= " WHERE 1=1";
+				$sql .= " AND `vendor_id` = " . wc_clean($_POST['order_vendor']);
+			
+				$vendor_orders_list = $wpdb->get_results( $sql );
+				if( !empty( $vendor_orders_list ) ) {
+					$vendor_orders = array();
+					foreach( $vendor_orders_list as $vendor_order_list ) {
+						$vendor_orders[] = $vendor_order_list->order_id;
+					}
+					$args['post__in'] = $vendor_orders;
+				} else {
+					$args['post__in'] = array(0);
+				}
+				$filtering_on = true;
 			}
 		}
 		
@@ -79,27 +105,37 @@ class WCFM_Orders_Controller {
 					'compare' => 'LIKE'
 				)
 			);
+			$filtering_on = true;
 		}
 		
 		$args = apply_filters( 'wcfm_orders_args', $args );
 		
 		$wcfm_orders_array = get_posts( $args );
 		
-		// Get Product Count
+		// Get Order Count
 		$order_count = 0;
 		$filtered_order_count = 0;
+		
 		$wcfm_orders_counts = wp_count_posts('shop_order');
 		foreach($wcfm_orders_counts as $wcfm_orders_count ) {
 			$order_count += $wcfm_orders_count;
 		}
 		
-		$order_status = ! empty( $_POST['order_status'] ) ? sanitize_text_field( $_POST['order_status'] ) : 'all';
-		if( $order_status == 'all' ) {
-			$filtered_order_count = $order_count;
+		if ( $filtering_on ) {
+			$args['offset'] = 0;
+			$args['posts_per_page'] = -1;
+			$args['fields'] = 'ids';
+			$wcfm_orders_count_array = get_posts( $args );
+			$filtered_order_count = count( $wcfm_orders_count_array );
 		} else {
-			foreach($wcfm_orders_counts as $wcfm_orders_count_status => $wcfm_orders_count ) {
-				if( $wcfm_orders_count_status == 'wc-' . $order_status ) {
-					$filtered_order_count = $wcfm_orders_count;
+			$order_status = ! empty( $_POST['order_status'] ) ? sanitize_text_field( $_POST['order_status'] ) : 'all';
+			if( $order_status == 'all' ) {
+				$filtered_order_count = $order_count;
+			} else {
+				foreach($wcfm_orders_counts as $wcfm_orders_count_status => $wcfm_orders_count ) {
+					if( $wcfm_orders_count_status == 'wc-' . $order_status ) {
+						$filtered_order_count = $wcfm_orders_count;
+					}
 				}
 			}
 		}
@@ -180,7 +216,11 @@ class WCFM_Orders_Controller {
 				$items = $the_order->get_items();
 				$total_quatity = 0;
 				foreach ($items as $key => $item) {
-					$product        = $the_order->get_product_from_item( $item );
+					if( version_compare( WC_VERSION, '4.4', '<' ) ) {
+						$product = $the_order->get_product_from_item( $item );
+					} else {
+						$product = $item->get_product();
+					}
 					$total_quatity += $item->get_quantity();
 					$item_meta_html = strip_tags( wc_display_item_meta( $item, array(
 																																					'before'    => "\n- ",
@@ -210,7 +250,7 @@ class WCFM_Orders_Controller {
 						$billing_address = wp_kses( $the_order->get_formatted_billing_address(), array( 'br' => array() ) );
 					}
 				}
-				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . $billing_address . "</div>"; 
+				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . apply_filters( 'wcfm_orderlist_billing_address', $billing_address, $wcfm_orders_single->ID ) . "</div>"; 
 				
 				// Shipping Address
 				$shipping_address = '&ndash;';
@@ -219,7 +259,7 @@ class WCFM_Orders_Controller {
 						$shipping_address = wp_kses( $the_order->get_formatted_shipping_address(), array( 'br' => array() ) );
 					}
 				}
-				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . $shipping_address . "</div>";
+				$wcfm_orders_json_arr[$index][] = "<div style='text-align:left;'>" . apply_filters( 'wcfm_orderlist_shipping_address', $shipping_address, $wcfm_orders_single->ID ) . "</div>";
 				
 				// Gross Sales
 				$gross_sales  = (float) $the_order->get_total();
@@ -266,7 +306,11 @@ class WCFM_Orders_Controller {
 				
 				// Date
 				$order_date = ( version_compare( WC_VERSION, '2.7', '<' ) ) ? $the_order->order_date : $the_order->get_date_created();
-				$wcfm_orders_json_arr[$index][] = $the_order->get_date_created()->date_i18n( wc_date_format() . ' ' . wc_time_format() );
+			if( $order_date ) {
+				$wcfm_orders_json_arr[$index][] = $order_date->date_i18n( wc_date_format() . ' ' . wc_time_format() );
+			} else {
+				$wcfm_orders_json_arr[$index][] = '&ndash;';
+			}
 				
 				// Action
 				$actions = '';

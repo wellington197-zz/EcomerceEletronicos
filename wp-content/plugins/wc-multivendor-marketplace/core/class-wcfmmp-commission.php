@@ -17,6 +17,9 @@ class WCFMmp_Commission {
 		// Generating Marketplace Order on WC Process Checkout
 		add_action( 'woocommerce_checkout_order_processed', array(&$this, 'wcfmmp_checkout_order_processed'), 30, 3 );
 		
+		// Marketplace Manual Order Reset
+		add_action( 'wcfm_manual_order_reset', array(&$this, 'wcfmmp_commission_order_reset'), 30, 2 );
+		
 		// Generating Marketplace Order on WCFM Manual Order Process
 		add_action( 'wcfm_manual_order_processed', array(&$this, 'wcfmmp_checkout_order_processed'), 30, 3 );
 		
@@ -29,6 +32,15 @@ class WCFMmp_Commission {
 		// Generating Marketplace Order for Subscription Renewal Order
 		add_filter( 'wcs_renewal_order_created', array(&$this, 'wcfmmp_renewal_order_processed'), 30, 2 );
 		
+		// YiTH Request Order Process
+		add_action( 'ywraq_after_create_order', array( $this, 'wcfmmp_checkout_order_processed' ), 40, 2 );
+		
+		// WC Bookings Manual Booking Order
+		add_action( 'woocommerce_bookings_created_manual_booking', array(&$this, 'wcfmmp_manual_booking_order_processed'), 30 );
+		
+		// WC Appointment Manual Appointment Order
+		add_action( 'woocommerce_appointments_create_appointment_page_add_order_item', array(&$this, 'wcfmmp_manual_appointment_order_processed'), 30 );
+		
 		// Update Marketplace Order Status on WC Order Status changed
 		add_action( 'woocommerce_order_status_changed', array(&$this, 'wcfmmp_order_status_changed'), 30, 3 );
 		
@@ -38,6 +50,9 @@ class WCFMmp_Commission {
 		// Shipping and Tax Cost Commission Rule Fixed cost Multiply handler
 		add_filter('wcfmmmp_shipping_commission_rule', array(&$this, 'wcfmmp_shipping_tax_commission_rule_fixed_handler' ) );
 		add_filter('wcfmmmp_tax_commission_rule', array(&$this, 'wcfmmp_shipping_tax_commission_rule_fixed_handler' ) );
+		
+		// Commission on Tax Admin MOde Handler
+		add_filter( 'wcfmmp_commission_deducted_tax', array(&$this, 'wcfmmp_commission_deducted_tax_admin_mode_handler' ), 100, 6 );
 		
 		// On Order Item Refund
 		add_action( 'woocommerce_order_refunded', array(&$this, 'wcfmmp_commission_order_item_refund' ), 30, 2 );
@@ -64,10 +79,11 @@ class WCFMmp_Commission {
 	/**
 	 * WCfM Marketplace Order create on WC Order Process
 	 */
-	public function wcfmmp_checkout_order_processed( $order_id, $order_posted, $order ) {
+	public function wcfmmp_checkout_order_processed( $order_id, $order_posted, $order = '' ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		
 		if( !$order_id ) return;
+		
 		if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) return;
 		
 		if (!$order)
@@ -106,7 +122,9 @@ class WCFMmp_Commission {
    
     $items = $order->get_items( 'line_item' );
     if( !empty( $items ) ) {
-			foreach( $items as $order_item_id => $item ) {
+			foreach( $items as $item_id => $item ) {
+				
+				$order_item_id = $item->get_id();
 				
 				// Check whether order item already processed or not
 				$order_item_processed = wc_get_order_item_meta( $order_item_id, '_wcfmmp_order_item_processed', true );
@@ -118,7 +136,7 @@ class WCFMmp_Commission {
 				$variation_id = $line_item->get_variation_id();
 				
 				if( $product_id ) {
-					$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+					$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 					
 					if( $vendor_id ) {
 						
@@ -134,12 +152,13 @@ class WCFMmp_Commission {
 						$refund_status     = 'pending';
 						$refunded_amount   = $refunded_total_tax = $refunded_shipping_amount = $refunded_shipping_tax = 0;
 						$grosse_total      = $gross_tax_cost = $gross_shipping_cost = $gross_shipping_tax = $gross_sales_total = 0;
-						$total_commission  = $commission_tax = $commission_amount = $tax_cost = $shipping_cost = $shipping_tax = 0;
+						$total_commission  = $commission_tax = $commission_amount = $tax_cost = $shipping_cost = $shipping_tax = $transaction_charge = 0;
 						$is_partially_refunded = 0;
 						
 						// Item Refunded Amount
-						if ( $refunded_amount = $order->get_total_refunded_for_item( $order_item_id ) ) {
-							$refunded_qty = $order->get_qty_refunded_for_item( $order_item_id );
+						if ( $refunded_amount = $order->get_total_refunded_for_item( absint( $order_item_id ) ) ) {
+							$refunded_qty = $order->get_qty_refunded_for_item( absint( $order_item_id ) );
+							$refunded_qty = $refunded_qty * -1;
 							$is_partially_refunded = 1;
 							$refund_status = 'completed';
 						}
@@ -224,6 +243,34 @@ class WCFMmp_Commission {
 						if( !$purchase_price ) $purchase_price = $product->get_price();
 						
 						$is_auto_withdrawal = apply_filters( 'wcfmmp_is_auto_withdrawal', $is_auto_withdrawal, $vendor_id, $order_id, $order, $payment_method );
+						
+						// Transaction Charge Calculation
+						if( isset( $commission_rule['transaction_charge_type'] ) && ( $commission_rule['transaction_charge_type'] != 'no' ) ) {
+							$vendor_order_amount = $this->wcfmmp_calculate_vendor_order_commission( $vendor_id, $order_id, $order, false );
+							$vendor_order_total_commission = (float)$vendor_order_amount['commission_amount'];
+							$vendor_order_total_item       = absint( $vendor_order_amount['item_count'] );
+							$total_transaction_charge = 0;
+							if( ( $commission_rule['transaction_charge_type'] == 'percent' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
+								$total_transaction_charge  += $vendor_order_total_commission * ( (float)$commission_rule['transaction_charge_percent'] / 100 );
+							}
+							if( ( $commission_rule['transaction_charge_type'] == 'fixed' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
+								$total_transaction_charge  += (float)$commission_rule['transaction_charge_fixed'];
+							}
+							$total_transaction_charge = round( $total_transaction_charge, 2 );
+							$transaction_charge       = (float) $total_transaction_charge / $vendor_order_total_item;
+							$transaction_charge       = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule );
+							
+							// $transaction_charge round check
+							if( !get_post_meta( $order_id, '_wcfmmp_vendor_transacton_charge_adjusted_'.$vendor_id, true ) ) {
+								$re_total_transaction_charge = round($transaction_charge, 2) * $vendor_order_total_item;
+								if( $re_total_transaction_charge != $total_transaction_charge ) {
+									$transaction_charge += ( $total_transaction_charge - $re_total_transaction_charge );
+								}
+								update_post_meta( $order_id, '_wcfmmp_vendor_transacton_charge_adjusted_'.$vendor_id, 'yes' );
+							}
+							
+							$total_commission      -= (float) $transaction_charge;
+						}
 						
 						// Commission Tax Calculation
 						if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
@@ -350,6 +397,7 @@ class WCFMmp_Commission {
 						$this->wcfmmp_update_commission_meta( $commission_id, 'gross_shipping_tax', round($gross_shipping_tax, 2) );
 						$this->wcfmmp_update_commission_meta( $commission_id, 'gross_tax_cost', round($gross_tax_cost, 2) );
 						$this->wcfmmp_update_commission_meta( $commission_id, 'commission_tax', round($commission_tax, 2) );
+						$this->wcfmmp_update_commission_meta( $commission_id, 'transaction_charge', round($transaction_charge, 2) );
 						$this->wcfmmp_update_commission_meta( $commission_id, 'commission_rule', serialize( $commission_rule ) );
 						
 						do_action( 'wcfmmp_order_item_processed', $commission_id, $order_id, $order, $vendor_id, $product_id, $order_item_id, $grosse_total, $total_commission, $is_auto_withdrawal, $commission_rule );
@@ -426,8 +474,8 @@ class WCFMmp_Commission {
 					}
 					
 					if( $vendor_connected && $vendor_connect_user_id ) {
-						$vendor_order_amount = $this->wcfmmp_split_pay_vendor_commission( $vendor_id, $order->get_id(), $order );
-						$vendor_commission = round( $vendor_order_amount, 2 );
+						$vendor_order_amount = $this->wcfmmp_calculate_vendor_order_commission( $vendor_id, $order->get_id(), $order );
+						$vendor_commission = round( $vendor_order_amount['commission_amount'], 2 );
 						//wcfm_stripe_log( "Stripe Split Pay:: #" . $order->get_id() . " => " . $vendor_id . " => " . $vendor_commission );
 						if( $vendor_commission > 0 ) {
 							$split_payers[$vendor_id] = array(
@@ -473,7 +521,7 @@ class WCFMmp_Commission {
 			$line_item = new WC_Order_Item_Product($item);
 			$product_id = $line_item->get_product_id();
 			if ($product_id) {
-				$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 				if( $vendor_id ) {
 					$line_item_total = $line_item->get_total() + $line_item->get_total_tax();
 
@@ -498,17 +546,19 @@ class WCFMmp_Commission {
 		return $vendor_wise_gross_sales;
 	}
 	
-	public function wcfmmp_split_pay_vendor_commission( $vendor_id, $order_id, $order ) {
+	public function wcfmmp_calculate_vendor_order_commission( $vendor_id, $order_id, $order, $deduct_transaction_charge = true ) {
 		global $WCFM, $WCFMmp;
 		
+		$item_count        = 0;
 		$commission_amount = 0;
 		
 		$items = $order->get_items('line_item');
-		foreach ($items as $order_item_id => $item) {
+		foreach ($items as $item_id => $item) {
+			$order_item_id = $item->get_id();
 			$line_item = new WC_Order_Item_Product($item);
 			$product_id = $line_item->get_product_id();
 			if ($product_id) {
-				$pvendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
 				if( $pvendor_id && ( $pvendor_id == $vendor_id ) ) {
 					if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $vendor_id, $order_id ) ) {
 						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $line_item->get_variation_id(), $vendor_id, $line_item->get_total(), $line_item->get_quantity(), $order_id );
@@ -517,6 +567,7 @@ class WCFMmp_Commission {
 						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $line_item->get_variation_id(), $vendor_id, $line_item->get_subtotal(), $line_item->get_quantity(), $order_id );
 						$commission_amount += $this->wcfmmp_get_order_item_commission( $order_id, $vendor_id, $product_id, $line_item->get_variation_id(), $line_item->get_subtotal(), $line_item->get_quantity(), $commission_rule );
 					}
+					
 					if( $WCFMmp->wcfmmp_vendor->is_vendor_get_tax( $vendor_id ) ) {
 						$tax_cost       = apply_filters( 'wcfmmmp_commission_tax_cost', $line_item->get_total_tax(), $commission_amount, $order_id, $vendor_id, $product_id, $commission_rule );
 						
@@ -526,6 +577,7 @@ class WCFMmp_Commission {
 						
 						$commission_amount = $commission_amount + $tax_cost;
 					}
+					$item_count++;
 				}
 			}
 		}
@@ -555,14 +607,29 @@ class WCFMmp_Commission {
 			}
 		}
 		
+		// Transaction Charge Calculation
+		if( $deduct_transaction_charge ) {
+			$transaction_charge = 0;
+			if( isset( $commission_rule['transaction_charge_type'] ) && ( $commission_rule['transaction_charge_type'] != 'no' ) ) {
+				if( ( $commission_rule['transaction_charge_type'] == 'percent' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
+					$transaction_charge  += $commission_amount * ( (float)$commission_rule['transaction_charge_percent'] / 100 );
+				}
+				if( ( $commission_rule['transaction_charge_type'] == 'fixed' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
+					$transaction_charge  += (float)$commission_rule['transaction_charge_fixed'];
+				}
+				$transaction_charge     = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $commission_amount, $commission_rule );
+				$commission_amount     -= (float) $transaction_charge;
+			}
+		}
+		
 		// Commission Tax Calculation
 		if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 			$commission_tax = $commission_amount * ( (float)$commission_rule['tax_percent'] / 100 );
-			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $order_id, $commission_rule );
+			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $order_id, $commission_amount, $commission_rule );
 			$commission_amount -= (float) $commission_tax;
 		}
 		
-		return $commission_amount;
+		return array( 'commission_amount' => $commission_amount, 'item_count' => $item_count );
 	}
 	
 	/**
@@ -611,6 +678,27 @@ class WCFMmp_Commission {
 	}
 	
 	/**
+	 * Get Commission metas SUM
+	 */
+	public function wcfmmp_get_commission_meta_sum( $commission_ids, $key ) {
+		global $WCFM, $WCFMmp, $wpdb;
+		
+		if( empty( $commission_ids ) || !is_array( $commission_ids ) ) return 0;
+		
+		$commission_meta = $wpdb->get_var( 
+																			$wpdb->prepare(
+																				"SELECT SUM(`value`) FROM `{$wpdb->prefix}wcfm_marketplace_orders_meta` 
+																						 WHERE 
+																						 `order_commission_id` in ('" . implode( "','", $commission_ids ) . "')
+																							AND `key` = %s
+																						"
+																				, $key
+																			)
+																		);
+		return $commission_meta;
+	}
+	
+	/**
 	 * Delete Commission metas
 	 */
 	public function wcfmmp_delete_commission_meta( $commission_id, $key ) {
@@ -636,14 +724,27 @@ class WCFMmp_Commission {
 	function wcfmmp_new_order_check( $order, $updated_props ) {
 		if( !$order || !is_a($order , 'WC_Order') ) return;
 		
+		$order_id = $order->get_id();
+		
+		// YiTH Request a Quote Support
+		$is_quote = get_post_meta( $order_id, 'ywraq_raq', true );
+  	if( $is_quote ) {
+  		if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) {
+				delete_post_meta( $order_id, '_wcfmmp_order_processed' );
+				do_action( 'wcfm_manual_order_reset', $order_id, true );
+				$order_posted = get_post( $order_id );
+				do_action( 'wcfm_manual_order_processed', $order_id, $order_posted, $order );
+				return;
+			}
+  	}
+		
 		$created_via = $order->get_created_via();
-		if( !$created_via || !in_array( $created_via, apply_filters( 'wcfmmp_new_order_check_created_via', array( 'wepos' ) ) ) ) {
+		if( !$created_via || !in_array( $created_via, apply_filters( 'wcfmmp_new_order_check_created_via', array( 'wepos', 'wc_deposits' ) ) ) ) {
 			if( defined( 'WCFM_MANUAL_ORDER' ) ) return;
 			if( defined( 'WC_BOOKINGS_VERSION' ) ) return;
 			if( defined( 'WC_APPOINTMENTS_VERSION' ) ) return;
 			if( defined( 'WC_POS_VERSION' ) ) return;
 		}
-		$order_id = $order->get_id();
 		if( $order_id ) {
 			if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) return;
 			$order_posted = get_post( $order_id );
@@ -654,14 +755,12 @@ class WCFMmp_Commission {
 	/**
 	 * WC POS New Order Check 
 	 */
-	function wcfmmp_pos_order_check( $payment_details, $order ) {
-		if( !$order || !is_a($order , 'WC_Order') ) return;
-		$order_id = $order->get_id();
-		if( $order_id ) {
+	function wcfmmp_pos_order_check( $order_id, $data ) {
+		if( $order_id && !is_array( $order_id ) ) {
 			wcfm_log( "POS Order: #" . $order_id );
 			if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) return;
 			$order_posted = get_post( $order_id );
-			$this->wcfmmp_checkout_order_processed( $order_id, $order_posted, $order );
+			$this->wcfmmp_checkout_order_processed( $order_id, $order_posted );
 		}
 	}
 	
@@ -683,6 +782,35 @@ class WCFMmp_Commission {
 	}
 	
 	/**
+	 * Marketplace Order for Manual Booking Order
+	 */
+	function wcfmmp_manual_booking_order_processed( $new_booking ) {
+		$order_id = $new_booking->get_order_id();
+		if( $order_id ) {
+			wcfm_log( "Manual Booking Order: #" . $order_id );
+			//if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) return;
+			delete_post_meta( $order_id, '_wcfmmp_order_processed' );
+			$order_posted = get_post( $order_id );
+			$order = wc_get_order( $order_id );
+			$this->wcfmmp_checkout_order_processed( $order_id, $order_posted, $order );
+		}
+	}
+	
+	/**
+	 * Marketplace Order for Manual Appointment Order
+	 */
+	function wcfmmp_manual_appointment_order_processed( $order_id ) {
+		if( $order_id ) {
+			wcfm_log( "Manual Appointment Order: #" . $order_id );
+			//if ( get_post_meta( $order_id, '_wcfmmp_order_processed', true ) ) return;
+			delete_post_meta( $order_id, '_wcfmmp_order_processed' );
+			$order_posted = get_post( $order_id );
+			$order = wc_get_order( $order_id );
+			$this->wcfmmp_checkout_order_processed( $order_id, $order_posted, $order );
+		}
+	}
+	
+	/**
 	 * Marketplace Order Status update on WC Order status change
 	 */
 	function wcfmmp_order_status_changed( $order_id, $status_from, $status_to ) {
@@ -694,7 +822,7 @@ class WCFMmp_Commission {
 		$commission_failed_order_status        = apply_filters( 'wcfmmp_commission_failed_order_status', array( 'failed' ) );
 		
 		// Update Commission Order status by Main Order Status
-		if( apply_filters( 'wcfm_is_allow_status_update_by_main_order_status', true ) ) {
+		if( apply_filters( 'wcfm_is_allow_status_update_by_main_order_status', true, $order_id, $status_to ) ) {
 			$wpdb->update("{$wpdb->prefix}wcfm_marketplace_orders", array('commission_status' => $status_to, 'order_status' => $status_to), array('order_id' => $order_id), array('%s', '%s'), array('%d'));
 		}
 		
@@ -714,7 +842,7 @@ class WCFMmp_Commission {
 		if( !empty( $commissions ) ) {
 			foreach( $commissions as $commission ) {
 				// Update commission ledger status
-				$WCFMmp->wcfmmp_vendor->wcfmmp_ledger_status_update( $commission->ID, $status_to );
+				$WCFMmp->wcfmmp_ledger->wcfmmp_ledger_status_update( $commission->ID, $status_to );
 				
 				// Update auto withdrawal complated
 				if( in_array( $status_to, $withdrawal_auto_complate_order_status ) && $commission->is_auto_withdrawal && apply_filters( 'wcfm_is_pref_withdrawal', true ) ) {
@@ -729,7 +857,7 @@ class WCFMmp_Commission {
 					if( apply_filters( 'wcfm_is_pref_withdrawal', true ) ) {
 						$WCFMmp->wcfmmp_withdraw->wcfmmp_withdraw_status_update_by_commission( $commission->ID, 'cancelled' );
 					}
-					if( apply_filters( 'wcfm_is_pref_refund', true ) ) {
+					if( apply_filters( 'wcfm_is_pref_refund', true ) && ( $status_to != 'refunded' ) ) {
 						$WCFMmp->wcfmmp_refund->wcfmmp_refund_status_update_by_commission( $commission->ID, 'cancelled' );
 					}
 				}
@@ -739,7 +867,7 @@ class WCFMmp_Commission {
 		}
 		
 		// Vendor Notification
-		if( !wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_status_update_by_main_order_status', true ) ) {
+		if( !wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_status_update_by_main_order_status', true, $order_id, $status_to ) ) {
 			$wcfmmp_order_email_triggered = get_post_meta( $order_id, '_wcfmmp_order_email_triggered', true );
 			if( $wcfmmp_order_email_triggered ) {
 				if( !empty( $commissions ) ) {
@@ -749,8 +877,10 @@ class WCFMmp_Commission {
 						if( !empty( $processed_vendors ) && in_array( $vendor_id, $processed_vendors ) ) continue;
 						$processed_vendors[$vendor_id] = $vendor_id;
 						if( $vendor_id ) {
-							$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order_id . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $status_to ) );
-							$WCFM->wcfm_notification->wcfm_send_direct_message( -1, $vendor_id, 1, 0, $wcfm_messages, 'status-update' );
+							if( apply_filters( 'wcfm_is_allow_order_status_update_vendor_notification', true, $vendor_id, $order_id, $status_to ) ) {
+								$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order_id . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $status_to ) );
+								$WCFM->wcfm_notification->wcfm_send_direct_message( -1, $vendor_id, 1, 0, $wcfm_messages, 'status-update' );
+							}
 						}
 					}
 				}
@@ -798,11 +928,55 @@ class WCFMmp_Commission {
 	}
 	
 	/**
+	 * Tax on Commission Admin Mode Handler
+	 */
+	function wcfmmp_commission_deducted_tax_admin_mode_handler( $commission_tax, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule ) {
+		global $WCFM, $WCFMmp, $wpdb;
+		
+		if( apply_filters( 'wcfm_is_admin_fee_mode', false ) ) {
+			if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
+				$order = wc_get_order( $order_id );
+				$vendor_wise_gross_sales = 0;
+				
+				$items = $order->get_items('line_item');
+				foreach ($items as $order_item_id => $item) {
+					$line_item = new WC_Order_Item_Product($item);
+					$pproduct_id = $line_item->get_product_id();
+					if ($pproduct_id && ( $product_id == $pproduct_id )) {
+						$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
+						if( $pvendor_id && ( $pvendor_id == $vendor_id ) ) {
+							$line_item_total = $line_item->get_total() + $line_item->get_total_tax();
+		
+							$vendor_wise_gross_sales += $line_item_total;
+						}
+					}
+				}
+				
+				$shipping_items = $order->get_items('shipping');
+				foreach ($shipping_items as $shipping_item_id => $shipping_item) {
+					$order_item_shipping = new WC_Order_Item_Shipping($shipping_item_id);
+					$shipping_vendor_id = $order_item_shipping->get_meta('vendor_id', true);
+					if( ( $shipping_vendor_id > 0 ) && ( $shipping_vendor_id == $vendor_id ) ) {
+						$shipping_item_total = $order_item_shipping->get_total() + $order_item_shipping->get_total_tax();
+						
+						$vendor_wise_gross_sales += $shipping_item_total;
+					}
+				}
+				
+				$admin_fee = (float) $vendor_wise_gross_sales - (float) $total_commission;
+				$commission_tax = $admin_fee * ( (float)$commission_rule['tax_percent'] / 100 );
+			}
+		}
+		return $commission_tax;
+	}
+	
+	/**
 	 * Generate commission for an item cost
 	 */
 	public function wcfmmp_generate_commission_cost( $item_price, $commission_rule, $quantity = 1 ) {
 		
 		if( !$item_price ) return 0;
+		if( !$quantity && apply_filters( 'wcfmmp_is_allow_zero_qty_item_commission_zero', true ) ) return 0;
 		
 		$item_commission = 0;
 		if( $commission_rule && is_array( $commission_rule ) ) {
@@ -992,7 +1166,8 @@ class WCFMmp_Commission {
 			
 			$items = $order->get_items( 'line_item' );
 			if( !empty( $items ) ) {
-				foreach( $items as $order_item_id => $item ) {
+				foreach( $items as $item_id => $item ) {
+					$order_item_id = $item->get_id();
 					$order_item_processed = wc_get_order_item_meta( $order_item_id, '_wcfmmp_order_item_processed', true );
 					if( $order_item_processed ) {
 						$sql = 'SELECT ID, withdraw_status FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders AS commission';
@@ -1040,8 +1215,10 @@ class WCFMmp_Commission {
 			//delete_post_meta( $order_id, '_wcfm_store_invoices' );
 			//$this->wcfmmp_commission_order_reset( $order_id );
 			
-			if( !empty( $items ) ) {
-				foreach( $items as $order_item_id => $item ) {
+			if( !empty( $items ) && isset( $items['order_item_id'] ) ) {
+				foreach ( $items['order_item_id'] as $item_id ) {
+					$item = WC_Order_Factory::get_order_item( absint( $item_id ) );
+					$order_item_id = $item->get_id();
 					$order_item_processed = wc_get_order_item_meta( $order_item_id, '_wcfmmp_order_item_processed', true );
 					if( $order_item_processed ) {
 						$sql = 'SELECT ID, withdraw_status FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders AS commission';
@@ -1073,6 +1250,11 @@ class WCFMmp_Commission {
 		
 		$marketplace_orders = $wpdb->get_results(  $wpdb->prepare( "SELECT ID from {$wpdb->prefix}wcfm_marketplace_orders WHERE `item_id` = %d", $item_id ) );
 		foreach( $marketplace_orders as $marketplace_order ) {
+			
+			// Order Meta
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_orders_meta WHERE order_commission_id = %d", $marketplace_order->ID ) );
+			
+			// Ledger Data
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_vendor_ledger WHERE reference_id = %d", $marketplace_order->ID ) );
 			
 			// Withdrawals
@@ -1145,13 +1327,22 @@ class WCFMmp_Commission {
 		
 		// Commission Orders
 		if( $commission_order ) {
-			$marketplace_orders = $wpdb->get_results(  $wpdb->prepare( "SELECT ID from {$wpdb->prefix}wcfm_marketplace_orders WHERE order_id = %d", $order_id ) );
+			$marketplace_orders = $wpdb->get_results(  $wpdb->prepare( "SELECT ID, item_id from {$wpdb->prefix}wcfm_marketplace_orders WHERE order_id = %d", $order_id ) );
 			foreach( $marketplace_orders as $marketplace_order ) {
+				// Order Item Meta
+				wc_delete_order_item_meta( $marketplace_order->item_id, '_wcfmmp_order_item_processed' );
+				
+				// Order Meta
+				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_orders_meta WHERE order_commission_id = %d", $marketplace_order->ID ) );
+			
+				// Ledger Data
 				$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_vendor_ledger WHERE reference_id = %d", $marketplace_order->ID ) );
 			}
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_orders WHERE order_id = %d", $order_id ) );
 			
 			delete_post_meta( $order_id, '_wcfmmp_order_processed' );
+			delete_post_meta( $order_id, '_wcfm_store_invoices' );
+			delete_post_meta( $order_id, '_wcfm_store_invoice_ids' );
 		}
 		
 		// Withdrawals
@@ -1181,6 +1372,12 @@ class WCFMmp_Commission {
 	 */
 	public function wcfmmp_commission_order_reset_by_commission( $commission_id ) {
 		global $wpdb;
+		
+		// Order Item Meta
+		$marketplace_orders = $wpdb->get_results(  $wpdb->prepare( "SELECT item_id from {$wpdb->prefix}wcfm_marketplace_orders WHERE ID = %d", $commission_id ) );
+		foreach( $marketplace_orders as $marketplace_order ) {
+			wc_delete_order_item_meta( $marketplace_order->item_id, '_wcfmmp_order_item_processed' );
+		}
 		
 		// Commission Orders
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wcfm_marketplace_vendor_ledger WHERE reference_id = %d", $commission_id ) );

@@ -1,17 +1,17 @@
-=== Kadence Themes Toolkit ===
+=== Virtue/Ascend/Pinnacle Toolkit ===
 Contributors: britner
 Tags: 
 Requires at least: 4.5
-Tested up to: 5.2.2
-Stable tag: 4.9.4
+Tested up to: 5.5.0
+Stable tag: 4.9.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Custom Portfolio and Shortcode functionality for free Kadence WordPress Themes
+Custom Portfolio and Shortcode functionality for free Virtue, Ascend, and Pinnacle WordPress themes
 
 == Description ==
 
-Custom Portfolio and Shortcode functionality for free Kadence WordPress Themes, by Kadence Themes
+Custom Portfolio and Shortcode functionality for free Virtue, Ascend, and Pinnacle WordPress themes
 
 Not intended to work with any other themes.
 
@@ -42,6 +42,13 @@ Install the plugin into the `/wp-content/plugins/` folder, and activate it.
 
 
 == Changelog ==
+
+= 4.9.6 =
+* Update: 5.5 Support.
+* Update: Name change to prevent confusion.
+
+= 4.9.5 =
+* Update: Email issue.
 
 = 4.9.4 =
 * Update: Metaboxes

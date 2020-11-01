@@ -72,7 +72,7 @@ class WCFM_Vendors_Manage_Badges_Controller {
 	  	if( isset( $wcfm_vendor_manage_badges_form_data['wcfm_vendor_badges'] ) ) {
 				update_user_meta( $vendor_id, 'wcfm_vendor_badges', $wcfm_vendor_manage_badges_form_data['wcfm_vendor_badges'] );
 			} else {
-				update_user_meta( $vendor_id, 'wcfm_vendor_badges', array() );
+				update_user_meta( $vendor_id, 'wcfm_vendor_badges', array( -1 => 'NO' ) );
 			}
 			
 	  	do_action( 'wcfm_vendor_manage_badges_update', $vendor_id, $wcfm_vendor_manage_badges_form_data );

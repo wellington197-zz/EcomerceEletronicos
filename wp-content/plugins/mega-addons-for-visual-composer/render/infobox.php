@@ -25,7 +25,8 @@ class WPBakeryShortCode_mvc_infobox extends WPBakeryShortCode {
 			'border_width'			=>		'0',
 			'border_style'			=>		'solid',
 			'border_clr'			=>		'',
-			'shadow'				=>		'nones',
+			'shadow'				=>		'nonesss',
+			'hovershadow'			=>		'nones',
 			'css' 		 			=> 		'',
 			'info_title' 			=> 		'',
 			'title_color' 			=> 		'#000',
@@ -57,7 +58,7 @@ class WPBakeryShortCode_mvc_infobox extends WPBakeryShortCode {
 		<?php if ($link != 'link_box') { ?>
 			<a style="text-decoration: none;color: #000;">
 		<?php } ?>
-			<div class="<?php echo $info_style; ?> mega-info-box-<?php echo $some_id; ?> <?php echo $shadow; ?> <?php echo $css_class; ?>">
+			<div class="<?php echo $info_style; ?> mega-info-box-<?php echo $some_id; ?> <?php echo $shadow; ?> <?php echo $hovershadow; ?> <?php echo $css_class; ?>">
 				<div class="mega-info-header">
 					<?php if ($info_opt == 'show_image') { ?>
 						<img class="mega-info-img" src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" style="width: <?php echo $image_size; ?>px; border-radius: <?php echo $image_radius; ?>;">			
@@ -111,7 +112,7 @@ vc_map( array(
 			"group" 		=> 'General',
 			"value" 		=> array(
 				'Vertical'	=>	'mega_info_box',
-				'Horizental'	=>	'mega_info_box_2',
+				'Horizontal'	=>	'mega_info_box_2',
 			)
 		),
 		array(
@@ -228,6 +229,26 @@ vc_map( array(
 
 		array(
 			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Box Shadow', 'infobox' ),
+			"param_name" 	=> "shadow",
+			"group" 		=> 'General',
+			"value"			=>	array(
+				"No"			=>		"nonesss",
+				"Yes"	=>		"vc_info_box_shadow",				)
+		),
+
+		array(
+			"type" 			=> "dropdown",
+			"heading" 		=> __( 'Hover Shadow', 'infobox' ),
+			"param_name" 	=> "hovershadow",
+			"group" 		=> 'General',
+			"value"			=>	array(
+				"No"			=>		"nones",
+				"Yes"	=>		"vc_info_box_hvr_shadow",				)
+		),
+
+		array(
+			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Link To', 'infobox' ),
 			"param_name" 	=> "link",
 			"group" 		=> 'General',
@@ -330,17 +351,6 @@ vc_map( array(
 			"description" 	=> __( 'set the border color', 'infobox' ),
 			"group" 		=> 'Border',
 			"dependency" => array('element' => "info_opt", 'value' => 'show_icon'),
-		),
-
-		array(
-			"type" 			=> "dropdown",
-			"heading" 		=> __( 'Box Shadow', 'infobox' ),
-			"param_name" 	=> "shadow",
-			"group" 		=> 'Border',
-			"dependency" => array('element' => "info_opt", 'value' => 'show_icon'),
-			"value"			=>	array(
-				"None"			=>		"nones",
-				"Box Shadow"	=>		"vc_info_box_shadow",				)
 		),
 
 		/* Detail */

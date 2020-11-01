@@ -314,6 +314,8 @@ jQuery( document ).ready( function( $ ) {
 	$('#wcfm_articles_simple_draft_button').click(function(event) {
 	  event.preventDefault();
 	  
+	  $('.wcfm_submit_button').hide();
+	  
 	  // Validations
 	  $is_valid = wcfm_articles_manage_form_validate();
 	  
@@ -342,25 +344,29 @@ jQuery( document ).ready( function( $ ) {
 				if(response) {
 					$response_json = $.parseJSON(response);
 					$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+					wcfm_notification_sound.play();
 					if($response_json.status) {
-						wcfm_notification_sound.play();
 						$('#wcfm_articles_manage_form .wcfm-message').html('<span class="wcicon-status-completed"></span>' + $response_json.message).addClass('wcfm-success').slideDown( "slow", function() {
 							if( $response_json.redirect ) window.location = $response_json.redirect;	
 						} );
 					} else {
-						wcfm_notification_sound.play();
 						$('#wcfm_articles_manage_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
 					}
 					if($response_json.id) $('#article_id').val($response_json.id);
 					$('#wcfm-content').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});	
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 	
 	// Submit Article
 	$('#wcfm_articles_simple_submit_button').click(function(event) {
 	  event.preventDefault();
+	  
+	  $('.wcfm_submit_button').hide();
 	  
 	  // Validations
 	  $is_valid = wcfm_articles_manage_form_validate();
@@ -401,8 +407,11 @@ jQuery( document ).ready( function( $ ) {
 					if($response_json.id) $('#article_id').val($response_json.id);
 					wcfmMessageHide();
 					$('#wcfm-content').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 	

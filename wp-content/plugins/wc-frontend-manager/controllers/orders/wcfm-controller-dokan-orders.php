@@ -195,7 +195,11 @@ class WCFM_Orders_Dokan_Controller {
 				$items = $the_order->get_items();
 				$total_quatity = 0;
 				foreach ($items as $key => $item) {
-					$product        = $the_order->get_product_from_item( $item );
+					if( version_compare( WC_VERSION, '4.4', '<' ) ) {
+						$product = $the_order->get_product_from_item( $item );
+					} else {
+						$product = $item->get_product();
+					}
 					$total_quatity += $item->get_quantity();
 					$item_meta_html = strip_tags( wc_display_item_meta( $item, array(
 																																					'before'    => "\n- ",

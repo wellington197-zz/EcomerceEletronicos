@@ -462,7 +462,7 @@ class WCFMmp_Gateway_Wirecard extends WC_Payment_Gateway {
 		$customer_info['full_name']    = $order->get_formatted_billing_full_name();
 		$customer_info['email']        = $order->get_billing_email();
 		$customer_info['birthdate']    = '';
-		$customer_info['tax_document'] = wc_clean( $_POST['billing_cpf'] );
+		$customer_info['tax_document'] = wc_clean( $_POST['billing_wirecard_cpf'] );
 		$customer_info['phone_prefix'] = substr( $order->get_billing_phone(), 0, 2 );
 		$customer_info['phone_sufix']  = substr( $order->get_billing_phone(), 2 );
 		
@@ -629,9 +629,9 @@ class WCFMmp_Gateway_Wirecard extends WC_Payment_Gateway {
 	public function add_cpf_field( $fields, $id ) {
 		if ( $this->id == $id ) {
 				$fields['cpf_field'] = '<p class="form-row form-row-wide">
-						<label for="billing_cpf" class="">' . esc_html__( 'CPF Number', 'wc-multivendor-marketplace' ) . '&nbsp;<span class="optional"><span style="color:red">*</span></span></label>
+						<label for="billing_wirecard_cpf" class="">' . esc_html__( 'CPF Number', 'wc-multivendor-marketplace' ) . '&nbsp;<span class="optional"><span style="color:red">*</span></span></label>
 
-						<input type="number" minlength="11" maxlength="11" style="padding: 10px; font-size:16px" class="input-text" name="billing_cpf" id="billing_cpf" placeholder="' . esc_html__( 'CPF Number', 'wc-multivendor-marketplace' ) . '">
+						<input type="number" minlength="11" maxlength="11" style="padding: 10px; font-size:16px" class="input-text" name="billing_wirecard_cpf" id="billing_wirecard_cpf" placeholder="' . esc_html__( 'CPF Number', 'wc-multivendor-marketplace' ) . '">
 				</p>';
 		}
 

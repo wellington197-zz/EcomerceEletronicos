@@ -27,8 +27,8 @@ class WCFM_Custom_Field_Support {
    */
   function wcfm_customfield_settings() {
   	global $WCFM;
-  	$product_types = apply_filters( 'wcfm_product_types', array('simple' => __('Simple Product', 'wc-frontend-manager'), 'variable' => __('Variable Product', 'wc-frontend-manager'), 'grouped' => __('Grouped Product', 'wc-frontend-manager'), 'external' => __('External/Affiliate Product', 'wc-frontend-manager') ) );
-  	$field_types = apply_filters( 'wcfm_product_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'Textarea', 'editor' => 'Rich Editor', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select', 'upload' => 'File/Image' ) );
+  	$product_types = apply_filters( 'wcfm_product_types', array('simple' => __('Simple Product', 'wc-frontend-manager'), 'virtual' => __('Virtual Product', 'wc-frontend-manager'), 'variable' => __('Variable Product', 'wc-frontend-manager'), 'grouped' => __('Grouped Product', 'wc-frontend-manager'), 'external' => __('External/Affiliate Product', 'wc-frontend-manager') ) );
+  	$field_types = apply_filters( 'wcfm_product_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'Textarea', 'editor' => 'Rich Editor', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select', 'mselect' => 'Multi-Select Drop Down', 'upload' => 'File/Image', 'html' => 'HTML' ) );
   	$visibility_options = apply_filters( 'wcfm_product_custom_visibility_options', array( '' => __( 'Do not show', 'wc-frontend-manager' ) ) );
 		$wcfm_product_custom_fields = get_option( 'wcfm_product_custom_fields', array() );
   	?>
@@ -56,6 +56,7 @@ class WCFM_Custom_Field_Support {
 																																																									"label" => array( 'label' => __('Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title'),
 																																																									"name" => array( 'label' => __('Name', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_slug_input', 'label_class' => 'wcfm_title', 'hints' => __( 'This is will going to use as `meta_key` for storing this field value in database.', 'wc-frontend-manager' ) ),
 																																																									"options" => array( 'label' => __('Options', 'wc-frontend-manager'), 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele field_type_select_options', 'label_class' => 'wcfm_title field_type_select_options', 'placeholder' => __( 'Insert option values | separated, leave first element empty to show as \'-Select-\'', 'wc-frontend-manager' ) ),
+																																																									"content" => array( 'label' => __('Content', 'wc-frontend-manager'), 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele field_type_html_options', 'label_class' => 'wcfm_title field_type_html_options' ),
 																																																									"help_text" => array( 'label' => __('Help Content', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title' ),
 																																																									"required" => array( 'label' => __('Required?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes' ),
 																																																		) )

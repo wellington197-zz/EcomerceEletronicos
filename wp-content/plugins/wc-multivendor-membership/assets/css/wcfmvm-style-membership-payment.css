@@ -10,7 +10,7 @@
 	padding: 20px;
 	background: #fff;
 	transition: box-shadow .25s ease-in-out;
-	box-shadow: 0 2px 5px 0 rgba(0,0,0,.07);
+	box-shadow: 1px 1px 20px 0px #E9E9E9;
 	border-radius: 3px;
 	width: 90%;
 	margin: 25px auto;

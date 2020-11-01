@@ -42,7 +42,7 @@ if (is_user_logged_in() && is_user_wcmp_vendor($current_vendor_id) && !current_u
                         <div class="product-search-wrapper categories-search-wrapper">
                             <div class="form-text"><?php _e('Search category', 'dc-woocommerce-multi-vendor'); ?></div>
                             <div class="form-input">
-                                <input id="search-categories-keyword" type="text" placeholder="<?php _e('Example: tshirt, music, album etc...', 'dc-woocommerce-multi-vendor'); ?>">
+                                <input id="search-categories-keyword" type="text" placeholder="<?php esc_attr_e('Example: tshirt, music, album etc...', 'dc-woocommerce-multi-vendor'); ?>">
                                 <ul id="searched-categories-results" class="list-group">
                                     
                                 </ul>
@@ -80,10 +80,18 @@ if (is_user_logged_in() && is_user_wcmp_vendor($current_vendor_id) && !current_u
                     <div class="serach-product-cat-wrapper">
                         <h2><?php _e('Search from our existing Product Catalog', 'dc-woocommerce-multi-vendor'); ?></h2>
                         <form class="search-pro-by-name-gtin">
-                            <input type="text" placeholder="<?php _e('Product name, UPC, ISBN ...', 'dc-woocommerce-multi-vendor'); ?>" class="form-control inline-input search-product-name-gtin-keyword" required>
+                            <input type="text" placeholder="<?php esc_attr_e('Product name, UPC, ISBN ...', 'dc-woocommerce-multi-vendor'); ?>" class="form-control inline-input search-product-name-gtin-keyword" required>
                             <button type="button" class="btn btn-default search-product-name-gtin-btn"><?php echo strtoupper(__('Search', 'dc-woocommerce-multi-vendor')); ?></button> 
                         </form>
-                        <?php $url = ( get_wcmp_vendor_settings('is_disable_marketplace_plisting', 'general') == 'Enable' ) ? esc_url(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_edit_product_endpoint', 'vendor', 'general', 'edit-product'))) : '?new_listing=1&cats_hier=1'; ?>
+                        <?php 
+
+                         if (get_option('permalink_structure')) {
+                            $category_url = '?new_listing=1&cats_hier=1';
+                        } else {
+                            $category_url = wcmp_get_vendor_dashboard_endpoint_url( get_wcmp_vendor_settings( 'wcmp_add_product_endpoint', 'vendor', 'general', 'add-product' ) ) . '&new_listing=1&cats_hier=1';
+                        }
+
+                        $url = ( get_wcmp_vendor_settings('is_disable_marketplace_plisting', 'general') == 'Enable' ) ? esc_url(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_edit_product_endpoint', 'vendor', 'general', 'edit-product'))) : $category_url; ?>
                         <p><?php _e('Not in the catalog?', 'dc-woocommerce-multi-vendor'); ?> <a href="<?php echo $url; ?>" class="cat-step-btn"><?php _e('Create a new product', 'dc-woocommerce-multi-vendor'); ?> <i class="wcmp-font ico-right-arrow-icon"></i></a></p>
                     </div>
                 </div>

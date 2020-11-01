@@ -3,8 +3,8 @@ Contributors: aristath, sivel
 Donate Link: http://aristath.github.io/donate
 Tags: wordpress-reset, wordpress, reset, admin
 Requires at least: 2.8
-Tested up to: 4.9
-Stable tag: 1.4.1
+Tested up to: 5.3
+Stable tag: 1.4.2
 
 Resets the WordPress database back to it's defaults. Deletes all customizations and content. Does not modify files only resets the database.
 

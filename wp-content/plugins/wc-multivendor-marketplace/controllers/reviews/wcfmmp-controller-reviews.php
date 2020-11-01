@@ -97,7 +97,12 @@ class WCFMmp_Reviews_Controller {
 				$wcfm_reviews_json_arr[$index][] = '<div class="wcfmmp-author-img"><img width="40" src="' . $wp_user_avatar. '" /></div>';
 				
         // Author
-        $wcfm_reviews_json_arr[$index][] = '<div class="wcfmmp-author-meta">' . $wcfm_review_single->author_name . '<br />' . $wcfm_review_single->author_email . '</div>';
+        $author = '<div class="wcfmmp-author-meta">' . $wcfm_review_single->author_name;
+        if( apply_filters( 'wcfm_allow_view_customer_email', true ) ) {
+        	$author .= '<br />' . $wcfm_review_single->author_email;
+        }
+        $author .= '</div>';
+        $wcfm_reviews_json_arr[$index][] = $author; 
         
         // Comment
         $wcfm_reviews_json_arr[$index][] = '<div class="wcfmmp-comments-content">' . $wcfm_review_single->review_description . '</div>';

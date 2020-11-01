@@ -90,16 +90,18 @@ if( apply_filters( 'wcfm_is_allow_archive_product', true ) ) {
 			}
 			
 			if( apply_filters( 'wcfm_is_pref_products_import', true ) && apply_filters( 'wcfm_is_allow_products_import', true ) ) {
-				if( !WCFM_Dependencies::wcfmu_plugin_active_check() ) {
-					if( $is_wcfmu_inactive_notice_show = apply_filters( 'is_wcfmu_inactive_notice_show', true ) ) {
+				if( apply_filters( 'wcfm_is_allow_product_limit', true ) && apply_filters( 'wcfm_is_allow_space_limit', true ) ) {
+					if( !WCFM_Dependencies::wcfmu_plugin_active_check() ) {
+						if( $is_wcfmu_inactive_notice_show = apply_filters( 'is_wcfmu_inactive_notice_show', true ) ) {
+							?>
+							<a class="add_new_wcfm_ele_dashboard text_tip" href="#" onclick="return false;" data-tip="<?php wcfmu_feature_help_text_show( 'Products Import', false, true ); ?>"><span class="wcfmfa fa-upload"><span class="text hidden-text"><?php _e( 'Products Import', 'wc-frontend-manager'); ?></span></span></a>
+							<?php
+						}
+					} else {
 						?>
-						<a class="add_new_wcfm_ele_dashboard text_tip" href="#" onclick="return false;" data-tip="<?php wcfmu_feature_help_text_show( 'Products Import', false, true ); ?>"><span class="wcfmfa fa-upload"><span class="text hidden-text"><?php _e( 'Products Import', 'wc-frontend-manager'); ?></span></span></a>
+						<a class="wcfm_import_export text_tip" href="<?php echo get_wcfm_import_product_url(); ?>" data-tip="<?php _e( 'Products Import', 'wc-frontend-manager' ); ?>"><span class="wcfmfa fa-upload"></span><span class="text hidden-text"><?php _e( 'Products Import', 'wc-frontend-manager'); ?></span></a>
 						<?php
 					}
-				} else {
-					?>
-					<a class="wcfm_import_export text_tip" href="<?php echo get_wcfm_import_product_url(); ?>" data-tip="<?php _e( 'Products Import', 'wc-frontend-manager' ); ?>"><span class="wcfmfa fa-upload"></span><span class="text hidden-text"><?php _e( 'Products Import', 'wc-frontend-manager'); ?></span></a>
-					<?php
 				}
 			}
 			
@@ -153,7 +155,7 @@ if( apply_filters( 'wcfm_is_allow_archive_product', true ) ) {
 					foreach( $product_taxonomies as $product_taxonomy ) {
 						if( !in_array( $product_taxonomy->name, array( 'product_cat', 'product_tag', 'wcpv_product_vendors' ) ) ) {
 							if( $product_taxonomy->public && $product_taxonomy->show_ui && $product_taxonomy->meta_box_cb && $product_taxonomy->hierarchical ) {
-								if( apply_filters( 'wcfm_is_products_taxonomy_filter', true, $product_taxonomy->name ) && apply_filters( 'wcfm_is_products_custom_taxonomy_filter_'.$product_taxonomy->name, true ) ) {
+								if( apply_filters( 'wcfm_is_products_taxonomy_filter', true, $product_taxonomy->name ) && apply_filters( 'wcfm_is_allow_product_taxonomy', true, $product_taxonomy->name ) && apply_filters( 'wcfm_is_products_custom_taxonomy_filter_'.$product_taxonomy->name, true ) ) {
 									
 									$product_categories   = get_terms( $product_taxonomy->name, 'orderby=name&hide_empty=0&parent=0' );
 					

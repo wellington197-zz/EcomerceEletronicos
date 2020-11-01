@@ -44,13 +44,25 @@ jQuery(document).ready( function($) {
 		}
 	});
 	
-	$('#terms').change(function() {
+	if( $("#wcfm_custom_plan_page").length > 0 ) {
+		$("#wcfm_custom_plan_page").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#wcfm_custom_thankyou_page").length > 0 ) {
+		$("#wcfm_custom_thankyou_page").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#terms_page").length > 0 ) {
+		$("#terms_page").select2( $wcfm_page_select_args );
+	}
+	
+	/*$('#terms').change(function() {
 	  if($(this).is(':checked')) {
 	  	$(this).parent().find('.terms_page_ele').removeClass('wcfm_ele_hide');
 	  } else {
 	  	$(this).parent().find('.terms_page_ele').addClass('wcfm_ele_hide');
 	  }
-	}).change();
+	}).change();*/
 	
 	$('.payment_fields').addClass( 'wcfm_custom_hide' );
 	$('.payment_options').each(function() {

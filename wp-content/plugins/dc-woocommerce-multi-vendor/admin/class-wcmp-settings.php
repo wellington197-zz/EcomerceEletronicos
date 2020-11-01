@@ -9,6 +9,7 @@ class WCMp_Settings {
     private $tabsection_vendor = array();
     private $tabsection_capabilities = array();
     private $vendor_class_obj;
+    private $report_class_obj;
 
     /**
      * Start up
@@ -36,6 +37,7 @@ class WCMp_Settings {
         add_action( 'settings_page_payment_paypal_masspay_tab_init', array( &$this, 'payment_paypal_masspay_init' ), 10, 2 );
         add_action( 'settings_page_payment_paypal_payout_tab_init', array( &$this, 'payment_paypal_payout_init' ), 10, 2 );
         add_action( 'settings_page_payment_stripe_gateway_tab_init', array(&$this, 'payment_stripe_gateway_tab_init'), 10, 2);
+        add_action( 'settings_page_payment_refund_payment_tab_init', array( &$this, 'payment_refund_tab_init' ), 10, 2 );
         // Settings tabs capability
         add_action( 'settings_page_capabilities_product_tab_init', array( &$this, 'capabilites_product_tab_init' ), 10, 2 );
 //        add_action('settings_page_capabilities_order_tab_init', array(&$this, 'capabilites_order_tab_init'), 10, 2);
@@ -45,6 +47,7 @@ class WCMp_Settings {
         add_action( 'settings_page_to_do_list_tab_init', array( &$this, 'to_do_list_tab_init' ), 10, 1 );
         add_action( 'settings_page_notices_tab_init', array( &$this, 'notices_tab_init' ), 10, 1 );
         add_action( 'settings_page_vendors_tab_init', array( &$this, 'vendors_tab_init' ), 10, 1 );
+        add_action( 'settings_page_reports_tab_init', array( &$this, 'reports_tab_init' ), 10, 1 );
 
         add_action( 'update_option_wcmp_vendor_general_settings_name', array( &$this, 'wcmp_update_option_wcmp_vendor_general_settings_name' ) );
         
@@ -85,7 +88,7 @@ class WCMp_Settings {
             , $WCMp->plugin_url . 'assets/images/dualcube.png'
             , 45
         );
-        add_submenu_page( 'wcmp', __( 'Reports', 'dc-woocommerce-multi-vendor' ), __( 'Reports', 'dc-woocommerce-multi-vendor' ), 'manage_woocommerce', 'wc-reports&tab=wcmp_vendors', '__return_false' );
+        $wcmp_reports_page = add_submenu_page( 'wcmp', __( 'Reports', 'dc-woocommerce-multi-vendor' ), __( 'Reports', 'dc-woocommerce-multi-vendor' ), 'manage_woocommerce', 'reports', array( $this, 'wcmp_reports' ) );
         $wcmp_vendors_page = add_submenu_page( 'wcmp', __( 'Vendors', 'dc-woocommerce-multi-vendor' ), __( 'Vendors', 'dc-woocommerce-multi-vendor' ), 'manage_woocommerce', 'vendors', array( $this, 'wcmp_vendors' ) );
         $wcmp_settings_page = add_submenu_page( 'wcmp', __( 'Settings', 'dc-woocommerce-multi-vendor' ), __( 'Settings', 'dc-woocommerce-multi-vendor' ), 'manage_woocommerce', 'wcmp-setting-admin', array( $this, 'create_wcmp_settings' ) );
 
@@ -98,7 +101,7 @@ class WCMp_Settings {
 
         // Assign priority incrmented by 1
         $wcmp_submenu_priority = array(
-        	'wc-reports&tab=wcmp_vendors' => 5,
+        	'reports' => 5,
         	'edit.php?post_type=dc_commission' => 0,
         	'edit.php?post_type=wcmp_vendor_notice' => 2,
         	'edit.php?post_type=wcmp_university' => 3,
@@ -118,6 +121,7 @@ class WCMp_Settings {
         add_action( 'load-' . $wcmp_extension_page, array( &$this, 'wcmp_settings_add_help_tab' ) );
         add_action( 'load-' . $wcmp_todo_list, array( &$this, 'wcmp_settings_add_help_tab' ) );
         add_action( 'load-' . $wcmp_vendors_page, array( &$this, 'wcmp_vendors_add_help_tab' ) );
+        add_action( 'load-' . $wcmp_reports_page, array( &$this, 'wcmp_reports_add_help_tab' ) );
         
         /* sort wcmp submenu */
         if ( isset( $submenu['wcmp'] ) ) {
@@ -143,7 +147,7 @@ class WCMp_Settings {
         <div class="wrap blank-wrap"><h3><?php _e( 'Transaction Details', 'dc-woocommerce-multi-vendor' ); ?></h3></div>
         <div class="wrap wcmp-settings-wrap panel-body">
             <?php
-            $_is_trans_details_page = isset( $_REQUEST['page'] ) ? $_REQUEST['page'] : '';
+            $_is_trans_details_page = isset( $_REQUEST['page'] ) ? wc_clean($_REQUEST['page']) : '';
             $trans_id = isset( $_REQUEST['trans_id'] ) ? absint( $_REQUEST['trans_id'] ) : 0;
             if ( $_is_trans_details_page == 'wcmp-transaction-details' && $trans_id != 0 ) {
                 $transaction = get_post( $trans_id );
@@ -209,6 +213,13 @@ class WCMp_Settings {
 		
 		$WCMp->admin->load_class( "settings-{$tab}", $WCMp->plugin_path, $WCMp->token );
 		$this->vendor_class_obj = new WCMp_Settings_WCMp_Vendors( $tab );
+    }
+
+    public function wcmp_reports_add_help_tab() {
+        global $WCMp;
+        $tab = 'reports';
+        $WCMp->admin->load_class( "settings-{$tab}", $WCMp->plugin_path, $WCMp->token );
+        $this->report_class_obj = new WCMp_Settings_WCMp_Reports( $tab );
     }
     
     function vendors_set_option($status, $option, $value) {
@@ -289,9 +300,9 @@ class WCMp_Settings {
     }
 
     public function get_wcmp_settings_tabsections_payment() {
-        $tabsection_payment = apply_filters( 'wcmp_tabsection_payment', array(
+        $tabsection_payment = array(
             'payment' => array( 'title' => __( 'Payment Settings', 'dc-woocommerce-multi-vendor' ), 'icon' => 'dashicons-share-alt' )
-        ) );
+        );
         if ( 'Enable' === get_wcmp_vendor_settings( 'payment_method_paypal_masspay', 'payment' ) ) {
             $tabsection_payment['paypal_masspay'] = array( 'title' => __( 'Paypal Masspay', 'dc-woocommerce-multi-vendor' ), 'icon' => 'dashicons-tickets-alt' );
         }
@@ -301,7 +312,9 @@ class WCMp_Settings {
         if ( 'Enable' === get_wcmp_vendor_settings( 'payment_method_stripe_masspay', 'payment' ) ) {
             $tabsection_payment['stripe_gateway'] = array( 'title' => __( 'Stripe Gateway', 'dc-woocommerce-multi-vendor' ), 'icon' => 'dashicons-tickets-alt' );
         }
-        return $tabsection_payment;
+        // refund
+        $tabsection_payment['refund_payment'] = array( 'title' => __( 'Refund Options', 'dc-woocommerce-multi-vendor' ), 'icon' => 'dashicons-cart' );
+        return apply_filters( 'wcmp_tabsection_payment', $tabsection_payment );
     }
 
     public function get_wcmp_settings_tabsections_vendor() {
@@ -468,7 +481,7 @@ class WCMp_Settings {
                     }
                 } else if ( $tab == 'capabilities' ) {
                     if ( isset( $_GET['tab_section'] ) ) {
-                        $tab_section = $_GET['tab_section'];
+                        $tab_section = wc_clean($_GET['tab_section']);
                     } else {
                         $tab_section = 'product';
                     }
@@ -479,7 +492,7 @@ class WCMp_Settings {
                 } else if ( $tab == 'wcmp-addons' ) {
                     do_action( "settings_page_{$tab}_tab_init", $tab );
                 } else if ( isset( $_GET['tab_section'] ) && $_GET['tab_section'] && $_GET['tab_section'] != 'general' && $tab != 'general' && $tab != 'payment' ) {
-                    $tab_section = $_GET['tab_section'];
+                    $tab_section = wc_clean($_GET['tab_section']);
                     settings_fields( "wcmp_{$tab}_{$tab_section}_settings_group" );
                     do_action( "wcmp_{$tab}_{$tab_section}_settings_before_submit" );
                     do_settings_sections( "wcmp-{$tab}-{$tab_section}-settings-admin" );
@@ -526,6 +539,15 @@ class WCMp_Settings {
         </div>
         <?php
     }
+
+    public function wcmp_reports() {
+        ?>  
+        <div class="wrap">
+            <?php do_action( "settings_page_reports_tab_init", 'reports' ); ?>
+            <?php do_action( 'dualcube_admin_footer' ); ?>
+        </div>
+        <?php
+    }
     
     public function wcmp_report_bugs(){
         global $WCMp;
@@ -559,7 +581,7 @@ class WCMp_Settings {
                                 <label for="report_title"><?php _e( 'Title', 'dc-woocommerce-multi-vendor' ) ?></label>
                             </th>
                             <td class="forminp">
-                                <input type="text" name="report_title" id="report_title" value="" placeholder="Title" style="width:100%;">
+                                <input type="text" name="report_title" id="report_title" value="" placeholder="<?php esc_attr_e('Title', 'dc-woocommerce-multi-vendor'); ?>" style="width:100%;">
                             </td>
 			</tr>
                         <tr class="" valign="top">
@@ -807,6 +829,12 @@ class WCMp_Settings {
         new WCMp_Settings_Payment_Stripe_Connect( $tab, $subsection );
     }
 
+    public function payment_refund_tab_init( $tab, $subsection ) {
+        global $WCMp;
+        $WCMp->admin->load_class( "settings-{$tab}-{$subsection}", $WCMp->plugin_path, $WCMp->token );
+        new WCMp_Settings_Refund_Payment( $tab, $subsection );
+    }
+
 //    public function frontend_tab_init($tab) {
 //        global $WCMp;
 //        $WCMp->admin->load_class("settings-{$tab}", $WCMp->plugin_path, $WCMp->token);
@@ -844,12 +872,12 @@ class WCMp_Settings {
     }
     
     public function vendors_tab_init( $tab ) {
-        //global $WCMp;
-        //$WCMp->admin->load_class( "settings-{$tab}", $WCMp->plugin_path, $WCMp->token );
-        //new WCMp_Settings_WCMp_Vendors( $tab );
         $this->vendor_class_obj->settings_page_init();
     }
 
+    public function reports_tab_init( $tab ) {
+        $this->report_class_obj->settings_page_init();
+    }
 
     public function is_wcmp_tab_has_subtab( $tab = 'general' ) {
         return in_array( $tab, apply_filters( 'is_wcmp_tab_has_subtab', array( 'general', 'payment', 'vendor', 'capabilities' ), $tab ) );

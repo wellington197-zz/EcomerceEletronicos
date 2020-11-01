@@ -113,11 +113,13 @@ jQuery(document).ready(function($) {
 	
 	// Enquiry Board auto Refresher
 	function enquiryBoardRefrsher() {
-		clearTimeout(enquiryBoardRefrsherTime);
-		enquiryBoardRefrsherTime = setTimeout(function() {
-			$wcfm_enquiry_table.ajax.reload();
-			enquiryBoardRefrsher();
-		}, 30000 );
+		if( wcfm_enquiry_auto_refresher.is_allow ) {
+			clearTimeout(enquiryBoardRefrsherTime);
+			enquiryBoardRefrsherTime = setTimeout(function() {
+				$wcfm_enquiry_table.ajax.reload();
+				enquiryBoardRefrsher();
+			}, wcfm_enquiry_auto_refresher.duration );
+		}
 	}
 	enquiryBoardRefrsher();
 	

@@ -12,7 +12,7 @@
 global $WCFM;
 
 $wcfm_is_allow_capability_controller = apply_filters( 'wcfm_is_allow_capability_controller', true );
-if( !$wcfm_is_allow_capability_controller ) {
+if( wcfm_is_vendor() || !$wcfm_is_allow_capability_controller ) {
 	wcfm_restriction_message_show( "Capability" );
 	return;
 }
@@ -88,6 +88,9 @@ $wc_quotation               = ( isset( $wcfm_capability_options['wc_quotation'] 
 $wc_dynamic_pricing         = ( isset( $wcfm_capability_options['wc_dynamic_pricing'] ) ) ? $wcfm_capability_options['wc_dynamic_pricing'] : 'no';
 $wc_msrp_pricing            = ( isset( $wcfm_capability_options['wc_msrp_pricing'] ) ) ? $wcfm_capability_options['wc_msrp_pricing'] : 'no';
 $wc_cost_of_goods           = ( isset( $wcfm_capability_options['wc_cost_of_goods'] ) ) ? $wcfm_capability_options['wc_cost_of_goods'] : 'no';
+$wc_license_manager         = ( isset( $wcfm_capability_options['wc_license_manager'] ) ) ? $wcfm_capability_options['wc_license_manager'] : 'no';
+$elex_rolebased_price       = ( isset( $wcfm_capability_options['elex_rolebased_price'] ) ) ? $wcfm_capability_options['elex_rolebased_price'] : 'no';
+$pw_gift_cards              = ( isset( $wcfm_capability_options['pw_gift_cards'] ) ) ? $wcfm_capability_options['pw_gift_cards'] : 'no';
 
 // Article Capabilities
 $submit_articles = ( isset( $wcfm_capability_options['submit_articles'] ) ) ? $wcfm_capability_options['submit_articles'] : 'no';
@@ -364,7 +367,7 @@ $is_marketplace = wcfm_is_marketplace();
 								
 								if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
 									if( WCFM_Dependencies::wcfm_wc_product_voucher_plugin_active_check() || WCFMu_Dependencies::wcfm_wc_pdf_voucher_active_check() ) {
-										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_pdf_vouchers', array(  "wc_pdf_vouchers" => array('label' => __('Associate Listings', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[wc_pdf_vouchers]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'desc' => __( 'by WC PDF Vouchers.', 'wc-frontend-manager' ), 'dfvalue' => $wc_pdf_vouchers),
+										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_pdf_vouchers', array(  "wc_pdf_vouchers" => array('label' => __('PDF Vouchers', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[wc_pdf_vouchers]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'desc' => __( 'by WC PDF Vouchers.', 'wc-frontend-manager' ), 'dfvalue' => $wc_pdf_vouchers),
 																																) ) );
 									}
 									
@@ -428,7 +431,7 @@ $is_marketplace = wcfm_is_marketplace();
 																																) ) );
 									}
 									
-									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wc_360_images_active_check' ) && WCFMu_Dependencies::wcfm_wc_360_images_active_check() ) {
+									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wc_360_images_active_check' ) && ( WCFMu_Dependencies::wcfm_wc_360_images_active_check() || function_exists( 'woodmart_360_metabox_output' ) ) ) {
 										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_360_images', array(  "wc_360_images" => array('label' => __('360° Images', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[wc_360_images]', 'type' => 'checkboxoffon', 'desc' => __( 'by WooCommerce 360° Images.', 'wc-frontend-manager' ), 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $wc_360_images),
 																																) ) );
 									}
@@ -468,8 +471,23 @@ $is_marketplace = wcfm_is_marketplace();
 																																) ) );
 									}
 									
-									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wcfm_wc_cost_of_goods_plugin_active_check' ) && WCFMu_Dependencies::wcfm_wcfm_wc_cost_of_goods_plugin_active_check() ) {
+									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wc_cost_of_goods_plugin_active_check' ) && WCFMu_Dependencies::wcfm_wc_cost_of_goods_plugin_active_check() ) {
 										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_cost_of_goods', array(  "wc_cost_of_goods" => array('label' => __('Cost of Goods', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[wc_cost_of_goods]', 'type' => 'checkboxoffon', 'desc' => __( 'by Cost of Goods for WooCommerce.', 'wc-frontend-manager' ), 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $wc_cost_of_goods ),
+																																) ) );
+									}
+									
+									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wc_license_manager_plugin_active_check' ) && WCFMu_Dependencies::wcfm_wc_license_manager_plugin_active_check() ) {
+										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_license_manager', array(  "wc_license_manager" => array('label' => __('License Manager', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[wc_license_manager]', 'type' => 'checkboxoffon', 'desc' => __( 'by Licence Manager for WooCommerce.', 'wc-frontend-manager' ), 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $wc_license_manager ),
+																																) ) );
+									}
+									
+									if( method_exists( 'WCFMu_Dependencies', 'wcfm_elex_rolebased_price_plugin_active_check' ) && WCFMu_Dependencies::wcfm_elex_rolebased_price_plugin_active_check() ) {
+										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_elex_rolebased_price', array(  "elex_rolebased_price" => array('label' => __('Role based Price', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[elex_rolebased_price]', 'type' => 'checkboxoffon', 'desc' => __( 'by ELEX Role based Price.', 'wc-frontend-manager' ), 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $elex_rolebased_price ),
+																																) ) );
+									}
+									
+									if( method_exists( 'WCFMu_Dependencies', 'wcfm_wc_pw_gift_cards_plugin_active_check' ) && WCFMu_Dependencies::wcfm_wc_pw_gift_cards_plugin_active_check() ) {
+										$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_wc_pw_gift_cards', array(  "pw_gift_cards" => array('label' => __('Gift Cards', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[pw_gift_cards]', 'type' => 'checkboxoffon', 'desc' => __( 'by PW Gift Cards.', 'wc-frontend-manager' ), 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $pw_gift_cards ),
 																																) ) );
 									}
 								}
@@ -590,29 +608,27 @@ $is_marketplace = wcfm_is_marketplace();
 									?>
 								<?php } ?>
 								
-								<?php if( apply_filters( 'wcfm_is_pref_customer', true ) ) { ?>
-									<div class="wcfm_clearfix"></div>
-									<div class="vendor_capability_sub_heading"><h3><?php _e( 'Customers', 'wc-frontend-manager' ); ?></h3></div>
-									
-									<?php
-									$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_customers', array("manage_customers" => array('label' => __('Manage Customers', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[manage_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $manage_customers),
-																																																											 "add_customers" => array('label' => __('Add Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[add_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $add_customers),
-																																																											 "view_customers" => array('label' => __('View Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers),
-																																																											 "edit_customers" => array('label' => __('Edit Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[edit_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $edit_customers),
-																																																											 "delete_customers" => array('label' => __('Delete Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[delete_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $delete_customers),
-																																																											 "view_customers_orders" => array('label' => __('View Customer Orders', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_customers_orders]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_orders),
-																																																											 "view_name" => array('label' => __('View Customer Name', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_name]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_name),
-																																																											 "view_email" => array('label' => __('View Customer Email', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_email]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_email),
-																																																											 "view_billing_details" => array('label' => __('Billing Address', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_billing_details]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_billing_details),
-																																																											 "view_shipping_details" => array('label' => __('Shipping Address', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_shipping_details]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_shipping_details),
-																														) ) );
-									if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
-										$WCFM->wcfm_fields->wcfm_generate_form_field(  array(
-																																			"customerlimit" => array( 'label' => __('Customer Limit', 'wc-frontend-manager'), 'placeholder' => __('Unlimited', 'wc-frontend-manager-ultimate'), 'name' => 'wcfm_capability_options[customerlimit]','type' => 'number', 'class' => 'wcfm-text wcfm_ele gallerylimit_ele', 'label_class' => 'wcfm_title gallerylimit_title', 'value' => $customerlimit, 'hints' => __( 'No. of Customers allow to add by an user.', 'wc-frontend-manager-groups-staffs' ) . ' ' . __( 'Set `-1` if you want to restrict limit at `0`.', 'wc-frontend-manager-groups-staffs' ) )
-																																			) );
-									}																																														 
-									?>
-								<?php } ?>
+								<div class="wcfm_clearfix"></div>
+								<div class="vendor_capability_sub_heading"><h3><?php _e( 'Customers', 'wc-frontend-manager' ); ?></h3></div>
+								
+								<?php
+								$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_capability_settings_fields_customers', array("manage_customers" => array('label' => __('Manage Customers', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[manage_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $manage_customers),
+																																																										 "add_customers" => array('label' => __('Add Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[add_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $add_customers),
+																																																										 "view_customers" => array('label' => __('View Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers),
+																																																										 "edit_customers" => array('label' => __('Edit Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[edit_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $edit_customers),
+																																																										 "delete_customers" => array('label' => __('Delete Customer', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[delete_customers]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $delete_customers),
+																																																										 "view_customers_orders" => array('label' => __('View Customer Orders', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_customers_orders]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_orders),
+																																																										 "view_name" => array('label' => __('View Customer Name', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_name]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_name),
+																																																										 "view_email" => array('label' => __('View Customer Email', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_email]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_customers_email),
+																																																										 "view_billing_details" => array('label' => __('Billing Address', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_billing_details]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_billing_details),
+																																																										 "view_shipping_details" => array('label' => __('Shipping Address', 'wc-frontend-manager') , 'name' => 'wcfm_capability_options[view_shipping_details]','type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'dfvalue' => $view_shipping_details),
+																													) ) );
+								if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array(
+																																		"customerlimit" => array( 'label' => __('Customer Limit', 'wc-frontend-manager'), 'placeholder' => __('Unlimited', 'wc-frontend-manager-ultimate'), 'name' => 'wcfm_capability_options[customerlimit]','type' => 'number', 'class' => 'wcfm-text wcfm_ele gallerylimit_ele', 'label_class' => 'wcfm_title gallerylimit_title', 'value' => $customerlimit, 'hints' => __( 'No. of Customers allow to add by an user.', 'wc-frontend-manager-groups-staffs' ) . ' ' . __( 'Set `-1` if you want to restrict limit at `0`.', 'wc-frontend-manager-groups-staffs' ) )
+																																		) );
+								}																																														 
+								?>
 								
 								<div class="wcfm_clearfix"></div>
 								<div class="vendor_capability_sub_heading"><h3><?php _e( 'Reports', 'wc-frontend-manager' ); ?></h3></div>

@@ -199,6 +199,7 @@ class WCFM_Vendors_New_Controller {
 																					);
 							foreach( $wcfm_vendor_billing_fields as $wcfm_vendor_default_key => $wcfm_vendor_default_field ) {
 								update_user_meta( $vendor_id, $wcfm_vendor_default_key, $wcfm_vendor_form_data[$wcfm_vendor_default_field] );
+								update_user_meta( $vendor_id, '_wcfm_' . $wcfm_vendor_default_key, $wcfm_vendor_form_data[$wcfm_vendor_default_field] );
 							}
 							
 							$wcfm_vendor_shipping_fields = array( 
@@ -253,6 +254,8 @@ class WCFM_Vendors_New_Controller {
 							// Desktop notification message for new_vendor
 							$wcfm_messages = sprintf( __( 'A new vendor <b>%s</b> added .', 'wc-frontend-manager' ), '<a class="wcfm_dashboard_item_title" href="' . get_wcfm_vendors_manage_url( $vendor_id ) . '">' . $wcfm_vendor_form_data['store_name'] . '</a>' );
 							$WCFM->wcfm_notification->wcfm_send_direct_message( -2, 0, 1, 0, $wcfm_messages, 'registration' );
+							
+							update_user_meta( $vendor_id, '_wcfmmp_avg_review_rating', 0 );
 							
 							update_user_meta( $vendor_id, 'wcfm_register_member', 'yes' );
 							

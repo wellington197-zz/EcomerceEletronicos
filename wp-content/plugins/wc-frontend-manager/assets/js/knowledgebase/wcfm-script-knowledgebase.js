@@ -177,4 +177,11 @@ jQuery(document).ready(function($) {
 		$('.dataTable').before( $('.wcfm_filters_wrap') );
 		$('.wcfm_filters_wrap').css( 'display', 'inline-block' );
 	}
+	
+	// Screen Manager
+	$( document.body ).on( 'updated_wcfm-knowledgebase', function() {
+		$.each(wcfm_knowledgebase_screen_manage, function( column, column_val ) {
+		  $wcfm_knowledgebase_table.column(column).visible( false );
+		} );
+	});
 } );

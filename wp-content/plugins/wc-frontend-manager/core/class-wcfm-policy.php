@@ -248,7 +248,9 @@ class WCFM_Policy {
 	function wcfm_policy_product_settings( $product_id, $product_type = '', $wcfm_is_translated_product = false, $wcfm_wpml_edit_disable_element = '' ) {
 		global $WCFM;
 		
-		if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_policy_product_settings', true ) || !apply_filters( 'wcfm_is_allow_product_policies', true ) ) return; 
+		if( !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_policy_product_settings', true ) || !apply_filters( 'wcfm_is_allow_product_policies', true ) ) return;
+		
+		if( wcfm_is_vendor() && !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) ) return;
 		
 		$_wcfm_product_policy_tab_title = '';
 		$_wcfm_product_shipping_policy = '';
@@ -394,13 +396,11 @@ class WCFM_Policy {
 	public function get_policy_tab_title( $product_id = 0 ) {
 		global $WCFM, $product;
 		
-		if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) ) return; 
-		
 		$_wcfm_product_policy_tab_title = '';
 		
 		$is_marketplace = wcfm_is_marketplace();
 		
-		if( $product && is_object( $product ) ) {
+		if( $product && is_object( $product ) && method_exists( $product, 'get_id' ) ) {
 			$product_id = $product->get_id();
 		}
 		
@@ -411,7 +411,7 @@ class WCFM_Policy {
 		
 		if( $is_marketplace ) {
 			$vendor_id   = wcfm_get_vendor_id_by_post( $product_id );
-			if( $vendor_id ) {
+			if( $vendor_id && wcfm_vendor_has_capability( $vendor_id, 'policy' ) && wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
 				$wcfm_policy_vendor_options = (array) wcfm_get_user_meta( $vendor_id, 'wcfm_policy_vendor_options', true );
 				
 				$_wcfm_vendor_policy_tab_title = isset( $wcfm_policy_vendor_options['policy_tab_title'] ) ? $wcfm_policy_vendor_options['policy_tab_title'] : '';
@@ -436,7 +436,7 @@ class WCFM_Policy {
 	public function get_shipping_policy( $product_id ) {
 		global $WCFM;
 		
-		if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_shipping_policy', true ) ) return; 
+		//if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_shipping_policy', true ) ) return; 
 		
 		$_wcfm_product_shipping_policy = '';
 		
@@ -454,7 +454,7 @@ class WCFM_Policy {
 		
 		if( $is_marketplace ) {
 			$vendor_id   = wcfm_get_vendor_id_by_post( $product_id );
-			if( $vendor_id ) {
+			if( $vendor_id && wcfm_vendor_has_capability( $vendor_id, 'policy' ) && wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
 				$wcfm_policy_vendor_options = (array) wcfm_get_user_meta( $vendor_id, 'wcfm_policy_vendor_options', true );
 				
 				$_wcfm_vendor_shipping_policy = isset( $wcfm_policy_vendor_options['shipping_policy'] ) ? $wcfm_policy_vendor_options['shipping_policy'] : '';
@@ -487,7 +487,7 @@ class WCFM_Policy {
 	public function get_refund_policy( $product_id ) {
 		global $WCFM;
 		
-		if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_refund_policy', true ) ) return; 
+		//if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_refund_policy', true ) ) return; 
 		
 		$_wcfm_product_refund_policy = '';
 		
@@ -505,7 +505,7 @@ class WCFM_Policy {
 		
 		if( $is_marketplace ) {
 			$vendor_id   = wcfm_get_vendor_id_by_post( $product_id );
-			if( $vendor_id ) {
+			if( $vendor_id && wcfm_vendor_has_capability( $vendor_id, 'policy' ) && wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
 				$wcfm_policy_vendor_options = (array) wcfm_get_user_meta( $vendor_id, 'wcfm_policy_vendor_options', true );
 				
 				$_wcfm_vendor_refund_policy = isset( $wcfm_policy_vendor_options['refund_policy'] ) ? $wcfm_policy_vendor_options['refund_policy'] : '';
@@ -538,7 +538,7 @@ class WCFM_Policy {
 	public function get_cancellation_policy( $product_id ) {
 		global $WCFM;
 		
-		if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_cancel_policy', true ) ) return; 
+		//if( !apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) || !apply_filters( 'wcfm_is_allow_show_policy', true ) || !apply_filters( 'wcfm_is_allow_show_cancel_policy', true ) ) return; 
 		
 		$_wcfm_product_cancellation_policy = '';
 		
@@ -556,7 +556,7 @@ class WCFM_Policy {
 		
 		if( $is_marketplace ) {
 			$vendor_id   = wcfm_get_vendor_id_by_post( $product_id );
-			if( $vendor_id ) {
+			if( $vendor_id && wcfm_vendor_has_capability( $vendor_id, 'policy' ) && wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
 				$wcfm_policy_vendor_options = (array) wcfm_get_user_meta( $vendor_id, 'wcfm_policy_vendor_options', true );
 				
 				$_wcfm_vendor_cancellation_policy = isset( $wcfm_policy_vendor_options['cancellation_policy'] ) ? $wcfm_policy_vendor_options['cancellation_policy'] : '';
@@ -586,7 +586,11 @@ class WCFM_Policy {
 	public function wcfm_policies_product_tab_content() {
 		global $WCFM, $product;
 		
-		if( $product && is_object( $product ) ) {
+		$shipping_policy     = '';
+		$refund_policy       = '';
+		$cancellation_policy = '';
+		
+		if( $product && is_object( $product ) && method_exists( $product, 'get_id' ) ) {
 			$shipping_policy     = $this->get_shipping_policy( $product->get_id() );
 			$refund_policy       = $this->get_refund_policy( $product->get_id() );
 			$cancellation_policy = $this->get_cancellation_policy( $product->get_id() );

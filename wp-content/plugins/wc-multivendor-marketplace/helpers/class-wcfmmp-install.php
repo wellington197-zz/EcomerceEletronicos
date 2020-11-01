@@ -191,6 +191,9 @@ class WCFMmp_Install {
 															PRIMARY KEY (`ID`)
 															) $collate;";
 															
+		$create_tables_query[] = "ALTER TABLE `" . $wpdb->prefix . "wcfm_marketplace_withdraw_request` CHANGE `order_ids` `order_ids` longtext NOT NULL DEFAULT ''";
+		$create_tables_query[] = "ALTER TABLE `" . $wpdb->prefix . "wcfm_marketplace_withdraw_request` CHANGE `commission_ids` `commission_ids` longtext NOT NULL DEFAULT ''";
+															
 	  $create_tables_query[] = "CREATE TABLE IF NOT EXISTS `" . $wpdb->prefix . "wcfm_marketplace_withdraw_request_meta` (
 															`ID` bigint(20) NOT NULL AUTO_INCREMENT,
 															`withdraw_id` bigint(20) NOT NULL,

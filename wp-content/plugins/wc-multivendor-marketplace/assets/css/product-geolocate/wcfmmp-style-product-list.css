@@ -1,3 +1,13 @@
+.wcfmmp-product-geolocate-wrapper {
+	box-shadow: 1px 1px 20px 0px #E9E9E9;
+	margin-bottom: 25px;
+}
+
+.wcfmmp-product-geolocate-wrapper .wcfmmp-product-geolocate-search-form  {
+	padding: 10px;
+	margin: 0px !important;
+}
+
 .wcfmmp-product-geolocate-search-form input.wcfmmp-radius-addr, .wcfmmp-product-geolocate-search-form input.wcfm-search-field, .wcfmmp-product-geolocate-search-form input#search, .wcfmmp-product-geolocate-search-form select#wcfmmp_store_category, .wcfmmp-product-geolocate-search-form select#wcfmmp_store_country, .wcfmmp-product-geolocate-search-form #wcfmmp_store_state, .wcfmmp-product-geolocate-search-form .select2-container, .wcfmmp-product-geolocate-search-form .wcfmmp-search-box, #wcfmmp_store_orderby {
   padding: 8px 10px;
 	width: 40%;
@@ -5,7 +15,7 @@
 	margin-right:10px;
 	font-size: 15px;
 	display: inline-block;
-	box-shadow: none;
+	box-shadow: 1px 1px 5px 0px #E9E9E9;
 	background-color: #fff !important;
 	border: 1px solid #ccc !important;
 	-moz-border-radius: 3px;
@@ -88,6 +98,7 @@
 .wcfmmp-product-geolocate-search-form div.wcfm_radius_slidecontainer .wcfmmp_radius_range_cur {
 	font-size: 10px;
   position:absolute;
+  top:27px;
 }
 
 .wcfmmp-product-geolocate-search-form div.wcfm_radius_slidecontainer .wcfmmp_radius_range_end {
@@ -102,6 +113,7 @@
 .wcfmmp-product-geolocate-wrapper .wcfmmp-product-list-map {
 	width: 100%; 
 	margin-bottom: 10px;
+	max-height: 350px;
 }
 
 .wcfm_map_info_wrapper {display: table;}

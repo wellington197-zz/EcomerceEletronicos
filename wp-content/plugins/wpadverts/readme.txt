@@ -4,8 +4,8 @@ Contributors: gwin
 Tags: classifieds, classified, classified ads, classified script, classifieds script, wp classified, wp classifieds
 Requires PHP: 5.3
 Requires at least: 4.0
-Tested up to: 5.2
-Stable tag: 1.3.7
+Tested up to: 5.5
+Stable tag: 1.4.5
 License: GNU Version 2 or Any Later Version
 
 Build classifieds section in seconds. Allow your visitors to browse and post (paid or free) classified ads on your site.
@@ -99,6 +99,63 @@ Most likely rewrite rules were not registered properly for some reason. Go to wp
 "Save Changes" button without actually changing anything, this should reset router and fix URLs.
 
 == Changelog ==
+
+= 1.4.5 - 2020-08-13 =
+
+ * FEATURE: Added Nigerian Naira currency.
+ * FEATURE: Added signs for CZK, HUF, NOK, PHP and SEK currencies.
+ * FEATURE: Pending Ads will now show in [adverts_manage] panel.
+ * FIXED: Error when uploading more than one file to the gallery.
+ * FIXED: Notice in the gallery in [adverts_add] shortcode.
+ * FIXED: Autocomplete field will pre-render values to avoid having values unset when form is submitted before autocomplete field finishes loading.
+ * FIXED: Line breaks not shown in text editor when a page is not using blocks (WP 5.5 compatibility issue)
+ * FIXED: Removed duplicate bind code in [adverts_manage].
+ * API: adverts_field_textarea_tinymce_params filter allows settings tinyMCE params for textarea field.
+
+= 1.4.4 - 2020-06-16 =
+
+* FEATURE: Allow using Autocomplete field with any taxonomy.
+* FIXED: Preserve Ad author when approving ads using Quick Edit.
+* FIXED: Hardcoded Autocomplete phrases.
+* FIXED: Autocomplete field does not activate when selecting a top category.
+* FIXED: Indian Rupee will now use ₹ sign instead of INR code.
+* API: Form fields can now use a custom save method.
+* API: adverts_field_autocomplete can be used in the forms.
+* API: Saving Ad from wp-admin / Classifieds panel will now use Adverts_Post::save()
+* TRANSLATION: Updated Italian translation
+
+= 1.4.3 - 2020-04-23 = 
+
+ * FIXED: Contact information box does not load.
+ * FIXED: Delete option does not fire in [adverts_manage].
+ * API: Use wpadverts_post_type() with Featured module.
+
+= 1.4.2 - 2020-04-22 =
+
+ * FEATURE: First image on the list (when posting an Advert) is automatically selected as featured.
+ * FEATURE: Autocomplete script rewritten (will be used in next MAL version and with Categories in [adverts_add] after that). 
+ * FIXED: warnings in wp-admin / Appearance / Widgets
+ * API: Groundwork for for using WPAdverts with multiple Custom Post Types (not complete nor documented yet)
+ * API: adverts_plupload_default_settings filter applied on Gallery plupload settings
+ * API: adverts_tax_term_description filter applied on term descriptions
+
+= 1.4.1 - 2020-03-05 =
+
+ * WARNING: If you are upgrading from version 1.3.7 or older please read the below article first.
+ * https://wpadverts.com/blog/wpadverts-1-4-0-release/
+ * FEATURE: Support for webp images (although requires additional plugin like wp-enable-webp).
+ * FEATURE: On advert-category pages the [adverts_list] supports category="current" param (useful when desigining category pages using Elementor).
+ * FIXED: Incompatibility with upcoming PHP7 version.
+ * FIXED: Incorrect data in the advert-category feed.
+ * FIXED: Pagination on advert-categort pages.
+ * FIXED: Invalid variable name passed to wpadverts_user_saved action.
+ * FIXED: Escaped quote characters in Polish translation.
+
+= 1.4.0 - 2020-02-06 =
+
+ * WARNING: This is major update with potential backward-incompatible changes!
+ * DO NOT UPDATE WITHOUT READING THE RELEASE NOTES BELOW!
+ * https://wpadverts.com/blog/wpadverts-1-4-0-release/
 
 = 1.3.7 - 2019-11-06 =
 

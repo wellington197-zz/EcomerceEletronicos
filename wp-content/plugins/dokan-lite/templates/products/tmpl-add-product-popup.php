@@ -1,3 +1,8 @@
+<?php
+
+use WeDevs\Dokan\Walkers\TaxonomyDropdown;
+
+?>
 <script type="text/html" id="tmpl-dokan-add-new-product">
     <div id="dokan-add-new-product-popup" class="white-popup dokan-add-new-product-popup">
         <h2><i class="fa fa-briefcase">&nbsp;</i>&nbsp;<?php esc_html_e( 'Add New Product', 'dokan-lite' ); ?></h2>
@@ -52,7 +57,7 @@
                                 <label for="_regular_price" class="form-label"><?php esc_html_e( 'Price', 'dokan-lite' ); ?></label>
                                 <div class="dokan-input-group">
                                     <span class="dokan-input-group-addon"><?php echo esc_html( get_woocommerce_currency_symbol() ); ?></span>
-                                    <input type="number" class="dokan-product-regular-price dokan-form-control" name="_regular_price" placeholder="0.00" min="0" step="any">
+                                    <input type="text" class="dokan-product-regular-price wc_input_price dokan-form-control" name="_regular_price" id="_regular_price" placeholder="0.00">
                                 </div>
                             </div>
 
@@ -65,7 +70,7 @@
 
                                 <div class="dokan-input-group">
                                     <span class="dokan-input-group-addon"><?php echo esc_html( get_woocommerce_currency_symbol() ); ?></span>
-                                    <input type="number" class="dokan-product-sales-price dokan-form-control" name="_sale_price" placeholder="0.00" min="0" step="any">
+                                    <input type="text" class="dokan-product-sales-price wc_input_price dokan-form-control"  name="_sale_price" placeholder="0.00" id="_sale_price">
                                 </div>
                             </div>
                         </div>
@@ -126,7 +131,7 @@
                                 'exclude'          => '',
                                 'selected'         => $term,
                                 'echo'             => 0,
-                                'walker'           => new DokanTaxonomyWalker()
+                                'walker'           => new TaxonomyDropdown()
                             ) ) );
 
                             echo str_replace( '<select', '<select data-placeholder="'.__( 'Select product category', 'dokan-lite' ).'" multiple="multiple" ', $drop_down_category ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
@@ -135,25 +140,8 @@
                     <?php endif; ?>
 
                     <div class="dokan-form-group">
-                        <?php
-                        require_once DOKAN_LIB_DIR.'/class.taxonomy-walker.php';
-                        $drop_down_tags = wp_dropdown_categories( array(
-                            'show_option_none' => __( '', 'dokan-lite' ),
-                            'hierarchical'     => 1,
-                            'hide_empty'       => 0,
-                            'name'             => 'product_tag[]',
-                            'id'               => 'product_tag',
-                            'taxonomy'         => 'product_tag',
-                            'title_li'         => '',
-                            'class'            => 'product_tags dokan-form-control',
-                            'exclude'          => '',
-                            'selected'         => array(),
-                            'echo'             => 0,
-                            'walker'           => new DokanTaxonomyWalker()
-                        ) );
-
-                        echo str_replace( '<select', '<select data-placeholder="'.__( 'Select product tags', 'dokan-lite' ).'" multiple="multiple" ', $drop_down_tags ); // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
-                        ?>
+                        <label for="product_tag" class="form-label"><?php esc_html_e( 'Tags', 'dokan-lite' ); ?></label>
+                        <select multiple="multiple" name="product_tag[]" id="product_tag_search" class="product_tag_search product_tags dokan-form-control dokan-select2" data-placeholder="<?php esc_attr_e( 'Select tags', 'dokan-lite' ); ?>"></select>
                     </div>
 
                     <?php do_action( 'dokan_new_product_after_product_tags' ); ?>

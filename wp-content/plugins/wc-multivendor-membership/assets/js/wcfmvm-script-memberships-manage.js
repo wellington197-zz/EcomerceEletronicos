@@ -116,6 +116,10 @@ jQuery(document).ready( function($) {
 	$('#wcfm_Membership_manager_submit_button').click(function(event) {
 	  event.preventDefault();
 	  
+	  var free_thankyou_content = getWCFMEditorContent( 'free_thankyou_content' );
+		var subscription_thankyou_content = getWCFMEditorContent( 'subscription_thankyou_content' );
+		var subscription_welcome_email_content = getWCFMEditorContent( 'subscription_welcome_email_content' );
+	  
 	  // Validations
 	  $is_valid = wcfm_memberships_manage_form_validate();
 	  
@@ -128,10 +132,13 @@ jQuery(document).ready( function($) {
 				}
 			});
 			var data = {
-				action                   : 'wcfm_ajax_controller',
-				controller               : 'wcfm-memberships-manage',
-				wcfm_memberships_manage_form : $('#wcfm_memberships_manage_form').serialize(),
-				status                   : 'submit'
+				action                                : 'wcfm_ajax_controller',
+				controller                            : 'wcfm-memberships-manage',
+				wcfm_memberships_manage_form          : $('#wcfm_memberships_manage_form').serialize(),
+				free_thankyou_content                 : free_thankyou_content,
+				subscription_thankyou_content         : subscription_thankyou_content,
+				subscription_welcome_email_content    : subscription_welcome_email_content,
+				status                                : 'submit'
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {

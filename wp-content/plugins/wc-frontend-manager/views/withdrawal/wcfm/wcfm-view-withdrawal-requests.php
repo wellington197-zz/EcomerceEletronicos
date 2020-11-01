@@ -53,6 +53,7 @@ $withdrawal_negative = isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_rev
 																								"dropdown_vendor" => array( 'type' => 'select', 'options' => $vendor_arr, 'attributes' => array( 'style' => 'width: 150px;' ) )
 																								 ) );
 			?>
+			<?php $WCFM->library->wcfm_date_range_picker_field(); ?>
 		</div>
 	  
 		<?php do_action( 'before_wcfm_withdrawal_requests' ); ?>
@@ -73,6 +74,7 @@ $withdrawal_negative = isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_rev
 								<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Commission IDs', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_request_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>
@@ -89,6 +91,7 @@ $withdrawal_negative = isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_rev
 								<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Commission IDs', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_request_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Note', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>

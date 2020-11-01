@@ -34,7 +34,7 @@ if(!function_exists('wcfm_woocommerce_version_notice')) {
 }*/
 
 if(!function_exists('wcfm_restriction_message_show')) {
-	function wcfm_restriction_message_show( $feature = '', $text_only = false ) {
+	function wcfm_restriction_message_show( $feature = '', $text_only = false, $feature_only = false ) {
 		do_action( 'wcfm_restriction_message_show_before',  $feature );
 		?>
 		<div class="collapse wcfm-collapse">
@@ -51,16 +51,20 @@ if(!function_exists('wcfm_restriction_message_show')) {
 						<p>
 						  <span class="wcfmfa fa-exclamation-triangle"></span>
 							<?php
-							if( wcfm_is_vendor() ) {
-								$wcfm_vendors_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
-								$wcfm_membership = get_user_meta( $wcfm_vendors_id, 'wcfm_membership', true );
-								if( $wcfm_membership && function_exists( 'wcfm_is_valid_membership' ) && wcfm_is_valid_membership( $wcfm_membership ) ) {
-								  printf( __( '%s' . $feature . '%s: Your %s membership level doesn\'t give you permission to access this page. Please upgrade your membership, or contact the %sWebsite Manager%s for assistance.', 'wc-frontend-manager' ), '<strong>', '</strong>', '<strong>' . get_the_title( $wcfm_membership ) . '</strong>', '<strong>', '</strong>' );	
+							if( $feature_only ) {
+								_e( $feature, 'wc-frontend-manager' );
+							} else {
+								if( wcfm_is_vendor() ) {
+									$wcfm_vendors_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
+									$wcfm_membership = get_user_meta( $wcfm_vendors_id, 'wcfm_membership', true );
+									if( $wcfm_membership && function_exists( 'wcfm_is_valid_membership' ) && wcfm_is_valid_membership( $wcfm_membership ) ) {
+										printf( __( '%s' . $feature . '%s: Your %s membership level doesn\'t give you permission to access this page. Please upgrade your membership, or contact the %sWebsite Manager%s for assistance.', 'wc-frontend-manager' ), '<strong>', '</strong>', '<strong>' . get_the_title( $wcfm_membership ) . '</strong>', '<strong>', '</strong>' );	
+									} else {
+										printf( __( '%s' . $feature . '%s: You don\'t have permission to access this page. Please contact your %sStore Admin%s for assistance.', 'wc-frontend-manager' ), '<strong>', '</strong>', '<strong>', '</strong>' );
+									}
 								} else {
 									printf( __( '%s' . $feature . '%s: You don\'t have permission to access this page. Please contact your %sStore Admin%s for assistance.', 'wc-frontend-manager' ), '<strong>', '</strong>', '<strong>', '</strong>' );
 								}
-							} else {
-								printf( __( '%s' . $feature . '%s: You don\'t have permission to access this page. Please contact your %sStore Admin%s for assistance.', 'wc-frontend-manager' ), '<strong>', '</strong>', '<strong>', '</strong>' );
 							}
 							?>
 						</p>
@@ -211,7 +215,7 @@ if( !function_exists( 'wcfm_is_marketplace' ) ) {
 if( !function_exists( 'wcfm_is_vendor' ) ) {
 	function wcfm_is_vendor( $vendor_id = '' ) {
 		if( !$vendor_id ) {
-			if( !is_user_logged_in() ) return false;
+			if( !function_exists( 'is_user_logged_in' ) || !is_user_logged_in() ) return false;
 			$vendor_id = get_current_user_id();
 		}
 		
@@ -221,7 +225,7 @@ if( !function_exists( 'wcfm_is_vendor' ) ) {
 			if( 'wcvendors' == $is_marketplace ) {
 			  if ( WCV_Vendors::is_vendor( $vendor_id ) ) return true;
 			} elseif( 'wcmarketplace' == $is_marketplace ) {
-				if( is_user_wcmp_vendor( $vendor_id ) ) return true;
+				if( function_exists( 'is_user_wcmp_vendor' ) && is_user_wcmp_vendor( $vendor_id ) ) return true;
 			} elseif( 'wcpvendors' == $is_marketplace ) {
 				if( WC_Product_Vendors_Utils::is_vendor( $vendor_id ) && !WC_Product_Vendors_Utils::is_pending_vendor( $vendor_id ) ) return true;
 				$vendor_data = get_term( $vendor_id, WC_PRODUCT_VENDORS_TAXONOMY );
@@ -233,31 +237,40 @@ if( !function_exists( 'wcfm_is_vendor' ) ) {
 			} elseif( 'wcfmmarketplace' == $is_marketplace ) {
 				$user = get_userdata( $vendor_id );
 				if( is_a( $user, 'WP_User' ) ) {
-					if ( in_array( 'wcfm_vendor', (array) $user->roles ) )  return true;
+					if ( in_array( 'wcfm_vendor', (array) $user->roles ) )  return apply_filters( 'wcfm_is_vendor', true, $vendor_id );
 				}
 			}
 		}
 		
-		return apply_filters( 'wcfm_is_vendor', false );
+		return apply_filters( 'wcfm_is_vendor', false, $vendor_id );
 	}
 }
 
 if( !function_exists( 'wcfm_get_vendor_id_by_post' ) ) {
 	function wcfm_get_vendor_id_by_post( $product_id = '' ) {
 		global $WCFM;
-		$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+		$vendor_id = '';
+		if( $WCFM && $WCFM->wcfm_vendor_support ) {
+			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+		} else {
+			$post_author_id = get_post_field( 'post_author', $product_id );
+			if( wcfm_is_vendor( $post_author_id ) ) 
+				$vendor_id = $post_author_id;
+		}
 		return apply_filters( 'wcfm_vendor_id_by_post', $vendor_id, $product_id );
 	}
 }
 
 if( !function_exists( 'wcfm_get_vendor_store_by_post' ) ) {
 	function wcfm_get_vendor_store_by_post( $product_id = '' ) {
+		$store = false;
 		$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 		if( $vendor_id  ) {
-			$store = wcfm_get_vendor_store( $vendor_id );
+			if( function_exists( 'wcfm_get_vendor_store' ) )
+				$store = wcfm_get_vendor_store( $vendor_id );
 			return apply_filters( 'wcfm_vendor_store_by_post', $store, $product_id );
 		} else {
-			return apply_filters( 'wcfm_vendor_store_by_post', false, $product_id );
+			return apply_filters( 'wcfm_vendor_store_by_post', $store, $product_id );
 		}
 	}
 }
@@ -277,7 +290,10 @@ if( !function_exists( 'wcfm_get_vendor_store_name_by_post' ) ) {
 if( !function_exists( 'wcfm_get_vendor_store' ) ) {
 	function wcfm_get_vendor_store( $vendor_id = '' ) {
 		global $WCFM;
-		$store = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( $vendor_id );
+		$store = '';
+		if( $WCFM && $WCFM->wcfm_vendor_support ) {
+			$store = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( $vendor_id );
+		}
 		if( $store  ) {
 			return apply_filters( 'wcfm_vendor_store', $store, $vendor_id );
 		} else {
@@ -289,11 +305,68 @@ if( !function_exists( 'wcfm_get_vendor_store' ) ) {
 if( !function_exists( 'wcfm_get_vendor_store_name' ) ) {
 	function wcfm_get_vendor_store_name( $vendor_id = '' ) {
 		global $WCFM;
-		$store_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( $vendor_id );
+		$store_name = '';
+		if( $WCFM && $WCFM->wcfm_vendor_support ) {
+			$store_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( $vendor_id );
+		}
 		if( $store_name  ) {
 			return apply_filters( 'wcfm_vendor_store_name', $store_name, $vendor_id );
 		} else {
 			return apply_filters( 'wcfm_vendor_store_name', false, $vendor_id );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_logo_by_post' ) ) {
+	function wcfm_get_vendor_store_logo_by_post( $product_id = '' ) {
+		$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+		if( $vendor_id  ) {
+			$store_logo = wcfm_get_vendor_store_logo_by_vendor( $vendor_id );
+			return apply_filters( 'wcfm_vendor_store_logo_by_post', $store_logo, $product_id, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_logo_by_post', false, $product_id, 0 );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_logo_by_vendor' ) ) {
+	function wcfm_get_vendor_store_logo_by_vendor( $vendor_id = '' ) {
+		global $WCFM;
+		if( $vendor_id  ) {
+			$store_logo = '';
+			if( $WCFM && $WCFM->wcfm_vendor_support ) {
+				$store_logo = $WCFM->wcfm_vendor_support->wcfm_get_vendor_logo_by_vendor( $vendor_id );
+			}
+			return apply_filters( 'wcfm_vendor_store_logo_by_vendor', $store_logo, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_logo_by_vendor', false, 0 );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_address_by_post' ) ) {
+	function wcfm_get_vendor_store_address_by_post( $product_id = '' ) {
+		$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+		if( $vendor_id  ) {
+			$store_address = wcfm_get_vendor_store_address_by_vendor( $vendor_id );
+			return apply_filters( 'wcfm_vendor_store_address_by_post', $store_address, $product_id, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_address_by_post', false, $product_id, 0 );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_address_by_vendor' ) ) {
+	function wcfm_get_vendor_store_address_by_vendor( $vendor_id = '' ) {
+		global $WCFM;
+		if( $vendor_id  ) {
+			$store_address = '';
+			if( $WCFM && $WCFM->wcfm_vendor_support ) {
+				$store_address = $WCFM->wcfm_vendor_support->wcfm_get_vendor_address_by_vendor( $vendor_id );
+			}
+			return apply_filters( 'wcfm_vendor_store_address_by_vendor', $store_address, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_address_by_vendor', false, 0 );
 		}
 	}
 }
@@ -314,10 +387,40 @@ if( !function_exists( 'wcfm_get_vendor_store_email_by_vendor' ) ) {
 	function wcfm_get_vendor_store_email_by_vendor( $vendor_id = '' ) {
 		global $WCFM;
 		if( $vendor_id  ) {
-			$store_email = $WCFM->wcfm_vendor_support->wcfm_get_vendor_email_by_vendor( $vendor_id );
+			$store_email = '';
+			if( $WCFM && $WCFM->wcfm_vendor_support ) {
+				$store_email = $WCFM->wcfm_vendor_support->wcfm_get_vendor_email_by_vendor( $vendor_id );
+			}
 			return apply_filters( 'wcfm_vendor_store_email_by_vendor', $store_email, $vendor_id );
 		} else {
 			return apply_filters( 'wcfm_vendor_store_email_by_vendor', false, 0 );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_phone_by_post' ) ) {
+	function wcfm_get_vendor_store_phone_by_post( $product_id = '' ) {
+		$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+		if( $vendor_id  ) {
+			$store_phone = wcfm_get_vendor_store_phone_by_vendor( $vendor_id );
+			return apply_filters( 'wcfm_vendor_store_phone_by_post', $store_phone, $product_id, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_phone_by_post', false, $product_id, 0 );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_get_vendor_store_phone_by_vendor' ) ) {
+	function wcfm_get_vendor_store_phone_by_vendor( $vendor_id = '' ) {
+		global $WCFM;
+		if( $vendor_id  ) {
+			$store_phone = '';
+			if( $WCFM && $WCFM->wcfm_vendor_support ) {
+				$store_phone = $WCFM->wcfm_vendor_support->wcfm_get_vendor_phone_by_vendor( $vendor_id );
+			}
+			return apply_filters( 'wcfm_vendor_store_phone_by_vendor', $store_phone, $vendor_id );
+		} else {
+			return apply_filters( 'wcfm_vendor_store_phone_by_vendor', false, 0 );
 		}
 	}
 }
@@ -332,7 +435,73 @@ if( !function_exists( 'wcfm_is_vendor_product' ) ) {
 	}
 }
 
+if( !function_exists( 'wcfm_get_order_number' ) ) {
+	function wcfm_get_order_number( $order_id = '' ) {
+		if( $order_id ) {
+			$order_ids = explode(',', $order_id );
+			if( !empty( $order_ids ) && count( $order_ids ) > 1 ) {
+				$order_ids_list = '';
+				foreach( $order_ids as $order_id_single ) {
+					if( $order_id_single ) {
+						$order = wc_get_order( $order_id_single );
+						if( is_a( $order, 'WC_Order' ) ) {
+							if( $order_ids_list ) $order_ids_list .= ', ';
+							$order_ids_list .= esc_attr( $order->get_order_number() );
+						}
+					}
+				}
+				$order_id = $order_ids_list;
+			} else {
+				$order = wc_get_order( $order_id );
+				if( is_a( $order, 'WC_Order' ) ) {
+					$order_id = esc_attr( $order->get_order_number() );
+				}
+			}
+		}
+		return $order_id;
+	}
+}
+
+if( !function_exists( 'wcfm_vendor_has_capability' ) ) {
+	function wcfm_vendor_has_capability( $vendor_id, $capability = '' ) {
+		global $WCFM;
+		if( !$vendor_id ) return true;
+		if( !$capability ) return true;
+		return $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, $capability );
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////// WCFM Marketplace Helper Funtions End ///////////////////////////////////////////////////////////////////////////////////////
+
+if( !function_exists( 'wcfm_is_mobile' ) ) {
+	function wcfm_is_mobile() {
+		
+		include_once(dirname(__FILE__) . '/wcfm-mobile-detect.php');
+		
+		$detect = new WCFM_Mobile_Detect;
+
+		if( $detect->isMobile() && !$detect->isTablet() ){
+			return apply_filters( 'wcfm_is_mobile', true );
+		} else {
+			return apply_filters( 'wcfm_is_mobile', false );
+		}
+	}
+}
+
+if( !function_exists( 'wcfm_is_tablet' ) ) {
+	function wcfm_is_tablet() {
+		
+		include_once(dirname(__FILE__) . '/wcfm-mobile-detect.php');
+		
+		$detect = new WCFM_Mobile_Detect;
+
+		if( $detect->isTablet() ){
+			return apply_filters( 'wcfm_is_tablet', true );
+		} else {
+			return apply_filters( 'wcfm_is_tablet', false );
+		}
+	}
+}
 
 if( !function_exists( 'wcfm_is_booking' ) ) {
 	function wcfm_is_booking() {
@@ -391,6 +560,10 @@ if(!function_exists('get_wcfm_page')) {
 				if( $language_code ) {
 					//echo icl_object_id( $pages['wc_frontend_manager_page_id'], 'page', true, $language_code );
 					//wcfm_log( $pages['wc_frontend_manager_page_id'] . ":bb:" . $language_code . ":cc:" . icl_object_id( $pages['wc_frontend_manager_page_id'], 'page', true, $language_code ) );
+					if( defined('DOING_AJAX') ) {
+						do_action( 'wpml_switch_language', $language_code );
+					}
+
 					$wcfm_page = get_permalink( icl_object_id( $pages['wc_frontend_manager_page_id'], 'page', true, $language_code ) );
 					$wcfm_page = apply_filters( 'wpml_permalink', $wcfm_page, $language_code );
 					return $wcfm_page;
@@ -463,7 +636,7 @@ if(!function_exists('get_wcfm_products_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_products_url = wcfm_get_endpoint_url( 'wcfm-products', '', $wcfm_page );
 		if($product_status) $wcfm_products_url = add_query_arg( 'product_status', $product_status, $wcfm_products_url );
-		return apply_filters( 'wcfm_products_url', $wcfm_products_url );
+		return apply_filters( 'wcfm_products_url', $wcfm_products_url, $product_status );
 	}
 }
 
@@ -471,8 +644,8 @@ if(!function_exists('get_wcfm_edit_product_url')) {
 	function get_wcfm_edit_product_url( $product_id = '', $the_product = array(), $language_code = '' ) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page( $language_code );
-		$wcfm_edit_product_url = wcfm_get_endpoint_url( 'wcfm-products-manage', $product_id, $wcfm_page );
-		return apply_filters( 'wcfm_edit_product_url',  $wcfm_edit_product_url );
+		$wcfm_edit_product_url = wcfm_get_endpoint_url( 'wcfm-products-manage', $product_id, $wcfm_page, $language_code );
+		return apply_filters( 'wcfm_edit_product_url',  $wcfm_edit_product_url, $product_id );
 	}
 }
 
@@ -482,7 +655,7 @@ if(!function_exists('get_wcfm_stock_manage_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_stock_manage_url = wcfm_get_endpoint_url( 'wcfm-stock-manage', '', $wcfm_page );
 		if($product_status) $wcfm_stock_manage_url = add_query_arg( 'product_status', $product_status, $wcfm_stock_manage_url );
-		return apply_filters( 'wcfm_stock_manage_url', $wcfm_stock_manage_url );
+		return apply_filters( 'wcfm_stock_manage_url', $wcfm_stock_manage_url, $product_status );
 	}
 }
 
@@ -492,7 +665,7 @@ if(!function_exists('get_wcfm_import_product_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_import_product_url = wcfm_get_endpoint_url( 'wcfm-products-import', '', $wcfm_page );
 		if($step) $wcfm_import_product_url = add_query_arg( 'step', $step, $wcfm_import_product_url );
-		return apply_filters( 'wcfm_import_product_url', $wcfm_import_product_url );
+		return apply_filters( 'wcfm_import_product_url', $wcfm_import_product_url, $step );
 	}
 }
 
@@ -519,7 +692,7 @@ if(!function_exists('get_wcfm_coupons_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$wcfm_coupon_manage_url = wcfm_get_endpoint_url( 'wcfm-coupons-manage', $coupon_id, $wcfm_page );
-		return apply_filters( 'wcfm_coupon_manage_url',  $wcfm_coupon_manage_url );
+		return apply_filters( 'wcfm_coupon_manage_url',  $wcfm_coupon_manage_url, $coupon_id );
 	}
 }
 
@@ -529,7 +702,7 @@ if(!function_exists('get_wcfm_orders_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_orders_url = wcfm_get_endpoint_url( 'wcfm-orders', '', $wcfm_page );
 		if( $order_status ) $wcfm_orders_url = add_query_arg( 'order_status', $order_status, $wcfm_orders_url );
-		return apply_filters( 'wcfm_orders_url',  $wcfm_orders_url );
+		return apply_filters( 'wcfm_orders_url',  $wcfm_orders_url, $order_status );
 	}
 }
 
@@ -547,7 +720,7 @@ if(!function_exists('get_wcfm_view_order_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$wcfm_view_order_url = wcfm_get_endpoint_url( 'wcfm-orders-details', $order_id, $wcfm_page );
-		return apply_filters( 'wcfm_view_order_url', $wcfm_view_order_url );
+		return apply_filters( 'wcfm_view_order_url', $wcfm_view_order_url, $order_id );
 	}
 }
 
@@ -558,7 +731,7 @@ if(!function_exists('get_wcfm_reports_url')) {
 		$get_wcfm_reports_url = wcfm_get_endpoint_url( $report_type, $vendor_id, $wcfm_page );
 		if( $range ) $get_wcfm_reports_url = add_query_arg( 'range', $range, $get_wcfm_reports_url );
 		if( $report_type == 'wcfm-reports-sales-by-date' ) $get_wcfm_reports_url = apply_filters( 'wcfm_default_reports_url', $get_wcfm_reports_url );
-		return apply_filters( 'wcfm_reports_url', $get_wcfm_reports_url );
+		return apply_filters( 'wcfm_reports_url', $get_wcfm_reports_url, $report_type, $vendor_id );
 	}
 }
 
@@ -577,7 +750,7 @@ if(!function_exists('get_wcfm_analytics_url')) {
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_analytics_url = wcfm_get_endpoint_url( 'wcfm-analytics', '', $wcfm_page );
 		if( $range ) $get_wcfm_analytics_url = add_query_arg( 'range', $range, $get_wcfm_analytics_url );
-		return apply_filters( 'wcfm_analytics_url', $get_wcfm_analytics_url );
+		return apply_filters( 'wcfm_analytics_url', $get_wcfm_analytics_url, $range );
 	}
 }
 
@@ -613,7 +786,7 @@ if(!function_exists('get_wcfm_knowledgebase_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_knowledgebase_manage_url = wcfm_get_endpoint_url( 'wcfm-knowledgebase-manage', $knowledgebase_id, $wcfm_page );
-		return apply_filters( 'wcfm_knowledgebase_manage_url', $get_wcfm_knowledgebase_manage_url );
+		return apply_filters( 'wcfm_knowledgebase_manage_url', $get_wcfm_knowledgebase_manage_url, $knowledgebase_id );
 	}
 }
 
@@ -631,7 +804,7 @@ if(!function_exists('get_wcfm_notice_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_notice_manage_url = wcfm_get_endpoint_url( 'wcfm-notice-manage', $topic_id, $wcfm_page );
-		return apply_filters( 'wcfm_notice_manage_url', $get_wcfm_notice_manage_url );
+		return apply_filters( 'wcfm_notice_manage_url', $get_wcfm_notice_manage_url, $topic_id );
 	}
 }
 
@@ -640,7 +813,7 @@ if(!function_exists('get_wcfm_notice_view_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_notice_view_url = wcfm_get_endpoint_url( 'wcfm-notice-view', $topic_id, $wcfm_page );
-		return apply_filters( 'wcfm_notice_view_url', $get_wcfm_notice_view_url );
+		return apply_filters( 'wcfm_notice_view_url', $get_wcfm_notice_view_url, $topic_id );
 	}
 }
 
@@ -650,7 +823,7 @@ if(!function_exists('get_wcfm_messages_url')) {
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_messages_url = wcfm_get_endpoint_url( 'wcfm-messages', '', $wcfm_page );
 		if( $message_type ) $get_wcfm_messages_url = add_query_arg( 'message_type', $message_type, $get_wcfm_messages_url );
-		return apply_filters( 'wcfm_messages_url', $get_wcfm_messages_url );
+		return apply_filters( 'wcfm_messages_url', $get_wcfm_messages_url, $message_type );
 	}
 }
 
@@ -668,7 +841,7 @@ if(!function_exists('get_wcfm_enquiry_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_enquiry_manage_url = wcfm_get_endpoint_url( 'wcfm-enquiry-manage', $topic_id, $wcfm_page );
-		return apply_filters( 'wcfm_enquiry_manage_url', $get_wcfm_enquiry_manage_url );
+		return apply_filters( 'wcfm_enquiry_manage_url', $get_wcfm_enquiry_manage_url, $topic_id );
 	}
 }
 
@@ -678,7 +851,7 @@ if(!function_exists('get_wcfm_articles_url')) {
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_articles_url = wcfm_get_endpoint_url( 'wcfm-articles', '', $wcfm_page );
 		if($article_status) $get_wcfm_articles_url = add_query_arg( 'article_status', $article_status, $get_wcfm_articles_url );
-		return apply_filters( 'wcfm_articles_url', $get_wcfm_articles_url );
+		return apply_filters( 'wcfm_articles_url', $get_wcfm_articles_url, $article_status );
 	}
 }
 
@@ -687,7 +860,7 @@ if(!function_exists('get_wcfm_articles_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_articles_manage_url = wcfm_get_endpoint_url( 'wcfm-articles-manage', $article_id, $wcfm_page );
-		return apply_filters( 'wcfm_articles_manage_url', $get_wcfm_articles_manage_url );
+		return apply_filters( 'wcfm_articles_manage_url', $get_wcfm_articles_manage_url, $article_id );
 	}
 }
 
@@ -714,7 +887,7 @@ if(!function_exists('get_wcfm_vendors_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_vendors_manage_url = wcfm_get_endpoint_url( 'wcfm-vendors-manage', $vendor_id, $wcfm_page );
-		return apply_filters( 'wcfm_vendors_manage_url', $get_wcfm_vendors_manage_url );
+		return apply_filters( 'wcfm_vendors_manage_url', $get_wcfm_vendors_manage_url, $vendor_id );
 	}
 }
 
@@ -741,7 +914,7 @@ if(!function_exists('get_wcfm_customers_manage_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_customers_manage_url = wcfm_get_endpoint_url( 'wcfm-customers-manage', $customer_id, $wcfm_page );
-		return apply_filters( 'wcfm_customers_manage_url', $get_wcfm_customers_manage_url );
+		return apply_filters( 'wcfm_customers_manage_url', $get_wcfm_customers_manage_url, $customer_id );
 	}
 }
 
@@ -750,7 +923,7 @@ if(!function_exists('get_wcfm_customers_details_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_customers_details_url = wcfm_get_endpoint_url( 'wcfm-customers-details', $customer_id, $wcfm_page );
-		return apply_filters( 'wcfm_customers_details_url', $get_wcfm_customers_details_url );
+		return apply_filters( 'wcfm_customers_details_url', $get_wcfm_customers_details_url, $customer_id );
 	}
 }
 
@@ -770,7 +943,7 @@ if(!function_exists('get_wcfm_applications_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_applications_dashboard_url = wcfm_get_endpoint_url( 'wcfm-applications', '', $wcfm_page );
 		if($listing_id) $wcfm_applications_dashboard_url = add_query_arg( 'listing_id', $listing_id, $wcfm_applications_dashboard_url );
-		return apply_filters( 'wcfm_applications_dashboard_url', $wcfm_applications_dashboard_url );
+		return apply_filters( 'wcfm_applications_dashboard_url', $wcfm_applications_dashboard_url, $listing_id );
 	}
 }
 
@@ -789,7 +962,7 @@ if(!function_exists('get_wcfm_bookings_url')) {
 		$wcfm_page = get_wcfm_page();
 		$wcfm_bookings_url = wcfm_get_endpoint_url( 'wcfm-bookings', '', $wcfm_page );
 		if( $booking_status ) $wcfm_bookings_url = add_query_arg( 'booking_status', $booking_status, $wcfm_bookings_url );
-		return apply_filters( 'wcfm_bookings_url', $wcfm_bookings_url );
+		return apply_filters( 'wcfm_bookings_url', $wcfm_bookings_url, $booking_status );
 	}
 }
 
@@ -798,7 +971,7 @@ if(!function_exists('get_wcfm_view_booking_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$wcfm_view_booking_url = wcfm_get_endpoint_url( 'wcfm-bookings-details', $booking_id, $wcfm_page );
-		return apply_filters( 'wcfm_view_booking_url', $wcfm_view_booking_url );
+		return apply_filters( 'wcfm_view_booking_url', $wcfm_view_booking_url, $booking_id );
 	}
 }
 
@@ -848,7 +1021,7 @@ if(!function_exists('wcfm_transaction_details_url')) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$get_wcfm_transaction_details_url = wcfm_get_endpoint_url( 'wcfm-transaction-details', $transaction_id, $wcfm_page );
-		return apply_filters( 'wcfm_transaction_details_url', $get_wcfm_transaction_details_url );
+		return apply_filters( 'wcfm_transaction_details_url', $get_wcfm_transaction_details_url, $transaction_id );
 	}
 }
 
@@ -914,6 +1087,15 @@ if(!function_exists('wcfm_get_navigation_url')) {
 		}
 		
 		return apply_filters( 'wcfm_navigation_url', $navigation_url, $endpoint );
+	}
+}
+
+if(!function_exists('get_wcfm_emails')) {
+	function get_wcfm_emails() {
+		$wcfm_emails = array( 
+												   'new-enquiry'        => __( 'New Enquiry', 'wc-frontend-manager' ),
+												);
+		return apply_filters( 'get_wcfm_emails', $wcfm_emails );
 	}
 }
 
@@ -1082,6 +1264,7 @@ if(!function_exists('get_wcfm_dashboard_messages')) {
 		
 		$messages = array(
 											"product_approve_confirm"            => __( "Are you sure and want to approve / publish this 'Product'?", "wc-frontend-manager" ),
+											"product_reject_confirm"             => __( "Are you sure and want to reject this 'Product'?\nReason:", "wc-frontend-manager" ),
 											"product_archive_confirm"            => __( "Are you sure and want to archive this 'Product'?", "wc-frontend-manager" ),
 											"multiblock_delete_confirm"          => __( "Are you sure and want to delete this 'Block'?\nYou can't undo this action ...", "wc-frontend-manager" ),
 											"article_delete_confirm"             => __( "Are you sure and want to delete this 'Article'?\nYou can't undo this action ...", "wc-frontend-manager" ),
@@ -1092,8 +1275,11 @@ if(!function_exists('get_wcfm_dashboard_messages')) {
 											"support_delete_confirm"             => __( "Are you sure and want to delete this 'Support Ticket'?\nYou can't undo this action ...", "wc-frontend-manager" ),
 											"follower_delete_confirm"            => __( "Are you sure and want to delete this 'Follower'?\nYou can't undo this action ...", "wc-frontend-manager" ),
 											"following_delete_confirm"           => __( "Are you sure and want to delete this 'Following'?\nYou can't undo this action ...", "wc-frontend-manager" ),
+											"resource_delete_confirm"            => __( "Are you sure and want to delete this 'Resource'?\nYou can't undo this action ...", "wc-frontend-manager" ),
+											"auction_bid_delete_confirm"         => __( "Are you sure and want to delete this 'Bid'?\nYou can't undo this action ...", "wc-frontend-manager" ),
 											"order_mark_complete_confirm"        => __( "Are you sure and want to 'Mark as Complete' this Order?", "wc-frontend-manager" ),
 											"booking_mark_complete_confirm"      => __( "Are you sure and want to 'Mark as Confirmed' this Booking?", "wc-frontend-manager" ),
+											"booking_mark_decline_confirm"       => __( "Are you sure and want to 'Mark as Declined' this Booking?", "wc-frontend-manager" ),
 											"appointment_mark_complete_confirm"  => __( "Are you sure and want to 'Mark as Complete' this Appointment?", "wc-frontend-manager" ),
 											"add_new"                            => __( "Add New", "wc-frontend-manager" ),
 											"select_all"                         => __( "Select all", "wc-frontend-manager" ),
@@ -1109,7 +1295,8 @@ if(!function_exists('get_wcfm_dashboard_messages')) {
 											"required_message"                   => __( "This field is required.", 'wc-frontend-manager' ),
 											"choose_select2"                     => __( "Choose ", "wc-frontend-manager" ),
 											"category_attribute_mapping"         => __( "All Attributes", "wc-frontend-manager" ),
-											"search_attribute_select2"           => __( "Search for a attribute ...", "wc-frontend-manager" ),
+											"search_page_select2"                => __( "Search for a page ...", "wc-frontend-manager" ),
+											"search_attribute_select2"           => __( "Search for an attribute ...", "wc-frontend-manager" ),
 											"search_product_select2"             => __( "Filter by product ...", "wc-frontend-manager" ),
 											"search_taxonomy_select2"            => __( "Filter by category ...", "wc-frontend-manager" ),
 											"choose_category_select2"            => __( "Choose Categories ...", "wc-frontend-manager" ),
@@ -1134,6 +1321,7 @@ if(!function_exists('get_wcfm_dashboard_messages')) {
                       "shiping_method_not_found"           => __( 'Shipping method not found', 'wc-frontend-manager' ),
                       "shiping_zone_not_found"             => __( 'Shipping zone not found', 'wc-frontend-manager' ),
                       "shipping_method_del_confirm"        => __( "Are you sure you want to delete this 'Shipping Method'?\nYou can't undo this action ...", 'wc-frontend-manager' ),
+                      "variation_auto_generate_confirm"    => __( "Are you sure you want to link all variations? This will create a new variation for each and every possible combination of variation attributes (max 50 per run).", "wc-frontend-manager" )
 										);
 		
 		return apply_filters( 'wcfm_dashboard_messages', $messages );
@@ -1147,7 +1335,7 @@ if(!function_exists('get_wcfm_message_types')) {
 		$message_types = array(
 											'direct'            => __( 'Direct Message', 'wc-frontend-manager' ),
 											'notice'            => __( 'Announcement', 'wc-frontend-manager' ),
-											'product_review'    => __( 'Approve Product', 'wc-frontend-manager' ),
+											'product_review'    => __( 'Product Review', 'wc-frontend-manager' ),
 											'product_lowstk'    => __( 'Low Stock Product', 'wc-frontend-manager' ),
 											//'product_outofstk'  => __( 'Out of Stock Product', 'wc-frontend-manager' ),
 											'status-update'     => __( 'Status Updated', 'wc-frontend-manager' ),
@@ -1173,13 +1361,13 @@ if(!function_exists('get_wcfm_message_types')) {
  *
  * @return string
  */
-function wcfm_get_endpoint_url( $endpoint, $value = '', $permalink = '' ) {
+function wcfm_get_endpoint_url( $endpoint, $value = '', $permalink = '', $lang_code = '' ) {
 	global $post;
 	if ( ! $permalink ) {
 		$permalink = apply_filters( 'wcfm_get_base_permalink', get_permalink( $post ) );
 	}
 	
-	$wcfm_modified_endpoints = wcfm_get_option( 'wcfm_endpoints', array() );
+	$wcfm_modified_endpoints = wcfm_get_option( 'wcfm_endpoints', array(), $lang_code );
 	$endpoint = ! empty( $wcfm_modified_endpoints[ $endpoint ] ) ? $wcfm_modified_endpoints[ $endpoint ] : str_replace( 'wcfm-', '', $endpoint );
 	
 	// WC 3.6 FIX
@@ -1188,6 +1376,8 @@ function wcfm_get_endpoint_url( $endpoint, $value = '', $permalink = '' ) {
 	if( $endpoint == 'bookings' ) $endpoint = 'bookingslist';
 	if( $endpoint == 'subscriptions' ) $endpoint = 'subscriptionslist';
 	if( $endpoint == 'sell-items-catalog' ) $endpoint = 'add-to-my-store-catalog';
+	
+	$endpoint = apply_filters( 'wcfm_dashboard_modified_endpoint_slug', $endpoint );
 
 	if ( get_option( 'permalink_structure' ) ) {
 		if ( strstr( $permalink, '?' ) ) {
@@ -1208,7 +1398,7 @@ function wcfm_get_user_posts_count( $user_id = 0, $post_type = 'product', $post_
 	global $WCFM;
 	
 	//$post_count = count_user_posts( $user_id, $post_type );
-	if( !$user_id ) $user_id  = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
+	if( !$user_id && !current_user_can( 'administrator' ) && !current_user_can( 'shop_manager' ) ) $user_id  = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
 	
 	$args = array(
 			'post_type'     => $post_type,
@@ -1217,10 +1407,9 @@ function wcfm_get_user_posts_count( $user_id = 0, $post_type = 'product', $post_
 			'suppress_filters' => 0
 	);
 	$args = array_merge( $args, $custom_args );
+	if( $user_id && ( $user_id != 'wcfm1990' ) ) $args['author'] = $user_id;
 	if( $post_type == 'product' ) {
 		$args = apply_filters( 'wcfm_products_args', $args );
-	} else {
-		if( $user_id ) $args['author'] = $user_id;
 	}
 	$args['fields'] = 'ids';
 	$ps = get_posts($args);
@@ -1488,6 +1677,16 @@ add_filter( 'wp_mail_content_type', function( $content_type ) {
 	return $content_type;
 });
 
+// WooCommerce Multilingual FIX
+add_filter( 'woocommerce_email_get_option', function( $value, $email ) {
+	if( defined( 'DOING_WCFM_EMAIL' ) ) {
+		if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+			remove_all_filters( 'woocommerce_email_get_option' );
+		}
+	}
+	return $value;
+}, 9, 2 );
+
 add_filter( 'wp_mail', function( $email ) {
 	if( defined('DOING_WCFM_EMAIL') && !defined('DOING_WCFM_RESTRICTED_EMAIL') ) {
 		$wcfm_options = get_option( 'wcfm_options', array() );
@@ -1536,12 +1735,27 @@ add_filter( 'wp_mail_from', 'wcfm_email_from_address' );
 
 // WP Mail Function Check - For Future
 function wcfm_check_php_mail( $i ) {
-	$status = "1";
+	$status = 1;
 	wcfm_log( "Mail Check Status:: " . $status );
 }
 
 function wcfm_force_user_can_richedit( $is_allow ) {
 	return true;
+}
+
+/**
+ * WCFM get attachment URL by ID
+ */
+if( !function_exists( 'wcfm_get_attachment_url') ) {
+	function wcfm_get_attachment_url( $attachment_id ) {
+		$attachment_url = '';
+		if( $attachment_id && is_numeric( $attachment_id ) ) {
+			$attachment_url = wp_get_attachment_url( $attachment_id );
+		} else {
+			$attachment_url = $attachment_id;
+		}
+		return $attachment_url;
+	}
 }
 
 /**
@@ -1622,7 +1836,7 @@ function wcfm_prepare_uploaded_files( $file_data ) {
 				if ( $file_data['name'][ $file_data_key ] ) {
 					$type              = wp_check_filetype( $file_data['name'][ $file_data_key ] ); // Map mime type to one WordPress recognises.
 					$files_to_upload[] = array(
-						'name'     => $file_data['name'][ $file_data_key ],
+						'name'     => time() . '-' . $file_data['name'][ $file_data_key ],
 						'type'     => $type['type'],
 						'tmp_name' => $file_data['tmp_name'][ $file_data_key ],
 						'error'    => $file_data['error'][ $file_data_key ],
@@ -1632,6 +1846,7 @@ function wcfm_prepare_uploaded_files( $file_data ) {
 			}
 		} else {
 			$type              = wp_check_filetype( $file_data['name'] ); // Map mime type to one WordPress recognises.
+			$file_data['name'] = time() . '-' . $file_data['name'];
 			$file_data['type'] = $type['type'];
 			$files_to_upload[] = $file_data;
 		}
@@ -1767,13 +1982,17 @@ function wcfm_video_tutorial( $video_url ) {
 	<?php
 }
 
-function wcfm_get_option( $key, $default_val = '' ) {
+function wcfm_get_option( $key, $default_val = '', $lang_code = '' ) {
 	$option_val = get_option( $key, $default_val );
 	
 	// WPML Support
 	if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
 		global $sitepress;
-		$current_language = $sitepress->get_current_language();
+		if( !$lang_code ) {
+			$current_language = $sitepress->get_current_language();
+		} else {
+			$current_language = $lang_code;
+		}
 		$option_val = get_option( $key . '_' . $current_language, $option_val );
 	}
 	
@@ -1788,6 +2007,31 @@ function wcfm_update_option( $key, $option_val ) {
 		update_option( $key . '_' . $current_language, $option_val );
 	} else {
 		update_option( $key, $option_val );
+	}
+}
+
+function wcfm_get_post_meta( $post_id, $key, $is_single = true ) {
+	$meta_val = get_post_meta( $post_id, $key, $is_single );
+	
+	// WPML Support
+	if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+		global $sitepress;
+		$current_language = $sitepress->get_current_language();
+		$option_val_wpml = get_post_meta( $post_id, $key . '_' . $current_language, $is_single );
+		if( $option_val_wpml ) $meta_val = $option_val_wpml;
+	}
+	
+	return $meta_val;
+}
+
+function wcfm_update_post_meta( $post_id, $key, $meta_val ) {
+	// WPML Support
+	if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+		global $sitepress;
+		$current_language = $sitepress->get_current_language();
+		update_post_meta( $post_id, $key . '_' . $current_language, $meta_val );
+	} else {
+		update_post_meta( $post_id, $key, $meta_val );
 	}
 }
 

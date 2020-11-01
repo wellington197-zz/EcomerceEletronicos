@@ -120,8 +120,8 @@ class WCFM_Marketplace {
   	
   	$store_open_by = apply_filters( 'wcfm_shop_permalink_open_by', 'target="_blank"', $user_id );
   	
-  	$vendor_data = get_user_meta( $user_id, 'wcfmmp_profile_settings', true );
-  	$shop_name     = wcfm_get_option( 'wcfm_my_store_label', __( 'My Store', 'wc-frontend-manager' ) );  //isset( $vendor_data['store_name'] ) ? esc_attr( $vendor_data['store_name'] ) : '';
+  	//$vendor_data = get_user_meta( $user_id, 'wcfmmp_profile_settings', true );
+  	$shop_name     = wcfm_get_option( 'wcfm_my_store_label', $store_name );  //isset( $vendor_data['store_name'] ) ? esc_attr( $vendor_data['store_name'] ) : '';
   	if( $shop_name ) $store_name = $shop_name;
   	$shop_link       = wcfmmp_get_store_url( $user_id );
   	if( $shop_name ) { $store_name = '<a ' . $store_open_by . ' href="' . apply_filters('wcfmmp_vendor_shop_permalink', $shop_link) . '">' . $shop_name . '</a>'; }
@@ -358,6 +358,8 @@ class WCFM_Marketplace {
   function wcfmmp_product_export_row_data( $row, $product ) {
   	global $WCFM;
   	
+  	if( $product->get_type() == 'variation' ) return $row;
+  	
   	$user_id = $this->vendor_id;
   	
   	$products = $this->wcfmmp_get_vendor_products();
@@ -506,7 +508,7 @@ class WCFM_Marketplace {
   function wcfmmp_after_line_total_head( $order ) {
   	global $WCFM, $WCFMmp;
   	
-  	if( apply_filters( 'wcfm_is_allow_view_commission', true ) ) {
+  	if( wcfm_vendor_has_capability( $this->vendor_id, 'view_commission' ) ) {
 			$admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 			if( $admin_fee_mode ) {
 			?>
@@ -522,7 +524,7 @@ class WCFM_Marketplace {
   function wcfmmp_after_line_total( $item, $order ) {
   	global $WCFM, $wpdb, $WCFMmp;
   	
-  	if( !apply_filters( 'wcfm_is_allow_view_commission', true ) ) return;
+  	if( !wcfm_vendor_has_capability( $this->vendor_id, 'view_commission' ) ) return;
   	
   	$order_currency = $order->get_currency();
   	$admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
@@ -568,7 +570,8 @@ class WCFM_Marketplace {
 				<div class="view">
 				  <?php 
 					if( $admin_fee_mode ) {
-						echo wc_price( ( $line_total - $order_line_due[0]->line_total ), array( 'currency' => $order_currency ) );
+						$refunded = $order->get_total_refunded_for_item( $item->get_id() );
+						echo wc_price( ( $line_total - $refunded - $order_line_due[0]->line_total ), array( 'currency' => $order_currency ) );
 					} else {
 						echo wc_price( $order_line_due[0]->line_total, array( 'currency' => $order_currency ) );
 					}
@@ -588,7 +591,7 @@ class WCFM_Marketplace {
   function wcfmmp_after_shipping_total( $item, $order ) {
   	global $WCFM, $wpdb, $WCFMmp;
   	
-  	if( !apply_filters( 'wcfm_is_allow_view_commission', true ) ) return;
+  	if( !wcfm_vendor_has_capability( $this->vendor_id, 'view_commission' ) ) return;
   	
   	$admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
   	
@@ -669,6 +672,7 @@ class WCFM_Marketplace {
   	
   	$sql = "
   	SELECT GROUP_CONCAT(ID) as commission_ids,
+  	   GROUP_CONCAT(item_id) as order_item_ids,
   	   SUM(commission_amount) as line_total,
   	   SUM(total_commission) as total_commission,
   	   SUM(item_total) as item_total,
@@ -687,16 +691,18 @@ class WCFM_Marketplace {
     
     $total = 0;
     $subtotal = 0;
-    $calculated_total = 0;
-    $total_tax        = 0;
-    $total_shipping   = 0;
-    $shipping_tax     = 0;
-    $refund_total     = 0;
-    $discount_total   = 0;
-    $commission_tax   = 0;
-    $aff_commission   = 0;
+    $calculated_total   = 0;
+    $total_tax          = 0;
+    $total_shipping     = 0;
+    $shipping_tax       = 0;
+    $refund_total       = 0;
+    $discount_total     = 0;
+    $commission_tax     = 0;
+    $aff_commission     = 0;
+    $transaction_charge = 0;
     
     $commission_rule  = array();
+    $aff_commission_rule = array();
     
     $total = $order_due[0]->total_commission;
     if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $this->vendor_id, $order_id ) ) {
@@ -710,14 +716,20 @@ class WCFM_Marketplace {
     $commission_ids = explode( ",", $order_due[0]->commission_ids );
     foreach( $commission_ids as $commission_id ) {
     	if( method_exists( $WCFMmp->wcfmmp_commission, 'wcfmmp_get_commission_meta' ) ) {
-				$total_tax        += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_tax_cost' );
-				$total_shipping   += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_shipping_cost' );
-				$shipping_tax     += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_shipping_tax' );
-				$commission_tax   += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'commission_tax' );
-				$aff_commission   += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, '_wcfm_affiliate_commission' );
-				$commission_rule   = unserialize( $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'commission_rule' ) );
+				$total_tax          += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_tax_cost' );
+				$total_shipping     += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_shipping_cost' );
+				$shipping_tax       += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'gross_shipping_tax' );
+				$commission_tax     += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'commission_tax' );
+				$aff_commission     += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, '_wcfm_affiliate_commission' );
+				$transaction_charge += (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'transaction_charge' );
+				$commission_rule     = unserialize( $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, 'commission_rule' ) );
+				//$aff_commission_rule = unserialize( $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, '_wcfm_affiliate_commission_rule' ) );
 			}
     }
+    
+    //print_r($commission_rule );
+    //print_r($aff_commission_rule);
+    
     
     $calculated_total += ( float ) $total_tax;
     $calculated_total += ( float ) apply_filters( 'wcfmmmp_gross_sales_shipping_cost', $total_shipping, $this->vendor_id );
@@ -735,14 +747,15 @@ class WCFM_Marketplace {
 			}
 		}
 		?>
-		<?php if( !$admin_fee_mode ) { ?>
+		<?php //if( !$admin_fee_mode ) { ?>
+		  <?php do_action( 'wcfm_vendor_order_details_before_subtotal', $order_id, $this->vendor_id ); ?>
 			<tr>
 				<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Subtotal', 'wc-frontend-manager' ); ?>:</th>
 				<td class="total" style="text-align:center; <?php echo $td_style; ?>">
 					<div class="view">
 					  <?php 
 					    $subtotal = $calculated_total - ( (float) $refund_total + (float) $order_due[0]->shipping + (float) $order_due[0]->tax + (float) $order_due[0]->shipping_tax_amount );
-							if( $refund_total && ( absint($subtotal) != absint( $order_due[0]->item_sub_total ) ) ) {
+							if( $refund_total && ( round( $subtotal, 2 ) != round( $order_due[0]->item_sub_total, 2 ) ) ) {
 								echo "<del>" . wc_price( $order_due[0]->item_sub_total, array( 'currency' => $order_currency ) ) . "</del>";
 								echo "<ins>" . wc_price( $subtotal, array( 'currency' => $order_currency ) ) . "</ins>";
 							} else {
@@ -752,31 +765,98 @@ class WCFM_Marketplace {
 					</div>
 				</td>
 			</tr>
-		<?php } ?>
+			<?php do_action( 'wcfm_vendor_order_details_after_subtotal', $order_id, $this->vendor_id ); ?>
+		<?php //} ?>
 		<?php if ( $get_tax ) { ?>
-			<tr>
-				<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Tax', 'wc-frontend-manager' ); ?>:</th>
-				<td class="total" style="text-align:center; <?php echo $td_style; ?>">
-					<div class="view">
-					  <?php 
-							if( $total_tax != $order_due[0]->tax ) {
-								echo "<del>" . wc_price( $total_tax, array( 'currency' => $order_currency ) ) . "</del>";
-								echo "<ins>" . wc_price( $order_due[0]->tax, array( 'currency' => $order_currency ) ) . "</ins>";
-							} else {
-								echo wc_price( $order_due[0]->tax, array( 'currency' => $order_currency ) );
+			<?php
+			if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup', false ) ) {
+				$order_taxes = $order->get_taxes();
+				$tax_breakups = array();
+				if ( ! empty( $order_taxes ) ) {
+					foreach ( $order_taxes as $tax_id => $tax_item ) {
+						$column_label   = ! empty( $tax_item['label'] ) ? $tax_item['label'] : __( 'Tax', 'wc-frontend-manager' );
+						$tax_breakups[$tax_item->get_rate_id()] = array( 'label' => $column_label, 'subtotal' => 0, 'total' => 0 );
+					}
+				}
+				
+				if( !empty( $tax_breakups ) ) {
+					$order_item_ids = explode( ",", $order_due[0]->order_item_ids );
+					foreach( $order_item_ids as $order_item_id ) {
+						$line_item       = new WC_Order_Item_Product( $order_item_id );
+						if ( $tax_data = $line_item->get_taxes() ) {
+							foreach ( $order_taxes as $tax_item ) {
+								$tax_item_id    = $tax_item->get_rate_id();
+								$tax_item_total = isset( $tax_data['total'][ $tax_item_id ] ) ? $tax_data['total'][ $tax_item_id ] : 0;
+								$tax_item_subtotal = isset( $tax_data['subtotal'][ $tax_item_id ] ) ? $tax_data['subtotal'][ $tax_item_id ] : 0;
+								
+								if( isset( $tax_breakups[$tax_item_id] ) ) {
+									$tax_breakups[$tax_item_id]['subtotal'] += (float)$tax_item_subtotal;
+									$tax_breakups[$tax_item_id]['total'] += (float)$tax_item_total;
+								}
 							}
+						}
+					}
+					
+					do_action( 'wcfm_vendor_order_details_before_tax_breakup', $order_id, $this->vendor_id );
+					
+					foreach( $tax_breakups as $tax_breakup_is => $tax_breakup ) {
 						?>
-					</div>
-				</td>
-			</tr>
+						<tr>
+							<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php echo $tax_breakup['label']; ?>:</th>
+							<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+								<div class="view">
+									<?php 
+										if( apply_filters( 'wcfm_is_allow_vendor_order_details_commission_on_tax', false ) && ( round( $tax_breakup['total'], 2 ) != round( $tax_breakup['subtotal'], 2 ) ) ) {
+											echo "<del>" . wc_price( $tax_breakup['total'], array( 'currency' => $order_currency ) ) . "</del>";
+											echo "<ins>" . wc_price( $tax_breakup['subtotal'], array( 'currency' => $order_currency ) ) . "</ins>";
+										} else {
+											echo wc_price( $tax_breakup['subtotal'], array( 'currency' => $order_currency ) );
+										}
+									?>
+								</div>
+							</td>
+						</tr>
+						<?php
+					}
+					
+					do_action( 'wcfm_vendor_order_details_after_tax_breakup', $order_id, $this->vendor_id );
+				}
+			}
+			?>
+			<?php if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup_total', true ) ) { ?>
+				
+				<?php do_action( 'wcfm_vendor_order_details_before_tax', $order_id, $this->vendor_id ); ?>
+				<tr>
+					<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>">
+						<?php if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup', false ) ) { echo __( 'Total', 'wc-frontend-manager' ) . ' '; } ?>
+						<?php _e( 'Tax', 'wc-frontend-manager' ); ?>:
+					</th>
+					<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+						<div class="view">
+							<?php 
+								if( apply_filters( 'wcfm_is_allow_vendor_order_details_commission_on_tax', false ) && (round( $total_tax, 2 ) != round( $order_due[0]->tax, 2 ) ) ) {
+									echo "<del>" . wc_price( $total_tax, array( 'currency' => $order_currency ) ) . "</del>";
+									echo "<ins>" . wc_price( $order_due[0]->tax, array( 'currency' => $order_currency ) ) . "</ins>";
+								} else {
+									echo wc_price( $order_due[0]->tax, array( 'currency' => $order_currency ) );
+								}
+							?>
+						</div>
+					</td>
+				</tr>
+				<?php do_action( 'wcfm_vendor_order_details_after_tax', $order_id, $this->vendor_id ); ?>
+				
+			<?php } ?>
 		<?php } ?>
 		<?php if ( $get_shipping && $order->get_formatted_shipping_address() ) { ?>
+			
+			<?php do_action( 'wcfm_vendor_order_details_before_shipping', $order_id, $this->vendor_id ); ?>
 			<tr>
 				<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Shipping', 'wc-frontend-manager' ); ?>:</th>
 				<td class="total" style="text-align:center; <?php echo $td_style; ?>">
 					<div class="view">
 					  <?php 
-						if( $total_shipping != $order_due[0]->shipping ) {
+						if( apply_filters( 'wcfm_is_allow_vendor_order_details_commission_on_shipping', false ) && ( round( $total_shipping, 2 ) != round( $order_due[0]->shipping, 2 ) ) ) {
 							echo "<del>" . wc_price( $total_shipping, array( 'currency' => $order_currency ) ) . "</del>";
 							echo "<ins>" . wc_price( $order_due[0]->shipping, array( 'currency' => $order_currency ) ) . "</ins>";
 						} else {
@@ -786,37 +866,103 @@ class WCFM_Marketplace {
 					</div>
 				</td>
 			</tr>
+			<?php do_action( 'wcfm_vendor_order_details_after_shipping', $order_id, $this->vendor_id ); ?>
+			
 			<?php if( $get_tax ) { ?>
-				<tr>
-					<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Shipping Tax', 'wc-frontend-manager' ); ?>:</th>
-					<td class="total" style="text-align:center; <?php echo $td_style; ?>">
-						<div class="view">
-						  <?php 
-							if( $shipping_tax != $order_due[0]->shipping_tax_amount ) {
-								echo "<del>" . wc_price( $shipping_tax, array( 'currency' => $order_currency ) ) . "</del>";
-								echo "<ins>" . wc_price( $order_due[0]->shipping_tax_amount, array( 'currency' => $order_currency ) ) . "</ins>";
-							} else {
-								echo wc_price( $order_due[0]->shipping_tax_amount, array( 'currency' => $order_currency ) );
+				<?php
+				if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup', false ) ) {
+					$order_taxes = $order->get_taxes();
+					$tax_breakups = array();
+					if ( ! empty( $order_taxes ) ) {
+						foreach ( $order_taxes as $tax_id => $tax_item ) {
+							$column_label   = ! empty( $tax_item['label'] ) ? $tax_item['label'] : __( 'Tax', 'wc-frontend-manager' );
+							$tax_breakups[$tax_item->get_rate_id()] = array( 'label' => $column_label, 'subtotal' => 0, 'total' => 0 );
+						}
+					}
+					
+					$line_items_shipping = $order->get_items( 'shipping' );
+					$line_items_shipping = apply_filters( 'wcfm_valid_shipping_items', $line_items_shipping, $order_id );
+					
+					if( !empty( $tax_breakups ) ) {
+						foreach ( $line_items_shipping as $shipping_item_id => $shipping_item ) {
+							if ( $tax_data = $shipping_item->get_taxes() ) {
+								foreach ( $order_taxes as $tax_item ) {
+									$tax_item_id    = $tax_item->get_rate_id();
+									$tax_item_total = isset( $tax_data['total'][ $tax_item_id ] ) ? $tax_data['total'][ $tax_item_id ] : 0;
+									
+									if( isset( $tax_breakups[$tax_item_id] ) ) {
+										$tax_breakups[$tax_item_id]['total'] += (float)$tax_item_total;
+									}
+								}
 							}
+						}
+						
+						do_action( 'wcfm_vendor_order_details_before_shipping_tax_breakup', $order_id, $this->vendor_id );
+						
+						foreach( $tax_breakups as $tax_breakup_is => $tax_breakup ) {
 							?>
-						</div>
-					</td>
-				</tr>
+							<tr>
+								<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php echo __( 'Shipping Tax', 'wc-frontend-manager' ) . ' ' . $tax_breakup['label']; ?>:</th>
+								<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+									<div class="view">
+										<?php 
+										echo wc_price( $tax_breakup['total'], array( 'currency' => $order_currency ) );
+										?>
+									</div>
+								</td>
+							</tr>
+							<?php
+						}
+						
+						do_action( 'wcfm_vendor_order_details_after_shipping_tax_breakup', $order_id, $this->vendor_id );
+					}
+				}
+				?>
+				<?php if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup_total', true ) ) { ?>
+					<?php do_action( 'wcfm_vendor_order_details_before_shipping_tax', $order_id, $this->vendor_id ); ?>
+					<tr>
+						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>">
+							<?php if( apply_filters( 'wcfm_is_allow_vendor_order_details_tax_breakup', false ) ) { echo __( 'Total', 'wc-frontend-manager' ) . ' '; } ?> 
+							<?php _e( 'Shipping Tax', 'wc-frontend-manager' ); ?>:
+						</th>
+						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+							<div class="view">
+								<?php 
+								if( apply_filters( 'wcfm_is_allow_vendor_order_details_commission_on_tax', false ) && ( round( $shipping_tax, 2 ) != round( $order_due[0]->shipping_tax_amount, 2 ) ) ) {
+									echo "<del>" . wc_price( $shipping_tax, array( 'currency' => $order_currency ) ) . "</del>";
+									echo "<ins>" . wc_price( $order_due[0]->shipping_tax_amount, array( 'currency' => $order_currency ) ) . "</ins>";
+								} else {
+									echo wc_price( $order_due[0]->shipping_tax_amount, array( 'currency' => $order_currency ) );
+								}
+								?>
+							</div>
+						</td>
+					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_shipping_tax', $order_id, $this->vendor_id ); ?>
+				<?php } ?>
 			<?php } ?>
 		<?php } ?>
+		
 		<?php if( $refund_total ) { ?>
+			<?php do_action( 'wcfm_vendor_order_details_before_refund', $order_id, $this->vendor_id ); ?>
 		  <tr>
 				<th class="label refunded-total" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Refunded', 'wc-frontend-manager' ); ?>:</th>
 				<td class="total refunded-total" style="text-align:center; <?php echo $td_style; ?>">-<?php echo wc_price( $refund_total, array( 'currency' => $order_currency ) ); ?></td>
 			</tr>
+			<?php do_action( 'wcfm_vendor_order_details_before_refund', $order_id, $this->vendor_id ); ?>
 		<?php } ?>
+		
 		<?php if( $discount_total && $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $this->vendor_id, $order_id ) ) { ?>
+			<?php do_action( 'wcfm_vendor_order_details_before_discount', $order_id, $this->vendor_id ); ?>
 		  <tr>
 				<th class="label discount-total" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Discount', 'wc-frontend-manager' ); ?>:</th>
 				<td class="total discount-total" style="text-align:center; <?php echo $td_style; ?>"><?php echo wc_price( $discount_total, array( 'currency' => $order_currency ) ); ?></td>
 			</tr>
+			<?php do_action( 'wcfm_vendor_order_details_after_discount', $order_id, $this->vendor_id ); ?>
 		<?php } ?>
+		
 		<?php if( apply_filters( 'wcfm_is_allow_gross_total', true ) ) { ?>
+			<?php do_action( 'wcfm_vendor_order_details_before_gross_total', $order_id, $this->vendor_id ); ?>
 			<tr class="total_cost">
 				<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Gross Total', 'wc-frontend-manager' ); ?>:</th>
 				<td class="total" style="text-align:center; <?php echo $td_style; ?>">
@@ -832,41 +978,32 @@ class WCFM_Marketplace {
 					</div>
 				</td>
 			</tr>
+			<?php do_action( 'wcfm_vendor_order_details_after_gross_total', $order_id, $this->vendor_id ); ?>
 		<?php } ?>
+		
 		<?php
-		if( apply_filters( 'wcfm_is_allow_view_commission', true ) && !in_array( $order_status, array( 'failed', 'cancelled', 'refunded', 'request', 'proposal', 'proposal-sent', 'proposal-expired', 'proposal-rejected', 'proposal-canceled', 'proposal-accepted' ) ) ) {
-			if( $admin_fee_mode ) {
-				?>
-				<tr>
-					<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Total Fees', 'wc-frontend-manager' ); ?>:</th>
-					<td class="total" style="text-align:center; <?php echo $td_style; ?>">
-						<div class="view">
-							<?php 
-							echo wc_price( ($gross_sale_order - $total), array( 'currency' => $order_currency ) );
-							if( apply_filters( 'wcfm_is_allow_earning_in_words', false ) ) {
-						  	echo "<br/>" . wcfm_number_to_words(($gross_sale_order - $total));
-						  }
-							?>
-						</div>
-					</td>
-				</tr>
-				<?php
-			} else {
+		if( apply_filters( 'wcfm_is_allow_order_details_commission_breakup_gross_earning', true ) && wcfm_vendor_has_capability( $this->vendor_id, 'view_commission' ) && !in_array( $order_status, array( 'failed', 'cancelled', 'refunded', 'request', 'proposal', 'proposal-sent', 'proposal-expired', 'proposal-rejected', 'proposal-canceled', 'proposal-accepted' ) ) ) {
+			if( !$admin_fee_mode || ( $admin_fee_mode && apply_filters( 'wcfm_is_allow_admin_fee_mode_commission_breakup', true ) ) ) {
 				if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 					?>
+					
+					<?php do_action( 'wcfm_vendor_order_details_before_gross_earning', $order_id, $this->vendor_id ); ?>
 					<tr>
 						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Gross Earning', 'wc-frontend-manager' ); ?>:</th>
 						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
 							<div class="view">
 								<?php 
-								echo wc_price( ( $total + $commission_tax + $aff_commission ), array( 'currency' => $order_currency ) ); 
+								echo wc_price( ( $total + $commission_tax + $aff_commission + $transaction_charge ), array( 'currency' => $order_currency ) ); 
 								?>
 							</div>
 						</td>
 					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_gross_earning', $order_id, $this->vendor_id ); ?>
+					
 					<?php
 					if( $aff_commission && apply_filters( 'wcfm_is_allow_view_affiliate_commission', true ) ) {
 					?>
+					<?php do_action( 'wcfm_vendor_order_details_before_affiliate_commission', $order_id, $this->vendor_id ); ?>
 					<tr>
 						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Affiliate Commission', 'wc-frontend-manager' ); ?>:</th>
 						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
@@ -877,9 +1014,12 @@ class WCFM_Marketplace {
 							</div>
 						</td>
 					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_affiliate_commission', $order_id, $this->vendor_id ); ?>
 					<?php
 					}
 					?>
+					
+					<?php do_action( 'wcfm_vendor_order_details_before_commission_tax', $order_id, $this->vendor_id ); ?>
 					<tr>
 						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php echo $commission_rule['tax_name'] . ' ('. $commission_rule['tax_percent'] .'%)'; ?>:</th>
 						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
@@ -890,19 +1030,26 @@ class WCFM_Marketplace {
 							</div>
 						</td>
 					</tr>
-				<?php
+					<?php do_action( 'wcfm_vendor_order_details_after_commission_tax', $order_id, $this->vendor_id ); ?>
+					
+				  <?php
 				} elseif( $aff_commission && apply_filters( 'wcfm_is_allow_view_affiliate_commission', true ) ) {
 					?>
+					
+					<?php do_action( 'wcfm_vendor_order_details_before_gross_earning', $order_id, $this->vendor_id ); ?>
 					<tr>
 						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Gross Earning', 'wc-frontend-manager' ); ?>:</th>
 						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
 							<div class="view">
 								<?php 
-								echo wc_price( ( $total + $aff_commission ), array( 'currency' => $order_currency ) ); 
+								echo wc_price( ( $total + $aff_commission + $transaction_charge ), array( 'currency' => $order_currency ) ); 
 								?>
 							</div>
 						</td>
 					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_gross_earning', $order_id, $this->vendor_id ); ?>
+					
+					<?php do_action( 'wcfm_vendor_order_details_before_affiliate_commission', $order_id, $this->vendor_id ); ?>
 					<tr>
 						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Affiliate Commission', 'wc-frontend-manager' ); ?>:</th>
 						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
@@ -913,9 +1060,52 @@ class WCFM_Marketplace {
 							</div>
 						</td>
 					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_affiliate_commission', $order_id, $this->vendor_id ); ?>
+					
 					<?php
 				}
 				?>
+				
+				<?php
+				// Show Transaction Charges
+				if( $transaction_charge && apply_filters( 'wcfm_is_allow_view_transaction_charge', true ) && isset( $commission_rule['transaction_charge_type'] ) && ( $commission_rule['transaction_charge_type'] != 'no' ) ) {
+					?>
+					
+					<?php if( !$aff_commission && ( !isset( $commission_rule['tax_enable'] ) || ( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] != 'yes' ) ) ) ) { ?>
+						
+						<?php do_action( 'wcfm_vendor_order_details_before_gross_earning', $order_id, $this->vendor_id ); ?>
+						<tr>
+							<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Gross Earning', 'wc-frontend-manager' ); ?>:</th>
+							<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+								<div class="view">
+									<?php 
+									echo wc_price( ( $total + $transaction_charge ), array( 'currency' => $order_currency ) ); 
+									?>
+								</div>
+							</td>
+						</tr>
+						<?php do_action( 'wcfm_vendor_order_details_after_gross_earning', $order_id, $this->vendor_id ); ?>
+					
+					<?php } ?>
+					
+					<?php do_action( 'wcfm_vendor_order_details_before_transaction_charge', $order_id, $this->vendor_id ); ?>
+					<tr>
+						<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Transaction Charge', 'wc-frontend-manager' ); ?>:</th>
+						<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+							<div class="view">
+								<?php 
+								echo '-' .wc_price( $transaction_charge, array( 'currency' => $order_currency ) ); 
+								?>
+							</div>
+						</td>
+					</tr>
+					<?php do_action( 'wcfm_vendor_order_details_after_transaction_charge', $order_id, $this->vendor_id ); ?>
+				 
+					<?php
+				}
+				?>
+				
+				<?php do_action( 'wcfm_vendor_order_details_before_total_earning', $order_id, $this->vendor_id ); ?>
 				<tr>
 					<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Total Earning', 'wc-frontend-manager' ); ?>:</th>
 					<td class="total" style="text-align:center; <?php echo $td_style; ?>">
@@ -929,7 +1119,28 @@ class WCFM_Marketplace {
 						</div>
 					</td>
 				</tr>
-			<?php
+				<?php do_action( 'wcfm_vendor_order_details_after_total_earning', $order_id, $this->vendor_id ); ?>
+				
+			  <?php
+			}
+			if( apply_filters( 'wcfm_is_allow_order_details_admin_fee', true ) ) {
+				do_action( 'wcfm_vendor_order_details_before_admin_fee', $order_id, $this->vendor_id );
+				?>
+				<tr>
+					<th class="label" colspan="2" style="text-align:right; <?php echo $td_style; ?>"><?php _e( 'Admin Fee', 'wc-frontend-manager' ); ?>:</th>
+					<td class="total" style="text-align:center; <?php echo $td_style; ?>">
+						<div class="view">
+							<?php 
+							echo wc_price( ($gross_sale_order - $total), array( 'currency' => $order_currency ) );
+							if( apply_filters( 'wcfm_is_allow_earning_in_words', false ) ) {
+						  	echo "<br/>" . wcfm_number_to_words(($gross_sale_order - $total));
+						  }
+							?>
+						</div>
+					</td>
+				</tr>
+				<?php
+				do_action( 'wcfm_vendor_order_details_after_admin_fee', $order_id, $this->vendor_id );
 			}
 		}
   }
@@ -1018,7 +1229,7 @@ class WCFM_Marketplace {
   	$products_arr = array(0);
   	while( $post_loop_offset < $post_count ) {
 			$args = array(
-								'posts_per_page'   => 10,
+								'posts_per_page'   => apply_filters( 'wcfm_break_loop_offset', 100 ),
 								'offset'           => $post_loop_offset,
 								'category'         => '',
 								'category_name'    => '',
@@ -1038,6 +1249,11 @@ class WCFM_Marketplace {
 							);
 			
 			$args = apply_filters( 'wcfm_products_args', $args );
+			
+			if( class_exists('WooCommerce_simple_auction') ) {
+				remove_all_filters( 'pre_get_posts' );
+			}
+		
 			$products = get_posts( $args );
 			if(!empty($products)) {
 				foreach($products as $product) {
@@ -1046,7 +1262,7 @@ class WCFM_Marketplace {
 			} else {
 				break;
 			}
-			$post_loop_offset += 10;
+			$post_loop_offset += apply_filters( 'wcfm_break_loop_offset', 100 );
 		}
 		
 		return $products_arr;

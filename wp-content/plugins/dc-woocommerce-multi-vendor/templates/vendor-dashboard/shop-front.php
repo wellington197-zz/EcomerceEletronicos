@@ -35,7 +35,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
         border-radius: 2px 0 0 2px;
         box-sizing: border-box;
         -moz-box-sizing: border-box;
-        height: 29px;
+        height: 40px;
         outline: none;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     }
@@ -46,7 +46,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
         margin-left: 12px;
         padding: 0 11px 0 13px;
         text-overflow: ellipsis;
-        width: 60%;
+        width: 44%;
     }
 </style>
 <div class="col-md-12">
@@ -360,6 +360,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
                         </div>
                     </div>
                     <!-- from group end -->
+                    <?php do_action( 'wcmp_vendor_add_store_data', $vendor ); ?>
                 </div>
             </div>
         </div>
@@ -412,7 +413,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
                             <input class="form-control" type="url"   name="vendor_instagram" value="<?php echo isset($vendor_instagram['value']) ? $vendor_instagram['value'] : ''; ?>">
                         </div>  
                     </div>
-
+                    <?php do_action( 'wcmp_vendor_add_extra_social_link', $vendor ); ?>
                 </div>
             </div>
         </div>    

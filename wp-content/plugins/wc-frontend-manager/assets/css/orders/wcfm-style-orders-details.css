@@ -257,7 +257,7 @@
 	color: #a00 !important;
 }
 
-td.bkap_edit_column a {display: none !important;}
+td.bkap_edit_column a, p.wc-deposits-order-item-description a {display: none !important;}
 
 @media only screen and (max-width: 414px) {
   .no_mob {

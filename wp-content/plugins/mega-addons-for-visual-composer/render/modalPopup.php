@@ -12,19 +12,21 @@ class WPBakeryShortCode_modal_popup_box extends WPBakeryShortCode {
 			'top'			=>		'60',
 			'width'			=>		'600',
 			'bodybg'		=>		'#1a94ad',
-			'bgclr'			=>		'#ececec',
-			'btntext'		=>		'',
+			'btn_animation'	=>		'hvr-fade',
 			'btnalign'		=>		'left',
+			'btntext'		=>		'',
+			'btntext2'		=>		'',
 			'btnsize'		=>		'18',
 			'leftpadding'	=>		'20',
 			'toppadding'	=>		'5',
-			'border'		=>		'0px solid transparent',
+			'btn_border'	=>		'#269CE9',
+			'border_width'	=>		'0',
 			'btnradius'		=>		'3',
 			'btnclr'		=>		'',
 			'hoverclr'		=>		'',
 			'btnbg'			=>		'',
+			'btn_icon' 		=> 		'',
 			'hoverbg'		=>		'',
-			'btn_icon'		=>		'',
 			'titlealign'	=>		'left',
 			'titletext'		=>		'Image Gallery',
 			'titlesize'		=>		'20',
@@ -32,18 +34,33 @@ class WPBakeryShortCode_modal_popup_box extends WPBakeryShortCode {
 			'titleclr'		=>		'',
 			'titlebg'		=>		'',
 			'titleborder'	=>		'',
+			'bgclr'			=>		'#ececec',
+			'contentpad'	=>		'15',
+			'contentpad2'	=>		'15',
 		), $atts ) );
 		$some_id = rand(5, 500);
 		wp_enqueue_style( 'animate-css', plugins_url( '../css/animate.css' , __FILE__ ));
+		wp_enqueue_style( 'modal-popup-btn', plugins_url( '../css/modal-popup-btn.css' , __FILE__ ));
 		wp_enqueue_script( 'bpopup-js', plugins_url( '../js/bpopup.js' , __FILE__ ), array('jquery', 'jquery-ui-core'));
 		$content = wpb_js_remove_wpautop($content, true);
 		ob_start(); ?>
 		<!-- HTML DESIGN HERE -->
-		<div class="modal-popup-box" data-bodybg="<?php echo $bodybg; ?>" style="text-align: <?php echo $btnalign; ?>;">
-			<button class="model-popup-btn popup-<?php echo $some_id; ?>" data-id="popup-<?php echo $some_id; ?>" style="color: <?php echo $btnclr; ?>;background: <?php echo $btnbg; ?> ; border: <?php echo $border; ?>; border-radius: <?php echo $btnradius; ?>px; font-size: <?php echo $btnsize; ?>px; padding: <?php echo $toppadding; ?>px <?php echo $leftpadding; ?>px;">
-				<i style="padding-right: 5px;" class="fa <?php echo $btn_icon; ?>"> </i>
-				<?php echo $btntext; ?>
-			</button>
+		<div class="maw__modal_popup_box" data-bodybg="<?php echo $bodybg; ?>" style="justify-content: <?php echo $btnalign; ?>; display: flex;">
+			<?php if ($btn_animation == 'button--winona' || $btn_animation == 'hvr-fade') { ?>
+				<button class="mega-uae-btn model-popup-btn popup-<?php echo $some_id; ?> <?php echo $btn_animation; ?>" data-id="popup-<?php echo $some_id; ?>" style="color: <?php echo $btnclr; ?>;background: <?php echo $btnbg; ?> ; border: <?php echo $border_width; ?>px solid <?php echo $btn_border ?>; border-radius: <?php echo $btnradius; ?>px; font-size: <?php echo $btnsize; ?>px; padding: <?php echo $toppadding; ?>px <?php echo $leftpadding; ?>px;" data-text=""> 
+					<span><i style="padding-right: 5px;" class="fa <?php echo $btn_icon; ?>"> </i> <?php echo $btntext; ?></span>			
+					<span style="background: <?php echo $hoverbg; ?>; padding: <?php echo $toppadding; ?>px 0; color: <?php echo $hoverclr; ?>;" class="modal-popup-after"><?php echo $btntext2; ?></span>
+				</button>
+				<div style="clear: both;"></div>
+			<?php } ?>
+
+			<?php if ($btn_animation == 'button--rayen' || $btn_animation == 'button--moema' || $btn_animation == 'button--ujarak') { ?>
+				<button class="mega-uae-btn model-popup-btn popup-<?php echo $some_id; ?> <?php echo $btn_animation; ?>" data-id="popup-<?php echo $some_id; ?>" style="color: <?php echo $btnclr; ?>;background: <?php echo $btnbg; ?> ; border: <?php echo $border_width; ?>px solid <?php echo $btn_border ?>; border-radius: <?php echo $btnradius; ?>px; font-size: <?php echo $btnsize; ?>px; padding: <?php echo $toppadding; ?>px <?php echo $leftpadding; ?>px;" data-text=""> 
+					<span style="background: <?php echo $hoverbg; ?>; padding: <?php echo $toppadding; ?>px 0; color: <?php echo $hoverclr; ?>;" class="modal-popup-before"><?php echo $btntext2; ?></span>
+					<span><i style="padding-right: 5px;" class="fa <?php echo $btn_icon; ?>"> </i> <?php echo $btntext; ?></span>			
+				</button>
+				<div style="clear: both;"></div>
+			<?php } ?>
 
 			<div class="mega-model-popup <?php echo $animation; ?> animated" id="popup-<?php echo $some_id; ?>" style="position:fixed;display: none; margin-top: <?php echo $top; ?>px; width: 95%;max-width: <?php echo $width; ?>px; background: <?php echo $bgclr; ?>;">
 				<span class="b-close"><span><img src="<?php echo plugin_dir_url( __FILE__ ); ?>../images/cross.png"></span></span>
@@ -51,17 +68,18 @@ class WPBakeryShortCode_modal_popup_box extends WPBakeryShortCode {
 			    	<h2 style="border-bottom: 1px solid <?php echo $titleborder; ?>; text-align: <?php echo $titlealign; ?>; font-size: <?php echo $titlesize; ?>px; line-height: <?php echo $titleline; ?>; color: <?php echo $titleclr; ?>; background: <?php echo $titlebg; ?>; margin: 0px; padding: 0px 20px;">
 			    		<?php echo $titletext; ?>
 			    	</h2>
-			      <span style="padding: 15px 20px; display: block;">
+			      <span style="padding: <?php echo $contentpad ?>px <?php echo $contentpad2; ?>px; display: block;">
 			      	<?php echo $content; ?>
 			      </span>
 			    </div>
 			</div>
 		</div>
 		<style>
-			.modal-popup-box .popup-<?php echo $some_id; ?>:hover {
-				color: <?php echo $hoverclr; ?> !important;
+			.maw__modal_popup_box .popup-<?php echo $some_id; ?>:hover {
 				background: <?php echo $hoverbg; ?> !important;
+				color: <?php echo $hoverclr; ?> !important;
 			}
+
 		</style>
         <!-- HTML END DESIGN HERE -->
 		<?php
@@ -125,7 +143,7 @@ vc_map( array(
 			"type" 			=> 	"vc_number",
 			"heading" 		=> 	__( 'Top', 'modal_popup' ),
 			"param_name" 	=> 	"top",
-			"description" 	=> 	__( 'set position from top in pixel', 'modal_popup' ),
+			"description" 	=> 	__( 'Popup position from top', 'modal_popup' ),
 			"value" 		=> __( "60", "modal_popup" ),
 			"suffix" 		=> 'px',
 			"group" 		=> 	'General',
@@ -146,6 +164,7 @@ vc_map( array(
 			"description" 	=> 	__( 'Popup body background color', 'modal_popup' ),
 			"group" 		=> 	'General',
 		),
+
 		array(
 			"type" 			=> "vc_links",
 			"param_name" 	=> "caption_url",
@@ -153,6 +172,7 @@ vc_map( array(
 			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #0073aa;font-weight:600;"><a href="https://1.envato.market/02aNL" target="_blank" style="text-decoration: none;">Get the Pro version for more stunning elements and customization options.</a></span>', 'ihover' ),
 			"group" 		=> 'General',
 		),
+
 		array(
 			"type" 			=> "iconpicker",
 			"heading" 		=> __( 'Select icon', 'button' ),
@@ -160,10 +180,26 @@ vc_map( array(
 			"description" 	=> __( 'it will show within text', 'button' ),
 			"group" 		=> 'Button Setting',
 		),
+
+		array(
+			"type" 			=> 	"dropdown",
+			"heading" 		=> 	__( 'Button Effects', 'modal_popup' ),
+			"param_name" 	=> 	"btn_animation",
+			"edit_field_class" => "vc_col-sm-6",
+			"group" 		=> 	'Button Setting',
+			"value"			=>	array(
+				"Fade"				=>	"hvr-fade",
+				"Winona"			=>	"button--winona",
+				"Rayen"				=>	"button--rayen",
+				"Moema"				=>	"button--moema",
+				"Ujarak"			=>	"button--ujarak",
+			)
+		),
 		array(
 			"type" 			=> 	"dropdown",
 			"heading" 		=> 	__( 'Button Align', 'modal_popup' ),
 			"param_name" 	=> 	"btnalign",
+			"edit_field_class" => "vc_col-sm-6",
 			"group" 		=> 	'Button Setting',
 			"value"			=>	array(
 				"Left"			=>	"left",
@@ -179,75 +215,105 @@ vc_map( array(
 			"group" 		=> 	'Button Setting',
 		),
 		array(
-			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Font Size', 'modal_popup' ),
-			"param_name" 	=> 	"btnsize",
-			"description" 	=> 	__( 'font size for button in pixel', 'modal_popup' ),
-			"suffix" 		=> 'px',
-			"value" 		=> __( "18", "modal_popup" ),
+			"type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Button Text 2', 'modal_popup' ),
+			"param_name" 	=> 	"btntext2",
+			"description" 	=> 	__( 'it will show on hover', 'modal_popup' ),
+			"dependency" => array('element' => "btn_animation", 'value' => array('button--winona', 'button--rayen')),
 			"group" 		=> 	'Button Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Padding [Left,Right]', 'modal_popup' ),
+			"heading" 		=> 	__( 'Padding', 'modal_popup' ),
+			"param_name" 	=> 	"toppadding",
+			"edit_field_class" => "vc_col-sm-4",
+			"description" 	=> 	__( 'top bottom', 'modal_popup' ),
+			"suffix" 		=> 'px',
+			"value" 		=> __( "5", "modal_popup" ),
+			"group" 		=> 	'Button Setting',
+		),
+		array(
+			"type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Padding', 'modal_popup' ),
 			"param_name" 	=> 	"leftpadding",
-			"description" 	=> 	__( 'write in pixel for button width', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-4",
+			"description" 	=> 	__( 'left, right', 'modal_popup' ),
 			"suffix" 		=> 'px',
 			"value" 		=> __( "20", "modal_popup" ),
 			"group" 		=> 	'Button Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Padding [Top,Bottom]', 'modal_popup' ),
-			"param_name" 	=> 	"toppadding",
-			"description" 	=> 	__( 'write in pixel for button height', 'modal_popup' ),
+			"heading" 		=> 	__( 'Font Size', 'modal_popup' ),
+			"param_name" 	=> 	"btnsize",
+			"edit_field_class" => "vc_col-sm-4",
 			"suffix" 		=> 'px',
-			"value" 		=> __( "5", "modal_popup" ),
+			"value" 		=> __( "18", "modal_popup" ),
 			"group" 		=> 	'Button Setting',
 		),
+
+		/** border **/
+
 		array(
-			"type" 			=> 	"textfield",
-			"heading" 		=> 	__( 'Border Style [width style color]', 'modal_popup' ),
-			"param_name" 	=> 	"border",
-			"description" 	=> 	__( 'button border', 'modal_popup' ),
-			"value" 		=> __( "0px solid #44448F", "modal_popup" ),
-			"group" 		=> 	'Button Setting',
+			"type" 			=> "colorpicker",
+			"heading" 		=> __( 'Border Color', 'button' ),
+			"param_name" 	=> "btn_border",
+			"edit_field_class" => "vc_col-sm-4",
+			"group" 		=> 'Button Setting',
+		),
+		array(
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Border Width', 'button' ),
+			"param_name" 	=> "border_width",
+			"edit_field_class" => "vc_col-sm-4",
+			"value"			=>	"0",
+			"suffix" 		=> 'px',
+			"group" 		=> 'Button Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Radius', 'modal_popup' ),
+			"heading" 		=> 	__( 'Border Radius', 'modal_popup' ),
 			"param_name" 	=> 	"btnradius",
-			"description" 	=> 	__( 'button radius in pixel', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-4",
 			"suffix" 		=> 'px',
 			"value" 		=> __( "5", "modal_popup" ),
 			"group" 		=> 	'Button Setting',
 		),
+
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_url",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Color Settings</span>', 'ihover' ),
+			"group" 		=> 'Button Setting',
+		),
+
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Color', 'modal_popup' ),
 			"param_name" 	=> 	"btnclr",
-			"description" 	=> 	__( 'Button text color', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-6",
 			"group" 		=> 	'Button Setting',
 		),
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Hover Color', 'modal_popup' ),
 			"param_name" 	=> 	"hoverclr",
-			"description" 	=> 	__( 'Button text color onhover', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-6",
 			"group" 		=> 	'Button Setting',
 		),
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Background Color', 'modal_popup' ),
 			"param_name" 	=> 	"btnbg",
-			"description" 	=> 	__( 'Button background color', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-6",
 			"group" 		=> 	'Button Setting',
 		),
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Background Hover Color', 'modal_popup' ),
 			"param_name" 	=> 	"hoverbg",
-			"description" 	=> 	__( 'Button background color on hover', 'modal_popup' ),
+			"edit_field_class" => "vc_col-sm-6",
 			"group" 		=> 	'Button Setting',
 		),
 		array(
@@ -313,6 +379,25 @@ vc_map( array(
 			"param_name" 	=> 	"bgclr",
 			"description" 	=> 	__( 'Content background color', 'modal_popup' ),
 			"group" 		=> 	'Popup Content',
+		),
+		array(
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Padding [Top Bottom]', 'megaaddons' ),
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 	=> "contentpad",
+			"value"			=>	"15",
+			"suffix"		=>	"px",
+			"group" 		=> 'Popup Content',
+		),
+
+		array(
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Padding [Right Left]', 'megaaddons' ),
+			"edit_field_class" => "vc_col-sm-4 wdo_items_to_show wdo_margin_bottom",
+			"param_name" 	=> "contentpad2",
+			"value"			=>	"15",
+			"suffix"		=>	"px",
+			"group" 		=> 'Popup Content',
 		),
 		array(
 			"type" 			=> 	"textarea_html",

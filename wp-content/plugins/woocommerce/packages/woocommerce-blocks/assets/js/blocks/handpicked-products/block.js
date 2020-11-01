@@ -2,11 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	BlockControls,
-	InspectorControls,
-	ServerSideRender,
-} from '@wordpress/editor';
+import { BlockControls, InspectorControls } from '@wordpress/block-editor';
+import { ServerSideRender } from '@wordpress/editor';
 import {
 	Button,
 	Disabled,
@@ -19,14 +16,12 @@ import {
 } from '@wordpress/components';
 import { Component, Fragment } from '@wordpress/element';
 import PropTypes from 'prop-types';
-
-/**
- * Internal dependencies
- */
-import GridContentControl from '../../components/grid-content-control';
-import { IconWidgets } from '../../components/icons';
-import ProductsControl from '../../components/products-control';
-import ProductOrderbyControl from '../../components/product-orderby-control';
+import { MAX_COLUMNS, MIN_COLUMNS } from '@woocommerce/block-settings';
+import GridContentControl from '@woocommerce/editor-components/grid-content-control';
+import ProductsControl from '@woocommerce/editor-components/products-control';
+import ProductOrderbyControl from '@woocommerce/editor-components/product-orderby-control';
+import { gridBlockPreview } from '@woocommerce/resource-previews';
+import { Icon, widgets } from '@woocommerce/icons';
 
 /**
  * Component to handle edit mode of "Hand-picked Products".
@@ -34,49 +29,66 @@ import ProductOrderbyControl from '../../components/product-orderby-control';
 class ProductsBlock extends Component {
 	getInspectorControls() {
 		const { attributes, setAttributes } = this.props;
-		const { columns, contentVisibility, orderby, alignButtons } = attributes;
+		const {
+			columns,
+			contentVisibility,
+			orderby,
+			alignButtons,
+		} = attributes;
 
 		return (
 			<InspectorControls key="inspector">
 				<PanelBody
-					title={ __( 'Layout', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Layout', 'woocommerce' ) }
 					initialOpen
 				>
 					<RangeControl
-						label={ __( 'Columns', 'woo-gutenberg-products-block' ) }
+						label={ __(
+							'Columns',
+							'woocommerce'
+						) }
 						value={ columns }
-						onChange={ ( value ) => setAttributes( { columns: value } ) }
-						min={ wc_product_block_data.min_columns }
-						max={ wc_product_block_data.max_columns }
+						onChange={ ( value ) =>
+							setAttributes( { columns: value } )
+						}
+						min={ MIN_COLUMNS }
+						max={ MAX_COLUMNS }
 					/>
 					<ToggleControl
-						label={ __( 'Align Add to Cart buttons', 'woo-gutenberg-products-block' ) }
+						label={ __(
+							'Align Buttons',
+							'woocommerce'
+						) }
 						help={
-							alignButtons ?
-								__(
-									'Buttons are aligned vertically.',
-									'woo-gutenberg-products-block'
-								) :
-								__(
-									'Buttons follow content.',
-									'woo-gutenberg-products-block'
-								)
+							alignButtons
+								? __(
+										'Buttons are aligned vertically.',
+										'woocommerce'
+								  )
+								: __(
+										'Buttons follow content.',
+										'woocommerce'
+								  )
 						}
 						checked={ alignButtons }
-						onChange={ () => setAttributes( { alignButtons: ! alignButtons } ) }
+						onChange={ () =>
+							setAttributes( { alignButtons: ! alignButtons } )
+						}
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Content', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Content', 'woocommerce' ) }
 					initialOpen
 				>
 					<GridContentControl
 						settings={ contentVisibility }
-						onChange={ ( value ) => setAttributes( { contentVisibility: value } ) }
+						onChange={ ( value ) =>
+							setAttributes( { contentVisibility: value } )
+						}
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Order By', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Order By', 'woocommerce' ) }
 					initialOpen={ false }
 				>
 					<ProductOrderbyControl
@@ -85,7 +97,7 @@ class ProductsBlock extends Component {
 					/>
 				</PanelBody>
 				<PanelBody
-					title={ __( 'Products', 'woo-gutenberg-products-block' ) }
+					title={ __( 'Products', 'woocommerce' ) }
 					initialOpen={ false }
 				>
 					<ProductsControl
@@ -107,20 +119,23 @@ class ProductsBlock extends Component {
 			debouncedSpeak(
 				__(
 					'Showing Hand-picked Products block preview.',
-					'woo-gutenberg-products-block'
+					'woocommerce'
 				)
 			);
 		};
 
 		return (
 			<Placeholder
-				icon={ <IconWidgets /> }
-				label={ __( 'Hand-picked Products', 'woo-gutenberg-products-block' ) }
+				icon={ <Icon srcElement={ widgets } /> }
+				label={ __(
+					'Hand-picked Products',
+					'woocommerce'
+				) }
 				className="wc-block-products-grid wc-block-handpicked-products"
 			>
 				{ __(
-					'Display a selection of hand-picked products in a grid',
-					'woo-gutenberg-products-block'
+					'Display a selection of hand-picked products in a grid.',
+					'woocommerce'
 				) }
 				<div className="wc-block-handpicked-products__selection">
 					<ProductsControl
@@ -130,8 +145,8 @@ class ProductsBlock extends Component {
 							setAttributes( { products: ids } );
 						} }
 					/>
-					<Button isDefault onClick={ onDone }>
-						{ __( 'Done', 'woo-gutenberg-products-block' ) }
+					<Button isPrimary onClick={ onDone }>
+						{ __( 'Done', 'woocommerce' ) }
 					</Button>
 				</div>
 			</Placeholder>
@@ -142,6 +157,10 @@ class ProductsBlock extends Component {
 		const { attributes, name, setAttributes } = this.props;
 		const { editMode } = attributes;
 
+		if ( attributes.isPreview ) {
+			return gridBlockPreview;
+		}
+
 		return (
 			<Fragment>
 				<BlockControls>
@@ -150,7 +169,8 @@ class ProductsBlock extends Component {
 							{
 								icon: 'edit',
 								title: __( 'Edit' ),
-								onClick: () => setAttributes( { editMode: ! editMode } ),
+								onClick: () =>
+									setAttributes( { editMode: ! editMode } ),
 								isActive: editMode,
 							},
 						] }
@@ -161,7 +181,10 @@ class ProductsBlock extends Component {
 					this.renderEditMode()
 				) : (
 					<Disabled>
-						<ServerSideRender block={ name } attributes={ attributes } />
+						<ServerSideRender
+							block={ name }
+							attributes={ attributes }
+						/>
 					</Disabled>
 				) }
 			</Fragment>

@@ -136,7 +136,7 @@ jQuery(document).ready(function($) {
 		$is_valid = wcfm_enquiry_form_validate($enquiry_form);
 		
 		if($is_valid) {
-			$enquiry_form.block({
+			$('#enquiry_form_wrapper').block({
 				message: null,
 				overlayCSS: {
 					background: '#fff',
@@ -170,7 +170,7 @@ jQuery(document).ready(function($) {
 							grecaptcha.reset();
 						}
 					}
-					$enquiry_form.unblock();
+					$('#enquiry_form_wrapper').unblock();
 				}
 			});
 		}

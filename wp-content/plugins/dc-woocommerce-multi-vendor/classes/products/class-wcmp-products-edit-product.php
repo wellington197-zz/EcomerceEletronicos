@@ -53,8 +53,13 @@ class WCMp_Products_Edit_Product {
 
     private function product_capablity_check( $action = 'add', $product_id = '' ) {
         global $WCMp;
-        $current_vendor_id = get_current_user_id();
+        $current_vendor_id = apply_filters('wcmp_current_vendor_product_capability',get_current_user_id() ) ;
         if ( ! $current_vendor_id ) {
+            $this->error_msg = __( 'You do not have permission to view this content. Please contact site administrator.', 'dc-woocommerce-multi-vendor' );
+            return false;
+        }
+        $product_vendor = get_wcmp_product_vendors( $product_id );
+        if ( $product_vendor && $current_vendor_id !== $product_vendor->id ) {
             $this->error_msg = __( 'You do not have permission to view this content. Please contact site administrator.', 'dc-woocommerce-multi-vendor' );
             return false;
         }
@@ -84,10 +89,6 @@ class WCMp_Products_Edit_Product {
                                 return false;
                             }
                         }
-//                        if ( ! ( current_vendor_can( 'edit_product' ) && current_vendor_can( 'edit_published_products' ) ) ) {
-//                            $this->error_msg = __( 'Sorry, you are not allowed to edit this item.', 'dc-woocommerce-multi-vendor' );
-//                            return false;
-//                        }
                         return true;
                     }
                     $this->error_msg = __( 'You attempted to edit an item that doesn&#8217;t exist. Perhaps it was deleted?', 'dc-woocommerce-multi-vendor' );

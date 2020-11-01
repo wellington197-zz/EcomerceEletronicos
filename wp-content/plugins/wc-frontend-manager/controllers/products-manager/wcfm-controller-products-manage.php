@@ -33,6 +33,15 @@ class WCFM_Products_Manage_Controller {
 	  $wcfm_products_manage_messages = get_wcfm_products_manager_messages();
 	  $has_error = false;
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_products_manage_form_data['wcfm_nonce'] ) && !empty( $wcfm_products_manage_form_data['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_products_manage_form_data['wcfm_nonce'], 'wcfm_products_manage' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  if(isset($wcfm_products_manage_form_data['pro_title']) && !empty($wcfm_products_manage_form_data['pro_title'])) {
 	  	$is_update = false;
 	  	$is_publish = false;
@@ -135,7 +144,7 @@ class WCFM_Products_Manage_Controller {
 				// Set Product Type
 				wp_set_object_terms( $new_product_id, $wcfm_products_manage_form_data['product_type'], 'product_type' );
 				
-				$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription' ) );
+				$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription', 'pw-gift-card' ) );
 				
 				// file paths will be stored in an array keyed off md5(file path)
 				$downloadables = array();
@@ -303,29 +312,41 @@ class WCFM_Products_Manage_Controller {
 				$product->save();
 				
 				// Set Product Category
-				if(isset($wcfm_products_manage_form_data['product_cats']) && !empty($wcfm_products_manage_form_data['product_cats'])) {
-					$is_first = true;
-					foreach($wcfm_products_manage_form_data['product_cats'] as $product_cats) {
-						if($is_first) {
-							$is_first = false;
-							wp_set_object_terms( $new_product_id, (int)$product_cats, 'product_cat' );
-						} else {
-							wp_set_object_terms( $new_product_id, (int)$product_cats, 'product_cat', true );
+				if( apply_filters( 'wcfm_is_allow_category', true ) && apply_filters( 'wcfm_is_allow_pm_category', true ) && apply_filters( 'wcfm_is_allow_product_category', true ) ) {
+					if(isset($wcfm_products_manage_form_data['product_cats']) && !empty($wcfm_products_manage_form_data['product_cats'])) {
+						$is_first = true;
+						foreach($wcfm_products_manage_form_data['product_cats'] as $product_cats) {
+							if($is_first) {
+								$is_first = false;
+								wp_set_object_terms( $new_product_id, (int)$product_cats, 'product_cat' );
+							} else {
+								wp_set_object_terms( $new_product_id, (int)$product_cats, 'product_cat', true );
+							}
+						}
+					} else {
+						if( apply_filters( 'wcfm_is_allow_reset_product_cat', true ) ) {
+							wp_delete_object_term_relationships( $new_product_id, 'product_cat' );
 						}
 					}
 				}
 				
 				// Set Product Custom Taxonomies
-				if(isset($wcfm_products_manage_form_data['product_custom_taxonomies']) && !empty($wcfm_products_manage_form_data['product_custom_taxonomies'])) {
-					foreach($wcfm_products_manage_form_data['product_custom_taxonomies'] as $taxonomy => $taxonomy_values) {
-						if( !empty( $taxonomy_values ) ) {
-							$is_first = true;
-							foreach( $taxonomy_values as $taxonomy_value ) {
-								if($is_first) {
-									$is_first = false;
-									wp_set_object_terms( $new_product_id, (int)$taxonomy_value, $taxonomy );
-								} else {
-									wp_set_object_terms( $new_product_id, (int)$taxonomy_value, $taxonomy, true );
+				if( apply_filters( 'wcfm_is_allow_category', true ) && apply_filters( 'wcfm_is_allow_pm_category', true ) && apply_filters( 'wcfm_is_allow_custom_taxonomy', true ) ) {
+					if(isset($wcfm_products_manage_form_data['product_custom_taxonomies']) && !empty($wcfm_products_manage_form_data['product_custom_taxonomies'])) {
+						foreach($wcfm_products_manage_form_data['product_custom_taxonomies'] as $taxonomy => $taxonomy_values) {
+							if( !empty( $taxonomy_values ) ) {
+								$is_first = true;
+								foreach( $taxonomy_values as $taxonomy_value ) {
+									if($is_first) {
+										$is_first = false;
+										wp_set_object_terms( $new_product_id, (int)$taxonomy_value, $taxonomy );
+									} else {
+										wp_set_object_terms( $new_product_id, (int)$taxonomy_value, $taxonomy, true );
+									}
+								}
+							} else {
+								if( apply_filters( 'wcfm_is_allow_reset_'.$taxonomy, true ) ) {
+									wp_delete_object_term_relationships( $new_product_id, $taxonomy );
 								}
 							}
 						}
@@ -352,7 +373,9 @@ class WCFM_Products_Manage_Controller {
 							}
 						}
 					} else {
-						wp_delete_object_term_relationships( $new_product_id, 'product_tag' );
+						if( apply_filters( 'wcfm_is_allow_reset_product_tag', true ) ) {
+							wp_delete_object_term_relationships( $new_product_id, 'product_tag' );
+						}
 					}
 				}
 				
@@ -445,6 +468,11 @@ class WCFM_Products_Manage_Controller {
                   wp_update_post( array( 'ID' => $gallery_img_id, 'post_parent' => $new_product_id ) );
                   $gallery[] = $gallery_img_id;
                   if( $gallerylimit == count( $gallery ) ) break;
+                } elseif(isset($gallery_imgs['gimage']) && !empty($gallery_imgs['gimage'])) {
+                  $gallery_img_id = $WCFM->wcfm_get_attachment_id($gallery_imgs['gimage']);
+                  wp_update_post( array( 'ID' => $gallery_img_id, 'post_parent' => $new_product_id ) );
+                  $gallery[] = $gallery_img_id;
+                  if( $gallerylimit == count( $gallery ) ) break;
                 }
               }
 						}
@@ -459,111 +487,137 @@ class WCFM_Products_Manage_Controller {
 				}
 				
 				// Set product basic options for simple and external products
-				if( in_array( $wcfm_products_manage_form_data['product_type'], $wcfm_variable_product_types ) ) {
-					// Create Variable Product Variations
-					if(isset($wcfm_products_manage_form_data['variations']) && !empty($wcfm_products_manage_form_data['variations'])) {
-					  foreach($wcfm_products_manage_form_data['variations'] as $variations) {
-					  	$variation_status     = isset( $variations['enable'] ) ? 'publish' : 'private';
-					  	$variation_id = absint ( $variations['id'] );
-					  	
-					  	// Generate a useful post title
-					  	$variation_post_title = sprintf( __( 'Variation #%s of %s', 'woocommerce' ), absint( $variation_id ), esc_html( get_the_title( $new_product_id ) ) );
-					  	
-					  	if ( ! $variation_id ) { // Adding New Variation
-								$variation = array(
-									'post_title'   => $variation_post_title,
-									'post_content' => '',
-									'post_status'  => $variation_status,
-									'post_author'  => $current_user_id,
-									'post_parent'  => $new_product_id,
-									'post_type'    => 'product_variation'
-								);
+				if( isset( $_POST['variation_auto_generate'] ) && $_POST['variation_auto_generate'] ) {
+					$data_store = $product->get_data_store();
+
+					if ( is_callable( array( $data_store, 'create_all_product_variations' ) ) ) {
+						$data_store->create_all_product_variations( $product, 50 );
+						$data_store->sort_all_product_variations( $product->get_id() );
+					}
+				} else {
+					if( in_array( $wcfm_products_manage_form_data['product_type'], $wcfm_variable_product_types ) ) {
+						// Create Variable Product Variations
+						if(isset($wcfm_products_manage_form_data['variations']) && !empty($wcfm_products_manage_form_data['variations'])) {
+							foreach($wcfm_products_manage_form_data['variations'] as $variations) {
+								$variation_status     = isset( $variations['enable'] ) ? 'publish' : 'private';
+								$variation_id = absint ( $variations['id'] );
+								
+								// Generate a useful post title
+								$variation_post_title = sprintf( __( 'Variation #%s of %s', 'woocommerce' ), absint( $variation_id ), esc_html( get_the_title( $new_product_id ) ) );
+								
+								if ( ! $variation_id ) { // Adding New Variation
+									$variation = array(
+										'post_title'   => $variation_post_title,
+										'post_content' => '',
+										'post_status'  => $variation_status,
+										'post_author'  => $current_user_id,
+										'post_parent'  => $new_product_id,
+										'post_type'    => 'product_variation'
+									);
+							
+									$variation_id = wp_insert_post( $variation );
+								}
+								
+								// Only continue if we have a variation ID
+								if ( ! $variation_id ) {
+									continue;                                   
+								}
+								
+								// Set Variation Thumbnail
+								$variation_img_id = 0;
+								if(isset($variations['image']) && !empty($variations['image'])) {
+									$variation_img_id = $WCFM->wcfm_get_attachment_id($variations['image']);
+								}
+								
+								// Update Attributes
+								$updated_attribute_keys = array();
+								$var_attributes = array();
+								if ( $pro_attributes ) {
+									foreach ( $pro_attributes as $p_attribute ) {
+										if ( $p_attribute->get_variation() ) {
+											$attribute_key = sanitize_title( $p_attribute->get_name() );
+											
+											$updated_attribute_keys[] = "attribute_" . $attribute_key;
+											$value = isset( $variations[ "attribute_" . $attribute_key ] ) ? stripslashes( $variations[ "attribute_" . $attribute_key ] ) : '';
 						
-								$variation_id = wp_insert_post( $variation );
-							}
-							
-							// Only continue if we have a variation ID
-							if ( ! $variation_id ) {
-								continue;                                   
-							}
-							
-							// Set Variation Thumbnail
-							$variation_img_id = 0;
-							if(isset($variations['image']) && !empty($variations['image'])) {
-								$variation_img_id = $WCFM->wcfm_get_attachment_id($variations['image']);
-							}
-							
-							// Update Attributes
-							$updated_attribute_keys = array();
-							$var_attributes = array();
-							if ( $pro_attributes ) {
-								foreach ( $pro_attributes as $p_attribute ) {
-									if ( $p_attribute->get_variation() ) {
-										$attribute_key = sanitize_title( $p_attribute->get_name() );
-										
-										$updated_attribute_keys[] = "attribute_" . $attribute_key;
-										$value = isset( $variations[ "attribute_" . $attribute_key ] ) ? stripslashes( $variations[ "attribute_" . $attribute_key ] ) : '';
-					
-										$value                        = $p_attribute->is_taxonomy() ? sanitize_title( $value ) : wc_clean( $value ); // Don't use wc_clean as it destroys sanitized characters in terms.
-										$var_attributes[ $attribute_key ] = $value;
+											$value                        = $p_attribute->is_taxonomy() ? sanitize_title( $value ) : wc_clean( $value ); // Don't use wc_clean as it destroys sanitized characters in terms.
+											$var_attributes[ $attribute_key ] = $value;
+										}
 									}
 								}
+								
+								$wc_variation    = new WC_Product_Variation( $variation_id );
+								$errors       = $wc_variation->set_props( apply_filters( 'wcfm_product_variation_data_factory', array(
+									'status'            => $variation_status,
+									'virtual'           => isset( $variations['is_virtual'] ),
+									'menu_order'        => isset( $variations['menu_order'] ),
+									'regular_price'     => wc_clean( $variations['regular_price'] ),
+									'sale_price'        => wc_clean( $variations['sale_price'] ),
+									'manage_stock'      => isset( $variations['manage_stock'] ),
+									'stock_quantity'    => wc_clean( $variations['stock_qty'] ),
+									'backorders'        => wc_clean( $variations['backorders'] ),
+									'stock_status'      => wc_clean( $variations['stock_status'] ),
+									'image_id'          => wc_clean( $variation_img_id ),
+									'attributes'        => $var_attributes,
+									'sku'               => isset( $variations['sku'] ) ? wc_clean( $variations['sku'] ) : '',
+								), $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data ) );
+				
+								if ( is_wp_error( $errors ) ) {
+									if( !$has_error ) {
+										if( defined('WCFM_REST_API_CALL') ) {
+											return '{"status": false, "message": "' . $errors->get_error_message() . '", "id": "' . $new_product_id . '", "redirect": "' . get_permalink( $new_product_id ) . '"}';
+										} else {
+											echo '{"status": false, "message": "' . $errors->get_error_message() . '", "id": "' . $new_product_id . '", "redirect": "' . get_permalink( $new_product_id ) . '"}';
+										}
+									}
+									$has_error = true;
+								}
+				
+								$wc_variation->save();
+								
+								do_action( 'after_wcfm_product_variation_meta_save', $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data );
 							}
-							
-							$wc_variation    = new WC_Product_Variation( $variation_id );
-							$errors       = $wc_variation->set_props( apply_filters( 'wcfm_product_variation_data_factory', array(
-								//'status'            => 'publish' //isset( $variations['enable'] ) ? 'publish' : 'private',
-								'virtual'           => isset( $variations['is_virtual'] ),
-								'menu_order'        => isset( $variations['menu_order'] ),
-								'regular_price'     => wc_clean( $variations['regular_price'] ),
-								'sale_price'        => wc_clean( $variations['sale_price'] ),
-								'manage_stock'      => isset( $variations['manage_stock'] ),
-								'stock_quantity'    => wc_clean( $variations['stock_qty'] ),
-								'backorders'        => wc_clean( $variations['backorders'] ),
-								'stock_status'      => wc_clean( $variations['stock_status'] ),
-								'image_id'          => wc_clean( $variation_img_id ),
-								'attributes'        => $var_attributes,
-								'sku'               => isset( $variations['sku'] ) ? wc_clean( $variations['sku'] ) : '',
-							), $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data ) );
-			
-							if ( is_wp_error( $errors ) ) {
-								if( !$has_error ) {
-                  if( defined('WCFM_REST_API_CALL') ) {
-                    return '{"status": false, "message": "' . $errors->get_error_message() . '", "id": "' . $new_product_id . '", "redirect": "' . get_permalink( $new_product_id ) . '"}';
-                  } else {
-                    echo '{"status": false, "message": "' . $errors->get_error_message() . '", "id": "' . $new_product_id . '", "redirect": "' . get_permalink( $new_product_id ) . '"}';
-                  }
-                }
-								$has_error = true;
+						}
+						
+						// Remove Variations
+						if(isset($_POST['removed_variations']) && !empty($_POST['removed_variations'])) {
+							foreach($_POST['removed_variations'] as $removed_variations) {
+								wp_delete_post($removed_variations, true);
 							}
-			
-							$wc_variation->save();
-							
-							do_action( 'after_wcfm_product_variation_meta_save', $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data );
 						}
+						
+						$product->get_data_store()->sync_variation_names( $product, wc_clean( $wcfm_products_manage_form_data['pro_title'] ), wc_clean( $wcfm_products_manage_form_data['pro_title'] ) );
 					}
-					
-					// Remove Variations
-					if(isset($_POST['removed_variations']) && !empty($_POST['removed_variations'])) {
-						foreach($_POST['removed_variations'] as $removed_variations) {
-							wp_delete_post($removed_variations, true);
-						}
-					}
-					
-					$product->get_data_store()->sync_variation_names( $product, wc_clean( $wcfm_products_manage_form_data['pro_title'] ), wc_clean( $wcfm_products_manage_form_data['pro_title'] ) );
 				}
 				
 				// On Product Approve
 				if( !wcfm_is_vendor() && ( get_post_status( $new_product_id ) == 'publish' ) ) {
 					$wcfm_review_product_notified = get_post_meta( $new_product_id, '_wcfm_review_product_notified', true );
 					if( $wcfm_review_product_notified ) {
-						update_post_meta( $product_id, '_wcfm_product_approved_by', get_current_user_id() );
+						update_post_meta( $new_product_id, '_wcfm_product_approved_by', get_current_user_id() );
 						do_action( 'wcfm_after_product_approve', $new_product_id );
 						delete_post_meta( $new_product_id, '_wcfm_review_product_notified' );
 					}
 				}
 				
+				// On Product Reject
+				if( !wcfm_is_vendor() && ( get_post_status( $new_product_id ) == 'draft' ) ) {
+					$wcfm_review_product_notified = get_post_meta( $new_product_id, '_wcfm_review_product_notified', true );
+					if( $wcfm_review_product_notified ) {
+						if( isset( $_POST['reject_reason'] ) && !empty( $_POST['reject_reason'] ) ) {
+							update_post_meta( $new_product_id, '_wcfm_product_rejected_by', get_current_user_id() );
+							do_action( 'wcfm_after_product_reject', $new_product_id, wc_clean( $_POST['reject_reason'] ) );
+						}
+						delete_post_meta( $new_product_id, '_wcfm_review_product_notified' );
+					}
+				}
+				
 				do_action( 'after_wcfm_products_manage_meta_save', $new_product_id, $wcfm_products_manage_form_data );
+				
+				// Clear cache and transients
+				wc_delete_product_transients( $new_product_id );
+				//wp_cache_delete( 'product-' . $new_product_id, 'products' );
+				//wp_cache_delete( $new_product_id, 'post_meta' );
 				
 				// Notify Admin on New Product Creation
 				if( $is_publish ) {
@@ -606,7 +660,11 @@ class WCFM_Products_Manage_Controller {
                 if( defined('WCFM_REST_API_CALL') ) {
                   return '{"status": true, "message": "' . apply_filters( 'product_pending_message', $wcfm_products_manage_messages['product_pending'], $new_product_id ) . '", "redirect": "' . apply_filters( 'wcfm_product_save_pending_redirect', get_wcfm_edit_product_url( $new_product_id ), $new_product_id ) . '", "id": "' . $new_product_id . '", "title": "' . get_the_title( $new_product_id ) . '"}';
                 } else {
-                  echo '{"status": true, "message": "' . apply_filters( 'product_saved_message', $wcfm_products_manage_messages['product_saved'], $new_product_id ) . '", "redirect": "' . apply_filters( 'wcfm_product_save_draft_redirect', get_wcfm_edit_product_url( $new_product_id ), $new_product_id ) . '", "id": "' . $new_product_id . '"}';
+                	if( isset( $_POST['variation_auto_generate'] ) && $_POST['variation_auto_generate'] ) {
+                		echo '{"status": true, "message": "' . apply_filters( 'product_saved_message', $wcfm_products_manage_messages['product_saved'], $new_product_id ) . '", "redirect": "' . apply_filters( 'wcfm_product_save_draft_redirect', get_wcfm_edit_product_url( $new_product_id ).'#wcfm_products_manage_form_variations_head', $new_product_id ) . '", "id": "' . $new_product_id . '"}';
+                	} else {
+                		echo '{"status": true, "message": "' . apply_filters( 'product_saved_message', $wcfm_products_manage_messages['product_saved'], $new_product_id ) . '", "redirect": "' . apply_filters( 'wcfm_product_save_draft_redirect', get_wcfm_edit_product_url( $new_product_id ), $new_product_id ) . '", "id": "' . $new_product_id . '"}';
+                	}
                 }
               }
 						}

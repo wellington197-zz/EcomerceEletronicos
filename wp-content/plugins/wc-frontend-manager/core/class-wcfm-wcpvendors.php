@@ -245,16 +245,24 @@ class WCFM_WCPVendors {
 
 			// check post type to be product
 			if ( 'product' === get_post_type( $new_product_id ) ) {
+				
+				$author_id = apply_filters( 'wcfm_current_vendor_id', WC_Product_Vendors_Utils::get_logged_in_vendor() );
 
 				// automatically set the vendor term for this product
-				wp_set_object_terms( $new_product_id, apply_filters( 'wcfm_current_vendor_id', WC_Product_Vendors_Utils::get_logged_in_vendor() ), WC_PRODUCT_VENDORS_TAXONOMY );
+				wp_set_object_terms( $new_product_id, $author_id, WC_PRODUCT_VENDORS_TAXONOMY );
+				
+				// Set author as well
+				$arg = array(
+					'ID' => $new_product_id,
+					'post_author' => get_current_user_id(),
+				);
+				wp_update_post( $arg );
 
 				// set visibility to catalog/search
 				update_post_meta( $new_product_id, '_visibility', 'visible' );
 				
 				// Admin Message for Pending Review
 				$product_status = get_post_status( $new_product_id );
-				$author_id = apply_filters( 'wcfm_current_vendor_id', WC_Product_Vendors_Utils::get_logged_in_vendor() );
 				if( $product_status == 'pending' ) {
 					$WCFM->wcfm_notification->wcfm_admin_notification_product_review( $author_id, $new_product_id );
 				} else {
@@ -299,7 +307,7 @@ class WCFM_WCPVendors {
   
   // Coupons Args
   function wcpvendors_coupons_args( $args ) {
-  	if( wcfm_is_vendor() ) $args['author'] = get_current_user_id();
+  	if( wcfm_is_vendor() ) $args['author'] = $this->vendor_id; //get_current_user_id();
   	return $args;
   }
   

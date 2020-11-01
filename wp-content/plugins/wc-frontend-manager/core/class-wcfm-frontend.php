@@ -83,6 +83,15 @@ class WCFM_Frontend {
 		
 		// WCfM Dashboard template
 		if ( wc_post_content_has_shortcode( 'wc_frontend_manager' ) && is_user_logged_in() ) {
+			if( function_exists( 'et_theme_builder_frontend_override_template' ) && apply_filters( 'wcfm_is_allow_divi_builder_template', true ) ) {
+				$layouts         = et_theme_builder_get_template_layouts();
+				$override_header = et_theme_builder_overrides_layout( ET_THEME_BUILDER_HEADER_LAYOUT_POST_TYPE );
+				$override_footer = et_theme_builder_overrides_layout( ET_THEME_BUILDER_FOOTER_LAYOUT_POST_TYPE );
+				if ( $override_header || $override_footer ) {
+					return $page_template;
+				}
+			}
+			
 			$wcfm_options = $WCFM->wcfm_options;
 			$is_dashboard_full_view_disabled = isset( $wcfm_options['dashboard_full_view_disabled'] ) ? $wcfm_options['dashboard_full_view_disabled'] : 'no';
 			$is_dashboard_theme_header_disabled = isset( $wcfm_options['dashboard_theme_header_disabled'] ) ? $wcfm_options['dashboard_theme_header_disabled'] : 'no';
@@ -185,7 +194,7 @@ class WCFM_Frontend {
 					wp_safe_redirect( apply_filters( 'wcfm_change_membership_url', get_wcfm_membership_url() ) );
 					exit;
 				} else {
-					wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+					wp_safe_redirect( apply_filters( 'wcfm_restrict_redirect_url', get_permalink( wc_get_page_id( 'myaccount' ) ) ) );
 					exit;
 				}
 			}
@@ -301,11 +310,12 @@ class WCFM_Frontend {
  		if( $is_quick_access_disabled == 'yes' ) return;
  			
  		if( !is_user_logged_in() ) return;
+ 		if( !apply_filters( 'wcfm_is_allow_catalog_quick_access', true ) ) return;
 		$user = wp_get_current_user();
 		$allowed_roles = apply_filters( 'wcfm_allwoed_user_roles',  array( 'administrator', 'shop_manager' ) );
 		if ( !array_intersect( $allowed_roles, (array) $user->roles ) )  return;
 		
-		$quick_access_image_url = isset( $wcfm_options['wcfm_quick_access_icon'] ) ? $wcfm_options['wcfm_quick_access_icon'] : $WCFM->plugin_url . '/assets/images/wcfm-30x30.png';
+		$quick_access_image_url = isset( $wcfm_options['wcfm_quick_access_icon'] ) ? wcfm_get_attachment_url( $wcfm_options['wcfm_quick_access_icon'] ) : $WCFM->plugin_url . '/assets/images/wcfm-30x30.png';
  		echo '<a href="' . get_wcfm_page() . '"><img class="text_tip" data-tip="' . __( 'Dashboard', 'wc-frontend-manager' ) . '" id="wcfm_home" src="' . $quick_access_image_url . '" width="30" alt="' . __( 'Dashboard', 'wc-frontend-manager' ) . '" /></a>';
  	}
 	
@@ -411,7 +421,7 @@ class WCFM_Frontend {
 		
 		//$_SESSION['wcfm_pages'] = array( 'shop' => 'no', 'stores' => array(), 'products' => array() );
 		//if( !session_id() ) session_start();
-		$todate = date('Y-m-d');
+		$todate = date( 'Y-m-d', current_time( 'timestamp', 0 ) );
 		
 		if( !isset($_SERVER['HTTP_REFERER']) ) $_SERVER['HTTP_REFERER'] = '';
 		
@@ -783,7 +793,7 @@ class WCFM_Frontend {
 		}
 		
 		if( apply_filters( 'wcfm_is_force_category_attributes_mapping', false ) ) {
-			echo '<p class="wcfm_category_attributes_mapping_msg description instruction">' . __( 'First choose product category to get associated attributes.', 'wc-frontend-manager' ) . '</p>';
+			echo '<p class="wcfm_category_attributes_mapping_msg description instructions">' . __( 'First choose product category to get associated attributes.', 'wc-frontend-manager' ) . '</p>';
 		}
 		
 		$attribute_taxonomies = wc_get_attribute_taxonomies();
@@ -801,13 +811,13 @@ class WCFM_Frontend {
 					$attributes[$acnt]['attribute_taxonomy'] = $attribute_taxonomy;
 					$attributes[$acnt]['tax_name'] = $att_taxonomy;
 					$attributes[$acnt]['is_taxonomy'] = 1;
-					$attributes[$acnt]['wrapper_class'] = 'wcfm_attributes_blocks wcfm_attributes_block_'.$att_taxonomy;
+					$attributes[$acnt]['wrapper_class'] = 'wcfm_attributes_blocks wcfm_defined_attributes wcfm_attributes_block_'.$att_taxonomy;
 				
 					$args = array(
-												'orderby'    => 'name',
+												'orderby'    => ! empty( $attribute_taxonomy->attribute_orderby ) ? $attribute_taxonomy->attribute_orderby : 'name',
 												'hide_empty' => 0
 											);
-					$all_terms = get_terms( $att_taxonomy, apply_filters( 'wcfm_product_attribute_terms', $args ) );
+					$all_terms = get_terms( $att_taxonomy, apply_filters( 'wcfm_product_attribute_terms', apply_filters( 'woocommerce_product_attribute_terms', $args ) ) );
 					$attributes_option = array();
 					if ( $all_terms ) {
 						foreach ( $all_terms as $term ) {
@@ -849,15 +859,15 @@ class WCFM_Frontend {
 					$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_product_custom_attributes', apply_filters( 'wcfm_product_custom_attribute_'.$att_taxonomy, array(  
 																																																	"select_attributes_".$att_taxonomy => array( 'type' => 'multiinput', 'class' => 'wcfm-text wcfm_select_attributes wcfm_ele simple variable external grouped booking', 'label_class' => 'wcfm_title', 'value' => $attributes, 'options' => array(
 																																																			"term_name" => array('type' => 'hidden'),
-																																																			"is_active" => array('label' => __('Active?', 'wc-frontend-manager'), 'type' => 'checkbox', 'value' => 'enable', 'attributes' => array( 'title' => __( 'Check to associate this attribute with the product', 'wc-frontend-manager' ) ), 'class' => 'wcfm-checkbox wcfm_ele attribute_ele simple variable external grouped booking', 'label_class' => 'wcfm_title attribute_ele checkbox_title'),
-																																																			"name" => array('label' => __('Name', 'wc-frontend-manager'), 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'wcfm-text wcfm_ele attribute_ele simple variable external grouped booking', 'label_class' => 'wcfm_title attribute_ele'),
-																																																			"value" => array('label' => __('Value(s):', 'wc-frontend-manager'), 'type' => 'select', 'custom_attributes' => array( 'attrlimit' => $attrlimit ), 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'class' => 'wcfm-select wcfm_ele simple variable external grouped booking ' . $allow_add_term, 'label_class' => 'wcfm_title'),
-																																																			"is_visible" => array('label' => __('Visible on the product page', 'wc-frontend-manager'), 'type' => 'checkbox', 'value' => 'enable', 'class' => 'wcfm-checkbox wcfm_ele simple variable external grouped booking', 'label_class' => 'wcfm_title checkbox_title'),
+																																																			"is_active" => array('label' => __('Active?', 'wc-frontend-manager'), 'type' => 'checkbox', 'value' => 'enable', 'attributes' => array( 'title' => __( 'Check to associate this attribute with the product', 'wc-frontend-manager' ) ), 'class' => 'wcfm-checkbox wcfm_ele attribute_ele simple variable external grouped booking', 'label_class' => 'wcfm_title wcfm_ele simple variable external grouped booking checkbox_title'),
+																																																			"name" => array('label' => __('Name', 'wc-frontend-manager'), 'type' => 'text', 'attributes' => array( 'readonly' => true ), 'class' => 'variation_ele_hide', 'label_class' => 'variation_ele_hide'),
+																																																			"value" => array('label' => wc_attribute_label( $att_taxonomy ), 'type' => 'select', 'custom_attributes' => array( 'attrlimit' => $attrlimit ), 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'class' => 'wcfm-select wcfm_ele simple variable external grouped booking ' . $allow_add_term, 'label_class' => 'wcfm_title wcfm_ele attribute_ele simple variable external grouped booking'),
+																																																			"is_visible" => array('label' => __('Visible on the product page', 'wc-frontend-manager'), 'type' => 'checkbox', 'value' => 'enable', 'class' => 'wcfm-checkbox wcfm_ele simple variable external grouped booking', 'label_class' => 'wcfm_title wcfm_ele simple variable external grouped booking checkbox_title'),
 																																																			"is_variation" => array('label' => __('Use as Variation', 'wc-frontend-manager'), 'type' => 'checkbox', 'value' => 'enable', 'class' => 'wcfm-checkbox wcfm_ele variable variable-subscription', 'label_class' => 'wcfm_title checkbox_title wcfm_ele variable variable-subscription'),
 																																																			"tax_name" => array('type' => 'hidden'),
 																																																			"is_taxonomy" => array('type' => 'hidden')
 																																																	))
-																																												), 'select_attributes_'.$att_taxonomy, $att_taxonomy, $attributes ), 'select_attributes_'.$att_taxonomy ) );
+																																												), 'select_attributes_'.$att_taxonomy, $att_taxonomy, $attributes ), 'select_attributes_'.$att_taxonomy, $att_taxonomy, $attributes ) );
 				}
 			}
 		}
@@ -889,7 +899,7 @@ class WCFM_Frontend {
  		if( isset( $_REQUEST['fl_builder'] ) ) return;
  		
  		// Libs
-	  $WCFM->library->load_qtip_lib();
+	  //$WCFM->library->load_qtip_lib();
 	  
 	  // Block UI
 	  if( apply_filters( 'wcfm_is_allow_blockui', true ) ) {
@@ -897,35 +907,39 @@ class WCFM_Frontend {
 	  }
 	  
 	  // Colorbox
-	  $WCFM->library->load_colorbox_lib();
+	  //$WCFM->library->load_colorbox_lib();
 	  
 	  // Date Picker
 	  $WCFM->library->load_datepicker_lib();
  		
  		// Core JS
-	  wp_enqueue_script( 'wcfm_core_js', $WCFM->library->js_lib_url_min . 'wcfm-script-core.js', array('jquery', 'wcfm_qtip_js' ), $WCFM->version, true );
+	  wp_enqueue_script( 'wcfm_core_js', $WCFM->library->js_lib_url_min . 'wcfm-script-core.js', array( 'jquery' ), $WCFM->version, true );
 	  
 	  // Localized Script
 	  if( apply_filters( 'wcfm_is_allow_sound', true ) ) {
 			if( apply_filters( 'wcfm_is_allow_notification_sound', true ) ) {
 				wp_localize_script( 'wcfm_core_js', 'wcfm_notification_sound', apply_filters( 'wcfm_notification_sound', $WCFM->library->lib_url . 'sounds/notification.mp3' ) );
 			} else {
-				wp_localize_script( 'wcfm_core_js', 'wcfm_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
+				//wp_localize_script( 'wcfm_core_js', 'wcfm_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
 			}
-			if( apply_filters( 'wcfm_is_allow_desktop_notification_sound', true ) ) {
+			if( apply_filters( 'wcfm_is_allow_new_message_check', false ) && apply_filters( 'wcfm_is_allow_desktop_notification', true ) && apply_filters( 'wcfm_is_allow_desktop_notification_sound', true ) ) {
 				wp_localize_script( 'wcfm_core_js', 'wcfm_desktop_notification_sound', apply_filters( 'wcfm_desktop_notification_sound', $WCFM->library->lib_url . 'sounds/desktop_notification.mp3' ) );
 			} else {
-				wp_localize_script( 'wcfm_core_js', 'wcfm_desktop_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
+				//wp_localize_script( 'wcfm_core_js', 'wcfm_desktop_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
 			}
 		} else {
-			wp_localize_script( 'wcfm_core_js', 'wcfm_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
+			//wp_localize_script( 'wcfm_core_js', 'wcfm_notification_sound', $WCFM->library->lib_url . 'sounds/empty_audio.mp3' );
 		}
 		
 		$wcfm_dashboard_messages = get_wcfm_dashboard_messages();
 		wp_localize_script( 'wcfm_core_js', 'wcfm_core_dashboard_messages', $wcfm_dashboard_messages );
 	  
-	  $unread_message = $WCFM->wcfm_notification->wcfm_direct_message_count( 'message' );
-		$unread_enquiry = $WCFM->wcfm_notification->wcfm_direct_message_count( 'enquiry' );
+		$unread_message = 0;
+		$unread_enquiry = 0;
+		if( apply_filters( 'wcfm_is_allow_new_message_check', false ) ) {
+			$unread_message = $WCFM->wcfm_notification->wcfm_direct_message_count( 'message' );
+			$unread_enquiry = $WCFM->wcfm_notification->wcfm_direct_message_count( 'enquiry' );
+		}
 		
 		$ajax_url = WC()->ajax_url();
 		if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
@@ -946,9 +960,23 @@ class WCFM_Frontend {
 	  	                                                        'wcfm_allow_tinymce_options'               => apply_filters( 'wcfm_allow_tinymce_options', $tinyMCE_toolbar_options ),
 	  	                                                        'unread_message'                           => $unread_message, 
 	  	                                                        'unread_enquiry'                           => $unread_enquiry, 
+	  	                                                        'wcfm_is_allow_new_message_check'          => apply_filters( 'wcfm_is_allow_new_message_check', false ),
+	  	                                                        'wcfm_new_message_check_duration'          => apply_filters( 'wcfm_new_message_check_duration', 60000 ),
 	  	                                                        'wcfm_is_desktop_notification'             => apply_filters( 'wcfm_is_allow_desktop_notification', true ), 
-	  	                                                        'wcfm_is_allow_external_product_analytics' => apply_filters( 'wcfm_is_allow_external_product_analytics', false )
+	  	                                                        'is_mobile_desktop_notification'           => apply_filters( 'wcfm_is_allow_mobile_desktop_notification', false ),
+	  	                                                        'wcfm_is_allow_external_product_analytics' => apply_filters( 'wcfm_is_allow_external_product_analytics', false ),
+	  	                                                        'is_mobile'                                => wcfm_is_mobile(),
+	  	                                                        'is_tablet'                                => wcfm_is_tablet()
 	  	                                                       ) );
+	  
+	  // Inquery Localized Script
+		$wcfm_inquiry_messages = get_wcfm_enquiry_manage_messages();
+		wp_localize_script( 'wcfm_core_js', 'wcfm_enquiry_manage_messages', $wcfm_inquiry_messages );
+		
+		// WCFM Ultimate Localize Script
+	  $wcfm_core_messages = get_wcfm_products_manager_messages();
+		wp_localize_script( 'wcfm_core_js', 'wcfmu_products_manage_messages', $wcfm_core_messages );
+	  
 	  
 	  // Load End Point Scripts
 	  if( is_wcfm_page() ) {
@@ -978,6 +1006,14 @@ class WCFM_Frontend {
  		if( is_wcfm_page() ) {
  			// WilCity Theme Char JS error fix - 6.2.2
 			wp_dequeue_script('chartjs');
+			
+			// Electro Theme Fix - 6.4.1 
+			if( function_exists( 'electro_get_footer' ) && defined('FPD_PLUGIN_DIR') ) {
+				wp_dequeue_script( 'modaljs' );
+				wp_dequeue_script( 'electro-js' );
+				wp_dequeue_script( 'bootstrap-js' );
+				wp_dequeue_script( 'bootstrap-hover-dropdown-js' );
+			}
 		}
  	}
  	
@@ -990,7 +1026,7 @@ class WCFM_Frontend {
  		if( isset( $_REQUEST['fl_builder'] ) ) return;
  		
  		// WC Icon set
-	  wp_enqueue_style( 'wcfm_wc_icon_css',  $WCFM->library->css_lib_url_min . 'wcfm-style-icon.css', array(), $WCFM->version );
+	  //wp_enqueue_style( 'wcfm_wc_icon_css',  $WCFM->library->css_lib_url_min . 'wcfm-style-icon.css', array(), $WCFM->version );
 	  
 	  // Font Awasome Icon set
 	  if( apply_filters( 'wcfm_is_allow_font_awesome', true ) ) {
@@ -1005,7 +1041,7 @@ class WCFM_Frontend {
 		}
 	  
 	  // Admin Bar CSS
-	  wp_enqueue_style( 'wcfm_admin_bar_css',  $WCFM->library->css_lib_url_min . 'wcfm-style-adminbar.css', array(), $WCFM->version );
+	  //wp_enqueue_style( 'wcfm_admin_bar_css',  $WCFM->library->css_lib_url_min . 'wcfm-style-adminbar.css', array(), $WCFM->version );
 	  
 	  // WCFM Core CSS
 	  wp_enqueue_style( 'wcfm_core_css',  $WCFM->library->css_lib_url_min . 'wcfm-style-core.css', array(), $WCFM->version );

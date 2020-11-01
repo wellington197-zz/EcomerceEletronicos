@@ -132,6 +132,7 @@ jQuery(function($) {
                     product_id: product,
                     download_id: file,
                     order_id: self.data('order-id'),
+                    permission_id: self.data('permission-id'),
                     security: self.data('nonce')
                 };
 
@@ -383,14 +384,26 @@ jQuery(function($) {
                     };
 
                     $.post( dokan_refund.ajax_url, data, function( response ) {
-                        if ( true === response.success ) {
-                            window.alert( response.data );
-                            dokan_seller_meta_boxes_order_items.reload_items();
-                        } else {
-                            window.alert( response.data );
-                            dokan_seller_meta_boxes_order_items.unblock();
+                        response.data.message ? window.alert( response.data.message ) : null;
+                        dokan_seller_meta_boxes_order_items.reload_items();
+                    }).fail( function ( jqXHR ) {
+                        var message = [];
+
+                        if ( jqXHR.responseJSON.data ) {
+                            var data = jqXHR.responseJSON.data;
+
+                            if ( $.isArray( data ) ) {
+                                message = jqXHR.responseJSON.data.map( function ( item ) {
+                                    return item.message;
+                                } );
+                            } else {
+                                message.push( data );
+                            }
                         }
-                    });
+
+                        window.alert( message.join( ' ' ) );
+                        dokan_seller_meta_boxes_order_items.unblock();
+                    } );
                 } else {
                     dokan_seller_meta_boxes_order_items.unblock();
                 }
@@ -492,6 +505,46 @@ jQuery(function($) {
             minimumInputLength: $( this ).data( 'minimum_input_length' ) ? $( this ).data( 'minimum_input_length' ) : '1',
             escapeMarkup: function( m ) {
                 return m;
+            },
+            language: {
+                errorLoading: function() {
+                    // Workaround for https://github.com/select2/select2/issues/4355 instead of i18n_ajax_error.
+                    return dokan.i18n_searching;
+                },
+                inputTooLong: function( args ) {
+                    var overChars = args.input.length - args.maximum;
+
+                    if ( 1 === overChars ) {
+                        return dokan.i18n_input_too_long_1;
+                    }
+
+                    return dokan.i18n_input_too_long_n.replace( '%qty%', overChars );
+                },
+                inputTooShort: function( args ) {
+                    var remainingChars = args.minimum - args.input.length;
+
+                    if ( 1 === remainingChars ) {
+                        return dokan.i18n_input_too_short_1;
+                    }
+
+                    return dokan.i18n_input_too_short_n.replace( '%qty%', remainingChars );
+                },
+                loadingMore: function() {
+                    return dokan.i18n_load_more;
+                },
+                maximumSelected: function( args ) {
+                    if ( args.maximum === 1 ) {
+                        return dokan.i18n_selection_too_long_1;
+                    }
+
+                    return dokan.i18n_selection_too_long_n.replace( '%qty%', args.maximum );
+                },
+                noResults: function() {
+                    return dokan.i18n_no_matches;
+                },
+                searching: function() {
+                    return dokan.i18n_searching;
+                }
             },
             ajax: {
                 url:         dokan.ajaxurl,
@@ -705,17 +758,77 @@ jQuery(function($) {
         },
 
         bindProductTagDropdown: function () {
-            if ( dokan.product_vendors_can_create_tags && 'on' === dokan.product_vendors_can_create_tags ) {
-                return;
-            }
-
-            $( '#product_tag' ).select2( {
+            $(".product_tag_search").select2({
+                allowClear: false,
+                tags: ( dokan.product_vendors_can_create_tags && 'on' === dokan.product_vendors_can_create_tags ),
+                ajax: {
+                    url: dokan.ajaxurl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term,
+                            action: 'dokan_json_search_products_tags',
+                            security: dokan.search_products_tags_nonce,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function( data ) {
+                        var options = [];
+                        if ( data ) {
+                            $.each( data, function( index, text ) {
+                                options.push( { id: text[0], text: text[1]  } );
+                            });
+                        }
+                        return {
+                            results: options,
+                            pagination: {
+                                more: options.length == 0 ? false : true
+                            }
+                        };
+                    },
+                    cache: true
+                },
                 language: {
-                    noResults: function () {
-                        return dokan.i18n_no_result_found;
+                    errorLoading: function() {
+                        return dokan.i18n_searching;
+                    },
+                    inputTooLong: function( args ) {
+                        var overChars = args.input.length - args.maximum;
+
+                        if ( 1 === overChars ) {
+                            return dokan.i18n_input_too_long_1;
+                        }
+
+                        return dokan.i18n_input_too_long_n.replace( '%qty%', overChars );
+                    },
+                    inputTooShort: function( args ) {
+                        var remainingChars = args.minimum - args.input.length;
+
+                        if ( 1 === remainingChars ) {
+                            return dokan.i18n_input_too_short_1;
+                        }
+
+                        return dokan.i18n_input_too_short_n.replace( '%qty%', remainingChars );
+                    },
+                    loadingMore: function() {
+                        return dokan.i18n_load_more;
+                    },
+                    maximumSelected: function( args ) {
+                        if ( args.maximum === 1 ) {
+                            return dokan.i18n_selection_too_long_1;
+                        }
+
+                        return dokan.i18n_selection_too_long_n.replace( '%qty%', args.maximum );
+                    },
+                    noResults: function() {
+                        return dokan.i18n_no_matches;
+                    },
+                    searching: function() {
+                        return dokan.i18n_searching;
                     }
-                }
-            } );
+                },
+            });
         },
 
         addProductPopup: function (e) {
@@ -982,9 +1095,13 @@ jQuery(function($) {
 
                     $parent.fadeOut( 300, function() {
                         if ( $parent.is( '.taxonomy' ) ) {
+                            $parent.find( 'select, input[type=text]' ).val( '' );
                             $( 'select.dokan_attribute_taxonomy' ).find( 'option[value="' + $parent.data( 'taxonomy' ) + '"]' ).removeAttr( 'disabled' );
+                        } else {
+                            $parent.find( 'select, input[type=text]' ).val( '' );
+                            $parent.hide();
                         }
-                        $(this).remove();
+
                         Dokan_Editor.attribute.reArrangeAttribute();
                     });
                 }
@@ -1316,7 +1433,7 @@ jQuery(function($) {
             var hide_classes = '.hide_if_downloadable, .hide_if_virtual';
             var show_classes = '.show_if_downloadable, .show_if_virtual';
 
-            $.each( [ 'simple', 'variable', 'grouped' ], function( index, value ) {
+            $.each( Object.keys( dokan.product_types ), function( index, value ) {
                 hide_classes = hide_classes + ', .hide_if_' + value;
                 show_classes = show_classes + ', .show_if_' + value;
             });
@@ -1388,96 +1505,59 @@ jQuery(function($) {
             return false;
         });
 
-        function dokan_show_earning_suggestion() {
-            var selectedCategoryWrapper = $('select#product_cat').find('option:selected');
+        function dokan_show_earning_suggestion( callback ) {
+            let commission = $('span.vendor-earning').attr( 'data-commission' );
+            let product_id = $( 'span.vendor-earning' ).attr( 'data-product-id' );
+            let product_price = $( 'input.dokan-product-regular-price' ).val();
+            let sale_price = $( 'input.dokan-product-sales-price' ).val();
+            let earning_suggestion = $('.simple-product span.vendor-price');
 
-            if ( selectedCategoryWrapper.data( 'commission' ) != '' ) {
-                var vendor_percentage = selectedCategoryWrapper.data( 'commission' );
-                var commission_type = selectedCategoryWrapper.data( 'commission_type' );
-            } else {
-                var commission_type = $('span.vendor-earning').attr( 'data-commission_type' );
-                var vendor_percentage = $('span.vendor-earning').attr( 'data-commission' );
-            }
+            earning_suggestion.html( 'Calculating' );
 
-            if ( commission_type == 'percentage' ) {
-                if ( $('input.dokan-product-sales-price' ).val() == '' ) {
-                    $( 'span.vendor-price' ).html(
-                        parseFloat( accounting.formatNumber( ( ( $( 'input.dokan-product-regular-price' ).val() * vendor_percentage ) / 100 ), dokan.rounding_precision, '' ) )
-                            .toString()
-                            .replace( '.', dokan.mon_decimal_point )
-                    );
-                } else {
-                    $( 'span.vendor-price' ).html(
-                        parseFloat( accounting.formatNumber( ( ( $( 'input.dokan-product-sales-price' ).val() * vendor_percentage ) / 100 ), dokan.rounding_precision, '' ) )
-                            .toString()
-                            .replace( '.', dokan.mon_decimal_point )
-                    );
+            $.get( dokan.ajaxurl, {
+                action: 'get_vendor_earning',
+                product_id: product_id,
+                product_price: product_price,
+                product_price: sale_price ? sale_price : product_price,
+                _wpnonce: dokan.nonce
+            } )
+            .done( ( response ) => {
+                earning_suggestion.html( response );
+
+                if ( typeof callback === 'function' ) {
+                    callback();
                 }
-            } else {
-                if ( $('input.dokan-product-sales-price' ).val() == '' ) {
-                    $( 'span.vendor-price' ).html(
-                        parseFloat( accounting.formatNumber( ( $( 'input.dokan-product-regular-price' ).val() - vendor_percentage ), dokan.rounding_precision, '' ) )
-                            .toString()
-                            .replace( '.', dokan.mon_decimal_point )
-                    );
-                } else {
-                    $( 'span.vendor-price' ).html(
-                        parseFloat( accounting.formatNumber( ( $( 'input.dokan-product-sales-price' ).val() - vendor_percentage ), dokan.rounding_precision, '' ) )
-                            .toString()
-                            .replace( '.', dokan.mon_decimal_point )
-                    );
-                }
-            }
+            } );
         }
 
-        $('select#product_cat').on('change', function() {
-            dokan_show_earning_suggestion();
+        $( "input.dokan-product-regular-price, input.dokan-product-sales-price" ).on( 'keyup', _.debounce( () => {
+            dokan_show_earning_suggestion( function() {
 
-            if ( $( '#product_type' ).val() == 'variable' || $( '#product_type' ).val() == undefined ) {
-                return;
-            }
-
-            if ( Number( $('span.vendor-price').text() ) <= 0  ) {
-                $( 'input[type=submit]' ).attr( 'disabled', 'disabled' );
-                $( '.dokan-product-less-price-alert' ).removeClass( 'dokan-hide' );
-            } else {
-                $( 'input[type=submit]' ).removeAttr( 'disabled');
-                $( '.dokan-product-less-price-alert' ).addClass( 'dokan-hide' );
-            }
-        });
-
-        $( "input.dokan-product-regular-price, input.dokan-product-sales-price" ).on( 'keyup', function () {
-            dokan_show_earning_suggestion();
-
-            if ( $( '#product_type' ).val() == 'simple' || $( '#product_type' ).text() == '' ) {
-                if ( Number( $('span.vendor-price').text() ) < 0  ) {
-                    $( $('.dokan-product-less-price-alert').removeClass('dokan-hide') );
-                    $( 'input[type=submit]' ).attr( 'disabled', 'disabled' );
-                    $( 'button[type=submit]' ).attr( 'disabled', 'disabled' );
-                } else {
-                    $( $('.dokan-product-less-price-alert').addClass('dokan-hide') );
-                    $( 'input[type=submit]' ).removeAttr( 'disabled');
-                    $( 'button[type=submit]' ).removeAttr( 'disabled');
-                }
-            }
-
-            $( '#product_type' ).on( 'change', function() {
-                var self = $(this);
-
-                if ( self.val() == 'variable' || self.val() == 'grouped' ) {
-                    $( 'input[type=submit]' ).removeAttr( 'disabled' );
-                } else {
-                    if ( Number( $('span.vendor-price').text() ) > 0 ) {
-                        $( 'input[type=submit]' ).removeAttr( 'disabled');
-                        $( '.dokan-product-less-price-alert' ).addClass( 'dokan-hide' );
-                    } else {
-                        $( '.dokan-product-less-price-alert' ).removeClass( 'dokan-hide ');
+                if ( $( '#product_type' ).val() == 'simple' || $( '#product_type' ).text() == '' ) {
+                    if ( Number( $('.simple-product span.vendor-price').text() ) < 0  ) {
+                        $( $('.dokan-product-less-price-alert').removeClass('dokan-hide') );
                         $( 'input[type=submit]' ).attr( 'disabled', 'disabled' );
+                        $( 'button[type=submit]' ).attr( 'disabled', 'disabled' );
+                    } else {
+                        $( $('.dokan-product-less-price-alert').addClass('dokan-hide') );
+                        $( 'input[type=submit]' ).removeAttr( 'disabled');
+                        $( 'button[type=submit]' ).removeAttr( 'disabled');
                     }
                 }
             } );
 
-        } ).trigger('keyup');
+        }, 750 ) );
+
+        function debounce_delay( callback, ms ) {
+            var timer   = 0;
+            return function() {
+                var context = this, args = arguments;
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                  callback.apply(context, args);
+                }, ms || 0);
+            };
+        }
 
     });
 
@@ -1488,6 +1568,29 @@ jQuery(function($) {
 
     $('.datepicker').datepicker({
         dateFormat: 'yy-mm-dd'
+    });
+
+    $('.dokan-start-date').datepicker({
+        defaultDate: "",
+        dateFormat: "yy-mm-dd",
+        numberOfMonths: 1,
+        onSelect: function (selectedDate) {
+            let date = new Date(selectedDate);
+            date.setDate(date.getDate() + 1);
+            $('.dokan-end-date').datepicker('option', {'minDate': date})
+        }
+
+    });
+
+    $('.dokan-end-date').datepicker({
+        defaultDate: "",
+        dateFormat: "yy-mm-dd",
+        numberOfMonths: 1,
+        onSelect: function (selectedDate) {
+            let date = new Date(selectedDate);
+            date.setDate(date.getDate() - 1);
+            $('dokan-start-date').datepicker('option', {'maxDate': date})
+        }
     });
 
     $('.tips').tooltip();
@@ -1899,7 +2002,7 @@ jQuery(function($) {
                 errorClass: 'error',
                 errorPlacement: validatorError,
                 success: validatorSuccess,
-                ignore: '.select2-search__field, :hidden'
+                ignore: '.select2-search__field, :hidden, .mapboxgl-ctrl-geocoder--input'
             });
 
         },
@@ -1955,13 +2058,14 @@ jQuery(function($) {
         },
 
         validate: function(self) {
-            // e.preventDefault();
-
             $('form#dokan-form-contact-seller').validate({
                 errorPlacement: validatorError,
-                success: validatorSuccess,
+                errorElement: 'span',
+                success: function( label, element ) {
+                    label.removeClass('error');
+                    label.remove();
+                },
                 submitHandler: function(form) {
-
                     $(form).block({ message: null, overlayCSS: { background: '#fff url(' + dokan.ajax_loader + ') no-repeat center', opacity: 0.6 } });
 
                     var form_data = $(form).serialize();
@@ -1974,7 +2078,7 @@ jQuery(function($) {
 
                         $(form).find('input[type=text], input[type=email], textarea').val('').removeClass('valid');
                     });
-                }
+                },
             });
         }
     };
@@ -2175,5 +2279,527 @@ jQuery(function($) {
 
     bulkItemsSelection.init();
 
+
+
+    $( '.product-cat-stack-dokan li.has-children' ).on( 'click', '> a span.caret-icon', function ( e ) {
+        e.preventDefault();
+        var self = $( this ),
+            liHasChildren = self.closest( 'li.has-children' );
+
+        if ( !liHasChildren.find( '> ul.children' ).is( ':visible' ) ) {
+            self.find( 'i.fa' ).addClass( 'fa-rotate-90' );
+            if ( liHasChildren.find( '> ul.children' ).hasClass( 'level-0' ) ) {
+                self.closest( 'a' ).css( { 'borderBottom': 'none' } );
+            }
+        }
+
+        liHasChildren.find( '> ul.children' ).slideToggle( 'fast', function () {
+            if ( !$( this ).is( ':visible' ) ) {
+                self.find( 'i.fa' ).removeClass( 'fa-rotate-90' );
+
+                if ( liHasChildren.find( '> ul.children' ).hasClass( 'level-0' ) ) {
+                    self.closest( 'a' ).css( { 'borderBottom': '1px solid #eee' } );
+                }
+            }
+        } );
+    } );
+
+    $( '.store-cat-stack-dokan li.has-children' ).on( 'click', '> a span.caret-icon', function ( e ) {
+        e.preventDefault();
+        var self = $( this ),
+            liHasChildren = self.closest( 'li.has-children' );
+
+        if ( !liHasChildren.find( '> ul.children' ).is( ':visible' ) ) {
+            self.find( 'i.fa' ).addClass( 'fa-rotate-90' );
+            if ( liHasChildren.find( '> ul.children' ).hasClass( 'level-0' ) ) {
+                self.closest( 'a' ).css( { 'borderBottom': 'none' } );
+            }
+        }
+
+        liHasChildren.find( '> ul.children' ).slideToggle( 'fast', function () {
+            if ( !$( this ).is( ':visible' ) ) {
+                self.find( 'i.fa' ).removeClass( 'fa-rotate-90' );
+
+                if ( liHasChildren.find( '> ul.children' ).hasClass( 'level-0' ) ) {
+                    self.closest( 'a' ).css( { 'borderBottom': '1px solid #eee' } );
+                }
+            }
+        } );
+    } );
+
+    $(document).ready(function(){
+        var selectedLi = $('#cat-drop-stack ul').find( 'a.selected' );
+        selectedLi.css({ fontWeight: 'bold' });
+
+        selectedLi.parents('ul.children').each( function( i, val ) {
+            $( val ).css({ display: 'block' });
+        });
+    });
+
+
+})(jQuery);
+
+(function($){
+
+    // Field validation error tips
+    $( document.body )
+
+        .on( 'wc_add_error_tip', function( e, element, error_type ) {
+            var offset = element.position();
+
+            if ( element.parent().find( '.wc_error_tip' ).length === 0 ) {
+                element.after( '<div class="wc_error_tip ' + error_type + '">' + dokan[error_type] + '</div>' );
+                element.parent().find( '.wc_error_tip' )
+                    .css( 'left', offset.left + element.width() - ( element.width() / 2 ) - ( $( '.wc_error_tip' ).width() / 2 ) )
+                    .css( 'top', offset.top + element.height() )
+                    .fadeIn( '100' );
+            }
+        })
+
+        .on( 'wc_remove_error_tip', function( e, element, error_type ) {
+            element.parent().find( '.wc_error_tip.' + error_type ).fadeOut( '100', function() { $( this ).remove(); } );
+        })
+
+        .on( 'click', function() {
+            $( '.wc_error_tip' ).fadeOut( '100', function() { $( this ).remove(); } );
+        })
+
+        .on( 'blur', '.wc_input_decimal[type=text], .wc_input_price[type=text], .wc_input_country_iso[type=text]', function() {
+            $( '.wc_error_tip' ).fadeOut( '100', function() { $( this ).remove(); } );
+        })
+
+        .on(
+            'change',
+            '.wc_input_price[type=text], .wc_input_decimal[type=text], .wc-order-totals #refund_amount[type=text]',
+            function() {
+                var regex, decimalRegex,
+                    decimailPoint = dokan.decimal_point;
+
+                if ( $( this ).is( '.wc_input_price' ) || $( this ).is( '#refund_amount' ) ) {
+                    decimailPoint = dokan.mon_decimal_point;
+                }
+
+                regex        = new RegExp( '[^\-0-9\%\\' + decimailPoint + ']+', 'gi' );
+                decimalRegex = new RegExp( '\\' + decimailPoint + '+', 'gi' );
+
+                var value    = $( this ).val();
+                var newvalue = value.replace( regex, '' ).replace( decimalRegex, decimailPoint );
+
+                if ( value !== newvalue ) {
+                    $( this ).val( newvalue );
+                }
+            }
+        )
+
+        .on(
+            'keyup',
+            // eslint-disable-next-line max-len
+            '.wc_input_price[type=text], .wc_input_decimal[type=text], .wc_input_country_iso[type=text], .wc-order-totals #refund_amount[type=text]',
+            function() {
+                var regex, error, decimalRegex;
+                var checkDecimalNumbers = false;
+
+                if ( $( this ).is( '.wc_input_price' ) || $( this ).is( '#refund_amount' ) ) {
+                    checkDecimalNumbers = true;
+                    regex = new RegExp( '[^\-0-9\%\\' + dokan.mon_decimal_point + ']+', 'gi' );
+                    decimalRegex = new RegExp( '[^\\' + dokan.mon_decimal_point + ']', 'gi' );
+                    error = 'i18n_mon_decimal_error';
+                } else if ( $( this ).is( '.wc_input_country_iso' ) ) {
+                    regex = new RegExp( '([^A-Z])+|(.){3,}', 'im' );
+                    error = 'i18n_country_iso_error';
+                } else {
+                    checkDecimalNumbers = true;
+                    regex = new RegExp( '[^\-0-9\%\\' + dokan.decimal_point + ']+', 'gi' );
+                    decimalRegex = new RegExp( '[^\\' + dokan.decimal_point + ']', 'gi' );
+                    error = 'i18n_decimal_error';
+                }
+
+                var value    = $( this ).val();
+                var newvalue = value.replace( regex, '' );
+
+                // Check if newvalue have more than one decimal point.
+                if ( checkDecimalNumbers && 1 < newvalue.replace( decimalRegex, '' ).length ) {
+                    newvalue = newvalue.replace( decimalRegex, '' );
+                }
+
+                if ( value !== newvalue ) {
+                    $( document.body ).triggerHandler( 'wc_add_error_tip', [ $( this ), error ] );
+                } else {
+                    $( document.body ).triggerHandler( 'wc_remove_error_tip', [ $( this ), error ] );
+                }
+            }
+        )
+
+        .on( 'change', '#_sale_price.wc_input_price[type=text], .wc_input_price[name^=variable_sale_price]', function() {
+            var sale_price_field = $( this ), regular_price_field;
+
+            if ( sale_price_field.attr( 'name' ).indexOf( 'variable' ) !== -1 ) {
+                regular_price_field = sale_price_field
+                    .parents( '.variable_pricing' )
+                    .find( '.wc_input_price[name^=variable_regular_price]' );
+            } else {
+                regular_price_field = $( '#_regular_price' );
+            }
+
+            var sale_price    = parseFloat(
+                window.accounting.unformat( sale_price_field.val(), dokan.mon_decimal_point )
+            );
+            var regular_price = parseFloat(
+                window.accounting.unformat( regular_price_field.val(), dokan.mon_decimal_point )
+            );
+
+            if ( sale_price >= regular_price ) {
+                $( this ).val( '' );
+            }
+        })
+
+        .on( 'keyup', '#_sale_price.wc_input_price[type=text], .wc_input_price[name^=variable_sale_price]', function() {
+            var sale_price_field = $( this ), regular_price_field;
+
+            if ( sale_price_field.attr( 'name' ).indexOf( 'variable' ) !== -1 ) {
+                regular_price_field = sale_price_field
+                    .parents( '.variable_pricing' )
+                    .find( '.wc_input_price[name^=variable_regular_price]' );
+            } else {
+                regular_price_field = $( '#_regular_price' );
+            }
+
+            var sale_price    = parseFloat(
+                window.accounting.unformat( sale_price_field.val(), dokan.mon_decimal_point )
+            );
+            var regular_price = parseFloat(
+                window.accounting.unformat( regular_price_field.val(), dokan.mon_decimal_point )
+            );
+
+            if ( sale_price >= regular_price ) {
+                $( document.body ).triggerHandler( 'wc_add_error_tip', [ $(this), 'i18n_sale_less_than_regular_error' ] );
+            } else {
+                $( document.body ).triggerHandler( 'wc_remove_error_tip', [ $(this), 'i18n_sale_less_than_regular_error' ] );
+            }
+        })
+
+        .on( 'init_tooltips', function() {
+
+            $( '.tips, .help_tip, .woocommerce-help-tip' ).tipTip( {
+                'attribute': 'data-tip',
+                'fadeIn': 50,
+                'fadeOut': 50,
+                'delay': 200
+            } );
+
+            $( '.column-wc_actions .wc-action-button' ).tipTip( {
+                'fadeIn': 50,
+                'fadeOut': 50,
+                'delay': 200
+            } );
+
+            // Add tiptip to parent element for widefat tables
+            $( '.parent-tips' ).each( function() {
+                $( this ).closest( 'a, th' ).attr( 'data-tip', $( this ).data( 'tip' ) ).tipTip( {
+                    'attribute': 'data-tip',
+                    'fadeIn': 50,
+                    'fadeOut': 50,
+                    'delay': 200
+                } ).css( 'cursor', 'help' );
+            });
+        });
+
+})(jQuery)
+
+;(function($) {
+    var storeLists = {
+        /**
+         * Query holder
+         *
+         * @type object
+         */
+        query: {},
+
+        /**
+         * Form holder
+         *
+         * @type object
+         */
+        form: null,
+
+        /**
+         * Category item string holder
+         *
+         * @type array
+         */
+        cateItemStringArray: [],
+
+        /**
+         * Init all the methods
+         *
+         * @return void
+         */
+        init: function() {
+            $( '#dokan-store-listing-filter-wrap .sort-by #stores_orderby' ).on( 'change', this.buildSortByQuery );
+            $( '#dokan-store-listing-filter-wrap .toggle-view span' ).on( 'click', this.toggleView );
+            $( '#dokan-store-listing-filter-wrap .dokan-store-list-filter-button, #dokan-store-listing-filter-wrap .dokan-icons, #dokan-store-listing-filter-form-wrap .apply-filter #cancel-filter-btn ' ).on( 'click', this.toggleForm );
+
+            // Build query string
+            $( '#dokan-store-listing-filter-form-wrap .store-search-input' ).on( 'change', this.buildSearchQuery );
+
+            // Submit the form
+            $( '#dokan-store-listing-filter-form-wrap .apply-filter #apply-filter-btn' ).on( 'click', this.submitForm );
+
+            this.maybeHideListView();
+
+            const self = storeLists;
+
+            self.form = document.forms.dokan_store_lists_filter_form;
+
+            const view = self.getLocal( 'dokan-layout' );
+
+            if ( view ) {
+                const toggleBtns = $( '.toggle-view span' );
+                self.setView( view, toggleBtns );
+            }
+
+            const params = self.getParams();
+
+            if ( params.length ) {
+                let openTheForm = false;
+
+                params.forEach( function( param ) {
+                    const keys = Object.keys( param );
+                    const values = Object.values( param );
+
+                    if ( ! keys.includes( 'stores_orderby' ) || params.length > 1 ) {
+                        openTheForm = true;
+                    }
+
+                    self.setParams( keys, values );
+                });
+
+                if ( openTheForm ) {
+                    $( '#dokan-store-listing-filter-form-wrap' ).slideToggle();
+                }
+            }
+        },
+
+        buildSortByQuery: function( event ) {
+            const self = storeLists;
+
+            self.query.stores_orderby = event.target.value;
+            self.submitForm( event );
+        },
+
+        /**
+         * Toggle store layout view
+         *
+         * @param  string event
+         *
+         * @return void
+         */
+        toggleView: function( event ) {
+            const self = storeLists;
+            const currentElement = $( event.target );
+            const elements = currentElement.parent().find( 'span' );
+            const view = currentElement.data( 'view' );
+
+            self.setView( view, elements );
+            self.setLocal( 'dokan-layout', view );
+        },
+
+        /**
+         * Set grid or list view
+         *
+         * @param string view
+         * @param array elements
+         *
+         * @return void
+         */
+        setView: function( view, elements ) {
+            if ( typeof view === 'undefined'
+                || view.length < 1
+                || typeof elements === 'undefined'
+                || elements.length < 1
+                ) {
+                return;
+            }
+
+            const listingWrap = $( '#dokan-seller-listing-wrap' );
+
+            [...elements].forEach( function( value ) {
+                const element = $( value );
+
+                if ( view === element.data( 'view' ) ) {
+                    element.addClass( 'active' );
+                    listingWrap.addClass( view );
+                } else {
+                    element.removeClass( 'active' );
+                    listingWrap.removeClass( element.data( 'view' ) );
+                }
+            });
+        },
+
+        /**
+         * Toggle form
+         *
+         * @param  string event
+         *
+         * @return void
+         */
+        toggleForm: function( event ) {
+            event.preventDefault();
+
+            $( '#dokan-store-listing-filter-form-wrap' ).slideToggle();
+        },
+
+        /**
+         * Build Search Query
+         *
+         * @param  string event
+         *
+         * @return void
+         */
+        buildSearchQuery: function( event ) {
+            if ( event.target.value ) {
+                storeLists.query.dokan_seller_search = event.target.value;
+            } else {
+                delete storeLists.query.dokan_seller_search;
+            }
+        },
+
+        /**
+         * Submit the form
+         *
+         * @param  string event
+         *
+         * @return void
+         */
+        submitForm: function( event ) {
+            event.preventDefault();
+
+            const queryString = decodeURIComponent( $.param( storeLists.query ) );
+
+            window.history.pushState( null, null, `?${queryString}` );
+            window.location.reload();
+        },
+
+        /**
+         * Add data into local storage
+         *
+         * @param string key
+         * @param mix value
+         *
+         * @return void
+         */
+        setLocal: function( key, value ) {
+            window.localStorage.setItem( key, value );
+        },
+
+        /**
+         * Get data from local storage
+         *
+         * @param  string key
+         *
+         * @return mix
+         */
+        getLocal: function( key ) {
+            return window.localStorage.getItem( key );
+        },
+
+        setParams: function( key, value ) {
+            const self = storeLists;
+            const elements = self.form ? self.form.elements : '';
+            const sortingForm = document.forms.stores_sorting;
+            const sortingFormElements = sortingForm ? sortingForm.elements : '';
+
+            Object.values( sortingFormElements ).forEach( function( element ) {
+                if ( element.name === key[0] ) {
+                    $( element ).val( value[0] );
+                }
+            });
+
+            // on reload, if query string exists, set the form input elment value
+            Object.values( elements ).forEach( function( element ) {
+                if ( key.includes( element.name ) ) {
+                    if ( element.type === 'checkbox' ) {
+                        element.checked = ['yes', 'true', '1'].includes( value[0] ) ? true : false;
+                    } else if ( [ 'text', 'search' ].includes( element.type ) ) {
+                        element.value = value[0];
+                    }
+                }
+
+                // for backward compatibility we'll allow `store_category[]` query_var.
+                if ( key[0].includes( 'store_categories[' ) || key[0].includes( 'store_category[' ) ) {
+                    const trimedValue = value[0].split( ' ' ).join( '-' );
+                    const cateItem = $( `[data-slug=${trimedValue}]` );
+
+                    if ( ! self.cateItemStringArray.includes( cateItem.text().trim() ) ) {
+                        self.cateItemStringArray.push( cateItem.text().trim() );
+                    }
+
+                    cateItem.addClass( 'dokan-btn-theme' );
+
+                } else if ( key[0] === 'rating' ) {
+                    const trimedValue = value[0].split( ' ' ).join( '-' );
+
+                    $( `[data-${key[0]}=${trimedValue}]` ).addClass( 'active' );
+                    $( `[data-rating=${trimedValue}]` ).parent().addClass( 'selected' );
+                }
+            });
+
+            key.forEach( function( param, index ) {
+                if ( ! param.includes( '[' ) ) {
+                    self.query[ param ] = value[ index ];
+                }
+            });
+        },
+
+        /**
+         * Get params from
+         *
+         * @return array
+         */
+        getParams: function() {
+            const params = new URLSearchParams( location.search );
+            const allParams = [];
+
+            params.forEach( function( value, key ) {
+                allParams.push( {
+                    [key]: value
+                } );
+            });
+
+            return allParams;
+        },
+
+        /**
+         * On mobile screen hide the grid, list view button
+         *
+         * @return void
+         */
+        maybeHideListView: function() {
+            const self = storeLists;
+
+            if ( window.matchMedia( '(max-width: 767px)' ).matches ) {
+                if ( 'list-view' === self.getLocal( 'dokan-layout' ) ) {
+                    self.setLocal( 'dokan-layout', 'grid-view' );
+                }
+            }
+
+            $( window ).on( 'resize', function() {
+                const container = $(this);
+
+                if ( container.width() < 767 ) {
+                    $( '#dokan-seller-listing-wrap' ).removeClass( 'list-view' );
+                    $( '#dokan-seller-listing-wrap' ).addClass( 'grid-view' );
+                } else {
+                    $( '.toggle-view.item span' ).last().removeClass( 'active' );
+                    $( '.toggle-view.item span' ).first().addClass( 'active' );
+                }
+            });
+        }
+    };
+
+    if ( window.dokan ) {
+        window.dokan.storeLists = storeLists;
+        window.dokan.storeLists.init();
+    }
 
 })(jQuery);

@@ -65,6 +65,7 @@ class WCFMmp_Vendor {
 		// wePOS Compatibility
 		add_filter( 'wepos_frontend_permissions', array( &$this, 'wcfmmp_is_allow_wepos' ), 50 );
 		add_filter( 'wepos_rest_manager_permissions', array( &$this, 'wcfmmp_is_allow_wepos' ), 50 );
+		add_filter( 'woocommerce_rest_check_permissions', array( &$this, 'wcfmmp_is_allow_wepos_rest_check_permissions' ), 50, 4 );
 		add_filter( 'woocommerce_rest_product_object_query', array( &$this, 'wcfmmp_wepos_product_query' ), 50, 2 );
 		
 		// Enable Vendor Order Email Notification
@@ -103,21 +104,13 @@ class WCFMmp_Vendor {
 		// Vendor order item repair
 		add_action( 'wcfm_order_repair_order_item', array( &$this, 'wcfmmp_order_repair_order_item' ) );
 		
-		// Vendor Ledger update on order process
-		add_action( 'wcfmmp_order_item_processed', array( &$this, 'wcfmmp_order_item_processed_ledger_update' ), 10, 9 );
-		
-		// Vendor Ledger update on withdraw request process
-		add_action( 'wcfmmp_withdraw_request_processed', array( &$this, 'wcfmmp_withdraw_request_processed_ledger_update' ), 10, 9 );
-		
-		// Vendor Ledger update on reverse withdraw request process
-		add_action( 'wcfmmp_reverse_withdraw_request_processed', array( &$this, 'wcfmmp_reverse_withdraw_request_processed_ledger_update' ), 10, 10 );
-		
-		// Vendor Ledger update on refund request process
-		add_action( 'wcfmmp_refund_request_processed', array( &$this, 'wcfmmp_refund_request_processed_ledger_update' ), 10, 6 );
-		
 		// Vendor Details In Order Eamail
-		add_action( 'woocommerce_order_details_after_order_table', array( &$this, 'wcfmmp_vendor_details_in_order' ) );
-		add_action( 'woocommerce_email_order_meta', array( &$this, 'wcfmmp_vendor_details_in_order' ) );
+		if( apply_filters( 'wcfm_is_allow_policy_under_order_details', true ) ) {
+			add_action( 'woocommerce_order_details_after_order_table', array( &$this, 'wcfmmp_vendor_details_in_order' ), 20, 4 );
+		}
+		if( apply_filters( 'wcfm_is_allow_policy_under_order_emails', true ) ) {
+			add_action( 'woocommerce_email_order_meta', array( &$this, 'wcfmmp_vendor_details_in_order' ), 20, 4 );
+		}
 		
 		// Store Info In Order Details Item
 		add_action( 'woocommerce_display_item_meta', array( &$this, 'wcfmmp_order_item_meta_store' ), 10, 3 );
@@ -150,6 +143,14 @@ class WCFMmp_Vendor {
 		// Radius Search User Query 
 		add_action( 'pre_user_query', array( &$this, 'wcfmmp_pre_user_radius_query' ), 50 );
 		
+		// Multiple Vendors Prdocuct Checkout Validation
+		add_action( 'woocommerce_add_to_cart_validation', array( &$this, 'wcfmmp_multivendor_order_validation' ), 500, 3 );
+		
+		// Multiple Vendors YITH Request a Quote Restriction
+		if( apply_filters( 'wcfm_is_allow_multivendor_request_quote_validation', true ) ) {
+			add_filter( 'ywraq_ajax_add_item_is_valid', array( &$this, 'wcfmmp_multivendor_request_quote_validation' ), 500, 2 );
+		}
+		
 		// On Product Delete Reset Store Taxonomy
 		add_action( 'delete_post', array( &$this, 'wcfmmp_delete_product_taxonomy' ) );
 		add_action( 'wp_trash_post', array( &$this, 'wcfmmp_delete_product_taxonomy' ) );
@@ -171,7 +172,9 @@ class WCFMmp_Vendor {
 	 */
 	public function is_store_sidebar() {
 		global $WCFM, $WCFMmp;
-		$store_sidebar = isset( $WCFMmp->wcfmmp_marketplace_options['store_sidebar'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_sidebar'] : 'yes';
+		
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$store_sidebar = isset( $wcfmmp_marketplace_options['store_sidebar'] ) ? $wcfmmp_marketplace_options['store_sidebar'] : 'yes';
 		if( $store_sidebar == 'yes' ) return apply_filters( 'wcfmmp_is_store_sidebar', true );
 		return apply_filters( 'wcfmmp_is_store_sidebar', false );
 	}
@@ -182,7 +185,9 @@ class WCFMmp_Vendor {
 	 */
 	public function is_store_lists_sidebar() {
 		global $WCFM, $WCFMmp;
-		$store_list_sidebar = isset( $WCFMmp->wcfmmp_marketplace_options['store_list_sidebar'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_list_sidebar'] : 'yes';
+		
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$store_list_sidebar = isset( $wcfmmp_marketplace_options['store_list_sidebar'] ) ? $wcfmmp_marketplace_options['store_list_sidebar'] : 'no';
 		if( $store_list_sidebar == 'yes' ) return apply_filters( 'wcfmmp_is_store_lists_sidebar', true );
 		return apply_filters( 'wcfmmp_is_store_lists_sidebar', false );
 	}
@@ -193,9 +198,11 @@ class WCFMmp_Vendor {
 	 */
 	public function is_vendor_sold_by( $vendor_id = '' ) {
 		global $WCFM, $WCFMmp;
-		$vendor_sold_by = isset( $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] ) ? $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] : 'yes';
+		
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$vendor_sold_by = isset( $wcfmmp_marketplace_options['vendor_sold_by'] ) ? $wcfmmp_marketplace_options['vendor_sold_by'] : 'yes';
 		if( $vendor_sold_by == 'yes' ) {
-			if( !$vendor_id || ( $vendor_id && apply_filters( 'wcfmmp_is_allow_sold_by', true, $vendor_id ) && $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'sold_by' ) ) ) {
+			if( !$vendor_id || ( $vendor_id && apply_filters( 'wcfmmp_is_allow_sold_by', true, $vendor_id ) && wcfm_vendor_has_capability( $vendor_id, 'sold_by' ) ) ) {
 				return true;
 			} else {
 				return false;
@@ -219,6 +226,8 @@ class WCFMmp_Vendor {
 			$vendor_capability_options = (array) apply_filters( 'wcfmgs_user_capability', get_option( 'wcfm_capability_options' ), $vendor_id );
 			$sold_by_label             = ( isset( $vendor_capability_options['sold_by_label'] ) ) ? $vendor_capability_options['sold_by_label'] : $sold_by_label;
 		}
+		
+		if( !$sold_by_label ) $sold_by_label = __('Store', 'wc-multivendor-marketplace');
 		
 		return apply_filters( 'wcfmmp_sold_by_label', $sold_by_label, $vendor_id );
 	}
@@ -408,7 +417,8 @@ class WCFMmp_Vendor {
 		if( wcfm_is_vendor() ) {
 			if( WCFMmp_Dependencies::wcfm_plugin_active_check() && WCFM_Dependencies::wcfmu_plugin_active_check() ) {
 				if( apply_filters( 'wcfm_is_pref_shipment_tracking', true ) && apply_filters( 'wcfm_is_allow_shipping_tracking', true ) ) {
-					$order_sync  = isset( $WCFMmp->wcfmmp_marketplace_options['order_sync'] ) ? $WCFMmp->wcfmmp_marketplace_options['order_sync'] : 'no';
+					$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+					$order_sync  = isset( $wcfmmp_marketplace_options['order_sync'] ) ? $wcfmmp_marketplace_options['order_sync'] : 'no';
 					if( $order_sync != 'yes' ) {
 						$order_vendor_status = apply_filters( 'wcfmmp_vendor_order_status',
 																									array(
@@ -435,7 +445,8 @@ class WCFMmp_Vendor {
 	function wcfmmp_vendor_current_order_status( $order_status, $order_id ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		
-		$order_sync  = isset( $WCFMmp->wcfmmp_marketplace_options['order_sync'] ) ? $WCFMmp->wcfmmp_marketplace_options['order_sync'] : 'no';
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$order_sync  = isset( $wcfmmp_marketplace_options['order_sync'] ) ? $wcfmmp_marketplace_options['order_sync'] : 'no';
 		if( $order_sync != 'yes' ) {
 			if( wcfm_is_vendor() ) {
 				$vendor_id = $WCFMmp->vendor_id;
@@ -465,7 +476,8 @@ class WCFMmp_Vendor {
 	 */
 	function wcfmmp_vendor_order_status_condition( $condition, $table_handler ) {
 		global $WCFMmp;
-		$order_sync  = isset( $WCFMmp->wcfmmp_marketplace_options['order_sync'] ) ? $WCFMmp->wcfmmp_marketplace_options['order_sync'] : 'no';
+		$wcfmmp_marketplace_options   = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		$order_sync  = isset( $wcfmmp_marketplace_options['order_sync'] ) ? $wcfmmp_marketplace_options['order_sync'] : 'no';
 		$status = get_wcfm_marketplace_active_withdrwal_order_status_in_comma();
 		if( $order_sync == 'yes' ) {
 		  $condition = " AND {$table_handler}.order_status IN ({$status})";
@@ -541,15 +553,15 @@ class WCFMmp_Vendor {
 		
 		$items = $order->get_items( 'line_item' );
     if( !empty( $items ) ) {
-			foreach( $items as $order_item_id => $item ) {
-				
+			foreach( $items as $item_key => $item ) {
+				$order_item_id = $item_id = $item->get_id();
 				$line_item = new WC_Order_Item_Product( $item );
 				$product  = $line_item->get_product();
 				$product_id = $line_item->get_product_id();
 				$variation_id = $line_item->get_variation_id();
 				
 				if( $product_id ) {
-					$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+					$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 					
 					if( $vendor_id ) {
 						$wpdb->update("{$wpdb->prefix}wcfm_marketplace_orders", array('item_id' => $order_item_id, 'product_id' => $product_id, 'variation_id' => $variation_id, 'quantity' => $line_item->get_quantity(), 'product_price' => $product->get_price()), array('order_id' => $order_id, 'vendor_id' => $vendor_id), array('%d', '%d', '%d', '%d', '%s'), array('%d', '%d'));
@@ -608,7 +620,7 @@ class WCFMmp_Vendor {
 		$list_banner_video = isset( $vendor_data['list_banner_video'] ) ? $vendor_data['list_banner_video'] : '';
 		$mobile_banner     = isset( $vendor_data['mobile_banner'] ) ? $vendor_data['mobile_banner'] : '';
 		
-		$store_name     = isset( $vendor_data['store_name'] ) ? esc_attr( $vendor_data['store_name'] ) : '';
+		$store_name     = wcfm_get_vendor_store_name( $vendor_id );
 		$store_slug     = '';
 		$user_email     = '';
 		if( $vendor_id != 99999 ) {
@@ -648,16 +660,16 @@ class WCFMmp_Vendor {
 		if( $state ) $state_options[$state] = $state;
 		
 		// Gravatar image
-		$gravatar_url = $gravatar ? wp_get_attachment_url( $gravatar ) : '';
+		$gravatar_url = $gravatar;// ? wp_get_attachment_url( $gravatar ) : '';
 		
 		// List Banner URL
-		$list_banner_url = $list_banner ? wp_get_attachment_url( $list_banner ) : '';
+		$list_banner_url = $list_banner;// ? wp_get_attachment_url( $list_banner ) : '';
 		
 		// Banner URL
-		$banner_url = $banner ? wp_get_attachment_url( $banner ) : '';
+		$banner_url = $banner;// ? wp_get_attachment_url( $banner ) : '';
 		
 		// Mobile Banner URL
-		$mobile_banner_url = $mobile_banner ? wp_get_attachment_url( $mobile_banner ) : '';
+		$mobile_banner_url = $mobile_banner;// ? wp_get_attachment_url( $mobile_banner ) : '';
 		
 		// Visiblity
 		$global_store_name_position = isset( $WCFMmp->wcfmmp_marketplace_options['store_name_position'] ) ? $WCFMmp->wcfmmp_marketplace_options['store_name_position'] : 'on_banner';
@@ -696,7 +708,7 @@ class WCFMmp_Vendor {
 					<div class="store_address">
 						<?php
 						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_general', array(
-																																																	"store_name"  => array('label' => __('Shop Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'value' => $store_name ),
+																																																	"store_name"  => array('label' => __('Store Name', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_name_input', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'value' => $store_name ),
 																																																	"store_slug"  => array('label' => __('Store Slug', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_slug_input', 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'value' => urldecode($store_slug) ),
 																																																	"store_email" => array('label' => __('Store Email', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $store_email ),
 																																																	"phone"       => array('label' => __('Store Phone', 'wc-frontend-manager') , 'type' => 'text', 'placeholder' => '+123456..', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $phone ),
@@ -714,7 +726,7 @@ class WCFMmp_Vendor {
 					  $store_banner_types = array( 'single_img' => __( 'Static Image', 'wc-frontend-manager' ), 'slider' => __( 'Slider', 'wc-frontend-manager' ), 'video' => __( 'Video', 'wc-frontend-manager' ) );
 						$store_list_banner_types = array( 'single_img' => __( 'Static Image', 'wc-frontend-manager' ), 'video' => __( 'Video', 'wc-frontend-manager' ) );
 						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_general', array(
-																																																	"gravatar" => array('label' => __('Store Logo', 'wc-frontend-manager') , 'type' => 'upload', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'prwidth' => 150, 'value' => $gravatar_url ),
+																																																	"gravatar" => array('label' => __('Store Logo', 'wc-frontend-manager') , 'type' => 'upload', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'prwidth' => 150, 'value' => $gravatar_url, 'hints' => __( 'Preferred  size is (125x125) pixels.', 'wc-frontend-manager' ) ),
 																																																	"banner_type" => array('label' => __('Store Banner Type', 'wc-frontend-manager') , 'type' => 'select', 'options' => array( 'single_img' => __( 'Static Image', 'wc-frontend-manager' ), 'slider' => __( 'Slider', 'wc-frontend-manager' ), 'video' => __( 'Video', 'wc-frontend-manager' ) ), 'class' => 'wcfm-select wcfm_ele wcfm-banner-uploads', 'label_class' => 'wcfm_title', 'value' => $banner_type, ),
 																																																	"banner" => array('label' => __('Banner', 'wc-frontend-manager') , 'type' => 'upload', 'class' => 'wcfm-text wcfm_ele banner_type_upload banner_type_field banner_type_single_img wcfm-banner-uploads', 'label_class' => 'wcfm_title banner_type_field banner_type_single_img', 'prwidth' => 250, 'value' => $banner_url, 'hints' => $banner_help_text ),
 																																																	"banner_video" => array('label' => __('Video Banner', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele banner_type_field banner_type_video', 'label_class' => 'wcfm_title banner_type_field banner_type_video','value' => $banner_video, 'hints' => __( 'Insert YouTube video URL.', 'wc-frontend-manager' ) ),
@@ -771,7 +783,9 @@ class WCFMmp_Vendor {
 					
 					<?php
 					$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-					if ( $api_key ) {
+					$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+					if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+					if ( ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) || ($wcfm_map_lib == 'leaflet') ) {
 						?>
 						<div class="wcfm_clearfix"></div><br />
 						<div class="wcfm_vendor_settings_heading"><h2><?php _e( 'Store Location', 'wc-frontend-manager' ); ?></h2></div>
@@ -954,6 +968,8 @@ class WCFMmp_Vendor {
 		$withdrawal_thresold             = isset( $withdrawal_global_options['withdrawal_thresold'] ) ? $withdrawal_global_options['withdrawal_thresold'] : '';
 		$withdrawal_charge_type          = isset( $withdrawal_global_options['withdrawal_charge_type'] ) ? $withdrawal_global_options['withdrawal_charge_type'] : 'no';
 		$withdrawal_charge               = isset( $withdrawal_global_options['withdrawal_charge'] ) ? $withdrawal_global_options['withdrawal_charge'] : array();
+		$transaction_charge_type         = isset( $withdrawal_global_options['transaction_charge_type'] ) ? $withdrawal_global_options['transaction_charge_type'] : 'no';
+		$transaction_charge              = isset( $withdrawal_global_options['transaction_charge'] ) ? $withdrawal_global_options['transaction_charge'] : array();
 		
 		$vendor_withdrawal_mode          = isset( $vendor_data['withdrawal']['withdrawal_mode'] ) ? $vendor_data['withdrawal']['withdrawal_mode'] : 'global';
 		$request_auto_approve            = isset( $vendor_data['withdrawal']['request_auto_approve'] ) ? $vendor_data['withdrawal']['request_auto_approve'] : $request_auto_approve;
@@ -967,6 +983,14 @@ class WCFMmp_Vendor {
 		$withdrawal_charge_skrill        = isset( $vendor_withdrawal_charge['skrill'] ) ? $vendor_withdrawal_charge['skrill'] : array();
 		$withdrawal_charge_bank_transfer = isset( $vendor_withdrawal_charge['bank_transfer'] ) ? $vendor_withdrawal_charge['bank_transfer'] : array();
 		
+		// Transactional Charge
+		$wcfm_transaction_options = array( 'global' => __( 'By Global Rule', 'wc-multivendor-marketplace' ), 'vendor' => __( 'Vendor Specific Rule', 'wc-multivendor-marketplace' ) );
+		
+		$active_order_payment_methods    = get_wcfm_marketplace_disallow_order_payment_methods();
+		$vendor_transaction_mode         = isset( $vendor_data['withdrawal']['transaction_mode'] ) ? $vendor_data['withdrawal']['transaction_mode'] : 'global';
+		$transaction_charge_type         = isset( $vendor_data['withdrawal']['transaction_charge_type'] ) ? $vendor_data['withdrawal']['transaction_charge_type'] : $transaction_charge_type;
+		$vendor_transaction_charge       = isset( $vendor_data['withdrawal']['transaction_charge'] ) ? $vendor_data['withdrawal']['transaction_charge'] : $transaction_charge;
+		
 		?>
 		
 		<!-- collapsible -->
@@ -979,12 +1003,12 @@ class WCFMmp_Vendor {
 					
 					<div class="wcfm_clearfix"></div>
 					<div class=""><h2><?php _e( 'Commission Setup', 'wc-frontend-manager' ); ?></h2></div>
-					<div class="wcfm_clearfix"></div>
+					<div class="wcfm_clearfix"></div><br/>
 					
 					<div class="store_address">
 						<?php
 						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_vendor_commission', array(
-							                                                                    "wcfm_commission_for" => array('label' => __('Commission For', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'vendor' => __( 'Vendor', 'wc-multivendor-marketplace' ), 'admin' => __( 'Admin', 'wc-multivendor-marketplace' ) ), 'attributes' => array( 'disabled' => true, 'style' => 'border: 0px !important;font-weight:600;color:#17a2b8;' ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $wcfm_commission_for, 'hints' => __( 'Always applicable as per global rule.', 'wc-multivendor-marketplace' ) ),
+							                                                                    "wcfm_commission_for" => array('label' => __('Commission For', 'wc-multivendor-marketplace'), 'type' => 'text', 'attributes' => array( 'disabled' => true, 'style' => 'border: 0px !important;font-weight:600;color:#17a2b8;' ), 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $wcfm_commission_for, 'hints' => __( 'Always applicable as per global rule.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "vendor_commission_mode" => array('label' => __('Commission Mode', 'wc-multivendor-marketplace'), 'name' => 'commission[commission_mode]', 'type' => 'select', 'options' => $wcfm_commission_types, 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $vendor_commission_mode ),
 					                                                                        "vendor_commission_percent" => array('label' => __('Commission Percent(%)', 'wc-multivendor-marketplace'), 'name' => 'commission[commission_percent]', 'type' => 'number', 'placeholder' => 0, 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input commission_mode_field commission_mode_percent commission_mode_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele commission_mode_field commission_mode_percent commission_mode_percent_fixed', 'value' => $vendor_commission_percent, 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 					                                                                        "vendor_commission_fixed" => array('label' => __('Commission Fixed', 'wc-multivendor-marketplace') . '(' . get_woocommerce_currency_symbol() . ')', 'name' => 'commission[commission_fixed]', 'type' => 'number', 'placeholder' => 0, 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input commission_mode_field commission_mode_fixed commission_mode_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele commission_mode_field commission_mode_fixed commission_mode_percent_fixed', 'value' => $vendor_commission_fixed, 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
@@ -1018,6 +1042,7 @@ class WCFMmp_Vendor {
 						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_vendor_commission_tax', array(  
 			                                                                'tax_fields_heading' => array( 'type' => 'html', 'class' => 'commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => '<h2>' . __('Commission Tax Settings', 'wc-multivendor-marketplace') . '</h2><div class="wcfm_clearfix"></div>' ), 
 																																			'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable, 'desc_class' => 'wcfm_page_options_desc commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'desc' => __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) ),
+																																			'tax_fields_break' => array( 'type' => 'html', 'value' => '<div class="wcfm_clearfix"></div>' ),
 																																			'tax_name' => array( 'label' => __( 'Tax Label', 'wc-multivendor-marketplace' ), 'placeholder' => __( 'Tax', 'wc-multivendor-marketplace' ), 'type' => 'text', 'name' => 'commission[tax_name]', 'class' => 'wcfm-text wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => $tax_name ),
 																																			'tax_percent' => array( 'label' => __( 'Tax Percent (%)', 'wc-multivendor-marketplace' ), 'type' => 'number', 'name' => 'commission[tax_percent]', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => $tax_percent ),
 																																			), $vendor_id ) );
@@ -1035,6 +1060,43 @@ class WCFMmp_Vendor {
 						</div>
 						<div class="wcfm-clearfix"></div>
 				  <?php } ?>
+				  
+					<?php if( !empty( $active_order_payment_methods ) ) { ?>
+						<div class="wcfm_clearfix"></div><br/>
+						<div class="wcfm_vendor_settings_heading"><h2><?php _e('Transaction Charges', 'wc-multivendor-marketplace'); ?></h2></div>
+						<p class="description instructions"><?php printf( __( 'These charges will be deducted from vendor\'s total order commission depending upon %sOrder Payment Method%s.', 'wc-multivendor-marketplace' ), '<b>', '</b>' ); ?></p><br/>
+						<div class="wcfm_clearfix"></div><br/><br/>
+						<div class="store_address">
+							<?php
+							$transactional_charges_fileds = array(
+								                                    "vendor_transaction_mode" => array('label' => __('Transactional Charge Mode', 'wc-multivendor-marketplace'), 'name' => 'withdrawal[transaction_mode]', 'type' => 'select', 'options' => $wcfm_transaction_options, 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $vendor_transaction_mode ),
+																										"transaction_charge_type" => array('label' => __( 'Charge Type', 'wc-multivendor-marketplace'), 'name' => 'withdrawal[transaction_charge_type]', 'type' => 'select', 'options' => array( 'no' => __( 'No Charge', 'wc-multivendor-marketplace' ), 'percent' => __( 'Percent', 'wc-multivendor-marketplace' ), 'fixed'   => __( 'Fixed', 'wc-multivendor-marketplace' ), 'percent_fixed' => __( 'Percent + Fixed', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele transaction_mode_field transaction_mode_vendor', 'label_class' => 'wcfm_title wcfm_ele transaction_mode_field transaction_mode_vendor', 'desc_class' => 'wcfm_page_options_desc', 'value' => $transaction_charge_type ),
+																										"transaction_setting_break_4" => array( 'type' => 'html', 'value' => '<div style="height: 15px;"></div>' ),
+																									);
+							 foreach( $active_order_payment_methods as $method_id => $metnohd_name ) {
+								 $transactional_charges_fileds['transaction_charge_'.$method_id] = array( 'label' => $metnohd_name . ' ' . __('Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[transaction_charge]['.$method_id.']', 'class' => 'wcfm_non_sortable transaction_charge_block transaction_mode_field transaction_mode_vendor transaction_charge_'.$method_id, 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele transaction_mode_field transaction_mode_vendor transaction_charge_block transaction_charge_'.$method_id, 'value' => isset( $vendor_transaction_charge[$method_id] ) ? $vendor_transaction_charge[$method_id] : array(), 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																									"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input transaction_charge_field transaction_charge_percent transaction_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele transaction_charge_field transaction_charge_percent transaction_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
+																																									"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input transaction_charge_field transaction_charge_fixed transaction_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele transaction_charge_field transaction_charge_fixed transaction_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
+																																									//"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for transaction charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
+																																									) );
+							 }
+							
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_vendor_transaction_charges', $transactional_charges_fileds , $vendor_id ) );
+													
+							do_action( 'wcfmmp_admin_wcfm_vendor_commission_transaction_settings_after', $vendor_id );
+							?>
+						</div>
+						
+						<?php if( $vendor_id != 99999 ) { ?>
+							<div class="wcfm-clearfix"></div>
+							<div class="wcfm-message" tabindex="-1"></div>
+							<div class="wcfm-clearfix"></div>
+							<div class="wcfm_messages_submit">
+								<input type="submit" name="save-data" value="<?php _e( 'Update', 'wc-frontend-manager' ); ?>" id="wcfm_store_transaction_setting_save_button" class="wcfm_submit_button" />
+							</div>
+							<div class="wcfm-clearfix"></div>
+						<?php } ?>
+					<?php } ?>
 					
 					<div class="wcfm_clearfix"></div><br/>
 					<div class="wcfm_vendor_settings_heading"><h2><?php _e( 'Withdrawal Setup', 'wc-frontend-manager' ); ?></h2></div>
@@ -1052,31 +1114,31 @@ class WCFMmp_Vendor {
 																																											"withdrawal_setting_break_2" => array( 'type' => 'html', 'value' => '<div style="height: 15px;"></div>' ),
 																																											
 																																											
-																																											"withdrawal_charge_paypal" => array( 'label' => __('PayPal Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][paypal]', 'class' => 'withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_paypal', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_paypal', 'value' => $withdrawal_charge_paypal, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																											"withdrawal_charge_paypal" => array( 'label' => __('PayPal Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][paypal]', 'class' => 'wcfm_non_sortable withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_paypal', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_paypal', 'value' => $withdrawal_charge_paypal, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																											"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																											"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																											"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_non_negative_input wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																											) ),
-																																											"withdrawal_charge_stripe" => array( 'label' => __('Stripe Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][stripe]', 'class' => 'withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_stripe', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_stripe', 'value' => $withdrawal_charge_stripe, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																											"withdrawal_charge_stripe" => array( 'label' => __('Stripe Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][stripe]', 'class' => 'wcfm_non_sortable withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_stripe', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_stripe', 'value' => $withdrawal_charge_stripe, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																													"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																													) ),
-																																											"withdrawal_charge_skrill" => array( 'label' => __('Skrill Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][skrill]', 'class' => 'withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_skrill', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_skrill', 'value' => $withdrawal_charge_skrill, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																											"withdrawal_charge_skrill" => array( 'label' => __('Skrill Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][skrill]', 'class' => 'wcfm_non_sortable withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_skrill', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_skrill', 'value' => $withdrawal_charge_skrill, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																													"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																													) ),
-																																											"withdrawal_charge_bank_transfer" => array( 'label' => __('Bank Transfer Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][bank_transfer]', 'class' => 'withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_bank_transfer', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_bank_transfer', 'value' => $withdrawal_charge_bank_transfer, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																											"withdrawal_charge_bank_transfer" => array( 'label' => __('Bank Transfer Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'withdrawal[withdrawal_charge][bank_transfer]', 'class' => 'wcfm_non_sortable withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_bank_transfer', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdrawal_mode_field withdrawal_mode_vendor withdraw_charge_block withdraw_charge_bank_transfer', 'value' => $withdrawal_charge_bank_transfer, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																													"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																													"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_non_negative_input wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																													) )
 																																											), $vendor_id ) );
+						
+						do_action( 'wcfmmp_admin_wcfm_vendor_commission_withdrawal_settings_after', $vendor_id );
 						?>
 					</div>
-					
-					<?php do_action( 'wcfmmp_admin_wcfm_vendor_commission_withdrawal_settings_after', $vendor_id ); ?>
 					
 					<?php if( $vendor_id != 99999 ) { ?>
 						<div class="wcfm-clearfix"></div>
@@ -1218,7 +1280,7 @@ class WCFMmp_Vendor {
 								$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_vendors_settings_fields_store_hours', array(
 																																																													"wcfm_store_hours" => array( 'label' => __( 'Enable Store Hours', 'wc-multivendor-marketplace'), 'name' => 'wcfm_store_hours[enable]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title wcfm_ele', 'value' => 'yes', 'dfvalue' => $wcfm_store_hours_enable ),
 																																																													"wcfm_disable_purchase_off_time" => array( 'label' => __('Disable Purchase During OFF Time', 'wc-multivendor-marketplace'), 'name' => 'wcfm_store_hours[disable_purchase]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => 'yes', 'dfvalue' => $wcfm_store_hours_disable_purchase ),
-																																																													"wcfm_store_hours_off_days" => array( 'label' => __( 'Set Week OFF', 'wc-multivendor-marketplace'), 'type' => 'select', 'name' => 'wcfm_store_hours[off_days]', 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'options' => array( 0 => __( 'Monday', 'wc-multivendor-marketplace' ), 1 => __( 'Tuesday', 'wc-multivendor-marketplace' ), 2 => __( 'Wednesday', 'wc-multivendor-marketplace' ), 3 => __( 'Thursday', 'wc-multivendor-marketplace' ), 4 => __( 'Friday', 'wc-multivendor-marketplace' ), 5 => __( 'Saturday', 'wc-multivendor-marketplace' ), 6 => __( 'Sunday', 'wc-multivendor-marketplace') ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_store_hours_off_days ),
+																																																													"wcfm_store_hours_off_days" => array( 'label' => __( 'Set Day OFF', 'wc-multivendor-marketplace'), 'type' => 'select', 'name' => 'wcfm_store_hours[off_days]', 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'options' => array( 0 => __( 'Monday', 'wc-multivendor-marketplace' ), 1 => __( 'Tuesday', 'wc-multivendor-marketplace' ), 2 => __( 'Wednesday', 'wc-multivendor-marketplace' ), 3 => __( 'Thursday', 'wc-multivendor-marketplace' ), 4 => __( 'Friday', 'wc-multivendor-marketplace' ), 5 => __( 'Saturday', 'wc-multivendor-marketplace' ), 6 => __( 'Sunday', 'wc-multivendor-marketplace') ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_store_hours_off_days ),
 																																																												 ), $vendor_id ) );
 							?>
 							
@@ -1293,7 +1355,7 @@ class WCFMmp_Vendor {
 																																																													"wcfm_vacation_start_date" => array('label' => __('From', 'wc-frontend-manager'), 'type' => 'text', 'placeholder' => __( 'From', 'wc-frontend-manager' ) . ' ... YYYY-MM-DD', 'class' => 'wcfm-text wcfm_ele date_wise_vacation_ele', 'label_class' => 'wcfm_title wcfm_ele date_wise_vacation_ele', 'value' => $wcfm_vacation_start_date),
 																																																													"wcfm_vacation_end_date" => array('label' => __('Upto', 'wc-frontend-manager'), 'type' => 'text', 'placeholder' => __( 'To', 'wc-frontend-manager' ) . ' ... YYYY-MM-DD', 'class' => 'wcfm-text wcfm_ele date_wise_vacation_ele', 'label_class' => 'wcfm_title wcfm_ele date_wise_vacation_ele', 'value' => $wcfm_vacation_end_date),
 																																																													"wcfm_vacation_mode_msg" => array('label' => __('Vacation Message', 'wc-frontend-manager') , 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $wcfm_vacation_mode_msg )
-																																																												 ) ) );
+																																																												 ), $vendor_id ) );
 							?>
 						</div>
 						<?php do_action( 'wcfmmp_admin_wcfm_vendor_store_vacation_settings_after', $vendor_id ); ?>
@@ -1751,7 +1813,7 @@ class WCFMmp_Vendor {
 				<span class="input-text-wrap">
 					<select class="wcfmmp_store wcfm_popup_input" name="_wcfmmp_store">
 					<?php
-					$vendor_arr = $WCFM->wcfm_vendor_support->wcfm_get_vendor_list();
+					$vendor_arr = $WCFM->wcfm_vendor_support->wcfm_get_vendor_list( true );
 					unset($vendor_arr[0]);
 					echo '<option value="">' . __( '— No change —', 'woocommerce' ) . '</option>';
 					foreach ( $vendor_arr as $key => $value ) {
@@ -1776,6 +1838,18 @@ class WCFMmp_Vendor {
 				'post_author' => absint($_REQUEST['_wcfmmp_store']),
 			);
 			wp_update_post( $arg );
+			
+			// For Variations
+			$wcfm_variable_product_types = apply_filters( 'wcfm_variable_product_types', array( 'variable', 'variable-subscription', 'pw-gift-card' ) );
+			if( in_array( $product->get_type(), $wcfm_variable_product_types ) ) {
+				foreach ( $product->get_children() as $child_id ) {
+					$arg = array(
+						'ID' => $child_id,
+						'post_author' => absint($_REQUEST['_wcfmmp_store']),
+					);
+					wp_update_post( $arg );
+				}
+			}
 		}
 	}
 	
@@ -1837,7 +1911,10 @@ class WCFMmp_Vendor {
 					foreach( $wcfmmp_addition_info_fields as $wcfmvm_registration_custom_field ) {
 						if( !isset( $wcfmvm_registration_custom_field['enable'] ) ) continue;
 						if( !$wcfmvm_registration_custom_field['label'] ) continue;
+						
+						$field_class = '';
 						$field_value = '';
+						
 						$wcfmvm_registration_custom_field['name'] = sanitize_title( $wcfmvm_registration_custom_field['label'] );
 						$field_name = 'wcfmmp_additional_infos[' . $wcfmvm_registration_custom_field['name'] . ']';
 						$field_id   = md5( $field_name );
@@ -1857,6 +1934,12 @@ class WCFMmp_Vendor {
 						// Is Required
 						$custom_attributes = array();
 						if( isset( $wcfmvm_registration_custom_field['required'] ) && $wcfmvm_registration_custom_field['required'] ) $custom_attributes = array( 'required' => 1 );
+						
+						$attributes = array();
+						if( $wcfmvm_registration_custom_field['type'] == 'mselect' ) {
+							$field_class = 'wcfm_multi_select';
+							$attributes = array( 'multiple' => 'multiple', 'style' => 'width: 60%;' );
+						}
 							
 						switch( $wcfmvm_registration_custom_field['type'] ) {
 							case 'text':
@@ -1884,12 +1967,13 @@ class WCFMmp_Vendor {
 							break;
 							
 							case 'upload':
-								$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => 'wcfmmp_additional_infos['.$ufield_id.']', 'custom_attributes' => $custom_attributes, 'type' => 'upload', 'class' => 'wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+								$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => 'wcfmmp_additional_infos['.$ufield_id.']', 'custom_attributes' => $custom_attributes, 'type' => 'upload', 'mime' => 'Uploads', 'class' => 'wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
 							break;
 							
 							case 'select':
+							case 'mselect':
 							case 'dropdown':
-								$select_opt_vals = array();
+								$select_opt_vals = array( '' => __( '--Choose Option--', 'wc-multivendor-marketplace' ) );
 								$select_options = explode( '|', $wcfmvm_registration_custom_field['options'] );
 								if( !empty ( $select_options ) ) {
 									foreach( $select_options as $select_option ) {
@@ -1898,7 +1982,7 @@ class WCFMmp_Vendor {
 										}
 									}
 								}
-								$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'select', 'class' => 'wcfm-select', 'label_class' => 'wcfm_title', 'options' => $select_opt_vals, 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
+								$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'attributes' => $attributes, 'type' => 'select', 'class' => 'wcfm-select ' . $field_class, 'label_class' => 'wcfm_title', 'options' => $select_opt_vals, 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'wc-multivendor-membership') ) ) );
 							break;
 						}
 					}
@@ -1958,6 +2042,15 @@ class WCFMmp_Vendor {
 		return $is_allow;
 	}
 	
+	function wcfmmp_is_allow_wepos_rest_check_permissions( $permission, $context, $object_id, $post_type ) {
+		if( wcfm_is_vendor() ) {
+			if( ( $post_type == 'product' ) && ( $context == 'read' ) ) {
+				$permission = true;
+			}
+		}
+		return $permission;
+	}
+	
 	/**
 	 * wePOS Vendor Product Query
 	 */
@@ -1970,120 +2063,12 @@ class WCFMmp_Vendor {
 	}
 	
 	/**
-	 * Vendor Ledger update on new commission processed
-	 */
-	function wcfmmp_order_item_processed_ledger_update( $commission_id, $order_id, $order, $vendor_id, $product_id, $order_item_id, $grosse_total, $total_commission, $is_auto_withdrawal ) {
-		global $WCFM, $WCFMmp, $wpdb;
-		
-		$reference_details = sprintf( __( 'Commission for %s order #%s.', 'wc-multivendor-marketplace' ), '<b>' . get_the_title( $product_id ) . '</b>', '<b>' . $order->get_order_number() . '</b>' );
-		$this->wcfmmp_ledger_update( $vendor_id, $commission_id, $total_commission, 0, 'order', $reference_details );
-	}
-	
-	/**
-	 * Vendor Ledger update on new withdrawal request processed
-	 */
-	function wcfmmp_withdraw_request_processed_ledger_update( $withdraw_request_id, $vendor_id, $order_ids, $commission_ids, $withdraw_amount, $withdraw_charges, $withdraw_status, $withdraw_mode, $is_auto_withdrawal ) {
-		global $WCFM, $WCFMmp, $wpdb;
-		
-		// Withdrawal Charges Ledger Entry
-		if( $withdraw_charges ) {
-			$reference_details = __( 'Withdrawal Charges.', 'wc-multivendor-marketplace' );
-			$this->wcfmmp_ledger_update( $vendor_id, $withdraw_request_id, 0, $withdraw_charges, 'withdraw-charges', $reference_details );
-			$withdraw_amount = (float)$withdraw_amount - (float)$withdraw_charges;
-		}  
-		
-		if( $is_auto_withdrawal ) {
-			$reference_details = sprintf( __( 'Auto withdrawal by paymode for order #%s.', 'wc-multivendor-marketplace' ), '<b>' . $order_ids . '</b>' );
-		} elseif( $withdraw_mode == 'by_split_pay' ) {
-			$reference_details = sprintf( __( 'Withdrawal by Stripe Split Pay for order #%s.', 'wc-multivendor-marketplace' ), '<b>' . $order_ids . '</b>' );
-		} else {
-			$reference_details = sprintf( __( 'Withdrawal by request for order(s) %s.', 'wc-multivendor-marketplace' ), '<b>' . $order_ids . '</b>' );
-		}
-		$this->wcfmmp_ledger_update( $vendor_id, $withdraw_request_id, 0, $withdraw_amount, 'withdraw', $reference_details );
-	}
-	
-	/**
-	 * Vendor Ledger update on new reverse withdrawal request processed
-	 */
-	function wcfmmp_reverse_withdraw_request_processed_ledger_update( $reverse_withdraw_request_id, $vendor_id, $order_id, $commission_id, $grosse_total, $withdraw_amount, $balance, $withdraw_status, $withdraw_mode, $is_auto_withdrawal ) {
-		global $WCFM, $WCFMmp, $wpdb;
-		
-		$order = wc_get_order( $order_id );
-		$reference_details = sprintf( __( 'Reverse Withdrawal for order #%s.', 'wc-multivendor-marketplace' ), '<b>' .  $order->get_order_number() . '</b>' );
-		$this->wcfmmp_ledger_update( $vendor_id, $reverse_withdraw_request_id, 0, $balance, 'reverse-withdraw', $reference_details );
-	}
-	
-	/**
-	 * Vendor Ledger update on new refund request processed
-	 */
-	function wcfmmp_refund_request_processed_ledger_update( $refund_request_id, $vendor_id, $order_id, $commission_id, $refunded_amount, $refund_type ) {
-		global $WCFM, $WCFMmp, $wpdb;
-		
-		if( !$order_id ) return;
-		if( !$vendor_id ) return;
-		if( !$commission_id ) return;
-		
-		$order = wc_get_order( $order_id );
-		
-		if( wcfm_is_vendor() ) {
-			$reference_details = sprintf( __( 'Request by Vendor for order #%s.', 'wc-multivendor-marketplace' ), '<b>' .  $order->get_order_number() . '</b>' );
-		} elseif( current_user_can('administrator') ) {
-			$reference_details = sprintf( __( 'Request by Admin for order #%s.', 'wc-multivendor-marketplace' ), '<b>' .  $order->get_order_number() . '</b>' );
-		} else {
-			$reference_details = sprintf( __( 'Request by Customer for order #%s.', 'wc-multivendor-marketplace' ), '<b>' .  $order->get_order_number() . '</b>' );
-		}
-		$this->wcfmmp_ledger_update( $vendor_id, $refund_request_id, 0, $refunded_amount, $refund_type, $reference_details );
-	}
-	
-	/**
-	 * Vendor Ledger Update
-	 */
-	public function wcfmmp_ledger_update( $vendor_id, $reference_id, $credit = 0, $debit = 0, $reference = 'order', $reference_details = '', $reference_status = 'pending' ) {
-		global $WCFM, $WCFMmp, $wpdb;
-		
-		$wpdb->query(
-						$wpdb->prepare(
-							"INSERT INTO `{$wpdb->prefix}wcfm_marketplace_vendor_ledger` 
-									( vendor_id
-									, credit
-									, debit
-									, reference_id
-									, reference
-									, reference_details
-									, reference_status
-									, created
-									) VALUES ( %d
-									, %s
-									, %s
-									, %d
-									, %s
-									, %s
-									, %s 
-									, %s
-									) ON DUPLICATE KEY UPDATE `created` = %s"
-							, $vendor_id
-							, $credit
-							, $debit
-							, $reference_id
-							, $reference
-							, $reference_details
-							, $reference_status
-							, date( 'Y-m-d H:i:s', current_time( 'timestamp', 0 ) )
-							, date( 'Y-m-d H:i:s', current_time( 'timestamp', 0 ) )
-			)
-		);
-		$ledger_id = $wpdb->insert_id;
-		do_action( 'after_wcfmmp_ledger_update', $ledger_id, $reference_id, $reference, $credit, $debit );
-	}
-	
-	/**
 	 * Vendor Ledger Entry Status Update
 	 */
 	public function wcfmmp_ledger_status_update( $reference_id, $reference_status  = 'completed', $reference = 'order' ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		if( !$reference_id ) return;
-		$wpdb->update("{$wpdb->prefix}wcfm_marketplace_vendor_ledger", array('reference_status' => $reference_status, 'reference_update_date' => date('Y-m-d H:i:s', current_time( 'timestamp', 0 ))), array('reference_id' => $reference_id, 'reference' => $reference), array('%s', '%s'), array('%d', '%s'));
-		do_action( 'wcfmmp_ledger_status_updated', $reference_id, $reference_status );
+		$WCFMmp->wcfmmp_ledger->wcfmmp_ledger_status_update( $reference_id, $reference_status, $reference );
 	}
 	
 	/**
@@ -2191,30 +2176,54 @@ class WCFMmp_Vendor {
 	 * Policies
 	 * Customer Support Info
 	 */
-	function wcfmmp_vendor_details_in_order( $order ) {
+	function wcfmmp_vendor_details_in_order( $order, $is_plain = 0, $is_admin = 0, $email = false ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		
 		if( is_wcfm_page() ) return;
+		if( $email && ( $email->id == 'store-new-order' ) ) return;
+		if( $email && !in_array( $email->id, apply_filters( 'wcfm_allowed_store_policies_order_emails', array( 'customer_invoice', 'customer_on_hold_order', 'customer_processing_order', 'customer_completed_order', 'new_renewal_order', 'customer_processing_renewal_order', 'customer_completed_renewal_order', 'customer_renewal_invoice' ) ) ) ) return;
 		
-		$wcfm_vendor_invoice_options  = get_option( 'wcfm_vendor_invoice_options', array() );
-		$wcfm_vendor_invoice_policies = isset( $wcfm_vendor_invoice_options['policies'] ) ? 'yes' : '';
-		$order_items                  = $order->get_items( apply_filters( 'woocommerce_purchase_order_item_types', 'line_item' ) );
+		if( WCFM_Dependencies::wcfmu_plugin_active_check() ) {
+			$wcfm_vendor_invoice_options  = get_option( 'wcfm_vendor_invoice_options', array() );
+			$wcfm_vendor_invoice_policies = isset( $wcfm_vendor_invoice_options['policies'] ) ? 'yes' : '';
+		} else {
+			$wcfm_vendor_invoice_policies = apply_filters( 'wcfm_is_allow_policies_under_order_details', true );
+		}
+		$order_items                    = $order->get_items( apply_filters( 'woocommerce_purchase_order_item_types', 'line_item' ) );
 		
-		if( apply_filters( 'wcfm_is_pref_policies', true ) && $wcfm_vendor_invoice_policies ) {
+		if( apply_filters( 'wcfm_is_pref_policies', true ) && $wcfm_vendor_invoice_policies && apply_filters( 'wcfm_is_allow_policies_under_order_details', true ) ) {
+			$processed_vendor_ids = array();
 			foreach ( $order_items as $item_id => $item ) {
 				$product_id          = $item->get_product_id();
-				$vendor_id           = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$vendor_id           = wcfm_get_vendor_id_by_post( $product_id );
 				if( !$vendor_id || !wcfm_is_vendor( $vendor_id ) ) continue;
-				if( $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'policy' ) && $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
-					$store_name          = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( $vendor_id );
+				if( ( apply_filters( 'wcfm_is_allow_order_item_policies_by_vendor', true ) || !apply_filters( 'wcfm_is_show_marketplace_itemwise_orders', true ) ) && in_array( $vendor_id, $processed_vendor_ids ) ) continue;
+				$processed_vendor_ids[$vendor_id] = $vendor_id;
+				if( wcfm_vendor_has_capability( $vendor_id, 'policy' ) && wcfm_vendor_has_capability( $vendor_id, 'vendor_policy' ) ) {
+					$store_name          = wcfm_get_vendor_store_name( $vendor_id );
 					$shipping_policy     = $WCFM->wcfm_policy->get_shipping_policy( $product_id );
 					$refund_policy       = $WCFM->wcfm_policy->get_refund_policy( $product_id );
 					$cancellation_policy = $WCFM->wcfm_policy->get_cancellation_policy( $product_id );
+					$customer_support_details = wcfmmp_get_store( $vendor_id )->get_customer_support_details();
+					
+					if( wcfm_empty($shipping_policy) && wcfm_empty($refund_policy) && wcfm_empty($cancellation_policy) && wcfm_empty($customer_support_details) ) continue;
 					?>
 					<br/>
-					<h2 style="font-size: 18px; color: #17a2b8; line-height: 20px;margin-top: 6px;margin-bottom: 10px;padding: 0px;text-decoration: underline;"><?php echo get_the_title( $product_id ) . ' ('. $store_name .') ' . __( 'Policies', 'wc-multivendor-marketplace' ); ?>:</h2>
+					<h2 style="font-size: 18px; color: #17a2b8; line-height: 20px;margin-top: 6px;margin-bottom: 10px;padding: 0px;text-decoration: underline;">
+					  <?php 
+					    if( apply_filters( 'wcfm_is_allow_order_item_policies_by_vendor', true ) || !apply_filters( 'wcfm_is_show_marketplace_itemwise_orders', true ) ) {
+					    	echo $store_name . ' ';
+					    } else {
+					    	echo get_the_title( $product_id ) . ' ('. $store_name .') ';
+					    }
+					    echo __( 'Policies', 'wc-multivendor-marketplace' ); 
+					  ?>:
+					</h2>
 					<table width="100%" style="width:100%;">
 						<tbody>
+						
+						  <?php do_action( 'wcfm_order_details_policy_content_before', $vendor_id ); ?>
+						  
 							<?php if( !wcfm_empty($shipping_policy) ) { ?>
 								<tr>
 									<th colspan="3" style="background-color: #eeeeee;padding: 1em 1.41575em;line-height: 1.5;"><strong><?php echo apply_filters('wcfm_shipping_policies_heading', __('Shipping Policy', 'wc-frontend-manager')); ?></strong></th>
@@ -2236,11 +2245,14 @@ class WCFMmp_Vendor {
 							
 							<?php do_action( 'wcfm_order_details_policy_content_after', $vendor_id ); ?>
 							
-							<?php if( $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'customer_support' ) ) { ?>
-								<tr>
-									<th colspan="3" style="background-color: #eeeeee;padding: 1em 1.41575em;line-height: 1.5;"><strong><?php echo apply_filters('wcfm_customer_support_heading', __('Customer Support', 'wc-frontend-manager')); ?></strong></th>
-									<td colspan="5" style="background-color: #f8f8f8;padding: 1em;"><?php echo wcfmmp_get_store( $vendor_id )->get_customer_support_details(); ?></td>
-								</tr>
+							<?php if( wcfm_vendor_has_capability( $vendor_id, 'customer_support' ) ) { 
+								if( !wcfm_empty( $customer_support_details ) ) {
+									?>
+									<tr>
+										<th colspan="3" style="background-color: #eeeeee;padding: 1em 1.41575em;line-height: 1.5;"><strong><?php echo apply_filters('wcfm_customer_support_heading', __('Customer Support', 'wc-frontend-manager')); ?></strong></th>
+										<td colspan="5" style="background-color: #f8f8f8;padding: 1em;"><?php echo $customer_support_details; ?></td>
+									</tr>
+								<?php } ?>
 							<?php } ?>
 							
 							<?php do_action( 'wcfm_order_details_customer_support_after', $vendor_id ); ?>
@@ -2272,9 +2284,9 @@ class WCFMmp_Vendor {
 							$sold_by_text = $this->sold_by_label( absint($meta->value) );
 							
 							if( apply_filters( 'wcfmmp_is_allow_sold_by_linked', true ) ) {
-								$shop_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( absint($meta->value) );
+								$shop_name = wcfm_get_vendor_store( absint($meta->value) );
 							} else {
-								$shop_name = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( absint($meta->value) );
+								$shop_name = wcfm_get_vendor_store_name( absint($meta->value) );
 							}
 							$html = '<ul class="wc-item-meta"><li><strong class="wc-item-meta-label">' . $sold_by_text . ':</strong> ' . $shop_name . '</li></ul>' . $html;
 							break;
@@ -2315,7 +2327,7 @@ class WCFMmp_Vendor {
 		
 		$product_id = $product->get_id();
 		if( $product_id ) {
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 			if( $vendor_id ) {
 				$is_store_offline = get_user_meta( $vendor_id, '_wcfm_store_offline', true );
 				$is_store_offline = apply_filters( 'wcfmmp_is_store_offline', $is_store_offline, $vendor_id );
@@ -2324,6 +2336,16 @@ class WCFMmp_Vendor {
 			
 			if( $is_purchasable ) {
 				$is_product_offline = get_post_meta( $product_id, '_wcfm_product_offline', true ); 
+				
+				// Non Archive products Off Line bit reset
+				if( $is_product_offline ) {
+					$wcfm_single_product = get_post( $product_id );
+					if( $wcfm_single_product->post_status != 'archived' ) {
+						delete_post_meta( $product_id, '_wcfm_product_offline' );
+						$is_product_offline = '';
+					}
+				}
+				
 				$is_product_offline = apply_filters( 'wcfmmp_is_product_offline', $is_product_offline, $product_id );
 				if( $is_product_offline ) $is_purchasable = false;
 			}
@@ -2338,11 +2360,11 @@ class WCFMmp_Vendor {
 	function wcfmmp_product_store_is_offline_addtocart_disable() {
 		global $WCFM, $WCFMmp, $product;
 		
-		if( $product ) {
+		if( $product && method_exists( $product, 'get_id' ) ) {
 			$is_purchasable = true;
 			$product_id = $product->get_id();
 			if( $product_id ) {
-				$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 				if( $vendor_id ) {
 					$is_store_offline = get_user_meta( $vendor_id, '_wcfm_store_offline', true );
 					$is_store_offline = apply_filters( 'wcfmmp_is_store_offline', $is_store_offline, $vendor_id );
@@ -2354,6 +2376,16 @@ class WCFMmp_Vendor {
 				
 				if( $is_purchasable ) {
 					$is_product_offline = get_post_meta( $product_id, '_wcfm_product_offline', true ); 
+					
+					// Non Archive products Off Line bit reset
+					if( $is_product_offline ) {
+						$wcfm_single_product = get_post( $product_id );
+						if( $wcfm_single_product->post_status != 'archived' ) {
+							delete_post_meta( $product_id, '_wcfm_product_offline' );
+							$is_product_offline = '';
+						}
+					}
+					
 					$is_product_offline = apply_filters( 'wcfmmp_is_product_offline', $is_product_offline, $product_id );
 					if( $is_product_offline ) {
 						remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
@@ -2386,8 +2418,8 @@ class WCFMmp_Vendor {
 				$redirect_to = apply_filters( 'wcfmmp_store_setup_redirect_url', $redirect_to );
 				
 				$disable_wcfm_store_setup = isset( $WCFMmp->wcfmmp_marketplace_options['disable_wcfm_store_setup'] ) ? $WCFMmp->wcfmmp_marketplace_options['disable_wcfm_store_setup'] : 'no';
-				$vendor_sold_by = isset( $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] ) ? $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] : 'yes';
-				if( apply_filters( 'wcfm_is_allow_store_setup', true ) && ( $vendor_sold_by == 'yes' ) && ( $disable_wcfm_store_setup == 'no' ) ) {
+				//$vendor_sold_by = isset( $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] ) ? $WCFMmp->wcfmmp_marketplace_options['vendor_sold_by'] : 'yes';
+				if( apply_filters( 'wcfm_is_allow_store_setup', true ) && ( $disable_wcfm_store_setup == 'no' ) ) {
 					wp_safe_redirect( $redirect_to );
 				}
 			}
@@ -2443,8 +2475,14 @@ class WCFMmp_Vendor {
 		}
 		
 		$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-		if ( !$api_key || !apply_filters( 'wcfm_is_allow_store_address', true ) || !apply_filters( 'wcfm_is_allow_store_map_location', true ) ) {
+		$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+		if ( ( ($wcfm_map_lib == 'google') && empty( $api_key ) ) || !apply_filters( 'wcfm_is_allow_store_address', true ) || !apply_filters( 'wcfm_is_allow_store_map_location', true ) ) {
 			unset( $profile_complete_components['location'] );
+		}
+		
+		if( !apply_filters( 'wcfm_is_pref_withdrawal', true ) || !apply_filters( 'wcfm_is_allow_billing_settings', true ) ) {
+			unset( $profile_complete_components['payment'] );
 		}
 		
 		if( !apply_filters( 'wcfm_is_pref_policies', true ) || !apply_filters( 'wcfm_is_allow_policy_settings', true ) ) {
@@ -2555,10 +2593,12 @@ class WCFMmp_Vendor {
 			}
 		}
 		
-		if( apply_filters( 'wcfm_is_allow_store_description', true ) && $shop_description ) {
-			$profile_complete_percent += $component_percent;
-		} else {
-			$profile_remaining_items['phone'] = __( 'Add Store Description', 'wc-multivendor-marketplace' );
+		if( apply_filters( 'wcfm_is_allow_store_description', true ) ) {
+			if( $shop_description ) {
+				$profile_complete_percent += $component_percent;
+			} else {
+				$profile_remaining_items['phone'] = __( 'Add Store Description', 'wc-multivendor-marketplace' );
+			}
 		}
 		
 		if( apply_filters( 'wcfm_is_allow_store_address', true ) ) {
@@ -2570,7 +2610,9 @@ class WCFMmp_Vendor {
 		
 		  if( apply_filters( 'wcfm_is_allow_store_map_location', true ) ) {
 				$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
-				if ( $api_key && $store_location ) {
+				$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+				if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+				if ( ( ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) || ($wcfm_map_lib == 'leaflet') ) && $store_location ) {
 					$profile_complete_percent += $component_percent;
 				} else {
 					$profile_remaining_items['location'] = __( 'Add Store Location', 'wc-multivendor-marketplace' );
@@ -2578,10 +2620,12 @@ class WCFMmp_Vendor {
 			}
 		}
 		
-		if( $payment_mode && ( $paypal || $skrill || $ac_number || ( $payment_mode == 'stripe' ) || ( $payment_mode == 'by_cash' ) ) ) {
-			$profile_complete_percent += $component_percent;
-		} else {
-			$profile_remaining_items['payment'] = __( 'Set your payment method', 'wc-multivendor-marketplace' );
+		if( apply_filters( 'wcfm_is_pref_withdrawal', true ) && apply_filters( 'wcfm_is_allow_billing_settings', true ) ) {
+			if( $payment_mode && ( $paypal || $skrill || $ac_number || ( $payment_mode == 'stripe' ) || ( $payment_mode == 'by_cash' ) ) ) {
+				$profile_complete_percent += $component_percent;
+			} else {
+				$profile_remaining_items['payment'] = __( 'Set your payment method', 'wc-multivendor-marketplace' );
+			}
 		}
 		
 		if( apply_filters( 'wcfm_is_pref_policies', true ) && apply_filters( 'wcfm_is_allow_policy_settings', true ) ) {
@@ -2639,7 +2683,7 @@ class WCFMmp_Vendor {
 		global $WCFM, $WCFMmp, $wpdb;
 		
 		if( apply_filters( 'wcfmmp_is_allow_vendor_stock_notification', true ) ) {
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product->get_id() );
+			$vendor_id = wcfm_get_vendor_id_by_post( $product->get_id() );
 			if( $vendor_id ) {
 				if( $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'manage_products' ) ) {
 					$wcfm_messages = sprintf( __( '<b>%s</b> is low in stock. There are %s left.', 'wc-frontend-manager' ), '<a class="wcfm_dashboard_item_title" href="' . get_permalink( $product->get_id() ) . '">' . get_the_title( $product->get_id() ) . '</a>', $product->get_stock_quantity() );
@@ -2676,7 +2720,7 @@ class WCFMmp_Vendor {
 	}
 	
 	function wcfmmp_pre_user_radius_query( $store_query ) {
-		global $wpdb, $wcfmmp_radius_lat, $wcfmmp_radius_lng, $wcfmmp_radius_range;
+		global $WCFM, $WCFMmp, $wpdb, $wcfmmp_radius_lat, $wcfmmp_radius_lng, $wcfmmp_radius_range;
 		
 		if ( empty( $store_query->query_vars['role__in'] ) || $store_query->query_vars['role__in'] !== ['wcfm_vendor'] ) {
 			return;
@@ -2697,7 +2741,8 @@ class WCFMmp_Vendor {
 		if ( $wcfmmp_radius_lat && $wcfmmp_radius_lng ) {
 			$store_query->query_fields .= ', wcfmmplat.meta_value as wcfmmp_latitude, wcfmmplong.meta_value as wcfmmp_longitude';
 	
-			$earth_surface = 6371; // IN Miles 3959;
+			$radius_unit   = isset( $WCFMmp->wcfmmp_marketplace_options['radius_unit'] ) ? $WCFMmp->wcfmmp_marketplace_options['radius_unit'] : 'km';
+			$earth_surface = ( 'mi' === $radius_unit ) ? 3959 : 6371;
 	
 			$store_query->query_fields .= ", (
 				{$earth_surface} * acos(
@@ -2750,7 +2795,7 @@ class WCFMmp_Vendor {
 					}
 				}
 				if( empty( $wcfm_allow_vendors_list ) ) {
-					$wcfm_allow_vendors_list = array(0);
+					$wcfm_allow_vendors_list = array( 0 => -1 );
 				}
 			}
 		}
@@ -2842,6 +2887,10 @@ class WCFMmp_Vendor {
 					$args['orderby']  = 'meta_value';
 					$args['meta_key'] = '_wcfmmp_avg_review_rating';
 				break;
+				
+				case 'random':
+					$args['orderby']  = 'rand';
+				break;
 			}
 		}
 		
@@ -2891,7 +2940,7 @@ class WCFMmp_Vendor {
 		if( !empty( $search_data ) ) {
 			foreach( $search_data as $search_key => $search_value ) {
 				if( !$search_value ) continue;
-				if( in_array( $search_key, apply_filters( 'wcfmmp_vendor_list_exclude_search_keys', array( 'v', 'search_term', 'wcfmmp_store_search', 'wcfmmp_store_category', 'wcfmmp_radius_addr', 'wcfmmp_radius_lat', 'wcfmmp_radius_lng', 'wcfmmp_radius_range', 'pagination_base', 'wcfm_paged', 'paged', 'per_row', 'per_page', 'excludes', 'orderby', 'has_product', 'theme', 'nonce' ) ) ) ) continue;
+				if( in_array( $search_key, apply_filters( 'wcfmmp_vendor_list_exclude_search_keys', array( 'v', 'q', 'search_term', 'wcfmmp_store_search', 'wcfmsc_store_categories', 'wcfmmp_store_category', 'wcfmmp_radius_addr', 'wcfmmp_radius_lat', 'wcfmmp_radius_lng', 'wcfmmp_radius_range', 'pagination_base', 'wcfm_paged', 'paged', 'per_row', 'per_page', 'excludes', 'orderby', 'has_product', 'theme', 'nonce', 'lang' ) ) ) ) continue;
 				if( $search ) $args['meta_query']['relation'] = 'AND';
 				$args['meta_query'][] = array(
 					                             'relation' => 'OR',
@@ -2969,6 +3018,89 @@ class WCFMmp_Vendor {
   	
   }
   
+  function wcfmmp_multivendor_order_validation( $is_allow, $product_id, $quantity ) {
+  	global $WCFMmp, $wpdb, $WCFM;
+  	
+  	if( !$is_allow ) return $is_allow;
+  	
+  	$wcfm_marketplace_options = $WCFMmp->wcfmmp_marketplace_options;
+		
+		$disable_multivendor_checkout = isset( $wcfm_marketplace_options['disable_multivendor_checkout'] ) ? $wcfm_marketplace_options['disable_multivendor_checkout'] : 'no';
+		
+		$disable_multivendor_checkout = apply_filters( 'wcfmmp_is_disable_multivendor_checkout', $disable_multivendor_checkout );
+		
+		if( $disable_multivendor_checkout == 'yes' ) {
+  	
+			$product = get_post( $product_id );
+			$product_author = $product->post_author;
+		
+			//Iterating through each cart item
+			foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+				$cart_product_id = $cart_item['product_id'];
+				$cart_product = get_post( $cart_product_id );
+				$cart_product_author = $cart_product->post_author;
+				if( $cart_product_author != $product_author ) {
+					$is_allow = false;
+					break;
+				}
+			}
+		
+			if( !$is_allow ) {
+				// We display an error message
+				wc_clear_notices();
+				wc_add_notice( __( "Item(s) from one store already in your cart. First checkout with those and then purchase from other stores!", "wc-multivendor-marketplace" ), 'error' );
+			}
+		}
+		
+		return $is_allow;
+	}
+	
+	function wcfmmp_multivendor_request_quote_validation( $is_allow, $product_id ) {
+		global $WCFMmp, $wpdb, $WCFM;
+		
+		$product = get_post( $product_id );
+		$product_author = $product->post_author;
+		
+		$raq_content = YITH_Request_Quote()->get_raq_return();
+		if ( count( $raq_content ) !== 0 ) {
+			foreach ( $raq_content as $key => $raq ) {
+				$cart_product_id = ( ! empty( $raq['variation_id'] ) && $raq['variation_id'] > 0 ) ? $raq['variation_id'] : $raq['product_id'];
+				$cart_product = get_post( $cart_product_id );
+				$cart_product_author = $cart_product->post_author;
+				if( $cart_product_author != $product_author ) {
+					$is_allow = false;
+					break;
+				}
+			}
+		}
+		
+		if( !$is_allow ) {
+			$option_value = get_option( 'ywraq_page_id' );
+			if ( function_exists( 'wpml_object_id_filter' ) ) {
+				global $sitepress;
+				if ( ! is_null( $sitepress ) && is_callable( array( $sitepress, 'get_current_language' ) ) ) {
+					$option_value = wpml_object_id_filter( $option_value, 'post', true, $sitepress->get_current_language() );
+				}
+			}
+			$base_url = get_the_permalink( $option_value );
+			$raq_page_url = apply_filters( 'ywraq_request_page_url', $base_url );
+			
+			wp_send_json(
+				apply_filters(
+					'wcfm_yith_ywraq_ajax_multivendor_request_quote_validation_json',
+					array(
+						'result'  => 'true',
+						'message' => apply_filters( 'wcfm_yith_ywraq_ajax_multivendor_request_quote_validation_message', __( "Item(s) from one store already in your quote list. First send request for those.", "wc-multivendor-marketplace" ) ),
+						'rqa_url'    => $raq_page_url,
+					)
+				)
+			);
+			exit;
+		}
+			
+		return $is_allow;
+	}
+  
   public function wcfmmp_save_vendor_taxonomy( $vendor_id, $product_id = 0, $term, $taxonomy = 'product_cat' ) {
   	global $WCFMmp, $wpdb, $WCFM;
   	
@@ -3039,6 +3171,10 @@ class WCFMmp_Vendor {
 			$lang = ICL_LANGUAGE_CODE;
 			$sql .= " AND `lang` = '{$lang}'";
 		}
+		
+		$sql = apply_filters( 'wcfm_vendor_store_taxonomy_query', $sql, $vendor_id, $taxonomy_type );
+		
+		$sql .= " GROUP BY term, parent ORDER BY parent";
   	
   	$taxonomies = $wpdb->get_results($sql);
   	

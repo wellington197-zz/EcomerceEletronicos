@@ -3,11 +3,11 @@ Contributors: wclovers
 Tags: woocommerce marketplace, multivendor marketplace, multi vendor, product vendors, wp user frontend, product vendor dashboard, ecommerce, vendor shop manager, woocommerce frontend shop manager, wcvendors, woocommerce frontend manager, wc frontend manager, woocommerce frontend shop manager, shop manager, ecommerce, e-commerce, woocommerce live manager
 Donate link: https://www.paypal.me/wclovers/25usd
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.5
 WC requires at least: 3.0
-WC tested up to: 3.7.0
+WC tested up to: 4.4.0
 Requires PHP: 5.6
-Stable tag: 6.3.1
+Stable tag: 6.5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,7 +17,7 @@ Vendor frontend store/shop manager for WC Marketplace, WC Vendors, WC Product Ve
 
 ### Best multi vendor frontend store manager for WordPress and WooCommerce
 
-WCFM is the smartest and most featured frontend vendor store/shop manager on WordPress, powered by WooCommerce. It works as vendors' frontend dashboard for <strong>WC Marketplace</strong>, <strong>WC Vendors</strong>, <strong>WooCommerce Product Vendors</strong>, <strong>Dokan</strong> - most popular woocommerce multi vendor marketplace plugins along with <strong>WooCommerce Bookings</strong>, <strong>WooCommerce Appointments</strong>, <strong>WooCommerce Rental & Bookings System</strong>, <strong>WooCommerce Subscriptions</strong>, <strong>Advanced Custom Fields(ACF)</strong>, <strong>WP Job Manager</strong> and <strong>BuddyPress</strong> compatibility. <strong>Import / Export</strong>, Knowledgebase, Notification, Direct Messaging and <strong>PDF Invoice</strong> are some of the many colorful feathers of the wings. We offer you a panoply of cutting-edge solution. 
+WCFM is the smartest and most featured frontend vendor store/shop manager on WordPress, powered by WooCommerce. It works as vendors' frontend dashboard for most popular woocommerce multi vendor marketplace plugins along with WooCommerce Bookings, Appointments, Rental & Bookings System, Subscriptions compatibility. Import / Export, Knowledgebase, Notification, Direct Messaging and PDF Invoice are some of the many colorful feathers of the wings. We offer you a panoply of cutting-edge solution. 
 
 > Explore WCFM -
 > [WCFM Demo](http://wcfmmp.wcfmdemos.com/my-account/) - [Overview](https://www.youtube.com/watch?v=Nozi3VHVD6U) - [Guidelines](https://wclovers.com/blog/woocommerce-frontend-manager/)
@@ -34,16 +34,15 @@ WCFM is the smartest and most featured frontend vendor store/shop manager on Wor
 > [WCFM - Analytics](https://wclovers.com/product/woocommerce-frontend-manager-analytics/) - [Demo](https://wcfmmp.wcfmdemos.com/my-account/) - [Documentation](https://wclovers.com/knowledgebase/wcfm-analytics/)
 > [WCFM - Product HUB](https://wclovers.com/product/woocommerce-frontend-manager-product-hub/) - [Demo](https://wcfmmp.wcfmdemos.com/my-account/) - [Documentation](https://wclovers.com/knowledgebase/)
 
+🎉 Let your vendors give quick real-time support via [Live Chat](https://docs.wclovers.com/live-chat/)
+
 On any days, we provide <strong>6 hours</strong> turnaround time to reply every query, even in our busiest schedule. All you need to do is to reach us either via our [support forum](https://wclovers.com/forums) or [WordPress.org](https://wordpress.org/support/plugin/wc-frontend-manager)
 
 = Marketplace Compatibility =
 
-Fully compatible with WordPress-WooCommerce most popular multivendor marketplace plugins - 
+- WCFM has own multi-vendor module - <strong>WooCommerce Multivendor Marketplace</strong> - [Documentation](https://wclovers.com/blog/woocommerce-multivendor-marketplace-wcfm-marketplace/) - [Demo](http://wcfmmp.wcfmdemos.com/my-account/)
 
-- <strong>WooCommerce Multivendor Marketplace</strong> - [Documentation](https://wclovers.com/blog/woocommerce-multivendor-marketplace-wcfm-marketplace/) - [Demo](http://wcfmmp.wcfmdemos.com/my-account/)
-- <strong>WooCommerce Product Vendors</strong> - [Overview](https://youtu.be/vSK0rS4Dm_0) - [Documentation](https://wclovers.com/documentation/wcfm-wc-product-vendors/)
-- <strong>Dokan Multivendor</strong>
-- <strong>WC Vendors</strong>
+Beside this it's compatible with WordPress-WooCommerce other most popular multivendor marketplace plugins as well, e.g Dokan, WC Vendors etc ..
 
 = Booking Compatibility =
 
@@ -65,78 +64,13 @@ This will allow you to setup a system where vendor has to pay before adding a pr
 
 = Exclusive Plugin Support =
 
-WCFM is now fully compatible with -
-
-- Dokan Multivendor & Dokan Pro - [WCFM Demo](http://dokan.wcfmdemos.com/my-account)
-- WC Vendors & WC Vendors Pro
-- WC Marketplace
-- WooCommerce Product Vendors
-- WooCommerce Bookings - [WCFM Demo](http://wcbookings.wcfmdemos.com/my-account/)
-- WooCommerce Bookings Accommodation - [WCFM Demo](http://wcbookings.wcfmdemos.com/my-account/)
-- WooCommerce Appointments - [WCFM Demo](http://wcappointment.wcfmdemos.com/my-account/)
-- WooCommerce Subscriptions - [WCFM Demo](http://demo.wcfmdemos.com/my-account/)
-- WooCommerce Product Addons - [WCFM Demo](http://wcappointment.wcfmdemos.com/my-account/)
-- WooCommerce Rental & Bookings System - [WCFM Demo](http://wcrental.wcfmdemos.com/my-account/)
-- WooCommerce Simple Auctions - [WCFM Demo](http://dokan.wcfmdemos.com/my-account/)
-- WP Job Manager - [WCFM Demo](http://demo.wcfmdemos.com/my-account/)
-- WP Job Manager - WC Paid Listing - [WCFM Demo](http://demo.wcfmdemos.com/my-account/)
-- WP Job Manager - Resume Manager - [WCFM Demo](http://demo.wcfmdemos.com/my-account/)
-- WP Job Manager - Statistic
-- Toolset Types - [WCFM Demo](http://wcbookings.wcfmdemos.com/my-account/)
-- Toolset Maps - [WCFM Demo](http://wcbooking.wcfmdemos.com/my-account/)
-- Advanced Custom Fields(ACF & ACF Pro)
-- WooCommerce Per Product Shipping
-- WooCommerce Multilingual (WPML) - [WCFM Demo](http://demo.wcfmdemos.com/my-account/)
-- WooCommerce PDF Invoices & Packing Slips
-- WooCommerce Role Based Price
-- WooCommerce Germanized
-- WooCommerce Box Office
-- WooCommerce PDF Vouchers
-- WooCommerce PDF Product Voucher
-- WooCommerce Lottery
-- WooCommerce Deposits
-- WooCommerce Bulk Discount
-- WooCommerce Barcode & ISBN
-- WooCommerce MSRP Pricing
-- WooCommerce Product Fees
-- WooCommerce Tab Manager
-- WooCommerce Custom Product Tabs Lite
-- WooCommerce Product SKU Generator
-- Epeken All Kurir Plugin for Woocommerce Full Version
-- FedEx WooCommerce Shipping with Print Label
-- DHL Express/DHL Paket WooCommerce Shipping with Print Label by XAdapter
-- PPOM - WooCommerce Personalized Product Option Manager
-- BuddyPress
-- WP-Stateless – Google Cloud Storage
-- Amazon Web Service (S3)
-- Address Geocoder
-- Yoast SEO & Yoast SEO Premium
-- YITH Auctions Free & Premium
-- Quantities and Units for WooCommerce
-- GEO my WordPress (GEO my WP)
-- Featured Image From URL
-- WP Hide & Security Enhancer
-- SCD – Smart Currency Detector
-- MSRP for WooCommerce (Algoritmika)
-- Cost of Goods for WooCommerce (Algoritmika)
-- Woocommerce Product Availability Scheduler
-- WooCommerce Measurement Price Calculator
-- WooCommerce Advanced Product Labels
-- WooCommerce Wholesale Prices
-- WooCommerce Min/Max Quantities
-- WooCommerce Product Badge Manager
-- WooCommerce 360 Images
-- WooCommerce Quote Request
-- WooCommerce Variation Swatches
-- WooCommerce Dynamic Pricing
-- Fancy Product Designer
-- FooEvents
+🔖 WCFM already compatible with most popular WooCommerce plugins. Check here for [compatible plugins](https://wclovers.com/wcfm-compatible-plugins/)
 
 ... You will also have support of <strong>Custom Fields</strong> and full flexibility to enhance WCfM in your own way. Check our [Developer's Guide](https://wclovers.com/documentation/developers-guide/).
 
 = Exclusive Theme Support =
 
-WooCommerce Frontend Manager is fully compatible with any WordPress-WooCommerce themes. You will also have styling option to make WCFM dashboard more look alike your site appearnce. Now we are added exclusive support with the most popular WooCommerce themes.
+WCFM is fully compatible with any WordPress-WooCommerce themes. You will also have styling option to make WCFM dashboard more look alike your site appearnce. Now we are added exclusive support with the most popular themes.
 
 = Quick view - what will be on your dashboard? =
 
@@ -200,7 +134,7 @@ WooCommerce Frontend Manager is fully compatible with any WordPress-WooCommerce 
 
 = Feedback = 
 
-All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
+All we want is love. We are extremely responsive about support requests - so if you face a problem or find any bugs, shoot us a mail or post it in the support forum, and we will respond within 6-12 hours(during business days). If you get the impulse to rate the plugin low because it is not working as it should, please do wait for our response because the root cause of the problem may be something else. 
 
 It is extremely disheartening when trigger happy users downrate a plugin for no fault of the plugin. 
 
@@ -251,11 +185,11 @@ Yes; WooCommerce Frontend Manager will work with any theme, but may require some
 
 = Does it compatible with other WooCommerce extensions? =
 
-We are working hard to add support of all major WC-extensions. If you are looking for anything right now then feel free to contact us at �wclovers.contact@gmail.com' or [our helpdesk](https://wclovers.com/forums)
+We are working hard to add support of all major WC-extensions. If you are looking for anything right now then feel free to contact us at 'wclovers.contact@gmail.com' or [our helpdesk](https://wclovers.com/forums)
 
 = Does it work with Marketplace-Vendor plugins? =
 
-Fully compatible with all major multi-vendor marketplace plugins - <strong>WC Marketplace</storng>, <strong>WC Product Vendors</storng>, <strong>Dokan Lite & Dokan Pro</storng> and <strong>WC Vendors</storng>.
+Fully compatible with all major multi-vendor marketplace plugins - <strong>WCFM Marketplace</storng>, <strong>WC Product Vendors</storng>, <strong>Dokan Lite & Dokan Pro</storng> and <strong>WC Vendors</storng>.
 
 == Screenshots ==
 
@@ -286,6 +220,308 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WC Ma
 25. WCFM Dashboard - Mobile view
 
 == Changelog ==
+
+= 6.5.4 =
+*Updated - 28/08/2020*
+
+* Fixed   - Notice/Announcement notification not triggering issue resolved
+
+= 6.5.3 =
+*Updated - 28/08/2020*
+
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Enhance - Country Based Restrictions for WooCommerce compatibility added
+* Enhance - Product custom fields "Multi Select" field type support added
+* Enhance - Booking list data export option added
+* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
+* Fixed   - Store Followers capability not working issue resolved
+* Fixed   - WooCommerce Appointments calendar display issue resolved
+* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
+* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
+* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
+* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved 
+* Fixed   - During add product WooCommerce Product Add-ons and WooCommerce Tab Manager conflict issue resolved
+* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved
+
+= 6.5.2 =
+*Updated - 02/08/2020*
+
+* Feature - ShipStation integration for vendors (works only for WCFM Marketplace, WCFM Ultimate required) - [Documentation](https://docs.wclovers.com/shipstation/)
+* Enhance - Vendor Profile ACF user type fields support added (WCFM Ultimate required)
+* Enhance - Product custom fields exclude product type condition "Virtual Product" support added
+* Enhance - WooCommerce 4.3+ compatibility added
+* Tweak   - YiTH Request a Quote one vendor's products at a time restriction added
+* Tweak   - PW Gift Cards redeem only for the issuer vendor's products restriction added 
+* Tweak   - ELEX Shipping addons compatibility revoked, instead recommend to use [WooCommerce Multi-Vendor Support for ELEX Shipping Plugins](https://elextensions.com/plugin/woocommerce-multi-vendor-add-on-for-elex-shipping-plugins/)
+* Fixed   - Category wise attributes not working properly for category limit "1" issue resolved
+* Fixed   - Product type categories not saving issue resolved
+* Fixed   - WooCommerce PDF Vouchers - Start Date, End Date, Expiry Date, Primary Vendor, Vednor Logo not properly updating issue resoved
+* Fixed   - WPML translated product overrides original product values issue resolved
+* Fixed   - Bulk Stock Manager page filters are not working issue resolved
+
+= 6.5.1 =
+*Updated - 09/06/2020*
+
+* Enhance - WooCommerce 4.2+ compatibility added
+* Enhance - "Filter Products by Store" widget added for WooCommerce product archive pages to filter products by vendor
+* Enhance - YiTH Auction Premium 1.4+ compatibility added
+* Enhance - Auction bid delete option added
+* Enhance - Vendor order list search enahnced by order meta
+* Enhance - Vendor order support added for Manual booking associate with existing order
+* Enhance - WCFM Delivery - delivery time slots WPML compatibility added
+* Enahnce - Checkout delivery location field compatibility added for "Force shipping to the customer billing address" setting option
+* Enahnce - YiTH Request a Quote Premium "accepted quote" pay page shipping compatibility added
+* Enahnce - YiTH Request a Quote Premium "accepted quote" vendor order compatibility added
+* Fixed   - Vendor product variation export issue resolved
+* Fixed   - Store list page map pointer not visible at proper position issue resolved
+* Fixed   - Store list page map pointer position change on map zoom change issue resolved
+* Fixed   - Trashed orders visible to vendors issue resolved 
+* Fixed   - Germanized for WooCommerce variable product edit issue resolved
+* Fixed   - Admin bar quick menu links giving 404 issue resolved
+
+= 6.5.0 =
+*Updated - 13/05/2020*
+
+* Enhance - Page load performence improved
+* Enhance - Store List search by "City" and "Zipcode" option added - [Documentation](https://docs.wclovers.com/store-list/)
+* Enhance - Products Custom Taxonomy add/access capability option added (WCFM Ultimate required)
+* Enhance - Edit order item wise cost and quantity edit option added (WCFM Ultimate required)
+* Enhance - Vendors capability check improved
+* Enhance - Vendor additional info edit "File/Image" type fields support added
+* Enhance - Category wise Attributes WPML compatibility added
+* Enhance - Store setup responsive and RTL CSS improved
+* Fixed   - FooEvents - vendors are able to see all event tickets issue resolved
+* Fixed   - Product manager on category change "variation" tab broken issue resolved
+* Fixed   - Coupon "Draft" button save issue resolved
+
+= 6.4.9 =
+*Updated - 08/05/2020*
+
+* Enhance - WooCommerce 4.1 compatibility added
+* Enhance - Delivery Time module compatibility added - [WCFM Delivery addon required](https://wclovers.com/product/woocommerce-frontend-manager-delivery/) - [Documentation](https://docs.wclovers.com/delivery-time/)
+* Enhance - WooCommerce Bookings "Global Availability" vendor wise compatibility added (WCFM Ultimate required)
+* Enhance - Dashboard fields display improved
+* Enhance - Dashboard menu RTL responsive display improved
+* Enhance - German Market "Age Restrction" module support added
+* Enhance - German Market product manage fields not visible for "Variable" product issue resolved
+* Fixed   - Germanized for WooCommerce "Delivery Time" field edit issue resolved
+
+= 6.4.8 =
+*Updated - 17/04/2020*
+
+* Feature - YiTH Request a Quote Premium compatibility added (WCFM Ultimate Required)
+* Enhance - WooCommerce German Market product fields compatibility added
+* Enhance - Pending approval product "Reject with Reason" option added
+* Enhance - WooCommerce Simple Auction Relist and Auction Fail vendor email added
+* Enhance - Membership module option added - Manager from WCFM Admin Setting -> Modules
+* Fixed   - Reverse withdrawal screen "select2" library missing issue resolved 
+
+= 6.4.7 =
+*Updated - 06/04/2020*
+
+* Enhance - Variable products "Create variations from all attributes" option added
+* Enhance - WooCommerce Measurement Price Calculator version 3.17+ compatibility added
+* Enhance - Listing "approve" option added for Admin
+* Enhance - Product object checking improved
+* Enhance - Draft Listing "continue submission" option added
+* Enhance - [wcfm_policy] - short code added, works for single product and vendor's store page
+* Enhance - Dashboard products list sort by "View Count" option added
+* Enhance - FooEvents Ticket "Resend" option added 
+* Tweak   - Dashboard page "Float Button" by default disabled for mobile and tablet view
+* Fixed   - Product description image upload from external url not visible issue resolved 
+* Fixed   - Sales reports previous year graph display issue resolved
+* Fixed   - Dashborad mobile view "My Store" not clickable issue resolved
+* Fixed   - Group archive showing all vendors issue resolved
+* Fixed   - Inquiry and Support email quotes display with slash issue resolved 
+
+= 6.4.6 =
+*Updated - 15/03/2020*
+
+* Feature - Post Expirator compatibility added
+* Enhance - WooCommerce 4.0+ compatibility added
+* Enhance - WP 5.4+ compatibility added
+* Enhance - WCFM Marketplace Admin order list "vendor/store filter" option added
+* Tweak   - Includes Emogrifier composer package instead of including into includes/libraries
+* Fixed   - Accommodation product cost rule edit PHP warning issue resolved
+* Fixed   - PW Gift Cards UTF8 search issue resolved
+* Fixed   - FooEvents ticket logo not showing in ticket issue resolved
+* Fixed   - Without policy content "Policies" heading visible under order details page issue resolved
+* Fixed   - Without "policy" and "customer support" content headings visible under store invoice issue resolved
+* Fixed   - Inquiry, Support Ticket and Refund popup form "Submit" button multiple click issue resolved
+* Fixed   - Vendors are able to manage restricted capabilities for their staff issue resolved
+* Fixed   - WooCommerce Additional Variation Images edit issue resolved
+
+= 6.4.5 =
+*Updated - 07/03/2020*
+
+* Feature - PW WooCommerce Gift Cards compatibility added
+* Enhance - WooCommerce Product attributes "Custom Order" support added
+* Enhance - Store Manager page Divi Builder support added
+* Enhance - FooEvent Check-in APP Rest API compatibility added
+* Fixed   - Accommodation product cost rule save issue resolved
+* Fixed   - RnB Rental & Booking "Quote Details" page error issue resolved
+
+= 6.4.4 =
+*Updated - 18/02/2020*
+
+* Enhance - Messages direct reply option added
+* Enhance - Notificaton email content capability check added
+* Enhance - WCFM - Affiliate notification compatibility added
+* Enhance - Inquiry and Support Tickets "My Account" view improved
+* Enhance - Firebase Chat conversation email format improved
+* Enhance - Firebase Chat History and Offline messages delete option added
+* Enhance - Bookable and Appointment products order commission invoice improved
+* Enhance - Dashbord mobile view display improved
+* Enhance - Few missing strings added to translation file
+
+= 6.4.3 =
+*Updated - 10/02/2020*
+
+* Enhance - Vendor location setting "Leaflet" map library support added
+* Enhance - Product image gallery "unlimited" image upload support added  
+* Fixed   - Mobile view product image gallery upload issue resolved
+
+= 6.4.2 =
+*Updated - 08/02/2020*
+
+* Feature - Firebase chat - Offline Messages and Chat History view added (WCFM Ultimate required)
+* Enhance - Reports data generation performence improved
+* Enhance - Vendor "Store Invoice" setting manage option added under Admin's vendor manage
+* Enhance - "wcfm_store_info", "wcfm_chat_now" and "wcfm_follow" short codes will work for any vendor created post page
+* Dev     - WCFM Marketplace Stripe "Express Connect API" support added, enbale by return TRUE to this filter - wcfm_is_allow_stripe_express_api
+* Fixed   - Firebase chat - Chat copy email not sending issue resolved
+* Fixed   - Vendor verification not opening issue resolved
+* Fixed   - Auction and Appointment product manage tabs not properly option issue resolved 
+* Fixed   - Popup add product display issue resolved
+* Fixed   - OpenStreetMap load over HTTPS/SSL issue resolved
+* Fixed   - Report graph point showing long decimal numbers issue resolved
+* Fixed   - Product "quick edit" not saving issue resolved
+
+= 6.4.1 =
+*Updated - 25/01/2020*
+
+* Enhance - WooCommerce 3.9+ compatibility added
+* Enhance - Vendor orders liting page search by "Order ID" option added
+* Enhance - Whole order shippment tracking update option added under order details 
+* Enhance - WC Appointments calendar display improved
+* Enhance - Product manager "Attributes" selector view simplified
+* Enhance - Inquiry and Support response email content improved
+* Enhance - Product CSV Import as Admin "Store" column support added to import products for specific store/vendor
+* Enhance - Schedule order email "Store Invoice" generate and attach with mail support added
+* Enhance - Vendor coupon apply validation added
+* Enhance - Fancy Product Designer template builder display improved
+* Enhance - Store reference added with vendor's order note
+* Enhance - WoodMart theme 360 degree image and variation image gallery compatibility added 
+* Enhance - Advanced Product Size Charts for WooCommerce plugin compatibility added
+* Enhance - Germanized for WooCommerce 3.1+ compatibility added
+* Enhance - WooCommerce Bookings "Resources" delete and filter by store/vendor option added
+* Enhance - WCFM Marketplace "Group Archive" page map support added
+* Dev     - Order item policies show by vendor filter "wcfm_is_allow_order_item_policies_by_vendor" added, return TRUE
+* Dev     - Order policies disable for emails filter "wcfm_is_allow_order_item_policies_by_vendor" added, return FALSE
+* Dev     - Order policies disable for invoice filter "wcfm_is_allow_policy_under_order_invoice" added, return FALSE
+* Fixed   - Variation "sales schdule" capability not working issue resolved
+* Fixed   - Store "Default Banner" and "Default Logo" saving and loading issue resolved
+* Fixed   - Non-vendor products author reset to current user on update issue resolved
+* Fixed   - Firebase chat box load issue for non-logged in users issue resolved
+* Fixed   - WooCommerce PDF Voucher "Recipient Email" label not saving issue resolved
+* Fixed   - Electro theme and Fancy Product Designer conflict issue resolved
+
+= 6.4.0 =
+*Updated - 18/01/2020*
+
+* Feature - License Manager for WooCommerce compatibility added (WCFM Ultimate required)
+* Enhance - WooCommerce Quick View Pro compatibility added
+* Enhance - ELEX Role based Price compatibility added
+* Enhance - WP Offload Media Pro compatibility added
+* Enhance - GEO my WP Leaflet map library support added
+* Enhance - Dashboard logout url change to site's frontend url
+* Fixed   - GEO Location Map center setup setting not loading issue resolved
+
+= 6.3.8 =
+*Updated - 16/01/2020*
+
+* Enhance - WP Offload Media support added
+* Fixed   - Vennor location setting Google map not loading issue resolved
+
+= 6.3.7 =
+*Updated - 11/01/2020*
+
+* Feature - Open Street Map (Free map library) support added
+* Feature - Firebase Free Chat API support added - [Documentation](https://docs.wclovers.com/live-chat/)
+* Enhance - Fancy Product Designer 4.2+ compatibility added
+* Enhance - WooCommerce Multilingual 4.7+ compatibility added
+* Enhance - Listing "Add Product" option "Limit and Space" capability check added  
+* Fixed   - Accommodation product "Has Resource" and "Has Persons" opton not saving issue resolved
+
+= 6.3.6 =
+*Updated - 21/12/2019*
+
+* Enhance - WooCommerce PDF Invoice & Packing Slips plugin 2.4+ compatibility added
+* Enhance - WooCommerce Measurement and Price calculator 3.17+ compatibility added
+* Enhance - FooEvents PDF Tickets 1.7+ compatibility added
+* Enhance - FooEvents "Add event to EventBrite" option support added
+* Enhance - Bookable product date range cost rule "equals" option support added
+* Enhance - Vendor registration custom fields "multi-select" type field support added
+* Enhance - WooCommerce Tiered Table Price Premium compatibility added
+* Tweak   - On Booking cancel "Admin Calcel Email" send to vednors, previously "Customer Cancel Email" send to vendors
+* Fixed   - Product "excerpt" and "description" fields custom validation not working issue resolved
+* Fixed   - WooCOmmerce Sequential Order Numbers not visible every where issue resolved 
+* Fixed   - WooCommerce Product Badges not reset issue resolved
+* Fixed   - Add announcement page showing "Invalid Topic" issue resolved
+* Fixed   - Product custom validation message visible shipment tracking update form issue resolved
+* Fixed   - Wholesale products not visible to non-wholesale users issue resolved
+
+= 6.3.5 =
+*Updated - 29/11/2019*
+
+* Fixed   - Admin's post count showing "0" issue resolved
+* Fixed   - Article/Post Yoast SEO meta save issue resolved
+
+= 6.3.4 =
+*Updated - 21/11/2019*
+
+* Enhance - WordPress 5.3 compatibility added
+* Enhance - WooCommerce 3.8 compatibility added
+* Enhance - WooCommerce Tiered Table Price plugin compatibility added
+* Enhance - WooCommerce Deposit remaining payment invoice generate compatibility added
+* Enhance - Vendor product import new category create and assign to products support added
+* Enhance - Article/Post Yoast SEO meta support added 
+* Enhance - Product and Article All in One SEO meta title and description support added
+* Enhance - Product and Article Rank Math SEO focus keyword and meta description support added
+* Enhance - WPML translated products quick edit view restricted to edit meta information
+* Enhance - Product bulk delete option added
+* Enhance - FooEvent PDF ticket download option added
+* Fixed   - FooEvent ticket barcode not rendering issue resolved
+* Fixed   - Admin's product count showing "0" issue resolved
+* Fixed   - Variation "enable/disable" not working issue resolved
+* Fixed   - Product "Off Line" bit reset issue resolved
+* Fixed   - RnB Rental & Booking Product inventory update issue resolved
+* Fixed   - On membership cancel archived/draft products able to re-publish issue resolved
+* Fixed   - Vendors able to import more than product limit capability issue resolved
+* Fixed   - Without product limit vendor able to import product issue resolved
+* Fixed   - Auction product manager tab not visible properly issue resolved
+* Fixed   - Analytics view broken due to deleted products issue resolved
+* Fixed   - Notification sound file load issue resolved
+
+= 6.3.3 =
+*Updated - 22/10/2019*
+
+* Enhance - WooCommerce Appointments 4.7+ version compatibility added
+* Enhance - WooCommerce Simple Auction "Sealed Bid?" support added
+* Enhance - WooCommerce Deposit "Payment Plan" support added
+* Enhance - Follow button ask for login to non-logged in user option added
+* Enhance - Customer manage "company field" added
+* Fixed   - Vendors not able to see "Auction Products" bids issue resolved
+
+= 6.3.2 =
+*Updated - 03/10/2019*
+
+* Enhance - WCFM Marketplace Withdrawal, Withdrawal Request, Reverse Withdrawal screens "date range" filter compatibility added
+* Enhance - Toolset Maps 1.8+ version compatibility added
+* Enhance - Product and Vendor Registration custom filed "HTML Block" field type support added
+* Fixed   - Product "File/Image" type custom field "required" check not working issue resolved
+* Fixed   - Custom taxonomies not de-associated from product issue resolved
+* Fixed   - Live Chatbox not closing issue resolved
 
 = 6.3.1 =
 *Updated - 22/09/2019*
@@ -1445,7 +1681,7 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WC Ma
 * Feature - Marketica theme vendor account nav-menu compatibility added
 * Enhance - WCfM emails are now wrap with WC email format 
 * Enhance - WCfM custom attributes rendering change to support attribute specific controllers
-* Enhance - Variaton Per product shipping multiple rules support added
+* Enhance - Variation Per product shipping multiple rules support added
 * Fixed   - Dokan setting checkbox save issue resolved
 
 = 4.0.1 =
@@ -2207,13 +2443,18 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WC Ma
 
 == Upgrade Notice ==
 
-= 6.3.1 =
-* Feature - WCFM Marketplace Wirecard (Moip) payment gateway (customer & vendor split payment) compatibility added
-* Enhance - WCFM Marketplace Subscription Renewal order "Admin Mode Commission" support added
-* Enhance - WP User Avatar compatibility - Shop Staff, Affiliate User, Delivery Person not able to upload "Profile Image" taken care of
-* Enhance - WCFM Marketplace Store SEO WPML compatibility added
-* Enhance - WCFM Marketplace - "Sold by Label" applied for all dashboard modules vendor/store display
-* Enhance - WCFM Marketplace - "wp-admin" articles, coupons, orders, bookings, appointments, subscriptions listing "Store/Vendor" reference added
-* Enhance - WC Appointments "two way" Gcal sync compatibility added for vendors
-* Fixed   - WC Appointments "Restricted Days" update issue resolved
-* Fixed   - Affiliate Vendor not able to access "products" and "coupons" menu issue resolved
+= 6.5.4 =
+* Enhance - WooCommerce 4.4+ compatibility check added
+* Enhance - Country Based Restrictions for WooCommerce compatibility added
+* Enhance - Product custom fields "Multi Select" field type support added
+* Enhance - Booking list data export option added
+* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
+* Fixed   - Store Followers capability not working issue resolved
+* Fixed   - WooCommerce Appointments calendar display issue resolved
+* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
+* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
+* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
+* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved 
+* Fixed   - During add product WooCommerce Product Add-ons and WooCommerce Tab Manager conflict issue resolved
+* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved
+* Fixed   - Notice/Announcement notification not triggering issue resolved

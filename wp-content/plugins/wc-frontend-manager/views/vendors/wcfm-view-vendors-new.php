@@ -10,7 +10,7 @@
  */
 global $wp, $WCFM, $WCFMu;
 
-if( !apply_filters( 'wcfm_is_allow_manage_vendor', true ) || !apply_filters( 'wcfm_is_allow_edit_vendor', true ) ) {
+if( wcfm_is_vendor() || !apply_filters( 'wcfm_is_allow_manage_vendor', true ) || !apply_filters( 'wcfm_is_allow_edit_vendor', true ) ) {
 	wcfm_restriction_message_show( "Vendors Manage" );
 	return;
 }
@@ -59,14 +59,14 @@ do_action( 'before_wcfm_vendors_new' );
 <div class="collapse wcfm-collapse">
   <div class="wcfm-page-headig">
 		<span class="wcfmfa fa-user-alt"></span>
-		<span class="wcfm-page-heading-text"><?php echo __( 'Manage', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager'); ?></span>
+		<span class="wcfm-page-heading-text"><?php echo apply_filters( 'wcfm_manage_vendor_title', __( 'Manage', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager') ); ?></span>
 		<?php do_action( 'wcfm_page_heading' ); ?>
 	</div>
 	<div class="wcfm-collapse-content">
 	  <div id="wcfm_page_load"></div>
 	  
 	  <div class="wcfm-container wcfm-top-element-container">
-	    <h2><?php if( $vendor_id ) { echo __('Edit', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager'); } else { echo __('Add', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager'); } ?></h2>
+	    <h2><?php if( $vendor_id ) { echo apply_filters( 'wcfm_manage_vendor_heading', __('Edit', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager') ); } else { echo apply_filters( 'wcfm_manage_vendor_heading', __('Add', 'wc-frontend-manager' ) . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager') ); } ?></h2>
 			
 			<?php
 			echo '<a class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_vendors_url().'" data-tip="' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendors', 'wc-frontend-manager') . '"><span class="wcfmfa fa-user-alt"></span></a>';

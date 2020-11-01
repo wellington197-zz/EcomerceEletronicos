@@ -37,7 +37,7 @@ $wcfm_ultimate_notice_disabled = isset( $wcfm_options['wcfm_ultimate_notice_disa
 $wcfm_my_store_label = wcfm_get_option( 'wcfm_my_store_label', __( 'My Store', 'wc-frontend-manager' ) );
 $noloader = isset( $wcfm_options['noloader'] ) ? $wcfm_options['noloader'] : 'no';
 $logo = get_option( 'wcfm_site_logo' ) ? get_option( 'wcfm_site_logo' ) : '';
-$logo_image_url = wp_get_attachment_url( $logo );
+$logo_image_url = $logo; //wp_get_attachment_url( $logo );
 
 if ( !$logo_image_url ) {
 	$logo_image_url = '';
@@ -59,9 +59,9 @@ $wcfm_enquiry_custom_fields    = isset( $wcfm_options['wcfm_enquiry_custom_field
 // Remove WPML term filters - 3.4.1
 if ( function_exists('icl_object_id') ) {
 	global $sitepress;
-	remove_filter('get_terms_args', array( $sitepress, 'get_terms_args_filter'));
-	remove_filter('get_term', array($sitepress,'get_term_adjust_id'));
-	remove_filter('terms_clauses', array($sitepress,'terms_clauses'));
+	//remove_filter('get_terms_args', array( $sitepress, 'get_terms_args_filter'));
+	//remove_filter('get_term', array($sitepress,'get_term_adjust_id'));
+	//remove_filter('terms_clauses', array($sitepress,'terms_clauses'));
 	
 	$product_categories = array();
 	$product_category_lists = get_terms( array( 'taxonomy' => 'product_cat', 'hide_empty' => false, 'parent' => 0, 'fields' => 'id=>name' ) );
@@ -76,7 +76,7 @@ if ( function_exists('icl_object_id') ) {
 } else {
 	$product_categories   = get_terms( 'product_cat', 'orderby=name&hide_empty=0&parent=0' );
 }
-$wcfm_product_type_categories = get_option( 'wcfm_product_type_categories', array() );
+$wcfm_product_type_categories = wcfm_get_option( 'wcfm_product_type_categories', array() );
 
 $is_marketplace = wcfm_is_marketplace();
 ?>
@@ -120,7 +120,7 @@ $is_marketplace = wcfm_is_marketplace();
 			if( apply_filters( 'wcfm_is_allow_capability_controller', true ) ) {
 				echo '<a id="wcfm_capability_settings" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_capability_url().'" data-tip="' . __('Capability Controller', 'wc-frontend-manager') . '"><span class="wcfmfa fa-user-times"></span><span class="text">' . __( 'Capability', 'wc-frontend-manager') . '</span></a>';
 			}
-			if( WCFM_Dependencies::wcfmvm_plugin_active_check() ) {
+			if( WCFM_Dependencies::wcfmvm_plugin_active_check() && apply_filters( 'wcfm_is_pref_membership', true ) ) {
 				echo '<a id="wcfm_membership_settings" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_memberships_settings_url().'" data-tip="' . __('Membership Settings', 'wc-frontend-manager') . '"><span class="wcfmfa fa-user-plus"></span><span class="text">' . __( 'Membership', 'wc-frontend-manager') . '</span></a>';
 			}
 			?>
@@ -270,20 +270,28 @@ $is_marketplace = wcfm_is_marketplace();
 						<div class="wcfm_clearfix"></div>
 						<?php
 							$wcfm_page_options = get_option( 'wcfm_page_options', array() );
-							$pages = get_pages(); 
-							$pages_array = array( '' => __( '-- Select a page --', 'wc-frontend-manager' ) );
-							$woocommerce_pages = array ( wc_get_page_id('shop'), wc_get_page_id('cart'), wc_get_page_id('checkout'), wc_get_page_id('myaccount'));
-							foreach ( $pages as $page ) {
-								if(!in_array($page->ID, $woocommerce_pages)) {
-									global $sitepress;
-									if ( function_exists('icl_object_id') && $sitepress ) {
-										$default_lang = $sitepress->get_default_language();
-										$pages_array[icl_object_id( $page->ID, 'page', true, $default_lang )] = $page->post_title;
-									} else {
-										$pages_array[$page->ID] = $page->post_title;
-									}
+							$pages_array = array();
+							if( isset( $wcfm_page_options['wc_frontend_manager_page_id'] ) ) {
+								if ( get_post_status ( $wcfm_page_options['wc_frontend_manager_page_id'] ) ) {
+								  $pages_array[$wcfm_page_options['wc_frontend_manager_page_id']] = get_post( $wcfm_page_options['wc_frontend_manager_page_id'] )->post_title;
 								}
 							}
+							if( isset( $wcfm_page_options['wcfm_vendor_membership_page_id'] ) ) {
+								if ( get_post_status ( $wcfm_page_options['wcfm_vendor_membership_page_id'] ) ) {
+									$pages_array[$wcfm_page_options['wcfm_vendor_membership_page_id']] = get_post( $wcfm_page_options['wcfm_vendor_membership_page_id'] )->post_title;
+								}
+							}
+							if( isset( $wcfm_page_options['wcfm_vendor_registration_page_id'] ) ) {
+								if ( get_post_status ( $wcfm_page_options['wcfm_vendor_registration_page_id'] ) ) {
+									$pages_array[$wcfm_page_options['wcfm_vendor_registration_page_id']] = get_post( $wcfm_page_options['wcfm_vendor_registration_page_id'] )->post_title;
+								}
+							}
+							if( isset( $wcfm_page_options['wcfm_affiliate_registration_page_id'] ) ) {
+								if ( get_post_status ( $wcfm_page_options['wcfm_affiliate_registration_page_id'] ) ) {
+									$pages_array[$wcfm_page_options['wcfm_affiliate_registration_page_id']] = get_post( $wcfm_page_options['wcfm_affiliate_registration_page_id'] )->post_title;
+								}
+							}
+							
 							
 							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_settings_fields_pages', array(
 																																																"wcfm_refresh_permalink" => array('label' => __('Refresh Permalink', 'wc-frontend-manager') , 'name' => 'wcfm_refresh_permalink','type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title', 'hints' => __( 'Check to refresh WCfM page permalinks. Only apply if you are getting error (e.g. 404 not found) for any pages.', 'wc-frontend-manager' ) ),
@@ -518,37 +526,39 @@ $is_marketplace = wcfm_is_marketplace();
 				<div class="wcfm_clearfix"></div>
 				<!-- end collapsible -->
 				
-				<!-- collapsible -->
-				<div class="page_collapsible" id="wcfm_settings_form_enquiry_head">
-					<label class="wcfmfa fa-question-circle"></label>
-					<?php _e('Inquiry Settings', 'wc-frontend-manager'); ?><span></span>
-				</div>
-				<div class="wcfm-container">
-					<div id="wcfm_settings_form_enquiry_expander" class="wcfm-content">
-					  <h2><?php _e('Inquiry Module', 'wc-frontend-manager'); ?></h2>
-						<?php wcfm_video_tutorial( 'https://www.youtube.com/embed/JeIvHgcVuGU' ); ?>
-						<div class="wcfm_clearfix"></div>
-						<?php
-						$field_types = apply_filters( 'wcfm_product_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'textarea', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select' ) ); //, 'upload' => 'File/Image' ) );
-						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_enquiry_custom_fields', array(
-							                                                                                "wcfm_enquiry_button_label" => array( 'label' => __('Button Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_button_label ),
-							                                                                                "wcfm_enquiry_with_login" => array( 'label' => __('Require Login?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $wcfm_enquiry_with_login, 'hints' => __( 'Whether customer has to be logged-in to submit inquiry.', 'wc-frontend-manager' ) ),
-							                                                                                "wcfm_enquiry_allow_attachment" => array( 'label' => __('Reply Attachment?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $wcfm_enquiry_allow_attachment, 'hints' => __( 'Whether vendors and customers are allowed to add attachment(s) with inquiry reply.', 'wc-frontend-manager' ) ),
-							                                                                                "wcfm_enquiry_button_position" => array( 'label' => __('Button Position', 'wc-frontend-manager'), 'type' => 'select', 'options' => array( 'bellow_price' => __( 'Below Price', 'wc-frontend-manager' ), 'bellow_sc' => __( 'Below Short Description', 'wc-frontend-manager' ), 'bellow_atc' => __( 'Below Add to Cart', 'wc-frontend-manager' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_button_position, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Inquiry button display position at Single Product Page.', 'wc-frontend-manager' ) ),
-																																															"wcfm_enquiry_custom_fields" => array('label' => __( 'Inquiry Form Custom Fields', 'wc-frontend-manager'), 'type' => 'multiinput', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_custom_fields, 'options' => array(
-																																																							"enable"   => array('label' => __('Enable', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes'),
-																																																							"type" => array( 'label' => __('Field Type', 'wc-frontend-manager'), 'type' => 'select', 'options' => $field_types, 'class' => 'wcfm-select wcfm_ele field_type_options', 'label_class' => 'wcfm_title'),           
-																																																							"label" => array( 'label' => __('Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title'),
-																																																							"options" => array( 'label' => __('Options', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele field_type_select_options', 'label_class' => 'wcfm_title field_type_select_options', 'placeholder' => __( 'Insert option values | separated', 'wc-frontend-manager' ) ),
-																																																							"help_text" => array( 'label' => __('Help Content', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title' ),
-																																																							"required" => array( 'label' => __('Required?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes' ),
-																																																) )
-																																												) ) );
-						?>
+				<?php if( apply_filters( 'wcfm_is_pref_enquiry', true ) ) { ?>
+					<!-- collapsible -->
+					<div class="page_collapsible" id="wcfm_settings_form_enquiry_head">
+						<label class="wcfmfa fa-question-circle"></label>
+						<?php _e('Inquiry Settings', 'wc-frontend-manager'); ?><span></span>
 					</div>
-				</div>
-				<div class="wcfm_clearfix"></div>
-				<!-- end collapsible -->
+					<div class="wcfm-container">
+						<div id="wcfm_settings_form_enquiry_expander" class="wcfm-content">
+							<h2><?php _e('Inquiry Module', 'wc-frontend-manager'); ?></h2>
+							<?php wcfm_video_tutorial( 'https://www.youtube.com/embed/JeIvHgcVuGU' ); ?>
+							<div class="wcfm_clearfix"></div>
+							<?php
+							$field_types = apply_filters( 'wcfm_product_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'textarea', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select' ) ); //, 'upload' => 'File/Image' ) );
+							$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_enquiry_custom_fields', array(
+																																																"wcfm_enquiry_button_label" => array( 'label' => __('Button Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_button_label ),
+																																																"wcfm_enquiry_with_login" => array( 'label' => __('Require Login?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $wcfm_enquiry_with_login, 'hints' => __( 'Whether customer has to be logged-in to submit inquiry.', 'wc-frontend-manager' ) ),
+																																																"wcfm_enquiry_allow_attachment" => array( 'label' => __('Reply Attachment?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => $wcfm_enquiry_allow_attachment, 'hints' => __( 'Whether vendors and customers are allowed to add attachment(s) with inquiry reply.', 'wc-frontend-manager' ) ),
+																																																"wcfm_enquiry_button_position" => array( 'label' => __('Button Position', 'wc-frontend-manager'), 'type' => 'select', 'options' => array( 'bellow_price' => __( 'Below Price', 'wc-frontend-manager' ), 'bellow_sc' => __( 'Below Short Description', 'wc-frontend-manager' ), 'bellow_atc' => __( 'Below Add to Cart', 'wc-frontend-manager' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_button_position, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Inquiry button display position at Single Product Page.', 'wc-frontend-manager' ) ),
+																																																"wcfm_enquiry_custom_fields" => array('label' => __( 'Inquiry Form Custom Fields', 'wc-frontend-manager'), 'type' => 'multiinput', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_enquiry_custom_fields, 'options' => array(
+																																																								"enable"   => array('label' => __('Enable', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes'),
+																																																								"type" => array( 'label' => __('Field Type', 'wc-frontend-manager'), 'type' => 'select', 'options' => $field_types, 'class' => 'wcfm-select wcfm_ele field_type_options', 'label_class' => 'wcfm_title'),           
+																																																								"label" => array( 'label' => __('Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title'),
+																																																								"options" => array( 'label' => __('Options', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele field_type_select_options', 'label_class' => 'wcfm_title field_type_select_options', 'placeholder' => __( 'Insert option values | separated', 'wc-frontend-manager' ) ),
+																																																								"help_text" => array( 'label' => __('Help Content', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title' ),
+																																																								"required" => array( 'label' => __('Required?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes' ),
+																																																	) )
+																																													) ) );
+							?>
+						</div>
+					</div>
+					<div class="wcfm_clearfix"></div>
+					<!-- end collapsible -->
+				<?php } ?>
 			
 				<!-- collapsible -->
 				<div class="page_collapsible" id="wcfm_settings_form_product_wise_cats_head">
@@ -592,6 +602,7 @@ $is_marketplace = wcfm_is_marketplace();
 			  
 				<input type="submit" name="save-data" value="<?php _e( 'Save', 'wc-frontend-manager' ); ?>" id="wcfm_settings_save_button" class="wcfm_submit_button" />
 			</div>
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_settings' ); ?>" />
 		</form>	
 		<?php
 		do_action( 'after_wcfm_settings' );

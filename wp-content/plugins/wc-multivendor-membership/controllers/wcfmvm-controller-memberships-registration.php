@@ -106,7 +106,7 @@ class WCFMvm_Memberships_Registration_Controller {
 							echo '{"status": false, "message": "' . $uploaded_file->get_error_message() . '"}';
 							die;
 						} else {
-							$files_data[$file_key] = $uploaded_file->url;
+							$files_data[$file_key] = wp_insert_attachment( array( 'file' => $uploaded_file->url ) );
 						}
 					}
 				}
@@ -133,7 +133,9 @@ class WCFMvm_Memberships_Registration_Controller {
 							echo '{"status": false, "message": "' . $wcfm_membership_registration_messages['email_exists'] . '"}';
 						}
 					}
-					$password = $wcfm_membership_registration_form_data['passoword'];
+					if( isset( $wcfm_membership_registration_form_data['passoword'] ) && !empty( $wcfm_membership_registration_form_data['passoword'] ) ) {
+						$password = $wcfm_membership_registration_form_data['passoword'];
+					}
 				}
 				
 				$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
@@ -265,16 +267,18 @@ class WCFMvm_Memberships_Registration_Controller {
 						}
 					} else {
 						$member_id = wp_insert_user( $user_data ) ;
-						if( apply_filters( 'wcfm_is_allow_store_slug_direct_update', true ) ) {
-							$wpdb->query( "UPDATE {$wpdb->prefix}users SET `user_nicename` = '{$store_slug}' WHERE ID =  $member_id" );
-						} else {
-							wp_update_user( array( 'ID' => $member_id, 'user_nicename' => wc_clean( $store_slug ) ) );
+						if( !is_wp_error( $member_id ) ) {
+							if( apply_filters( 'wcfm_is_allow_store_slug_direct_update', true ) ) {
+								$wpdb->query( "UPDATE {$wpdb->prefix}users SET `user_nicename` = '{$store_slug}' WHERE ID =  $member_id" );
+							} else {
+								wp_update_user( array( 'ID' => $member_id, 'user_nicename' => wc_clean( $store_slug ) ) );
+							}
 						}
 					}
 					
 					$wcfm_memberships_list = get_wcfm_memberships();
 						
-					if( !$member_id ) {
+					if( !$member_id || is_wp_error( $member_id ) ) {
 						$has_error = true;
 					} else {
 						/*if( !$is_update ) {
@@ -347,6 +351,7 @@ class WCFMvm_Memberships_Registration_Controller {
 											foreach( $billing_address_fields as $billing_address_field_key => $billing_address_field ) {
 												if( isset( $field_value[$billing_address_field] ) ) {
 													update_user_meta( $member_id, $billing_address_field_key, $field_value[$billing_address_field] );
+													update_user_meta( $member_id, '_wcfm_' . $billing_address_field_key, $field_value[$billing_address_field] );
 												}
 											}
 											
@@ -465,7 +470,7 @@ class WCFMvm_Memberships_Registration_Controller {
 						if( empty( $wcfm_memberships_list ) || ( WC()->session && WC()->session->get( 'wcfm_membership_free_registration' ) ) ) {
 							$member_user = new WP_User(absint($member_id));
 							$shop_name = $wcfm_membership_registration_form_data['store_name'];
-							if( ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
+							if( empty( $wcfm_memberships_list ) || ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
 								$membership_reject_rules = array();
 								if( isset( $wcfm_membership_options['membership_reject_rules'] ) ) $membership_reject_rules = $wcfm_membership_options['membership_reject_rules'];
 								$required_approval = isset( $membership_reject_rules['required_approval'] ) ? $membership_reject_rules['required_approval'] : 'no';
@@ -473,7 +478,7 @@ class WCFMvm_Memberships_Registration_Controller {
 								$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
 							}
 							
-							if( $required_approval == 'no') {
+							if( $required_approval != 'yes') {
 								$has_error = $WCFMvm->register_vendor( $member_id );
 								$WCFMvm->store_subscription_data( $member_id, 'free', '', 'free_subscription', 'Completed', '' );
 							} else {
@@ -511,7 +516,7 @@ class WCFMvm_Memberships_Registration_Controller {
 						  echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'choose_membership', get_wcfm_membership_url() ) . '"}';
 						//} elseif( isset( $_SESSION['wcfm_membership'] ) && isset( $_SESSION['wcfm_membership']['free_registration'] ) && $_SESSION['wcfm_membership']['free_registration'] ) {
 						} elseif( empty( $wcfm_memberships_list ) || ( WC()->session && WC()->session->get( 'wcfm_membership_free_registration' ) ) ) {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_membership_url() ) ) . '"}';
+							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_registration_url() ) ) . '"}';
 						} elseif( $subscription_pay_mode == 'by_wc' ) {
 							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . wc_get_checkout_url() . '"}';
 						} else {

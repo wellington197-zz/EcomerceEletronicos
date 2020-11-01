@@ -37,7 +37,7 @@ class WCMp_Report_Product extends WC_Admin_Report {
 
         if (isset($_POST['search_product'])) {
             $is_variation = false;
-            $product_id = $_POST['search_product'];
+            $product_id = absint($_POST['search_product']);
 
             $_product = wc_get_product($product_id);
 
@@ -50,7 +50,7 @@ class WCMp_Report_Product extends WC_Admin_Report {
         }
 
         if (isset($product_id)) {
-            $option = '<option value="' . $product_id . '" selected="selected">' . $title . '</option>';
+            $option = '<option value="' . esc_attr($product_id) . '" selected="selected">' . esc_html($title) . '</option>';
         } else {
             $option = '<option></option>';
         }
@@ -67,7 +67,7 @@ class WCMp_Report_Product extends WC_Admin_Report {
         $args = apply_filters( 'wcmp_report_data_product_query_args', array(
             'post_type' => 'shop_order',
             'posts_per_page' => -1,
-            'post_status' => array('wc-pending', 'wc-processing', 'wc-on-hold', 'wc-completed', 'wc-cancelled', 'wc-refunded', 'wc-failed'),
+            'post_status' => array('wc-processing', 'wc-completed'),
             'meta_query' => array(
                 array(
                     'key' => '_commissions_processed',
@@ -120,6 +120,7 @@ class WCMp_Report_Product extends WC_Admin_Report {
                                 $pro_total[$item->get_product_id()] = isset( $pro_total[$item->get_product_id()] ) ? $pro_total[$item->get_product_id()] + $item->get_subtotal() : $item->get_subtotal();
                                 $total_sales[$item->get_product_id()]['product_id'] = $item->get_product_id();
                                 $total_sales[$item->get_product_id()]['total_sales'] = $pro_total[$item->get_product_id()];
+                                $total_sales[$item->get_product_id()]['quantities'] = $item->get_quantity();
                                 $meta_data = $item->get_meta_data();
                                 // get item commission
                                 foreach ( $meta_data as $meta ) {

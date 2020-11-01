@@ -190,16 +190,42 @@ class WCFMmp_Shipping_Zone {
    */
   public static function update_shipping_method( $args ) {
     global $wpdb;
+    
+    $instance_id = $args['instance_id'];
+    $zone_id = $args['zone_id'];
+    $method_id = $args['method_id'];
+    $vendor_id = empty( $args['user_id'] ) ? apply_filters( 'wcfm_current_vendor_id', get_current_user_id() ) : $args['user_id'];
+    $settings = $args['settings'];
+    
+    // WPML Shipping Class Compatibility - 6.4.4
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+			$old_settings = array();
+			$sql = "SELECT * FROM {$wpdb->prefix}wcfm_marketplace_shipping_zone_methods WHERE `instance_id`={$instance_id}";
+			$results = $wpdb->get_results( $sql );
+			if( !empty( $results ) ) {
+				foreach ( $results as $key => $result ) {
+					$old_settings = ! empty( $result->settings ) ? maybe_unserialize( $result->settings ) : array();
+				}
+			}
+			
+			if( !empty( $old_settings ) ) {
+				foreach( $old_settings as $key => $value ) {
+					if( !isset( $settings[$key] ) ) {
+						$settings[$key] = $value;
+					}
+				}
+			}
+		}
 
     $data = array(
-        'method_id' => $args['method_id'],
-        'zone_id'   => $args['zone_id'],
-        'vendor_id' => empty( $args['user_id'] ) ? apply_filters( 'wcfm_current_vendor_id', get_current_user_id() ) : $args['user_id'],
-        'settings'  => maybe_serialize( $args['settings'] )
+        'method_id' => $method_id,
+        'zone_id'   => $zone_id,
+        'vendor_id' => $vendor_id,
+        'settings'  => maybe_serialize( $settings )
     );
 
     $table_name = "{$wpdb->prefix}wcfm_marketplace_shipping_zone_methods";
-    $updated = $wpdb->update( $table_name, $data, array( 'instance_id' => $args['instance_id' ] ), array( '%s', '%d', '%d', '%s' ) );
+    $updated = $wpdb->update( $table_name, $data, array( 'instance_id' => $args['instance_id'] ), array( '%s', '%d', '%d', '%s' ) );
 
     if ( $updated ) {
         return $data;

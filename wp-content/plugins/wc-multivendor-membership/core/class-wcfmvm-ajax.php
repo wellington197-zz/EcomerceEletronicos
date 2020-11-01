@@ -105,8 +105,8 @@ class WCFMvm_Ajax {
 	function wcfm_choose_membership() {
 		global $WCFM, $WCFMvm, $_SESSION;
 		
-		if( isset( $_POST['membership'] ) && !empty( $_POST['membership'] ) ) {
-			$membership = absint($_POST['membership']);
+		if( isset( $_REQUEST['membership'] ) && !empty( $_REQUEST['membership'] ) ) {
+			$membership = absint($_REQUEST['membership']);
 			
 			// Session store
 			if( WC()->session ) {
@@ -122,6 +122,11 @@ class WCFMvm_Ajax {
 				if( WC()->session->get( 'wcfm_membership_free_registration' ) ) {
 					WC()->session->__unset( 'wcfm_membership_free_registration' );
 				}
+			}
+			
+			$method = 'by_button';
+			if( isset( $_REQUEST['method'] ) && !empty( $_REQUEST['method'] ) ) {
+				$method = sanitize_text_field( $_REQUEST['method'] );
 			}
 			
 			do_action( 'wcfmvm_after_choosing_membership', $membership );
@@ -147,15 +152,27 @@ class WCFMvm_Ajax {
 					}
 					
 					if( $subscription_pay_mode == 'by_wc' ) {
-						echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . wc_get_checkout_url() . '"}';
+						if( $method == 'by_url' ) {
+							wp_safe_redirect( wc_get_checkout_url() );
+						} else {
+							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . wc_get_checkout_url() . '"}';
+						}
 					} else {
-						echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) . '"}';
+						if( $method == 'by_url' ) {
+							wp_safe_redirect( add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) );
+						} else {
+							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) . '"}';
+						}
 					}
 					die;
 				}
 			}
 			
-			echo '{"status": true, "redirect": "' . add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) . '"}';
+			if( $method == 'by_url' ) {
+				wp_safe_redirect( add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) );
+			} else {
+				echo '{"status": true, "redirect": "' . add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) . '"}';
+			}
 		}
 		
 		die;
@@ -300,14 +317,15 @@ class WCFMvm_Ajax {
 									}
 									?>
 									<tr>
-										<td class="wcfm_vendor_approval_response_form_label wcfm_popup_label"><?php _e( $wcfmvm_registration_custom_field['label'], 'wc-multivendor-membership'); ?></td>
+										<td class="wcfm_vendor_approval_response_form_label wcfm_popup_label"><?php _e( $wcfmvm_registration_custom_field['label'], 'WCfM'); ?></td>
 										<td>
 											<?php 
 											if( $field_value && $wcfmvm_registration_custom_field['type'] == 'upload' ) {
-												echo '<a class="wcfm-wp-fields-uploader wcfm_linked_attached" target="_blank" style="width: 32px; height: 32px;" href="' . $field_value . '"><span style="width: 32px; height: 32px; display: inline-block;" class="placeHolderDocs"></span></a>';
+												echo '<a class="wcfm-wp-fields-uploader" target="_blank" style="width: 32px; height: 32px;" href="' . wcfm_get_attachment_url( $field_value ) . '"><span style="width: 32px; height: 32px; display: inline-block;" class="placeHolderDocs"></span></a>';
 											} else {
 												if( !$field_value ) $field_value = '&ndash;';
-												echo $field_value;
+												if( is_array( $field_value ) ) echo implode( ', ', $field_value );
+												else echo $field_value;
 											}
 											?>
 										</td>
@@ -479,10 +497,13 @@ class WCFMvm_Ajax {
 			$wcfm_membership_id = absint( $_POST['membershipid'] );
 			$member_user = new WP_User( $member_id );
 			$shop_name = get_user_meta( $member_id, 'store_name', true );
+			$old_membership_id = get_user_meta( $member_id, 'wcfm_membership', true );
 			
-			update_user_meta( $member_id, 'temp_wcfm_membership', $wcfm_membership_id );
-			$has_error = $WCFMvm->register_vendor( $member_id );
-			$WCFMvm->store_subscription_data( $member_id, 'manual', '', 'manual_subscription', 'Completed', '' );
+			if( !$old_membership_id || ( $old_membership_id && ( $old_membership_id != $wcfm_membership_id ) ) ) {
+				update_user_meta( $member_id, 'temp_wcfm_membership', $wcfm_membership_id );
+				$has_error = $WCFMvm->register_vendor( $member_id );
+				$WCFMvm->store_subscription_data( $member_id, 'manual', '', 'manual_subscription', 'Completed', '' );
+			}
 			
 				
 			echo '{"status": true, "message": "' . __( 'Vendor membership successfully changed.', 'wc-multivendor-membership' ) . '"}';
@@ -590,10 +611,11 @@ class WCFMvm_Ajax {
 			// Sending verification code in email
 			if( !defined( 'DOING_WCFM_EMAIL' ) ) 
 			  define( 'DOING_WCFM_EMAIL', true );
-			$verification_mail_subject = "{site_name}: " . __( "Email Verification Code", "wc-frontend-manager" ) . " - " . $verification_code;
+			
+			/*$verification_mail_subject = "{site_name}: " . __( "Email Verification Code", "wc-frontend-manager" ) . " - " . $verification_code;
 			$verification_mail_body = __( 'Hi', 'wc-multivendor-membership' ) .
 																	 ',<br/><br/>' . 
-																	 sprintf( __( 'Here is your email verification code - <b>%s</b>', 'wc-multivendor-membership' ), '{verification_code}' ) .
+																	 apply_filters( 'wcfm_email_verification_mail_content', sprintf( __( 'Here is your email verification code - <b>%s</b>', 'wc-multivendor-membership' ), '{verification_code}' ) ) .
 																	 '<br /><br/>' . __( 'Thank You', 'wc-multivendor-membership' );
 													 
 			$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $verification_mail_subject );
@@ -602,7 +624,13 @@ class WCFMvm_Ajax {
 			$message = str_replace( '{verification_code}', $verification_code, $verification_mail_body );
 			$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Email Verification', 'wc-multivendor-membership' ) );
 			
-			wp_mail( $user_email, $subject, $message );
+			wp_mail( $user_email, $subject, $message );*/
+			
+			
+			$wcfm_email = WC()->mailer()->emails['WCFMvm_Email_Email_verification'];
+			if( $wcfm_email ) {
+				$wcfm_email->trigger( array( 'verification_code' => $verification_code, 'user_email' => $user_email ) );
+			}
 			
 			echo '{"status": true, "message": "' . sprintf( __( 'Verification code sent to your email: %s.', 'wc-multivendor-membership' ), $user_email ) . '"}';
 		} else {
@@ -618,7 +646,7 @@ class WCFMvm_Ajax {
   	global $WCFM, $WCFMvm, $WCFMmp, $_SESSION;
   	
   	$has_error = false;
-  	if( !WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() && !WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() && !WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) {
+  	if( !WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() && !WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() && !WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() && !function_exists( 'netgsm_sendSMS_oneToMany' ) && !apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) {
   		$has_error = true;
   	}
   	
@@ -649,20 +677,19 @@ class WCFMvm_Ajax {
 			//$sms_messages = $verification_code . ' - ' . __( "verification code (OPT) for registration at ", "wc-frontend-manager" ) . get_bloginfo( 'name' );
 			$sms_messages = __( "Your verification code is", "wc-multivendor-membership" ) . ' ' . $verification_code;
 			
+			$sms_messages  = strip_tags( $sms_messages );
+			$sms_messages  = esc_sql( $sms_messages );
+			
 			if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() ) {
 				if( class_exists( 'SmsAlertcURLOTP' ) ) {
 				
-					$sms_messages  = esc_sql( $sms_messages );
-					$sms_messages  = strip_tags( $sms_messages );
-					
 					$sms_data = array( 'number' => '' );
 					$sms_data['number']   = $user_phone;
 					
 					$sms_data['sms_body'] = $sms_messages;
 					
-					wcfm_log( "OPT:: " . $sms_data['number'] . ": " . $sms_messages );
-					
 					if( !empty( $sms_data['number'] ) ) {
+						wcfm_log( "OPT:: " . $sms_data['number'] . ": " . $sms_messages );
 						$admin_response       = SmsAlertcURLOTP::sendsms( $sms_data );
 						$response             = json_decode($admin_response,true);
 						if( $response['status'] == 'success' ) {
@@ -691,10 +718,6 @@ class WCFMvm_Ajax {
 				
 				$twillio_notification = new WCFMmp_Twilio_SMS_Notification( 9999 );
 				
-				$sms_messages  = esc_sql( $sms_messages );
-				$sms_messages  = strip_tags( $sms_messages );
-				
-				
 				$recipient   = $user_phone;
 				$country_obj = new WC_Countries();
 				if( $recipient ) {
@@ -704,9 +727,6 @@ class WCFMvm_Ajax {
 			}
 			
 			if( WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) {
-				$sms_messages  = esc_sql( $sms_messages );
-				$sms_messages  = strip_tags( $sms_messages );
-				
 				$recipient   = $user_phone;
 				if( $recipient ) {
 					wcfm_log( "OPT:: " . $recipient . ": " . $sms_messages );
@@ -714,6 +734,18 @@ class WCFMvm_Ajax {
 					$output = fgets($adminfile);
 					fclose($adminfile);
 				}
+			}
+			
+			if( function_exists( 'netgsm_sendSMS_oneToMany' ) ) {
+				$recipient   = $user_phone;
+				if( $recipient ) {
+					wcfm_log( "OPT:: " . $recipient . ": " . $sms_messages );
+					netgsm_sendSMS_oneToMany( $recipient, $sms_messages );
+				}
+			}
+			
+			if( apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) {
+				do_action( 'wcfm_after_otp_verification_code_send', $user_phone, $sms_messages );
 			}
 			
 			echo '{"status": true, "message": "' . sprintf( __( 'Verification code sent to your phone: %s.', 'wc-multivendor-membership' ), $user_phone ) . '"}';

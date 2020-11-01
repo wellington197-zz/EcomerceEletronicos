@@ -144,7 +144,7 @@ $wcfm_enquiry_form_heading  = apply_filters( 'wcfm_enquiry_form_heading', $wcfm_
 					</div>
 				<?php } elseif ( class_exists( 'anr_captcha_class' ) && function_exists( 'anr_captcha_form_field' ) ) { ?>
 					<div class="wcfm_clearfix"></div>
-					<div class="wcfm_gglcptch_wrapper" style="float:right;">
+					<div class="wcfm_gglcptch_wrapper">
 						<div class="anr_captcha_field"><div id="anr_captcha_field_99"></div></div>
 						
 						<?php
@@ -193,6 +193,17 @@ $wcfm_enquiry_form_heading  = apply_filters( 'wcfm_enquiry_form_heading', $wcfm_
 						<script src="https://www.google.com/recaptcha/api.js?render=explicit<?php echo esc_js( $lang ); ?>"
 							async defer>
 						</script>
+						<style>
+						.wcfm_gglcptch_wrapper{
+							float:right
+						}
+						@media only screen and (max-width:768px) {
+							.wcfm_gglcptch_wrapper{
+								float:none;
+								margin-left:-11%;
+							}
+						}
+						</style>
 					</div>
 				<?php } ?>
 				<div class="wcfm_clearfix"></div>
@@ -204,6 +215,8 @@ $wcfm_enquiry_form_heading  = apply_filters( 'wcfm_enquiry_form_heading', $wcfm_
 					<input type="hidden" name="product_id" value="<?php echo $product_id; ?>" id="enquiry_product_id">
 					<input type="hidden" name="vendor_id" value="<?php echo $vendor_id; ?>" id="enquiry_vendor_id">
 				</p>	
+				<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_enquiry' ); ?>" />
+				<div class="wcfm-clearfix"></div>
 			</form>
 			<div class="wcfm_clearfix"></div>
 		</div>

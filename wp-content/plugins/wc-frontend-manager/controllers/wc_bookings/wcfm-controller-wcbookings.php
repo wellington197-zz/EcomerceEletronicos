@@ -48,7 +48,7 @@ class WCFM_WCBookings_Controller {
 							//'suppress_filters' => 0 
 						);
 		if( isset( $_POST['search'] ) && !empty( $_POST['search']['value'] )) $args['s'] = wc_clean($_POST['search']['value']);
-		if( isset( $_POST['booking_status'] ) && !empty( $_POST['booking_status'] ) ) { $args['post_status'] = wc_clean($_POST['booking_status']); }
+		if( isset( $_POST['booking_status'] ) && !empty( $_POST['booking_status'] ) && ( $_POST['booking_status'] != 'all' ) ) { $args['post_status'] = wc_clean($_POST['booking_status']); }
 		
 		if ( ! empty( $_POST['filter_date_form'] ) && ! empty( $_POST['filter_date_to'] ) ) {
 			$args['meta_query'] = array(
@@ -178,9 +178,9 @@ class WCFM_WCBookings_Controller {
 				// Order
 				if ( $the_order ) {
 					if( apply_filters( 'wcfm_is_allow_order_details', true ) && $WCFM->wcfm_vendor_support->wcfm_is_order_for_vendor( $the_order->get_order_number() ) ) {
-						$wcfm_bookings_json_arr[$index][] = '<span class="booking-orderno"><a href="' . get_wcfm_view_order_url( $the_order->get_order_number(), $the_order ) . '">#' . $the_order->get_order_number() . '</a></span><br />' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
+						$wcfm_bookings_json_arr[$index][] = '<span class="booking-orderno"><a href="' . get_wcfm_view_order_url( $the_order->get_order_number(), $the_order ) . '">#' . $the_order->get_order_number() . '</a></span>' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
 					} else {
-						$wcfm_bookings_json_arr[$index][] = '<span class="booking-orderno">#' . $the_order->get_order_number() . '</span><br /> ' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
+						$wcfm_bookings_json_arr[$index][] = '<span class="booking-orderno">#' . $the_order->get_order_number() . '</span> ' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
 					}
 				} else {
 					$wcfm_bookings_json_arr[$index][] = '&ndash;';
@@ -202,7 +202,7 @@ class WCFM_WCBookings_Controller {
 				
 				// Additional Info
 				if ( $the_order ) {
-					$wcfm_bookings_json_arr[$index][] = apply_filters( 'wcfm_bookings_additonal_data', '&ndash;', $wcfm_bookings_single->ID, $the_order->get_order_number() );
+					$wcfm_bookings_json_arr[$index][] = apply_filters( 'wcfm_bookings_additonal_data', '&ndash;', $wcfm_bookings_single->ID, $the_order );
 				} else {
 					$wcfm_bookings_json_arr[$index][] = apply_filters( 'wcfm_bookings_additonal_data', '&ndash;', $wcfm_bookings_single->ID, 0 );
 				}

@@ -1,18 +1,18 @@
-=== WC Marketplace ===
-Contributors: Dualcube, greyparrots, purnendu, itzmekhokan
+=== Best WooCommerce Multivendor Marketplace Solution - WC Marketplace ===
+Contributors: wcmp, purnendu, itzmekhokan, rajsekharchatterjee11, sumitsingh89612
 Tags: multi vendor marketplace, woocommerce multivendor marketplace, multi seller store, product vendors, best marketplace plugin, multi seller, one product multi seller, woocommerce vendors, ebay, etsy, amazon, commission rate
 Donate link: https://wc-marketplace.com/donate
 Requires at least: 4.4
-Tested up to: 5.2.3
+Tested up to: 5.5.1
 Requires PHP: 5.6
-Stable tag: 3.4.2
+Stable tag: 3.5.11
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 ## WC Marketplace - brings you, your easiest and one stop solution to build a perfect online marketplace website.
 
 == Description ==
-### Number 1(#1) free multivendor marketplace plugin for a perfect eCommerce website.
+### Best free #1 multivendor marketplace plugin for a perfect WooCommerce website.
 Ever dreamt of having a store like Amazon, eBay, etsy, AirBnB or Flipkart? Then WC Marketplace will turn your dreams into a reality.
 You will have an online eCommerce store setup, where multiple merchants, vendors, traders or sellers can sell goods or services to customers in no time. ☺
 
@@ -189,6 +189,246 @@ Ans. Obviously, you can! Join in on our [GitHub repository](https://github.com/d
 
 
 == Changelog ==
+
+= 3.5.11 - 2020-10-28 =
+* Fix - Removed add new commission option. #557
+* Fix - Broken product details page at admin end. #560
+* Fix - Removed not required comment meta box from WCMp commission.
+* Fix - Bug in stripe when click on back button. #545
+* Fix - Random shipping classes are being assigned to the product. #544
+* Updated - Language file.
+
+= 3.5.10 - 2020-10-13 =
+* Enhancement - WCMp commissions hide for failed order #521
+* Enhancement - Added support for complete gtin list #417
+* Fix - Visitor's data save issue in visitor map #528
+* Fix - Vendor's Withdrawal page Threshold amount issue #529
+* Fix - Announcement month not translating at vendor end #527
+* Fix - Admin's Banking Overview data disply issue #532
+* Fix - Vendor's Banking Balance data issue #531
+* Updated - Language file.
+
+= 3.5.9 - 2020-09-29 =
+* Fix - Data sanitize, escape and validate issue.
+* Fix - Hide Tracking Order When Vendor Shipping Disable #519
+* Fix - Commission Total also Reflects when Commission Amount Edited #515
+* Fix - Postcode in vendor shipping not displaying properly #505
+* Fix - Suborder create issue when update parent from backend #514
+* Fix - Suborder also added in woocommerce reports money specd section #507
+* Fix - Suborder doesn't copy the coupon from parent order #355
+* Fix - Product note is not working #518
+* Updated - Language file.
+
+= 3.5.8 - 2020-09-15 =
+* Added - Filter in Banking Overriew Section #49
+* Added - Added additional hooks for membership
+* Fix - Email template override issue #493
+* Fix -  Security issues with nonce value #497
+* Fix - Category Restriction issue for coupon validation #494
+* Fix -  Vendor List category search issue in the second page #457
+* Fix - Vendor ID Parameter for WCMp shortcode not working #476
+* Fix -  Vendor can't edit shipping method of Location Not covered zone #431
+* Fix -  Main order and sub order syunc issue when adding a product mnaully in a order #472 
+* Updated - Language file.
+
+= 3.5.7 - 2020-08-26 =
+* Added - Keep displaying Vendor's review message to customer #480
+* Added - Email when vendor is reviewed #438
+* Added - Added additional hooks #478
+* Fix – Security issues with nonce value
+* Fix – WCMp Vendor's pin code wise shipping #462
+* Fix – Keep display vendor review messages #459
+* Fix – Individual Vendor Announcement trigger #439
+* Fix – Vendor all product bulk action hook fixed #466
+* Updated - Language file.
+
+= 3.5.6 - 2020-08-19 =
+* Added - Disply Product's weight unit in vendor add product page #456
+* Fix – Bootstrap css isue in console area #470
+* Fix – Admin can assign vendor with the product after WordPress update 5.5 #462
+* Fix – WCMp Report per product's search issue #465
+* Fix – Removed extra email send to customer when shipping Note is added #463
+* Updated - Language file.
+
+= 3.5.5 - 2020-08-13 =
+* Added - Compatibility of WordPress 5.5 added
+* Added - Hooks to add export button for vendor and product report #453
+* Added - New filter added to adjust wp_query  #434
+* Added - Number of rows can be selected for orders table at vendor end #430
+* Enhancement - Vendor Shop page New Widget Added #404
+* Fix - Attribute saving issue #436
+* Fix - Exclude the "product_note" comment_type from product reviews #429
+* Fix - CSV attachment to the monthly and weekly report email. #426
+* Fix - Coupon Validation #423
+* Fix - Vendor's can now update his/her particular shipping method from back end #442
+* Fix - WCMp Vendor tab display break issue and Screen Options no longer working #433
+* Fix - Re: Error paging vendor list #413
+* Fix - Shipping Data not saving #449
+* Updated - Language file.
+
+= 3.5.4 - 2020-07-24 =
+* Added - Let customer search vendor as per vendor's shipping zone( vendor list shortcode ) #284
+* Added - Let admin set every vendor shiping from backend #373
+* Added - Add vendor search product in their shop #327
+* Added - Vendor Review widget #378
+* Enhancement - Vendor shipping state limitaion #369
+* Enhancement - Recaptcha in contact vendor widget #318
+* Enhancement - Add Order ID under Vendor payment history #386
+* Fix - Exclude sub order data from WooCommerce analytic #334
+* Fix - WCMp visitor cookie #367
+* Fix - Vendor is getting Failed order mail #390
+* Fix - New Vendor Account Email #393
+* Fix - PHP Warning #403
+* Fix - Attribute special character issue #394
+* Updated - Language file.
+
+= 3.5.3 - 2020-07-03 =
+* Added - Suspended Vendor Notification #357
+* Added - Confirm deletion option for vendors #376
+* Enhancement - Refund module enhancement #366
+* Fix - Multi layer capability issue resolved
+* Fix - Sub order missing for admin created order from backend #377
+* Fix - Product note display under product reviews section #374
+* Fix - All order status displays for orders table on dashboard
+* Fix - Error at the time of withdrawal #310
+* Fix - Error at admin report
+* Updated - Language file.
+
+= 3.5.2 - 2020-06-16 =
+* Added - Additional hook in WCMp report #357
+* Added - Hook to save global verifiy setting #352
+* Fix - Manual Refund from vendor not working #351
+* Fix - Vendorlist page minify issue.
+* Fix - Vendor store description image issue for template 2 and 3.
+* Fix - Key Performance exclude data #354
+* Fix - variable and function checking error #350
+* Updated - Language file.
+
+= 3.5.1 - 2020-05-31 =
+* Added - Product management flow #294.
+* Tweak - Backend WCMp report functionalities.
+* Fix - Product category hierarchy scroll issue #328
+* Fix - Announcement Email issue #332
+* Fix - Hide suborders in Rest API #306
+* Fix - Variable product coupon #309
+* Fix - Suborder creation via rest api #338
+* Fix - Backend report view for multiple admin user #337
+* Fix - BuddyPress member avatar issue
+* Fix - Resolve minor codes fixes for php 7.2+
+* Fix - Duplicate downloadable product option in my-account page #264
+* Updated - Language file.
+
+= 3.5.0 - 2020-05-19 =
+* Added - BuddyPress compatibilities.
+* Added - Announcement email to vendor.
+* Added - Product Q&As emails for vendor and customer.
+* Added - Product approval management.
+* Added - Customer refund request process for vendor orders.
+* Added - Vendor Review API endpoint. #235
+* Added - Backend WCMp core reports enhancement.
+* Tweak - Vendor endpoint with image and banner fields. #234
+* Tweak - Vendor reviews based on product reviews. #276
+* Fix - Regenerate commission issue. #285
+* Fix - Suborder refund sync with parent order
+* Updated - Language file.
+
+= 3.4.11 - 2020-04-14 =
+* Fix - Subscription suborders issue. #67
+* Fix - Vendor per product shipping issues. #253
+* Fix - Shipping tax issue. #254
+* Fix - Templates files information header. #257
+* Fix - Default permalink settings conflict with vendor add product. #261
+* Updated - Language file.
+
+= 3.4.10 - 2020-03-11 =
+* Added - Generate coupon code supports in vendor dashboard.
+* Tweak - Query optimization for vendor products. #231
+* Fix - Undefine index issue in SPMV product query. #216
+* Fix - Banking overview pagination. #219
+* Fix - Admin new product email product link. #227
+* Fix - Order status change dropdown issue on mobile. #230
+* Fix - Coupon category issues. #232
+* Fix - Per product shipping issue. #233
+* Fix - Rest API vendor controller return filter name variable ref. #241
+* Fix - Commission mass payment issue for unsuccessful orders. #247
+* Dev - Added `wcmp_get_orders_query_args` filter . #238
+* Dev - Added `wcmp_vendor_product_excerpt_richedit` and `wcmp_vendor_product_description_richedit` filter . #245
+* Updated - Language file.
+
+= 3.4.9 - 2020-02-04 =
+* Added - WPML supports on vendor product list. #221
+* Tweak - Vendor dashboard widget withdrawable balance functionalities on transaction details.
+* Fix - Vendor dashboard product stats widget product link. #209
+* Fix - Backend vendor registration form builder state issue. #210
+* Fix - PHP-7.4 conflict syntax. #217
+* Fix - Decimal commission value on category wise commission settings in backend. #218
+* Updated - Language file.
+
+= 3.4.8 - 2020-01-14 =
+* Added - Banking overview updated on unpaid commission deletion. #162
+* Added - Order note in vendor new order email. #191
+* Added - Order notes on regenerate order commission.
+* Fix - Undefined vendor object on add new vendor in backend. #196
+* Fix - Advance product listing default categories reset issue. #198
+* Fix - Vendor dashboard header RTL issue.
+
+= 3.4.7 - 2019-12-24 =
+* Added - Vendor orders list bulk actions filters. #103
+* Added - Vendor email on `Add Vendor` via backend. #189
+* Added - Unpaid deleted commission in banking overview. #162
+* Tweak - Vendor orders list filter by statuses.
+* Fix - Apply vendor via Rest API. #177
+* Fix - Responsive issue of vendor transaction details. #174
+* Fix - Create sub orders via Rest API order create. #176
+* Fix - Order refund mail double trigger. #153
+* Fix - Parent order shipping refund reflect issue on sub order. #147
+* Fix - Display order note on vendor new order email. #191
+* Dev - Added `wcmp_bulk_actions_vendor_order_list` filter.
+* Dev - Added `wcmp_vendor_order_list_add_extra_filters` action.
+* Dev - Added `wcmp_orders_list_do_handle_bulk_actions` action.
+* Dev - Added `wcmp_orders_list_do_handle_filter_actions` action.
+* Updated - Language file.
+
+= 3.4.6 - 2019-11-28 =
+* Fix - Product category issues. #157,#158
+* Fix - SPMV products vendor name. #161
+* Fix - Hidden customer info on vendor order email. #159
+* Fix - SPMV products add to cart overriden issue. #168
+* Fix - Vendor setup wizard user restriction. #169
+
+= 3.4.5 - 2019-11-12 =
+* Fix - Failed order to suborders statuses sync issue. #146
+* Fix - Admin new product email edit product url issue. #149
+* Fix - WCMp cron call to a member function get_coupons issue. #152
+* Fix - Vendor dashboard coupon amount decimal issue. #144
+* Fix - Vendor order details customer order notes issue. #137
+* Fix - Vendor registration form attachment non required setting issue. #132
+* Fix - Backend commission paid transaction issue . #135
+* Fix - More products (SPMV) external products link issue. #136
+* Dev - Vendor application resubmit hook `wcmp_before_reapply_vendor_application_save` added. #106
+
+= 3.4.4 - 2019-10-15 =
+* Added - Multiple categories products category wise commission. #111
+* Tweak - Vendor access capabilities for different posts. #112
+* Tweak - Widget contact vendor redirect url. #124
+* Fix - Vendor new order email find & replace issue. #107
+* Fix - Vendor sales_stat_overview issue. #122
+* Fix - Pending products showing under more products (SPMV). #119
+* Dev - Backend vendors list table extra column filters. #105
+* Updated - Language file.
+
+= 3.4.3 - 2019-09-24 =
+* Added - Vendor total earned on order details section. #93
+* Tweak - Vendor search list scripts. #83
+* Tweak - Vendor New Order email trigger. #91
+* Fix - 'You are not logged in' message on Product Q&As tab. #81
+* Fix - Undefine variable issue. #89
+* Fix - WooCommerce registration settings overriden issue. #90
+* Fix - Debited amount value on Refund creation in banking overview. #95
+* Fix - Vendor Notify as Shipped email item price commission. #96
+* Fix - Missing products name on transaction details. #100
+* Updated - Language file.
+
 = 3.4.2 - 2019-09-09 =
 * Added - Sold by vendor support in WooCommerce Blocks. #61
 * Tweak - Vendor dashboard order list filter by statuses. #71
@@ -726,5 +966,5 @@ Ans. Obviously, you can! Join in on our [GitHub repository](https://github.com/d
 
 == Upgrade Notice ==
 
-= 3.4.1 =
-WC Marketplace 3.4+ is a significantly major update and hence please make a full site backup or follow some standard steps(staging to live) before upgrading your marketplace to avoid any undesirable situations.
+= 3.5.0 =
+3.5+ is a major update. Make a full site backup and [review latest release](https://wc-marketplace.com/latest-release/) before upgrading your marketplace to avoid any undesirable situations.

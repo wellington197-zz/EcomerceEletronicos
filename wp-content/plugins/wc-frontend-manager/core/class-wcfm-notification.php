@@ -9,22 +9,28 @@
  */
 class WCFM_Notification {
 	
+	public $cache_group = '';
+	
 	public function __construct() {
 		global $WCFM;
+		
+		$this->cache_group = 'wcfm-notification';
 		
 		// Order notification on WCFM Message
 		if( apply_filters( 'wcfm_is_allow_orders_extended_notifications', true ) ) {
 			add_action( 'woocommerce_order_status_on-hold', array( $this, 'wcfm_message_on_new_order' ) );
 			add_action( 'woocommerce_order_status_pending', array( $this, 'wcfm_message_on_new_order' ) );
 			add_action( 'woocommerce_order_status_processing', array( $this, 'wcfm_message_on_new_order' ) );
+			add_action( 'ywraq_after_create_order', array( $this, 'wcfm_message_on_new_order' ) );
 		}
 		add_action( 'woocommerce_order_status_completed', array( $this, 'wcfm_message_on_new_order' ) );
 		
 		// Manual Order Desktop Notirfication
 		add_action( 'wcfm_manual_orders_manage_complete', array( $this, 'wcfm_message_on_new_order' ) );
 		
-		// Product notification on Product Approve
-		add_action( 'wcfm_after_product_approve', array( $this, 'wcfm_message_on_product_approve' ) ); 
+		// Product notification on Product Approve/Reject
+		add_action( 'wcfm_after_product_approve', array( $this, 'wcfm_message_on_product_approve' ) );
+		add_action( 'wcfm_after_product_reject', array( $this, 'wcfm_message_on_product_reject' ), 10, 2 );
 		add_action( 'woocommerce_process_product_meta', array( $this, 'wcfm_message_on_product_approve' ) );
 		
 		// Message list in WCFM Dashboard
@@ -85,11 +91,25 @@ class WCFM_Notification {
 			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 			if( !$vendor_id ) return;
   	
-			$wcfm_messages = sprintf( __( 'Product <b>%s</b> has been approved.', 'wc-frontend-manager' ), '<a class="wcfm_dashboard_item_title" href="' . get_permalink( $product_id ) . '">' . get_the_title( $product_id ) . '</a>' );
+			$wcfm_messages = sprintf( __( 'Product <b>%s</b> has been approved.', 'wc-frontend-manager' ), '<a class="wcfm_dashboard_item_title" target="_blank" href="' . get_permalink( $product_id ) . '">' . get_the_title( $product_id ) . '</a>' );
 			$this->wcfm_send_direct_message( -1, $vendor_id, 1, 0, $wcfm_messages, 'product_review', apply_filters( 'wcfm_is_allow_product_approved_notification_email', true ) );
 		
 			update_post_meta( $product_id, '_wcfm_product_approved_notified', 'yes' );
 		}
+	}
+	
+	/**
+	 * Vendor Notification on Product Reject
+	 */
+	function wcfm_message_on_product_reject( $product_id, $reason ) {
+		global $WCFM;
+  	
+		$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+		if( !$vendor_id ) return;
+	
+		$wcfm_messages = sprintf( __( 'Product <b>%s</b> has been rejected.<br/>Reason: %s', 'wc-frontend-manager' ), '<a class="wcfm_dashboard_item_title" target="_blank" href="' . get_wcfm_edit_product_url( $product_id ) . '">' . get_the_title( $product_id ) . '</a>', $reason );
+		$this->wcfm_send_direct_message( -1, $vendor_id, 1, 0, $wcfm_messages, 'product_review', apply_filters( 'wcfm_is_allow_product_reject_notification_email', true ) );
+		
 	}
 	
 	/**
@@ -136,8 +156,13 @@ class WCFM_Notification {
 		
     // Vendor Notification
     if( $WCFM->is_marketplace ) {
+    	$order_vendors = array();
 			foreach ( $order->get_items() as $item_id => $item ) {
-				$product      = $order->get_product_from_item( $item );
+				if( version_compare( WC_VERSION, '4.4', '<' ) ) {
+					$product = $order->get_product_from_item( $item );
+				} else {
+					$product = $item->get_product();
+				}
 				$product_id   = 0;
 				if ( is_object( $product ) ) {
 					$product_id   = $item->get_product_id();
@@ -147,11 +172,18 @@ class WCFM_Notification {
 					$message_to = wcfm_get_vendor_id_by_post( $product_id );
 					
 					if( $message_to ) {
-						$wcfm_messages = sprintf( __( 'You have received an Order <b>#%s</b> for <b>%s</b>', 'wc-frontend-manager' ), '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order->get_order_number() . '</a>', get_the_title( $product_id ) );
+						if( apply_filters( 'wcfm_is_allow_itemwise_notification', true ) ) {
+							$wcfm_messages = sprintf( __( 'You have received an Order <b>#%s</b> for <b>%s</b>', 'wc-frontend-manager' ), '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order->get_order_number() . '</a>', get_the_title( $product_id ) );
+						} elseif( !in_array( $message_to, $order_vendors ) ) {
+							$wcfm_messages = sprintf( __( 'You have received an Order <b>#%s</b>', 'wc-frontend-manager' ), '<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order->get_order_number() . '</a>' );
+						} else {
+							continue;
+						}
 						$this->wcfm_send_direct_message( $author_id, $message_to, $author_is_admin, $author_is_vendor, $wcfm_messages, 'order', apply_filters( 'wcfm_is_allow_order_notification_email', false ) );
+						$order_vendors[$message_to] = $message_to;
+						
+						do_action( 'wcfm_after_new_order_vendor_notification', $message_to, $product_id, $order_id );
 					}
-					
-					do_action( 'wcfm_after_new_order_vendor_notification', $message_to, $product_id, $order_id );
 				}
 			}
 		}
@@ -167,13 +199,13 @@ class WCFM_Notification {
   function wcfm_dashboard_notification_list() {
   	global $WCFM, $wpdb;
   	
-  	if( apply_filters( 'wcfm_is_allow_notifications', true ) ) {
+  	if( apply_filters( 'wcfm_is_allow_notifications', true ) && apply_filters( 'wcfm_is_allow_dashboard_notificaton', true ) ) {
   		$message_to = apply_filters( 'wcfm_message_author', get_current_user_id() );
   		if( $message_to ) {
 				$sql = 'SELECT wcfm_messages.* FROM ' . $wpdb->prefix . 'wcfm_messages AS wcfm_messages';
 				$sql .= ' WHERE 1=1';
 				$sql .= " AND `is_direct_message` = 1";
-				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) ) { 
+				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) { 
 					$vendor_filter = " AND ( `author_id` = {$message_to} OR `message_to` = -1 OR `message_to` = {$message_to} )";
 					$sql .= $vendor_filter;
 				} else {
@@ -264,56 +296,85 @@ class WCFM_Notification {
 		$total_mesaages = 0;
 		if( $message_type == 'enquiry' ) {
 			if( apply_filters( 'wcfm_is_pref_enquiry', true ) && apply_filters( 'wcfm_is_allow_enquiry', true ) ) {
-				$sql = "SELECT COUNT(wcfm_enquiries.ID) FROM {$wpdb->prefix}wcfm_enquiries AS wcfm_enquiries";
-				$sql .= " WHERE 1=1";
-				$sql .= " AND `reply` = ''";
 				if( wcfm_is_vendor() ) { 
-					$sql .= " AND `vendor_id` = {$message_to}";
+					$cache_key = $this->cache_group . '-enquiry-' . $message_to;
+				} else {
+					$cache_key = $this->cache_group . '-enquiry-0';
 				}
-				$sql = apply_filters( 'wcfm_enquery_list_query', $sql );
-				$total_mesaages = $wpdb->get_var( $sql );
+				$total_mesaages = get_transient( $cache_key );
+				
+				if( empty( $total_mesaages ) ) {
+					$sql = "SELECT COUNT(wcfm_enquiries.ID) FROM {$wpdb->prefix}wcfm_enquiries AS wcfm_enquiries";
+					$sql .= " WHERE 1=1";
+					$sql .= " AND `reply` = ''";
+					if( wcfm_is_vendor() ) { 
+						$sql .= " AND `vendor_id` = {$message_to}";
+					}
+					$sql = apply_filters( 'wcfm_enquery_list_query', $sql );
+					$total_mesaages = $wpdb->get_var( $sql );
+					
+					set_transient( $cache_key, $total_mesaages );
+				}
 			}
 		} elseif( $message_type == 'notice' ) {
 			if( ( $message_type == 'notice' ) && apply_filters( 'wcfm_is_pref_notice', true ) && apply_filters( 'wcfm_is_allow_notice', true ) ) {
-				$args = array(
-							'posts_per_page'   => -1,
-							'offset'           => 0,
-							'post_type'        => 'wcfm_notice',
-							'post_parent'      => 0,
-							'post_status'      => array('publish'),
-							'suppress_filters' => 0 
-						);
-				$args = apply_filters( 'wcfm_notice_args', $args );
-		
-				$wcfm_notices_array = get_posts( $args );
-				$total_mesaages = count($wcfm_notices_array);
+				$cache_key = $this->cache_group . '-notice';
+				$total_mesaages = get_transient( $cache_key );
+				
+				if( empty( $total_mesaages ) ) {
+					$args = array(
+								'posts_per_page'   => -1,
+								'offset'           => 0,
+								'post_type'        => 'wcfm_notice',
+								'post_parent'      => 0,
+								'post_status'      => array('publish'),
+								'suppress_filters' => 0 
+							);
+					$args = apply_filters( 'wcfm_notice_args', $args );
+			
+					$wcfm_notices_array = get_posts( $args );
+					$total_mesaages = count($wcfm_notices_array);
+					
+					set_transient( $cache_key, $total_mesaages );
+				}
 			}
 		} else {
 			if( ( $message_type == 'message' ) && apply_filters( 'wcfm_is_allow_notifications', true ) ) {
-				$sql = 'SELECT COUNT(wcfm_messages.ID) FROM ' . $wpdb->prefix . 'wcfm_messages AS wcfm_messages';
-				$sql .= ' WHERE 1=1';
-				
-				
-				$status_filter = " AND `is_direct_message` = 1";
-				$sql .= $status_filter;
-				
-				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) ) { 
-					//$vendor_filter = " AND `author_is_admin` = 1";
-					$vendor_filter = " AND ( `author_id` = {$message_to} OR `message_to` = -1 OR `message_to` = {$message_to} )";
-					$sql .= $vendor_filter;
+				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
+					$cache_key = $this->cache_group . '-message-' . $message_to;
 				} else {
-					$group_manager_filter = apply_filters( 'wcfm_notification_group_manager_filter', '' );
-					if( $group_manager_filter ) {
-						$sql .= $group_manager_filter;
-					} else {
-						$sql .= " AND `author_id` != -1";
-					}
+					$cache_key = $this->cache_group . '-message-0';
 				}
+				$total_mesaages = get_transient( $cache_key );
 				
-				$message_status_filter = " AND NOT EXISTS (SELECT * FROM {$wpdb->prefix}wcfm_messages_modifier as wcfm_messages_modifier_2 WHERE wcfm_messages.ID = wcfm_messages_modifier_2.message AND wcfm_messages_modifier_2.read_by={$message_to})";
-				$sql .= $message_status_filter;
-				
-				$total_mesaages = $wpdb->get_var( $sql );
+				if( empty( $total_mesaages ) ) {
+					$sql = 'SELECT COUNT(wcfm_messages.ID) FROM ' . $wpdb->prefix . 'wcfm_messages AS wcfm_messages';
+					$sql .= ' WHERE 1=1';
+					
+					
+					$status_filter = " AND `is_direct_message` = 1";
+					$sql .= $status_filter;
+					
+					if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) { 
+						//$vendor_filter = " AND `author_is_admin` = 1";
+						$vendor_filter = " AND ( `author_id` = {$message_to} OR `message_to` = -1 OR `message_to` = {$message_to} )";
+						$sql .= $vendor_filter;
+					} else {
+						$group_manager_filter = apply_filters( 'wcfm_notification_group_manager_filter', '' );
+						if( $group_manager_filter ) {
+							$sql .= $group_manager_filter;
+						} else {
+							$sql .= " AND `author_id` != -1";
+						}
+					}
+					
+					$message_status_filter = " AND NOT EXISTS (SELECT * FROM {$wpdb->prefix}wcfm_messages_modifier as wcfm_messages_modifier_2 WHERE wcfm_messages.ID = wcfm_messages_modifier_2.message AND wcfm_messages_modifier_2.read_by={$message_to})";
+					$sql .= $message_status_filter;
+					
+					$total_mesaages = $wpdb->get_var( $sql );
+					
+					set_transient( $cache_key, $total_mesaages );
+				}
 			}
 		}
 		
@@ -357,6 +418,16 @@ class WCFM_Notification {
 																		({$messageid}, 1, {$author_id}, '{$todate}')";
 				$wpdb->query($wcfm_read_message);
 			}
+			
+			if( $message_to ) {
+				// Vendor Transient
+				$cache_key = $this->cache_group . '-message-' . $message_to;
+				delete_transient( $cache_key );
+			} else {
+				// Admin Transient
+				$cache_key = $this->cache_group . '-message-0';
+				delete_transient( $cache_key );
+			}
 		}
 		
 		if( $email_notification && apply_filters( 'wcfm_is_allow_notification_email', true, $wcfm_messages_type, $message_to ) ) {
@@ -366,17 +437,29 @@ class WCFM_Notification {
 			$message_types = get_wcfm_message_types();
 			$message_type = isset( $message_types[$wcfm_messages_type] ) ? $message_types[$wcfm_messages_type] : ucfirst($wcfm_messages_type);
 						
-			$notificaton_mail_subject = "{site_name}: " . apply_filters( 'wcfm_notification_mail_subject', __( "Notification", "wc-frontend-manager" ) . " - " . $message_type, $wcfm_messages_type );
-			$notification_mail_body =  '<br/>' .
+			$notificaton_mail_subject = "[{site_name}] " . apply_filters( 'wcfm_notification_mail_subject', __( "Notification", "wc-frontend-manager" ) . " - " . $message_type, $wcfm_messages_type );
+			if( ( $message_to != -1 ) &&  ( $message_to != '-1' ) && apply_filters( 'wcfm_is_pref_notification', true ) && ( !wcfm_is_vendor( $message_to ) || ( wcfm_is_vendor( $message_to )  && wcfm_vendor_has_capability( $message_to, 'notification' ) ) ) ) {
+				$notification_mail_body =  '<br/>' .
+																	 __( 'Hi', 'wc-frontend-manager' ) .
+																	 ',<br/><br/>' . 
+																	 __( 'You have received a new notification:', 'wc-frontend-manager' ) .
+																	 '<br/><br/>' .
+																	 '{notification_message}' .
+																	 '<br/><br/>' .
+																	 sprintf( __( 'Check more details %shere%s.', 'wc-frontend-manager' ), '<a href="{notification_url}">', '</a>' ) .
+																	 '<br /><br/>' . __( 'Thank You', 'wc-frontend-manager' ) .
+																	 '<br/><br/>';
+			} else {
+				$notification_mail_body =  '<br/>' .
 																 __( 'Hi', 'wc-frontend-manager' ) .
 																 ',<br/><br/>' . 
 																 __( 'You have received a new notification:', 'wc-frontend-manager' ) .
 																 '<br/><br/>' .
 																 '{notification_message}' .
-																 '<br/><br/>' .
-																 sprintf( __( 'Check more details %shere%s.', 'wc-frontend-manager' ), '<a href="{notification_url}">', '</a>' ) .
 																 '<br /><br/>' . __( 'Thank You', 'wc-frontend-manager' ) .
 																 '<br/><br/>';
+			}
+			$notification_mail_body = apply_filters( 'wcfm_notification_mail_content', $notification_mail_body, $wcfm_messages_type, $wcfm_messages );
 													 
 			$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $notificaton_mail_subject );
 			$subject = apply_filters( 'wcfm_email_subject_wrapper', $subject );
@@ -391,7 +474,10 @@ class WCFM_Notification {
 					if( wcfm_is_vendor( $message_to ) ) {
 						$user_email = wcfm_get_vendor_store_email_by_vendor( $message_to );
 					} else {
-						$user_email = get_userdata( $message_to )->user_email;
+						$userdata = get_userdata( $message_to );
+						if( $userdata ) {
+							$user_email = $userdata->user_email;
+						}
 					}
 					if( $user_email ) {
 						wp_mail( $user_email, $subject, $message );
@@ -437,7 +523,7 @@ class WCFM_Notification {
 				$sql = 'SELECT wcfm_messages.* FROM ' . $wpdb->prefix . 'wcfm_messages AS wcfm_messages';
 				$sql .= ' WHERE 1=1';
 				
-				if( wcfm_is_vendor() ) { 
+				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
 					//$vendor_filter = " AND `author_is_admin` = 1";
 					$vendor_filter = " AND ( `author_id` = {$message_to} OR `message_to` = -1 OR `message_to` = {$message_to} )";
 					$sql .= $vendor_filter;
@@ -483,14 +569,21 @@ class WCFM_Notification {
   	global $WCFM, $wpdb, $_POST;
   	
   	$messageid = absint( $_POST['messageid'] );
-  	$author_id = apply_filters( 'wcfm_message_author', get_current_user_id() );
+  	$message_to = apply_filters( 'wcfm_message_author', get_current_user_id() );
   	$todate = date('Y-m-d H:i:s');
   	
   	$wcfm_read_message     = "INSERT into {$wpdb->prefix}wcfm_messages_modifier 
 																(`message`, `is_read`, `read_by`, `read_on`)
 																VALUES
-																({$messageid}, 1, {$author_id}, '{$todate}')";
+																({$messageid}, 1, {$message_to}, '{$todate}')";
 		$wpdb->query($wcfm_read_message);
+		
+		if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
+			$cache_key = $this->cache_group . '-message-' . $message_to;
+		} else {
+			$cache_key = $this->cache_group . '-message-0';
+		}
+		delete_transient( $cache_key );
 		
 		die;
   }
@@ -506,18 +599,26 @@ class WCFM_Notification {
   	if( isset($_POST['selected_messages']) ) {
 			$selected_messages = wc_clean( $_POST['selected_messages'] );
 			if( is_array( $selected_messages ) && !empty( $selected_messages ) ) {
+				$message_to = apply_filters( 'wcfm_message_author', get_current_user_id() );
 				foreach( $selected_messages as $messageid ) {
-					$author_id = apply_filters( 'wcfm_message_author', get_current_user_id() );
 					$todate = date('Y-m-d H:i:s');
 					
 					$wcfm_read_message     = "INSERT into {$wpdb->prefix}wcfm_messages_modifier 
 																			(`message`, `is_read`, `read_by`, `read_on`)
 																			VALUES
-																			({$messageid}, 1, {$author_id}, '{$todate}')";
+																			({$messageid}, 1, {$message_to}, '{$todate}')";
 					$wpdb->query($wcfm_read_message);
 				}
+				
+				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
+					$cache_key = $this->cache_group . '-message-' . $message_to;
+				} else {
+					$cache_key = $this->cache_group . '-message-0';
+				}
+				delete_transient( $cache_key );
 			}
 		}
+		
 		echo '{ "status": true }';
 		die;
   }
@@ -533,6 +634,15 @@ class WCFM_Notification {
   	$messageid = absint( $_POST['messageid'] );
   	$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_messages WHERE `ID` = {$messageid}" );
   	$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_messages_modifier WHERE `message` = {$messageid}" );
+  	
+  	if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
+			$message_to = apply_filters( 'wcfm_message_author', get_current_user_id() );
+			$cache_key = $this->cache_group . '-message-' . $message_to;
+		} else {
+			$cache_key = $this->cache_group . '-message-0';
+		}
+		delete_transient( $cache_key );
+  	
   	echo '{ "status": true }';
 		die;
   }
@@ -552,6 +662,14 @@ class WCFM_Notification {
 					$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_messages WHERE `ID` = {$messageid}" );
 					$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_messages_modifier WHERE `message` = {$messageid}" );
 				}
+				
+				if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
+					$message_to = apply_filters( 'wcfm_message_author', get_current_user_id() );
+					$cache_key = $this->cache_group . '-message-' . $message_to;
+				} else {
+					$cache_key = $this->cache_group . '-message-0';
+				}
+				delete_transient( $cache_key );
 			}
 		}
   	echo '{ "status": true }';
@@ -672,9 +790,20 @@ class WCFM_Notification {
   		
   		case 'new_affiliate':
   		case 'affiliate_approval':
-  		case 'affiliate_assign':
-  		case 'affiliate_complete':
   			$message_type_class .= 'fa-user-friends';
+  		break;
+  		
+  		case 'affiliate_commission':
+  			$message_type_class .= 'fa-percent';
+  		break;
+  		
+  		case 'affiliate_commission_paid':
+  			$message_type_class .= 'fa-money-bill-alt';
+  		break;
+  		
+  		case 'affiliate-disable':
+  		case 'affiliate-enable':
+  			$message_type_class .= 'fa-user-alt';
   		break;
   		
   		case 'shipment_tracking':

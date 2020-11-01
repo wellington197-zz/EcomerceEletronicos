@@ -17,6 +17,7 @@ if (!class_exists('WCMp_Shortcode_Vendor_List')) {
          * @return array
          */
         public static function get_vendors_query($args, $request = array(), $ignore_pagi = false) {
+            global $wpdb;
             $block_vendors = wp_list_pluck(wcmp_get_all_blocked_vendors(), 'id');
             $include_vendors = array();
             $default = array (
@@ -50,11 +51,64 @@ if (!class_exists('WCMp_Shortcode_Vendor_List')) {
                 //
                 $args['include'] = $include_vendors;
                 $vendor_args = wp_parse_args($args, $default);
+            } elseif (isset($request['vendor_sort_type']) && $request['vendor_sort_type'] == 'shipping' && isset($request['vendor_sort_category'])) {
+                $get_vendor = false;
+                $zone_id = '';
+                $location_code = '';
+                if (isset( $request['vendor_postcode_list'] ) && !empty( $request['vendor_postcode_list'] ) ) {
+                    $location_code = $request['vendor_postcode_list'];
+                } elseif ( isset( $request['vendor_country'] ) && isset($request['vendor_state']) && !empty($request['vendor_state']) && !empty($request['vendor_country']) ) {
+
+                    $location_code = $request['vendor_country'].':'.$request['vendor_state'];
+                } elseif (isset( $request['vendor_country'] )) {
+                    $search_zone_id = $wpdb->get_results(
+                    // phpcs:disable
+                    "SELECT location_code 
+                    FROM {$wpdb->prefix}woocommerce_shipping_zone_locations"
+                    );
+                    $woocommerce_zone_ids = is_array( $search_zone_id ) ? wp_list_pluck( $search_zone_id, 'location_code' ) : array();
+                    if ( in_array($request['vendor_country'], $woocommerce_zone_ids) ) {
+                        $country_code = $request['vendor_country'];
+                        $search_zone = $wpdb->get_results(
+                            // phpcs:disable
+                            "SELECT zone_id 
+                            FROM {$wpdb->prefix}woocommerce_shipping_zone_locations where location_code = '$country_code'"
+                        );
+                        $zone_id = $search_zone[0]->zone_id;
+                        $get_vendor = true;
+                    }
+                }
+                $search_results = $wpdb->get_results(
+                    "SELECT location_code
+                    FROM {$wpdb->prefix}wcmp_shipping_zone_locations"
+                    );
+                foreach ($search_results as $key => $value) {
+                  if ( $value->location_code == $location_code ) {
+                    $get_vendor = true;
+                  }
+                }
+                $vendor_ids = array();
+                if ( $get_vendor ) {
+                    $shipping_vendor = new WCMp_Vendor_Query(array(
+                        'number' => -1,
+                        'shipping_zone' => $zone_id,
+                        'shipping_location' => $location_code
+                        ));
+                    $vendor_ids = wp_list_pluck( $shipping_vendor->get_results(), 'ID' );
+                }
+                $wcmp_vendor_ids = get_wcmp_vendors(array(), 'ids');
+                if ( empty( $vendor_ids ) ) {
+                    $args['exclude'] = $wcmp_vendor_ids;
+                } else {
+                    $args['include'] = $vendor_ids;
+                }
+                $vendor_args = wp_parse_args($args, $default);
             } else {
                 $vendor_args = wp_parse_args($args, $default);
             }
-            if(get_query_var('paged')) :
-                $current_page = max( 1, get_query_var('paged') );
+            $query_paged = is_front_page() ? get_query_var('page') : get_query_var('paged');
+            if( $query_paged ) :
+                $current_page = max( 1, $query_paged );
                 $offset = ($current_page - 1) * $vendor_args['number'];
                 $vendor_args['offset'] = $offset;
             endif;
@@ -82,15 +136,18 @@ if (!class_exists('WCMp_Shortcode_Vendor_List')) {
             $frontend_assets_path = str_replace(array('http:', 'https:'), '', $frontend_assets_path);
             $suffix = defined('WCMP_SCRIPT_DEBUG') && WCMP_SCRIPT_DEBUG ? '' : '.min';
             $WCMp->library->load_gmap_api();
-            wp_register_style('wcmp_vendor_list', $frontend_assets_path . 'css/vendor-list.css', array(), $WCMp->version);
-            wp_register_script('wcmp_vendor_list', $frontend_assets_path . 'js/vendor-list.js', array('jquery','wcmp-gmaps-api'), $WCMp->version, true);
-            
+            wp_register_style('wcmp_vendor_list', $frontend_assets_path . 'css/vendor-list' . $suffix . '.css', array(), $WCMp->version);
+            wp_register_script('wcmp_vendor_list', $frontend_assets_path . 'js/vendor-list' . $suffix . '.js', array('jquery','wcmp-gmaps-api'), $WCMp->version, true);
+            // country js
+            wp_enqueue_script( 'wc-country-select' );
+            wp_enqueue_script('wcmp_country_state_js');
+
             wp_enqueue_script('frontend_js');
             wp_enqueue_script('wcmp_vendor_list');
-            
+            wp_style_add_data('wcmp_vendor_list', 'rtl', 'replace');
             wp_enqueue_style('wcmp_vendor_list');
             extract(shortcode_atts(array('orderby' => 'registered', 'order' => 'ASC'), $atts));
-            $order_by = isset($_REQUEST['vendor_sort_type']) ? $_REQUEST['vendor_sort_type'] : $orderby;
+            $order_by = isset($_REQUEST['vendor_sort_type']) ? wc_clean($_REQUEST['vendor_sort_type']) : $orderby;
             
             $query = apply_filters('wcmp_vendor_list_vendors_query_args', array(
                 'number' => 12,
@@ -152,11 +209,13 @@ if (!class_exists('WCMp_Shortcode_Vendor_List')) {
             );
             $WCMp->localize_script('wcmp_vendor_list', apply_filters('wcmp_vendor_list_script_data_params',$script_param, $_REQUEST));
             $radius = apply_filters('wcmp_vendor_list_filter_radius_data', array(5,10,20,30,50));
+            $big_pagi = 999999999; // need an unlikely integer
             $data = apply_filters('wcmp_vendor_list_data', array(
                 'total'   => ceil($vendors_total/$query['number']),
-                'current' => max( 1, get_query_var('paged') ),
+                'current' => is_front_page() ? max( 1, ( get_query_var('page') ) ) : max( 1, get_query_var('paged') ),
                 'per_page' => $query['number'],
-                'base'    => get_pagenum_link(1) . '%_%',
+                //'base'    => get_pagenum_link(1) . '%_%',
+                'base'    => str_replace( $big_pagi, '%#%', esc_url( get_pagenum_link( $big_pagi ) ) ),
                 'format'  => 'page/%#%/',
                 'vendors'   => $vendors,
                 'vendor_total' => $vendors_total,

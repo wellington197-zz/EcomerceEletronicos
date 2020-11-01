@@ -146,6 +146,8 @@ class WCFMmp_Product {
 			$product_commission_data = get_post_meta( $product_id, '_wcfmmp_commission', true );
 			if( empty($product_commission_data) ) $product_commission_data = array();
 			
+			//print_r( $product_commission_data );
+			
 			$vendor_commission_mode        = isset( $product_commission_data['commission_mode'] ) ? $product_commission_data['commission_mode'] : 'global';
 			$vendor_commission_fixed       = isset( $product_commission_data['commission_fixed'] ) ? $product_commission_data['commission_fixed'] : '';
 			$vendor_commission_percent     = isset( $product_commission_data['commission_percent'] ) ? $product_commission_data['commission_percent'] : '90';
@@ -169,7 +171,7 @@ class WCFMmp_Product {
 				
 				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_product_commission_tax', array(  
 			                                                                'tax_fields_heading' => array( 'type' => 'html', 'class' => 'commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => '<h2>' . __('Commission Tax Settings', 'wc-multivendor-marketplace') . '</h2><div class="wcfm_clearfix"></div>' ), 
-																																			'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable, 'desc_class' => 'wcfm_page_options_desc commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'desc' => __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) ),
+																																			'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'name' => 'commission[tax_enable]', 'class' => 'wcfm-checkbox wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title checkbox_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => 'yes', 'dfvalue' => $tax_enable ),
 																																			'tax_name' => array( 'label' => __( 'Tax Label', 'wc-multivendor-marketplace' ), 'placeholder' => __( 'Tax', 'wc-multivendor-marketplace' ), 'type' => 'text', 'name' => 'commission[tax_name]', 'class' => 'wcfm-text wcfm_ele commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => $tax_name ),
 																																			'tax_percent' => array( 'label' => __( 'Tax Percent (%)', 'wc-multivendor-marketplace' ), 'type' => 'number', 'name' => 'commission[tax_percent]', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'label_class' => 'wcfm_title commission_mode_field commission_mode_percent commission_mode_fixed commission_mode_percent_fixed commission_mode_by_sales commission_mode_by_products commission_mode_by_quantity', 'value' => $tax_percent ),
 																																			), $product_id ) );
@@ -333,14 +335,16 @@ class WCFMmp_Product {
 		}
 		
 		if( !$vendor_id ) {
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+			$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 		}
 		
 		// Vendor Commission
+		$vendor_data = array();
 		if( $vendor_id && ( $vendor_commission_mode == 'global' ) ) {
 			$vendor_data = get_user_meta( $vendor_id, 'wcfmmp_profile_settings', true );
 			
 			$vendor_commission_mode        = isset( $vendor_data['commission']['commission_mode'] ) ? $vendor_data['commission']['commission_mode'] : 'global';
+			if( ($vendor_commission_mode == 'percentage') ) $vendor_commission_mode = 'global';
 			$vendor_commission_fixed       = isset( $vendor_data['commission']['commission_fixed'] ) ? $vendor_data['commission']['commission_fixed'] : '';
 			$vendor_commission_percent     = isset( $vendor_data['commission']['commission_percent'] ) ? $vendor_data['commission']['commission_percent'] : '';
 			$vendor_commission_by_sales    = isset( $vendor_data['commission']['commission_by_sales'] ) ? $vendor_data['commission']['commission_by_sales'] : array();
@@ -390,6 +394,14 @@ class WCFMmp_Product {
 		
 		$product_commission_rule = array( 'rule' => $vendor_commission_mode, 'mode' => $vendor_commission_mode, 'percent' => 0, 'fixed' => 0, 'tax_enable' => $tax_enable, 'tax_name' => $tax_name, 'tax_percent' => $tax_percent );
 		
+		// Vendor's own product commission
+		if( $vendor_id && !apply_filters( 'wcfm_is_allow_vendor_own_product_commission', true ) ) {
+			$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
+			if( $pvendor_id == $vendor_id ) {
+				return apply_filters( 'wcfmmp_product_commission_rule', $product_commission_rule, $product_id, $vendor_id, $item_price, $quantity, $order_id, $vendor_commission_mode );
+			}
+		}
+		
 		switch( $vendor_commission_mode ) {
 			case 'percent':
 				$product_commission_rule['percent'] = $vendor_commission_percent;
@@ -422,6 +434,49 @@ class WCFMmp_Product {
 			
 		}
 		
+		// Transaction Charge Adding to the Commission Rule
+		$product_commission_rule['transaction_charge_type'] = 'no';
+		$product_commission_rule['transaction_charge_percent'] = '0';
+		$product_commission_rule['transaction_charge_fixed'] = '0';
+		$product_commission_rule['transaction_charge_tax'] = '0';
+		
+		if( $order_id ) {
+			$order = wc_get_order( $order_id );
+			if( is_a( $order , 'WC_Order' ) ) {
+				$payment_method = ! empty( $order->get_payment_method() ) ? $order->get_payment_method() : '';
+				
+				if( $payment_method ) {
+					$transaction_charge_type = isset( $WCFMmp->wcfmmp_withdrawal_options['transaction_charge_type'] ) ? $WCFMmp->wcfmmp_withdrawal_options['transaction_charge_type'] : 'no';
+					$transaction_charge      = isset( $WCFMmp->wcfmmp_withdrawal_options['transaction_charge'] ) ? $WCFMmp->wcfmmp_withdrawal_options['transaction_charge'] : array();
+					
+					$transaction_charge_gateway  = isset( $transaction_charge[$payment_method] ) ? $transaction_charge[$payment_method][0] : array();
+					$transaction_percent_charge  = isset( $transaction_charge_gateway['percent'] ) ? $transaction_charge_gateway['percent'] : 0;
+					$transaction_fixed_charge    = isset( $transaction_charge_gateway['fixed'] ) ? $transaction_charge_gateway['fixed'] : 0;
+					$transaction_charge_tax      = isset( $transaction_charge_gateway['tax'] ) ? $transaction_charge_gateway['tax'] : 0;
+				
+					if( $vendor_id && !empty( $vendor_data ) ) {
+						$vendor_transaction_mode         = isset( $vendor_data['withdrawal']['transaction_mode'] ) ? $vendor_data['withdrawal']['transaction_mode'] : 'global';
+						if( $vendor_transaction_mode != 'global' ) {
+							$transaction_charge_type         = isset( $vendor_data['withdrawal']['transaction_charge_type'] ) ? $vendor_data['withdrawal']['transaction_charge_type'] : $transaction_charge_type;
+							$vendor_transaction_charge       = isset( $vendor_data['withdrawal']['transaction_charge'] ) ? $vendor_data['withdrawal']['transaction_charge'] : $transaction_charge;
+							
+							$vendor_transaction_charge_gateway  = isset( $vendor_transaction_charge[$payment_method] ) ? $vendor_transaction_charge[$payment_method][0] : $transaction_charge_gateway;
+							$transaction_percent_charge         = isset( $vendor_transaction_charge_gateway['percent'] ) ? $vendor_transaction_charge_gateway['percent'] : 0;
+							$transaction_fixed_charge           = isset( $vendor_transaction_charge_gateway['fixed'] ) ? $vendor_transaction_charge_gateway['fixed'] : 0;
+							$transaction_charge_tax             = isset( $vendor_transaction_charge_gateway['tax'] ) ? $vendor_transaction_charge_gateway['tax'] : 0;
+						}
+					}
+					
+					if( $transaction_charge_type != 'no' ) {
+						$product_commission_rule['transaction_charge_type'] = $transaction_charge_type;
+						$product_commission_rule['transaction_charge_percent'] = $transaction_percent_charge;
+						$product_commission_rule['transaction_charge_fixed'] = $transaction_fixed_charge;
+						$product_commission_rule['transaction_charge_tax'] = $transaction_charge_tax;
+					}
+				}
+			}
+		}
+		
 		return apply_filters( 'wcfmmp_product_commission_rule', $product_commission_rule, $product_id, $vendor_id, $item_price, $quantity, $order_id, $vendor_commission_mode );
 	}
 	
@@ -442,7 +497,7 @@ class WCFMmp_Product {
 				$additional_price = get_post_meta( $product_id, '_additional_price', true ) ? get_post_meta( $product_id, '_additional_price', true ) : '';
 				$additional_qty = get_post_meta( $product_id, '_additional_qty', true ) ? get_post_meta( $product_id, '_additional_qty', true ) : '';
 				$wcfmmp_processing_time = get_post_meta( $product_id, '_wcfmmp_processing_time', true ) ? get_post_meta( $product_id, '_wcfmmp_processing_time', true ) : '';
-        $vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+        $vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 			}
 			
 			// Processing Time
@@ -469,12 +524,9 @@ class WCFMmp_Product {
         $shipping_fields = array_merge( $shipping_fields, $wcv_shipping_fileds );
       }
       
-      if ( ( !empty($enabled) && $enabled == 'yes' ) && ( !empty($type) ) && 'by_zone' !== $type ) {
-        if( isset( $shipping_fields['shipping_class'] ) && apply_filters( 'hide_vendor_shipping_classes', true ) ) {
-          $shipping_fields['shipping_class']['class'] = 'wcfm_custom_hide';
-          $shipping_fields['shipping_class']['label_class'] = 'wcfm_custom_hide';
-          //$shipping_fields['shipping_class']['hints'] = __( 'Shipping classes are used by certain shipping methods to group similar products.', 'wc-multivendor-marketplace' );
-        }
+      if ( ( !empty($enabled) && $enabled == 'yes' ) && ( !empty($type) && ( ( 'by_zone' !== $type ) || !apply_filters( 'wcfmmp_is_allow_store_shipping_by_shipping_classes', true ) ) ) ) {
+				$shipping_fields = wcfm_hide_field( 'shipping_class', $shipping_fields );
+				//$shipping_fields['shipping_class']['hints'] = __( 'Shipping classes are used by certain shipping methods to group similar products.', 'wc-multivendor-marketplace' );
       }
     }
 			

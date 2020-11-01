@@ -8,7 +8,7 @@ jQuery(document).ready( function($) {
     $.post(woocommerce_params.ajax_url, data, function (resp) {
       //console.log(resp);
       if(resp && resp.success && resp.data.items_removed ) {
-        alert('Item(s) "' + resp.data.removed_products + '" where removed from the cart as the vendors donot ship to the location selected.' );
+        alert('Item(s) "' + resp.data.removed_products + '" were removed from the cart as the vendors donot ship to the location selected.' );
         window.location.href = window.location.href;
       }
     });

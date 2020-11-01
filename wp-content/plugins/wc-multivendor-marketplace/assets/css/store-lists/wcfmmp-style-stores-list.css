@@ -14,10 +14,18 @@
 }
 
 #wcfmmp-stores-lists {
-	box-shadow: 0 0 4px 0 #ccc;
+	box-shadow: 1px 1px 20px 0px #E9E9E9;
 	height: auto!important;
 }
 #wcfmmp-stores-lists *{box-sizing:border-box}
+
+.wcfm-store-list-page #wcfmmp-stores-lists select {
+	-webkit-appearance: none;
+  -moz-appearance: none;
+	-ms-appearance: none;
+	-o-appearance: none;
+  appearance: none;
+}
 
 #wcfmmp-stores-lists .left_sidebar{width:25%; padding:2% 3% 0 3%; background:#efefef;margin-bottom:0px;border:1px solid #efefef;}
 #wcfmmp-stores-lists .right_side{width:75%;  padding:2% 2% 0 2%;}
@@ -35,6 +43,7 @@
 
 .wcfmmp-store-search-form {
   padding: 30px 0px;
+  box-shadow: 1px 1px 20px 0px #E9E9E9;
 }
 
 #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form { margin: 0px; }
@@ -49,6 +58,7 @@
 	box-shadow: none;
 	background-color: #fff !important;
 	border: 1px solid #ccc !important;
+	box-shadow: 1px 1px 5px 0px #E9E9E9;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
@@ -86,7 +96,7 @@
 }
 
 #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form div.wcfm_radius_filter_container, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form input.wcfmmp-radius-addr, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form div.wcfm_radius_slidecontainer, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form input#search, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form input.wcfm-search-field, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form select#wcfmmp_store_category, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form select#wcfmmp_store_country, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form #wcfmmp_store_state, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form .select2-container, #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form .wcfmmp-search-box {
-  width: 95%; 
+  width: 95% !important; 
   margin-bottom:10px;
 }
 #wcfmmp-store-lists-sidebar .wcfmmp-store-search-form div.wcfm_radius_filter_container{width:100%;}
@@ -129,6 +139,7 @@
 .wcfmmp-store-search-form div.wcfm_radius_slidecontainer .wcfmmp_radius_range_cur {
 	font-size: 10px;
   position:absolute;
+  top:27px;
 }
 
 .wcfmmp-store-search-form div.wcfm_radius_slidecontainer .wcfmmp_radius_range_end {
@@ -142,7 +153,7 @@
 .wcfmmp-store-search-form .select2-container--default .select2-selection--single {
 	padding: 5px;
 	border: 0px;
-	height: 38px;
+	height: 40px;
 }
 
 .wcfmmp-store-search-form {
@@ -201,12 +212,13 @@
 .wcfmmp-stores-listing .wcfmmp-store-list-map {
 	width: 100%; 
 	border: 1px solid #DFDFDF; 
+	max-height: 450px;
 }
 
 .wcfm_map_info_wrapper {display: table;}
 .wcfm_map_info_wrapper .wcfm_map_info_logo{display:table-cell;float:left;margin-right:20px;}
 .wcfm_map_info_wrapper .wcfm_map_info_content {display:table-cell;vertical-align:middle;}
-.wcfm_map_info_wrapper .wcfm_map_info_store{font-size:20px;color:#17a2b8;font-weight:400;margin-bottom:10px;display:block;}
+.wcfm_map_info_wrapper .wcfm_map_info_store{font-size:20px;color:#111111;font-weight:600;margin-bottom:10px;display:block;text-decoration:none!important;}
 
 .wcfmmp-store-lists-sorting .wcfm-woocommerce-ordering {
 	float: left;
@@ -260,6 +272,10 @@
   width: 20%;
 }
 
+#wcfmmp-stores-wrap ul.wcfmmp-store-wrap a.wcfm_catalog_enquiry {
+	text-decoration:none;
+}
+
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 a.wcfm_catalog_enquiry {
 	font-size: 14px;
 }
@@ -270,7 +286,7 @@
 
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-wrapper {
-  background:#fff; box-shadow:0 0 4px 0 #ccc; box-sizing:border-box; -moz-box-sizing:border-box; -ms-box-sizing:border-box; -o-box-sizing:border-box; -webkit-box-sizing:border-box;
+  background:#fff; box-shadow:1px 1px 20px 0px #E9E9E9; box-sizing:border-box; -moz-box-sizing:border-box; -ms-box-sizing:border-box; -o-box-sizing:border-box; -webkit-box-sizing:border-box;
 }
 
 #wcfmmp-stores-wrap a.wcfmmp-visit-store{
@@ -279,6 +295,7 @@
   right: 20px;
   border-radius: 40px;
   border-bottom: 1px solid #17a2b8;
+  text-decoration:none;
   font-size:14px; width:130px; height:37px; line-height:37px; color:#17a2b8; font-weight:bold; background:#ffffff; text-align:center;  text-transform: uppercase;
 }
 #wcfmmp-stores-wrap a.wcfmmp-visit-store:hover{background:#000;}
@@ -304,7 +321,11 @@
   font-weight: normal;
   font-size: 12px;
 }
-#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 a.wcfmmp-visit-store span, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 p.store-phone, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 p.store-address {
+#wcfmmp-stores-wrap ul.wcfmmp-store-wrap p.store-phone {
+	background: linear-gradient(90deg,rgba(74,112,106,1) 50%,rgba(0,0,0,0) 100%);
+	border-radius: 10px 0 0 10px;
+}
+#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 a.wcfmmp-visit-store span, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 p.store-address {
   display: none;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 a.wcfmmp-visit-store span, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 p.store-phone, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 p.store-address {
@@ -499,7 +520,7 @@
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 .store-footer {
 	min-height: 200px;
-	height: 200px;
+	height: 220px;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 .store-footer {
 	min-height: 180px;
@@ -552,12 +573,12 @@
 .bd_rating .star-rating, .bd_rating .wcfm_vendor_badges{float:left; margin-right:20px;}
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2{font-size:21px; line-height:25px;}
-#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2 a{ color:#525252; font-weight: bold;}
+#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2 a{ color:#525252; text-decoration:none; font-weight: 600;}
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2 .wcfm_vendor_badges{display: inline-block;margin-top: 0px;vertical-align: middle;margin-left: 5px;}
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 .store-data h2 {
-	font-size: 15px; line-height:15px;
+	font-size: 20px; line-height:18px;margin-bottom:5px;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 .store-data h2 {
 	font-size: 15px; line-height:15px;
@@ -566,7 +587,7 @@
 	font-size: 15px; line-height:15px;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 .store-data h2 a {
-	font-weight: normal;
+	font-weight: 600;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 .store-data h2 a {
 	font-weight: normal;
@@ -577,20 +598,20 @@
 /*.store-data{margin-top:10px;}*/
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-footer .store-data-container{width: 100%; padding: 55px 0 0 0;}
-#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 .store-footer .store-data-container{padding: 35px 0 0 0;}
+#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-3 .store-footer .store-data-container{padding: 15px 0 0 0;}
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 .store-footer .store-data-container{padding: 25px 0 0 0;}
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-5 .store-footer .store-data-container{padding: 25px 0 0 0;}
 
 
 .store-data-container .star-rating span::before{color:#FF912C;}
 .store-data-container .store-address{font-size:13px; line-height:20px; color:#838383; margin:0 0 15px 0;}
-.store-data-container .store-phone{font-size:13px; line-height:18px; color:#525252;margin:12px 0 0 0;}
-.store-data-container .store-phone i{width:21px; height:21px; background:#525252; border-radius:50%; color:#fff; text-align:center; line-height:21px; margin-right:0px; vertical-align: middle;}
+.store-data-container .store-phone{font-size:15px; line-height:18px; color:#525252;margin:12px 0 0 0;}
+.store-data-container .store-phone i{font-size:13px;width:21px; height:21px; background:#525252; border-radius:50%; color:#fff; text-align:center; line-height:21px; margin-right:0px; vertical-align: middle;}
 
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-footer .store-avatar img {
   width: 100%;
   height: 100%;
-  border-radius: 40px;
+  border-radius: 50%;
 }
 #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.no-banner-img .store-content .store-info .store-data-container {
   height: 100%;
@@ -654,7 +675,7 @@
 	.bd_rating {
     display: inline-block;
   }
-	#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-footer{text-align:center; min-height:auto;}
+	#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-footer{min-height:auto;}
 	#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-footer .store-avatar{}
 	.store-footer .store-data-container {width:100%;}
 	.star-rating{margin:0 auto;}

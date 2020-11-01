@@ -37,7 +37,7 @@ class WCFMvm_Memberships_Payment_Controller {
 				update_user_meta( $member_id, 'wcfm_membership_paymode', $paymode );
 				$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
 				
-				if( $required_approval == 'no' ) {
+				if( $required_approval != 'yes' ) {
 					$has_error = $WCFMvm->register_vendor( $member_id );
 					$WCFMvm->store_subscription_data( $member_id, $paymode, '', 'free_subscription', 'Completed', '' );
 				} else {

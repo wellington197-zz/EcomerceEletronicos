@@ -39,12 +39,13 @@ Class WCMp_Admin_Dashboard {
         }
         
         add_filter( 'wcmp_vendor_dashboard_add_product_url', array( &$this, 'wcmp_vendor_dashboard_add_product_url' ), 10 );
+        add_filter( 'wcmp_vendor_submit_product', array( &$this, 'wcmp_vendor_dashboard_add_product_url' ), 10 );
+
+        // Submit comment
+        $this->submit_comment();
 
         // Init export functions
         $this->export_csv();
-
-        // Init submit comment
-        $this->submit_comment();
 
         $this->vendor_withdrawl();
 
@@ -76,7 +77,7 @@ Class WCMp_Admin_Dashboard {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isset($_POST['vendor_get_paid'])) {
                 $vendor = get_wcmp_vendor(get_current_vendor_id());
-                $commissions = isset($_POST['commissions']) ? $_POST['commissions'] : array();
+                $commissions = isset($_POST['commissions']) ? array_filter($_POST['commissions']) : array();
                 if (!empty($commissions)) {
                     $payment_method = get_user_meta($vendor->id, '_vendor_payment_mode', true);
                     if ($payment_method) {
@@ -188,7 +189,7 @@ Class WCMp_Admin_Dashboard {
                             $order_datas[] = array(
                                 'date' => get_the_date('Y-m-d', $transaction_id),
                                 'trans_id' => '#' . $transaction_id,
-                                'order_ids' => '#' . implode(', #', $commission_details),
+                                'commission_ids' => '#' . implode(', #', $commission_details),
                                 'mode' => $transaction_mode,
                                 'commission' => $transaction_commission,
                                 'fee' => $transfer_charge,
@@ -228,8 +229,8 @@ Class WCMp_Admin_Dashboard {
             $vendor = get_wcmp_vendor($user->ID);
             if (isset($_POST['wcmp_stat_export']) && !empty($_POST['wcmp_stat_export']) && $vendor && apply_filters('can_wcmp_vendor_export_orders_csv', true, $vendor->id)) {
                 $vendor = apply_filters('wcmp_order_details_export_vendor', $vendor);
-                $start_date = isset($_POST['wcmp_stat_start_dt']) ? $_POST['wcmp_stat_start_dt'] : date('Y-m-01');
-                $end_date = isset($_POST['wcmp_stat_end_dt']) ? $_POST['wcmp_stat_end_dt'] : date('Y-m-d');
+                $start_date = isset($_POST['wcmp_stat_start_dt']) ? wc_clean($_POST['wcmp_stat_start_dt']) : date('Y-m-01');
+                $end_date = isset($_POST['wcmp_stat_end_dt']) ? wc_clean($_POST['wcmp_stat_end_dt']) : date('Y-m-d');
                 $start_date = strtotime('-1 day', strtotime($start_date));
                 $end_date = strtotime('+1 day', strtotime($end_date));
                 $query = array(
@@ -433,7 +434,7 @@ Class WCMp_Admin_Dashboard {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (!empty($_POST['wcmp_submit_comment'])) {
                 // verify nonce
-                if ($_POST['vendor_add_order_nonce'] && !wp_verify_nonce($_POST['vendor_add_order_nonce'], 'dc-vendor-add-order-comment'))
+                if ( !isset( $_POST['vendor_add_order_nonce'] ) || !wp_verify_nonce( $_POST['vendor_add_order_nonce'], 'dc-vendor-add-order-comment' ) )
                     return false;
                 $vendor = get_current_vendor();
                 // Don't submit empty comments
@@ -441,9 +442,9 @@ Class WCMp_Admin_Dashboard {
                     return false;
                 // Only submit if the order has the product belonging to this vendor
                 $order = wc_get_order($_POST['order_id']);
-                $comment = esc_textarea($_POST['comment_text']);
-                $note_type = isset($_POST['note_type']) ? $_POST['note_type'] : '';
-		$is_customer_note = ( 'customer' === $note_type ) ? 1 : 0;
+                $comment = isset($_POST['comment_text']) ? wc_clean( wp_unslash( $_POST['comment_text'] ) ) : '';
+                $note_type = isset($_POST['note_type']) ? wc_clean( wp_unslash( $_POST['note_type'] ) ) : '';
+		        $is_customer_note = ( 'customer' === $note_type ) ? 1 : 0;
                 $comment_id = $order->add_order_note($comment, $is_customer_note, true);
                 if( $is_customer_note ){
                     $email_note = WC()->mailer()->emails['WC_Email_Customer_Note'];
@@ -459,6 +460,29 @@ Class WCMp_Admin_Dashboard {
                 wp_redirect(esc_url(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_vendor_orders_endpoint', 'vendor', 'general', 'vendor-orders'), $order->get_id())));
                 die();
             }
+
+            if (!empty($_POST['wcmp_submit_product_comment'])) {
+                // verify nonce
+                if ($_POST['vendor_add_product_nonce'] && !wp_verify_nonce($_POST['vendor_add_product_nonce'], 'dc-vendor-add-product-comment'))
+                    return false;
+                $user_id = isset($_POST['current_user_id']) ? absint( $_POST['current_user_id'] ) : '';
+                // Don't submit empty comments
+                if (empty($_POST['product_comment_text']))
+                    return false;
+                // Only submit if the order has the product belonging to this vendor
+                $product = wc_get_product($_POST['product_id']);
+                $comment = isset($_POST['product_comment_text']) ? wc_clean( wp_unslash($_POST['product_comment_text']) ) : '';
+                $comment_id = WCMp_Product::add_product_note($product->get_id(), $comment, $user_id);
+                // update comment author & email
+                add_comment_meta($comment_id, '_author_id', $user_id);
+                if(is_user_wcmp_vendor($user_id)) {
+                    wc_add_notice(__('Product note added', 'dc-woocommerce-multi-vendor'), 'success');
+                    wp_redirect(esc_url(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_vendor_orders_endpoint', 'vendor', 'general', 'edit-product'), $product->get_id())));
+                } else {
+                    wp_safe_redirect(admin_url('post.php?post='.$product->get_id().'&action=edit'));
+                }
+                die();
+            }
         }
     }
 
@@ -470,8 +494,8 @@ Class WCMp_Admin_Dashboard {
      */
     public function vendor_tools_handler() {
         $vendor = get_current_vendor();
-        $wpnonce = isset($_REQUEST['_wpnonce']) ? $_REQUEST['_wpnonce'] : '';
-        $tools_action = isset($_REQUEST['tools_action']) ? $_REQUEST['tools_action'] : '';
+        $wpnonce = isset($_REQUEST['_wpnonce']) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+        $tools_action = isset($_REQUEST['tools_action']) ? sanitize_text_field( wp_unslash( $_REQUEST['tools_action'] ) ) : '';
         if ($wpnonce && wp_verify_nonce($wpnonce, 'wcmp_clear_vendor_transients') && $tools_action && $tools_action == 'clear_all_transients') {
             if (current_user_can('delete_published_products')) {
                 if ($vendor->clear_all_transients($vendor->id)) {
@@ -490,16 +514,9 @@ Class WCMp_Admin_Dashboard {
         $vendor = get_wcmp_vendor($user->ID);
         $vendor = apply_filters('wcmp_vendor_dashboard_pages_vendor', $vendor);
         if ($vendor) {
-//            $order_page = apply_filters('wcmp_vendor_view_order_page', true);
-//            if ($order_page) {
-//                $hook = add_menu_page(__('Orders', 'dc-woocommerce-multi-vendor'), __('Orders', 'dc-woocommerce-multi-vendor'), 'read', 'dc-vendor-orders', array($this, 'wcmp_vendor_orders_page'));
-//                add_action("load-$hook", array($this, 'add_order_page_options'));
-//            }
-
             $shipping_page = apply_filters('wcmp_vendor_view_shipping_page', true);
             if ($vendor->is_shipping_enable() && $shipping_page) {
                 $shipping_hook = add_menu_page(__('Shipping', 'dc-woocommerce-multi-vendor'), __('Shipping', 'dc-woocommerce-multi-vendor'), 'read', 'dc-vendor-shipping', array($this, 'shipping_page'));
-                add_action("load-$shipping_hook", array($this, 'load_wcmp_shipping_handlers'));
             }
         }
     }
@@ -517,7 +534,7 @@ Class WCMp_Admin_Dashboard {
         ?>
         <div class="wrap">
             <div id="icon-woocommerce" class="icon32 icon32-woocommerce-reports"><br/></div>
-            <h2><?php _e('Shipping', 'dc-woocommerce-multi-vendor'); ?></h2>
+            <h2><?php esc_html_e('Shipping', 'dc-woocommerce-multi-vendor'); ?></h2>
             <form name="vendor_shipping_form" method="post">
                 <?php wp_nonce_field( 'backend_vendor_shipping_data', 'vendor_shipping_data' ); ?>
                 <?php 
@@ -651,7 +668,7 @@ Class WCMp_Admin_Dashboard {
                                         </label>
                                     </th>
                                     <td class="forminp">
-                                        <input id="select_zone_postcodes" class="form-control" type="text" name="<?php echo 'wcmp_shipping_zone[' . $zone_id . '][_select_zone_postcodes]'; ?>" value="<?php echo $postcodes; ?>" placholder="<?php _e('Postcodes need to be comma separated', 'dc-woocommerce-multi-vendor'); ?>">
+                                        <input id="select_zone_postcodes" class="form-control" type="text" name="<?php echo 'wcmp_shipping_zone[' . $zone_id . '][_select_zone_postcodes]'; ?>" value="<?php echo $postcodes; ?>" placeholder="<?php esc_attr_e('Postcodes need to be comma separated', 'dc-woocommerce-multi-vendor'); ?>">
                                     </td>
                                 </tr>
                             <?php } ?>
@@ -735,7 +752,7 @@ Class WCMp_Admin_Dashboard {
                             <?php $shipping_methods = wcmp_get_shipping_methods(); ?>
                             <select id="shipping_method" class="form-control mt-15" name="wcmp_shipping_method">
                             <?php foreach ($shipping_methods as $key => $method) { ?>
-                                <option data-description="<?php echo esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ); ?>" value="<?php echo esc_attr( $method->id ); ?>"><?php echo esc_attr( $method->get_method_title() ); ?></option>
+                                <option data-description="<?php echo esc_attr( wp_kses_post( wpautop( $method->get_method_description() ) ) ); ?>" value="<?php echo esc_attr( $method->id ); ?>"><?php echo esc_html( $method->get_method_title() ); ?></option>
                             <?php } ?>
                             </select>
                             <div class="wc-shipping-zone-method-description"></div>
@@ -943,27 +960,6 @@ Class WCMp_Admin_Dashboard {
     }
 
     /**
-     * Add order page options
-     * Defined cores in Vendor Order Page class
-     */
-    public function add_order_page_options() {
-        global $WCMp;
-        $args = array(
-            'label' => 'Rows',
-            'default' => 10,
-            'option' => 'orders_per_page'
-        );
-        add_screen_option('per_page', $args);
-
-        $WCMp->load_class('vendor-order-page');
-        $this->wcmp_vendor_order_page = new WCMp_Vendor_Order_Page();
-    }
-
-    public function load_wcmp_shipping_handlers() {
-        
-    }
-
-    /**
      * Generate Orders Page view 
      */
     public function wcmp_vendor_orders_page() {
@@ -1026,7 +1022,7 @@ Class WCMp_Admin_Dashboard {
             if (isset($_POST['wcmp_download_vendor_order_csv'])) {
                 $vendor = get_current_vendor();
                 $order_data = array();
-                $order_ids = isset($_POST['selected_orders']) ? $_POST['selected_orders'] : array();
+                $order_ids = isset($_POST['selected_orders']) ? array_filter($_POST['selected_orders']) : array();
                 if ($order_ids && count($order_ids) > 0) {
                     foreach ($order_ids as $order_id) {
                         $vorder = wcmp_get_order($order_id);
@@ -1086,17 +1082,17 @@ Class WCMp_Admin_Dashboard {
                 }
 
                 if ($fieldkey == 'vendor_description') {
-                    update_user_meta($user_id, '_' . $fieldkey, $post[$fieldkey]);
+                    update_user_meta($user_id, '_' . $fieldkey, wc_clean(wp_unslash($post[$fieldkey])));
                 } elseif ($fieldkey == 'vendor_country') {
-                    $country_code = $post[$fieldkey];
-                    $country_data = WC()->countries->get_countries();
+                    $country_code = wc_clean(wp_unslash( $post[$fieldkey] ) );
+                    $country_data = wc_clean(wp_unslash( WC()->countries->get_countries() ) );
                     $country_name = ( isset($country_data[$country_code]) ) ? $country_data[$country_code] : $country_code; //To get country name by code
                     update_user_meta($user_id, '_' . $fieldkey, $country_name);
                     update_user_meta($user_id, '_' . $fieldkey . '_code', $country_code);
                 } elseif ($fieldkey == 'vendor_state') {
                     $country_code = $post['vendor_country'];
-                    $state_code = $post[$fieldkey];
-                    $state_data = WC()->countries->get_states($country_code);
+                    $state_code = wc_clean(wp_unslash( $post[$fieldkey] ) );
+                    $state_data = wc_clean(wp_unslash( WC()->countries->get_states($country_code) ) );
                     $state_name = ( isset($state_data[$state_code]) ) ? $state_data[$state_code] : $state_code; //to get State name by state code
                     update_user_meta($user_id, '_' . $fieldkey, $state_name);
                     update_user_meta($user_id, '_' . $fieldkey . '_code', $state_code);
@@ -1137,29 +1133,29 @@ Class WCMp_Admin_Dashboard {
             }
         }
         if (isset($_POST['_shop_template']) && !empty($_POST['_shop_template'])) {
-            update_user_meta($user_id, '_shop_template', $_POST['_shop_template']);
+            update_user_meta($user_id, '_shop_template', wc_clean($_POST['_shop_template']));
         }
         if (isset($_POST['_store_location']) && !empty($_POST['_store_location'])) {
-            update_user_meta($user_id, '_store_location', $_POST['_store_location']);
+            update_user_meta($user_id, '_store_location', wc_clean($_POST['_store_location']));
         }
         if (isset($_POST['store_address_components']) && !empty($_POST['store_address_components'])) {
             $address_components = wcmp_get_geocoder_components(json_decode(stripslashes($_POST['store_address_components']), true));
             if (isset($_POST['_store_location']) && !empty($_POST['_store_location'])) {
-                $address_components['formatted_address'] = $_POST['_store_location'];
+                $address_components['formatted_address'] = wc_clean($_POST['_store_location']);
             }
             if (isset($_POST['_store_lat']) && !empty($_POST['_store_lat'])) {
-                $address_components['latitude'] = $_POST['_store_lat'];
+                $address_components['latitude'] = wc_clean($_POST['_store_lat']);
             }
             if (isset($_POST['_store_lng']) && !empty($_POST['_store_lng'])) {
-                $address_components['longitude'] = $_POST['_store_lng'];
+                $address_components['longitude'] = wc_clean($_POST['_store_lng']);
             }
             update_user_meta($user_id, '_store_address_components', $address_components);
         }
         if (isset($_POST['_store_lat']) && !empty($_POST['_store_lat'])) {
-            update_user_meta($user_id, '_store_lat', $_POST['_store_lat']);
+            update_user_meta($user_id, '_store_lat', wc_clean($_POST['_store_lat']));
         }
         if (isset($_POST['_store_lng']) && !empty($_POST['_store_lng'])) {
-            update_user_meta($user_id, '_store_lng', $_POST['_store_lng']);
+            update_user_meta($user_id, '_store_lng', wc_clean($_POST['_store_lng']));
         }
         if (isset($_POST['timezone_string']) && !empty($_POST['timezone_string'])) {
             if (!empty($_POST['timezone_string']) && preg_match('/^UTC[+-]/', $_POST['timezone_string'])) {
@@ -1169,9 +1165,10 @@ Class WCMp_Admin_Dashboard {
             } else {
                 $_POST['gmt_offset'] = 0;
             }
-            update_user_meta($user_id, 'timezone_string', $_POST['timezone_string']);
-            update_user_meta($user_id, 'gmt_offset', $_POST['gmt_offset']);
+            update_user_meta($user_id, 'timezone_string', wc_clean($_POST['timezone_string']));
+            update_user_meta($user_id, 'gmt_offset', wc_clean($_POST['gmt_offset']));
         }
+        do_action('wcmp_save_custom_store_data', $user_id, $post);
     }
 
     /**
@@ -1251,14 +1248,13 @@ Class WCMp_Admin_Dashboard {
             $has_error = false;
             $userdata = array(
                 'ID' => $vendor_user_id,
-                //'user_email' => $_POST['vendor_profile_data']['user_email'],
-                'first_name' => $_POST['vendor_profile_data']['first_name'],
-                'last_name' => $_POST['vendor_profile_data']['last_name'],
+                'first_name' => isset( $_POST['vendor_profile_data']['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['vendor_profile_data']['first_name'] ) ) : '',
+                'last_name' => isset( $_POST['vendor_profile_data']['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['vendor_profile_data']['last_name'] ) ) : '',
             );
 
-            $pass_cur = !empty( $_POST['vendor_profile_data']['password_current'] ) ? $_POST['vendor_profile_data']['password_current'] : '';
-            $pass1 = !empty( $_POST['vendor_profile_data']['password_1'] ) ? $_POST['vendor_profile_data']['password_1'] : '';
-            $pass2 = !empty( $_POST['vendor_profile_data']['password_2'] ) ? $_POST['vendor_profile_data']['password_2'] : '';
+            $pass_cur = !empty( $_POST['vendor_profile_data']['password_current'] ) ? sanitize_text_field( wp_unslash($_POST['vendor_profile_data']['password_current']) ) : '';
+            $pass1 = !empty( $_POST['vendor_profile_data']['password_1'] ) ? sanitize_text_field( wp_unslash($_POST['vendor_profile_data']['password_1']) ) : '';
+            $pass2 = !empty( $_POST['vendor_profile_data']['password_2'] ) ? sanitize_text_field( wp_unslash($_POST['vendor_profile_data']['password_2']) ) : '';
             $email = !empty( $_POST['vendor_profile_data']['user_email'] ) ? $_POST['vendor_profile_data']['user_email'] : '';
             $save_pass = true;
             
@@ -1304,7 +1300,7 @@ Class WCMp_Admin_Dashboard {
 
             $user_id = wp_update_user($userdata);
 
-            $profile_updt = update_user_meta($vendor_user_id, '_vendor_profile_image', $_POST['vendor_profile_data']['vendor_profile_image']);
+            $profile_updt = update_user_meta($vendor_user_id, '_vendor_profile_image', wc_clean($_POST['vendor_profile_data']['vendor_profile_image']));
 
             if ($profile_updt || $user_id) {
                 wc_add_notice( __('Profile Data Updated', 'dc-woocommerce-multi-vendor'), 'success' );
@@ -1436,7 +1432,7 @@ Class WCMp_Admin_Dashboard {
             $this->wcmp_add_dashboard_widget('wcmp_vendor_pending_shipping', __('Pending Shipping', 'dc-woocommerce-multi-vendor'), array(&$this, 'wcmp_vendor_pending_shipping'));
         endif;
         if (current_user_can('edit_products')) {
-            $this->wcmp_add_dashboard_widget('wcmp_vendor_product_stats', __('Product Stats', 'dc-woocommerce-multi-vendor'), array(&$this, 'wcmp_vendor_product_stats'), 'side', '', array('action' => array('title' => __('Add Product', 'dc-woocommerce-multi-vendor'), 'link' => esc_url(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_add_product_endpoint', 'vendor', 'general', 'add-product'))))));
+            $this->wcmp_add_dashboard_widget('wcmp_vendor_product_stats', __('Product Stats', 'dc-woocommerce-multi-vendor'), array(&$this, 'wcmp_vendor_product_stats'), 'side', '', array('action' => array('title' => __('Add Product', 'dc-woocommerce-multi-vendor'), 'link' => apply_filters( 'wcmp_vendor_dashboard_add_product_url', wcmp_get_vendor_dashboard_endpoint_url( get_wcmp_vendor_settings( 'wcmp_add_product_endpoint', 'vendor', 'general', 'add-product' ))))));
             $this->wcmp_add_dashboard_widget('wcmp_vendor_product_sales_report', __('Product Sales Report', 'dc-woocommerce-multi-vendor'), array(&$this, 'wcmp_vendor_product_sales_report'));
         }
         if (get_wcmp_vendor_settings('is_sellerreview', 'general') == 'Enable') {
@@ -1576,9 +1572,9 @@ Class WCMp_Admin_Dashboard {
             $last_seven_day_date = date('Y-m-d H:i:s', strtotime('-7 days'));
             // Mark as shipped
             if (isset($_POST['wcmp-submit-mark-as-ship'])) {
-                $order_id = $_POST['order_id'];
-                $tracking_id = $_POST['tracking_id'];
-                $tracking_url = $_POST['tracking_url'];
+                $order_id = isset($_POST['order_id']) ? absint($_POST['order_id']) : 0;
+                $tracking_id = isset($_POST['tracking_id']) ? wc_clean($_POST['tracking_id']) : '';
+                $tracking_url = isset($_POST['tracking_url']) ? esc_url($_POST['tracking_url']) : '';
                 $vendor->set_order_shipped($order_id, $tracking_id, $tracking_url);
             }
 
@@ -1594,29 +1590,29 @@ Class WCMp_Admin_Dashboard {
         }
 
         public function wcmp_customer_review() {
-            global $WCMp;
+            global $WCMp, $wpdb;
             $WCMp->template->get_template('vendor-dashboard/dashboard-widgets/wcmp_customer_review.php');
         }
 
         public function wcmp_vendor_product_stats($args = array()) {
-            global $WCMp;
+            global $WCMp, $wpdb;
             $publish_products_count = $pending_products_count = $draft_products_count = $trashed_products_count = 0;
             $vendor = get_wcmp_vendor(get_current_user_id());
             $args = array('post_status' => array('publish', 'pending', 'draft', 'trash'));
             $product_stats = array();
             if($vendor) :
-                $products = $vendor->get_products($args);
+                $where = "AND ({$wpdb->prefix}posts.post_status = 'publish' OR {$wpdb->prefix}posts.post_status = 'draft' OR {$wpdb->prefix}posts.post_status = 'pending' OR {$wpdb->prefix}posts.post_status = 'trash')";
+                $products = $vendor->get_products_ids( array( 'where' => $where ) );
                 $product_stats['total_products'] = count($products);
-                foreach ($products as $key => $value) {
-                    if ($value->post_status == 'publish')
+                foreach ( $products as $product) {
+                    if ( get_post_status( $product->ID ) == 'publish' )
                         $publish_products_count += 1;
-                    if ($value->post_status == 'pending')
+                    if ( get_post_status( $product->ID ) == 'pending' )
                         $pending_products_count += 1;
-                    if ($value->post_status == 'draft')
+                    if ( get_post_status( $product->ID ) == 'draft' )
                         $draft_products_count += 1;
-                    if ($value->post_status == 'trash') {
+                    if ( get_post_status( $product->ID ) == 'trash' )
                         $trashed_products_count += 1;
-                    }
                 }
             endif;
             $product_stats['publish_products_count'] = $publish_products_count;
@@ -1644,17 +1640,7 @@ Class WCMp_Admin_Dashboard {
             $start_date = isset($requestData['from_date']) ? $requestData['from_date'] : date('01-m-Y');
             $end_date = isset($requestData['to_date']) ? $requestData['to_date'] : date('t-m-Y');
             $transaction_details = $WCMp->transaction->get_transactions($vendor->term_id);
-            //$unpaid_orders = get_wcmp_vendor_order_amount(array('commission_status' => 'unpaid'), $vendor->id);
-            $args = array(
-                'meta_query' => array(
-                    array(
-                        'key' => '_commission_vendor',
-                        'value' => absint($vendor->term_id),
-                        'compare' => '='
-                    ),
-                ),
-            );
-            $unpaid_commission_total = WCMp_Commission::get_commissions_total_data( $args, $vendor->id );
+            $unpaid_commission_total = WCMp_Commission::get_unpaid_commissions_total_data( 'withdrawable' );
 
             $count = 0; // varible for counting 5 transaction details
             foreach ($transaction_details as $transaction_id => $details) {
@@ -1668,7 +1654,6 @@ Class WCMp_Admin_Dashboard {
 
                 $total_amount = $total_amount + $details['total_amount'];
             }
-            //print_r($total_amount);
             $WCMp->template->get_template('vendor-dashboard/dashboard-widgets/wcmp_vendor_transaction_details.php', apply_filters( 'wcmp_widget_vendor_transaction_details_data', array('total_amount' => $unpaid_commission_total['total'], 'transaction_display_array' => $transaction_display_array), $vendor, $requestData ) );
         }
 
@@ -1760,7 +1745,7 @@ Class WCMp_Admin_Dashboard {
     }
 
     public function vendor_updater_handler() {
-        $wpnonce = isset($_REQUEST['_wpnonce']) ? $_REQUEST['_wpnonce'] : '';
+        $wpnonce = isset($_REQUEST['_wpnonce']) ? sanitize_text_field( $_REQUEST['_wpnonce'] ) : '';
         if ($wpnonce && wp_verify_nonce($wpnonce, 'wcmp-vendor-store-updater')) {
             $do_update = filter_input(INPUT_POST, 'do_update_store_address');
             $do_skip = filter_input(INPUT_POST, 'do_reject_store_updater');
@@ -1792,7 +1777,7 @@ Class WCMp_Admin_Dashboard {
      */
     public function save_product() {
         global $WCMp;
-        if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) { 
             $current_endpoint_key = $WCMp->endpoints->get_current_endpoint();
             // retrive the actual endpoint name in case admn changes that from settings
             $current_endpoint = get_wcmp_vendor_settings( 'wcmp_' . str_replace( '-', '_', $current_endpoint_key ) . '_endpoint', 'vendor', 'general', $current_endpoint_key );
@@ -1809,7 +1794,7 @@ Class WCMp_Admin_Dashboard {
                 wp_die( -1 );
             }
             $errors = array();
-            $product_id = intval( $_POST['post_ID'] );
+            $product_id = isset($_POST['post_ID']) ? intval( $_POST['post_ID'] ) : 0;
             $post_object = get_post( $product_id );
             $product = wc_get_product( $product_id );
 
@@ -1821,7 +1806,7 @@ Class WCMp_Admin_Dashboard {
                 $product->set_date_created( current_time( 'timestamp', true ) );
             }
 
-            $title = ( is_product_wcmp_spmv($product_id) && isset( $_POST['original_post_title'] ) ) ? wc_clean( $_POST['original_post_title'] ) : isset( $_POST['post_title'] ) ? wc_clean( $_POST['post_title'] ) : '';
+            $title = ( ( is_product_wcmp_spmv($product_id) && isset( $_POST['original_post_title'] ) ) ? wc_clean( $_POST['original_post_title'] ) : isset( $_POST['post_title'] ) ) ? wc_clean( $_POST['post_title'] ) : '';
 
             if ( isset( $_POST['status'] ) && $_POST['status'] === 'draft' ) {
                 $status = 'draft';
@@ -1872,6 +1857,10 @@ Class WCMp_Admin_Dashboard {
 
                 update_post_meta( $post_id, '_product_image_gallery', implode( ',', $attachment_ids ) );
 
+                //remove dismiss meta if exists
+                if( get_post_meta($post_id, '_dismiss_to_do_list', true) ) 
+                    delete_post_meta($post_id, '_dismiss_to_do_list');
+
                 // Policy tab data save
                 if ( get_wcmp_vendor_settings( 'is_policy_on', 'general' ) == 'Enable' && apply_filters( 'wcmp_vendor_can_overwrite_policies', true ) ) {
                     if ( apply_filters( 'can_vendor_edit_shipping_policy_field', true ) && isset( $_POST['_wcmp_shipping_policy'] ) ) {
@@ -1894,7 +1883,7 @@ Class WCMp_Admin_Dashboard {
                 $catagories = isset( $_POST['tax_input']['product_cat'] ) ? array_filter( array_map( 'intval', (array) $_POST['tax_input']['product_cat'] ) ) : array();
                 wp_set_object_terms( $post_id, $catagories, 'product_cat' );
                 // if product has different multi level categories hierarchy, save the default
-                if( isset( $_POST['_default_cat_hierarchy_term_id'] ) && in_array( $_POST['_default_cat_hierarchy_term_id'], $catagories ) ){
+                if( isset( $_POST['_default_cat_hierarchy_term_id'] ) && in_array( $_POST['_default_cat_hierarchy_term_id'], $catagories ) && get_wcmp_vendor_settings('is_disable_marketplace_plisting', 'general') != 'Enable' ){
                     update_post_meta( $post_id, '_default_cat_hierarchy_term_id', absint( $_POST['_default_cat_hierarchy_term_id'] ) );
                 }else{
                     delete_post_meta( $post_id, '_default_cat_hierarchy_term_id' );
@@ -2037,7 +2026,8 @@ Class WCMp_Admin_Dashboard {
                 wp_redirect( apply_filters( 'wcmp_vendor_save_product_redirect_url', wcmp_get_vendor_dashboard_endpoint_url( get_wcmp_vendor_settings( 'wcmp_edit_product_endpoint', 'vendor', 'general', 'edit-product' ), $post_id ) ) );
                 exit;
             } else {
-                wc_add_notice( $post_id->get_error_message(), 'error' );
+                $error_msg = ( $post_id->get_error_code() === 'empty_content' ) ? __( 'Content, title, and excerpt are empty.', 'dc-woocommerce-multi-vendor' ) : $post_id->get_error_message();
+                wc_add_notice( $error_msg, 'error' );
             }
         }
     }
@@ -2060,21 +2050,24 @@ Class WCMp_Admin_Dashboard {
             wp_die( -1 );
         }
 
-        if ( empty( $_POST['post_title'] ) || empty( $_POST['product_ids'] ) ) {
-            if ( empty( $_POST['post_title'] ) ) {
-                wc_add_notice( __( "Coupon code can't be empty.", 'dc-woocommerce-multi-vendor' ), 'error' );
-            }
-            if ( empty( $_POST['product_ids'] ) ) {
-                wc_add_notice( __( 'Select atleast one product.', 'dc-woocommerce-multi-vendor' ), 'error' );
-            }
+        if ( empty( $_POST['post_title'] ) ) {
+            wc_add_notice( __( "Coupon code can't be empty.", 'dc-woocommerce-multi-vendor' ), 'error' );
+            return;
+        }
+           
+        $cpn_pro_supports = false;
+        $cpn_pro_supports = ( !isset( $_POST['product_ids'] ) || empty( $_POST['product_ids'] ) ) ? $cpn_pro_supports : true;
+        $cpn_pro_supports = ( !$cpn_pro_supports && ( !isset( $_POST['product_categories'] ) || empty( $_POST['product_categories'] ) ) ) ? $cpn_pro_supports : true;
+        if ( !$cpn_pro_supports ) {
+            wc_add_notice( __( 'Select atleast one product or category.', 'dc-woocommerce-multi-vendor' ), 'error' );
             return;
         }
 
-        $post_id = absint( $_POST['post_ID'] );
+        $post_id = isset($_POST['post_ID']) ? absint( $_POST['post_ID'] ) : 0;
         $post = get_post( $post_id );
         $coupon = new WC_Coupon( $post_id );
         // Check for dupe coupons.
-        $coupon_code = wc_format_coupon_code( $_POST['post_title'] );
+        $coupon_code = wc_format_coupon_code( wc_clean($_POST['post_title']) );
         $id_from_code = wc_get_coupon_id_by_code( $coupon_code, $post_id );
 
         if ( $id_from_code ) {
@@ -2128,21 +2121,21 @@ Class WCMp_Admin_Dashboard {
             $error = $coupon->set_props(
                 array(
                     'code'                        => $title,
-                    'discount_type'               => wc_clean( $_POST['discount_type'] ),
-                    'amount'                      => wc_format_decimal( $_POST['coupon_amount'] ),
-                    'date_expires'                => wc_clean( $_POST['expiry_date'] ),
+                    'discount_type'               => isset($_POST['discount_type']) ? wc_clean( $_POST['discount_type'] ) : '',
+                    'amount'                      => isset($_POST['coupon_amount']) ? wc_format_decimal( $_POST['coupon_amount'] ) : 0,
+                    'date_expires'                => isset($_POST['expiry_date']) ? wc_clean( $_POST['expiry_date'] ) : '',
                     'individual_use'              => isset( $_POST['individual_use'] ),
                     'product_ids'                 => isset( $_POST['product_ids'] ) ? array_filter( array_map( 'intval', (array) $_POST['product_ids'] ) ) : array(),
                     'excluded_product_ids'        => isset( $_POST['exclude_product_ids'] ) ? array_filter( array_map( 'intval', (array) $_POST['exclude_product_ids'] ) ) : array(),
-                    'usage_limit'                 => absint( $_POST['usage_limit'] ),
-                    'usage_limit_per_user'        => absint( $_POST['usage_limit_per_user'] ),
-                    'limit_usage_to_x_items'      => absint( $_POST['limit_usage_to_x_items'] ),
-                    'free_shipping'               => isset( $_POST['free_shipping'] ),
+                    'usage_limit'                 => isset($_POST['usage_limit']) ? absint( $_POST['usage_limit'] ) : 0,
+                    'usage_limit_per_user'        => isset($_POST['usage_limit_per_user']) ? absint( $_POST['usage_limit_per_user'] ) : 0,
+                    'limit_usage_to_x_items'      => isset($_POST['limit_usage_to_x_items']) ? absint( $_POST['limit_usage_to_x_items'] ) : 0,
+                    'free_shipping'               => isset( $_POST['free_shipping'] ) ? wc_clean( $_POST['free_shipping'] ) : '',
                     'product_categories'          => array_filter( array_map( 'intval', $product_categories ) ),
                     'excluded_product_categories' => array_filter( array_map( 'intval', $exclude_product_categories ) ),
-                    'exclude_sale_items'          => isset( $_POST['exclude_sale_items'] ),
-                    'minimum_amount'              => wc_format_decimal( $_POST['minimum_amount'] ),
-                    'maximum_amount'              => wc_format_decimal( $_POST['maximum_amount'] ),
+                    'exclude_sale_items'          => isset( $_POST['exclude_sale_items'] ) ? wc_clean( $_POST['exclude_sale_items'] ) : '',
+                    'minimum_amount'              => isset($_POST['minimum_amount']) ? wc_format_decimal( $_POST['minimum_amount'] ) : 0,
+                    'maximum_amount'              => isset($_POST['maximum_amount']) ?wc_format_decimal( $_POST['maximum_amount'] ) : 0,
                     'email_restrictions'          => array_filter( array_map( 'trim', explode( ',', wc_clean( $_POST['customer_email'] ) ) ) ),
                 )
             );
@@ -2182,7 +2175,11 @@ Class WCMp_Admin_Dashboard {
     
     public function vendor_setup_wizard(){
         global $WCMp;
+        
         if (filter_input(INPUT_GET, 'page') != 'vendor-store-setup' || !apply_filters('wcmp_vendor_store_setup_wizard_enabled', true)) {
+            return;
+        }
+        if ( !is_user_wcmp_vendor( get_current_user_id() ) ) {
             return;
         }
      
@@ -2447,7 +2444,7 @@ Class WCMp_Admin_Dashboard {
             <div class="store-address-container">
                 
                 <label class="location-prompt" for="store_name"><?php esc_html_e('Store Name', 'dc-woocommerce-multi-vendor'); ?></label>
-                <input type="text" id="store_name" class="location-input" name="store_name" value="<?php echo esc_attr( $store_name ); ?>"  placeholder="<?php _e('Enter your Store Name here', 'dc-woocommerce-multi-vendor'); ?>" />
+                <input type="text" id="store_name" class="location-input" name="store_name" value="<?php echo esc_attr( $store_name ); ?>"  placeholder="<?php esc_attr_e('Enter your Store Name here', 'dc-woocommerce-multi-vendor'); ?>" />
                 
                 <label for="store_country" class="location-prompt"><?php esc_html_e( 'Where is your store based?', 'woocommerce' ); ?></label>
                 <select id="store_country" name="store_country" data-placeholder="<?php esc_attr_e( 'Choose a country&hellip;', 'woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Country', 'woocommerce' ); ?>" class="location-input wc-enhanced-select dropdown">
@@ -2575,7 +2572,7 @@ Class WCMp_Admin_Dashboard {
             <p>
                 <?php
                 printf(
-                    __( '%s offers follows payments for you.', 'dc-woocommerce-multi-vendor' ),
+                    __( '%s offers the following payment methods for you.', 'dc-woocommerce-multi-vendor' ),
                     wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES )
                 );
                 ?>
@@ -2655,6 +2652,48 @@ Class WCMp_Admin_Dashboard {
             </li>
         </ul>
         <?php
+    }
+
+    public function save_handler_vendor_orders( $postdata ) {
+        global $wp;
+        if( $postdata ) {
+            $vendor_order_id = $wp->query_vars[get_wcmp_vendor_settings( 'wcmp_vendor_orders_endpoint', 'vendor', 'general', 'vendor-orders' )];
+            if( isset( $postdata['update_cust_refund_status'] ) && $vendor_order_id ) {
+                if( isset( $postdata['refund_order_customer'] ) && $postdata['refund_order_customer'] ) {
+                    update_post_meta( $vendor_order_id, '_customer_refund_order', $postdata['refund_order_customer'] );
+                    // trigger customer email
+                    if( in_array( $postdata['refund_order_customer'], array( 'refund_reject', 'refund_accept' ) ) ) {
+
+                        $refund_details = array(
+                            'admin_reason' => isset( $postdata['refund_admin_reason_text'] ) ? $postdata['refund_admin_reason_text'] : '',
+                            );
+
+                        $order_status = '';
+                        if( $_POST['refund_order_customer'] == 'refund_accept' ) {
+                            $order_status = __( 'accepted', 'dc-woocommerce-multi-vendor' );
+                        }elseif( $_POST['refund_order_customer'] == 'refund_reject') {
+                            $order_status = __( 'rejected', 'dc-woocommerce-multi-vendor' );
+                        }
+                        // Comment note for suborder
+                        $order = wc_get_order( $vendor_order_id );
+                        $comment_id = $order->add_order_note( __('Vendor '.$order_status.' refund request for order #'.$vendor_order_id.' .', 'dc-woocommerce-multi-vendor') );
+                        // user info
+                        $user_info = get_userdata(get_current_user_id());
+                        wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+                        // Comment note for parent order
+                        $parent_order_id = wp_get_post_parent_id($vendor_order_id);
+                        $parent_order = wc_get_order( $parent_order_id );
+                        $comment_id_parent = $parent_order->add_order_note( __('Vendor '.$order_status.' refund request for order #'.$vendor_order_id.'.', 'dc-woocommerce-multi-vendor') );
+                        wp_update_comment(array('comment_ID' => $comment_id_parent, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
+
+                        $mail = WC()->mailer()->emails['WC_Email_Customer_Refund_Request'];
+                        $billing_email = get_post_meta( $vendor_order_id, '_billing_email', true );
+                        $mail->trigger( $billing_email, $vendor_order_id, $refund_details, 'customer' );
+                    }
+                }
+            }
+        }
     }
 
 }

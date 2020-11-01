@@ -109,7 +109,7 @@ do_action( 'before_wcfm_bookings_details' );
 	
 				<p class="form-field form-field-wide">
 					<span for="booked_product" class="wcfm-title wcfm_title"><strong><?php _e( 'Booking Created:', 'wc-frontend-manager' ) ?></strong></span>
-					<?php echo date_i18n( wc_date_format() . ' @' . wc_time_format(), $booking->get_date_created() ); ?>
+					<?php echo date_i18n( wc_date_format() . ' @ ' . wc_time_format(), $booking->get_date_created() ); ?>
 				</p>
 				
 				<p class="form-field form-field-wide">
@@ -117,7 +117,7 @@ do_action( 'before_wcfm_bookings_details' );
 					<?php
 					if ( $order ) {
 						if( apply_filters( 'wcfm_is_allow_order_details', true ) && $WCFM->wcfm_vendor_support->wcfm_is_order_for_vendor( $order->get_order_number() ) ) {
-							echo '<span class="booking-orderno"><a href="' . get_wcfm_view_order_url( $order->get_order_number(), $order ) . '">#' . $order->get_order_number() . '</a></span> &ndash; ' . esc_html( wc_get_order_status_name( $order->get_status() ) ) . '(' . date_i18n( wc_date_format(), strtotime( $order->get_date_created() ) ) . ')';
+							echo '<span class="booking-orderno"><a href="' . get_wcfm_view_order_url( $order->get_order_number(), $order ) . '">#' . $order->get_order_number() . '</a></span> &ndash; ' . esc_html( wc_get_order_status_name( $order->get_status() ) ) . ' (' . date_i18n( wc_date_format(), strtotime( $order->get_date_created() ) ) . ')';
 						} else {
 							echo '<span class="booking-orderno">#' . $order->get_order_number() . ' - ' . esc_html( wc_get_order_status_name( $order->get_status() ) ) . '</span>';
 						}

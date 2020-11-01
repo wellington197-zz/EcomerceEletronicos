@@ -93,9 +93,9 @@ class WPBakeryShortCode_mvc_button extends WPBakeryShortCode {
 
 
 vc_map( array(
-	"name" 			=> __( 'Advanced Button Old', 'button' ),
+	"name" 			=> __( 'CSS3 Button (OLD)', 'button' ),
 	"base" 			=> "mvc_button",
-	"category" 		=> __('Mega Addons'),
+	// "category" 		=> __('Mega Addons'),
 	"description" 	=> __('Animated style buttons', 'button'),
 	"icon" => plugin_dir_url( __FILE__ ).'../icons/hoverbutton.png',
 	'params' => array(

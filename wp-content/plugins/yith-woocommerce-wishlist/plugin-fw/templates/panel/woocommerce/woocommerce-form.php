@@ -1,14 +1,19 @@
 <?php
+/**
+ * @var string $option_key
+ */
 $panel_content_class = apply_filters( 'yit_admin_panel_content_class', 'yit-admin-panel-content-wrap' );
 ?>
 
-<div id="<?php echo $this->settings[ 'page' ] ?>_<?php echo $this->get_current_tab() ?>" class="yith-plugin-fw  yit-admin-panel-container">
-    <?php do_action( 'yit_framework_before_print_wc_panel_content', $current_tab ); ?>
+<div id="<?php echo $this->settings[ 'page' ] ?>_<?php echo $option_key ?>" class="yith-plugin-fw  yit-admin-panel-container">
+    <?php do_action( 'yit_framework_before_print_wc_panel_content', $option_key ); ?>
     <div class="<?php echo $panel_content_class; ?>">
         <form id="plugin-fw-wc" method="post">
             <?php $this->add_fields() ?>
-            <?php wp_nonce_field( 'yit_panel_wc_options_' . $this->settings[ 'page' ], 'yit_panel_wc_options_nonce' ); ?>
-            <input style="float: left; margin-right: 10px;" class="button-primary" type="submit" value="<?php _e( 'Save Changes', 'yith-plugin-fw' ) ?>"/>
+            <p class="submit" style="float: left;margin: 0 10px 0 0;">
+	            <?php wp_nonce_field( 'yit_panel_wc_options_' . $this->settings[ 'page' ], 'yit_panel_wc_options_nonce' ); ?>
+				<input class="button-primary" type="submit" value="<?php _e( 'Save Changes', 'yith-plugin-fw' ) ?>"/>
+			</p>
         </form>
         <form id="plugin-fw-wc-reset" method="post">
             <?php $warning = __( 'If you continue with this action, you will reset all options in this page.', 'yith-plugin-fw' ) ?>
@@ -18,5 +23,5 @@ $panel_content_class = apply_filters( 'yit_admin_panel_content_class', 'yit-admi
                    onclick="return confirm('<?php echo $warning . '\n' . __( 'Are you sure?', 'yith-plugin-fw' ) ?>');"/>
         </form>
     </div>
-    <?php do_action( 'yit_framework_after_print_wc_panel_content', $current_tab ); ?>
+    <?php do_action( 'yit_framework_after_print_wc_panel_content', $option_key ); ?>
 </div>

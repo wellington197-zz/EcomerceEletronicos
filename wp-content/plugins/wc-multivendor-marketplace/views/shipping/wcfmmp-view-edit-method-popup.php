@@ -172,16 +172,18 @@
           ?>
           <?php
             $WCFM->wcfm_fields->wcfm_generate_form_field ( 
-              array(
-                "method_cost_fr" => array(
-                  'label' => __('Cost', 'wc-multivendor-marketplace'), 
-                  'name' => 'method_cost',
-                  'type' => 'number', 
-                  'class' => 'wcfm-text wcfm_ele', 
-                  'label_class' => 'wcfm_title wcfm_ele', 
-                  'placeholder' => __('0.00', 'wc-multivendor-marketplace'),
-                  'value' => '',
-                )
+            	apply_filters( 'wcfmmp_shipping_zone_cost_fields',
+								array(
+									"method_cost_fr" => array(
+										'label' => __('Cost', 'wc-multivendor-marketplace'), 
+										'name' => 'method_cost',
+										'type' => 'text', 
+										'class' => 'wcfm-text wcfm_ele', 
+										'label_class' => 'wcfm_title wcfm_ele', 
+										'placeholder' => __('0.00', 'wc-multivendor-marketplace'),
+										'value' => '',
+									)
+								)
               )
             );
           ?>
@@ -225,7 +227,7 @@
               )
             );
           ?>
-          <?php if (!apply_filters( 'hide_vendor_shipping_classes', false )) { ?>
+          <?php if( apply_filters( 'wcfmmp_is_allow_store_shipping_by_shipping_classes', true ) ) { ?>
             <div class="wcfmmp_shipping_classes">
               <h3><?php _e('Shipping Class Cost', 'wc-multivendor-marketplace'); ?></h3> 
               <div class="description">
@@ -235,10 +237,11 @@
               
               $shipping_classes =  WC()->shipping->get_shipping_classes();
               //print_r($shipping_classes);
-              if(empty($shipping_classes)) {
-                echo '<div class="no_shipping_classes">' . __("No Shipping Classes set by Admin", 'wc-multivendor-marketplace') . '</div>';
-              } else {
+              if( !empty( $shipping_classes ) ) {
                 foreach ($shipping_classes as  $shipping_class ) {
+                	if ( ! isset( $shipping_class->term_id ) ) {
+										continue;
+									}
                   
                   $WCFM->wcfm_fields->wcfm_generate_form_field ( 
                     array(
@@ -259,23 +262,43 @@
                   </div>
                   
                 <?php }
-                $WCFM->wcfm_fields->wcfm_generate_form_field ( 
-                    array(
-                      "calculation_type" => array(
-                        'label' => __('Calculation type', 'wc-multivendor-marketplace'),
-                        'name' => 'calculation_type',
-                        'type' => 'select', 
-                        'class' => 'wcfm-select wcfm_ele', 
-                        'label_class' => 'wcfm_title wcfm_ele', 
-                        'options' => array(
-                            'class' => __('Per class: Charge shipping for each shipping class individually', 'wc-multivendor-marketplace' ),
-                            'order' => __('Per order: Charge shipping for the most expensive shipping class', 'wc-multivendor-marketplace' ),
-                        )
-                        
-                      )
-                    )
-                  );
               }
+              
+              $WCFM->wcfm_fields->wcfm_generate_form_field ( 
+								array(
+									'no_class_cost' => array(
+										'label' => __( 'No shipping class cost', 'woocommerce' ), 
+										'name' => 'shipping_class_cost[]',
+										'type' => 'text', 
+										'class' => 'wcfm-text wcfm_ele sc_vals', 
+										'label_class' => 'wcfm_title wcfm_ele', 
+										'placeholder' => __('N/A', 'wc-multivendor-marketplace'),
+										'value' => '',
+										'custom_attributes' => array('shipping_class_id' => 'no_class_cost' ),
+									)
+								)
+							); ?>
+							<div class="description">
+								<?php _e( 'Enter a cost (excl. tax) or sum, e.g. <code>10.00 * [qty]</code>.', 'wc-multivendor-marketplace' ) . '<br/><br/>' . _e( 'Use <code>[qty]</code> for the number of items, <br/><code>[cost]</code> for the total cost of items, and <code>[fee percent="10" min_fee="20" max_fee=""]</code> for percentage based fees.', 'wc-multivendor-marketplace' ); ?>
+							</div>
+              
+							<?php
+							$WCFM->wcfm_fields->wcfm_generate_form_field ( 
+									array(
+										"calculation_type" => array(
+											'label' => __('Calculation type', 'wc-multivendor-marketplace'),
+											'name' => 'calculation_type',
+											'type' => 'select', 
+											'class' => 'wcfm-select wcfm_ele', 
+											'label_class' => 'wcfm_title wcfm_ele', 
+											'options' => array(
+													'class' => __('Per class: Charge shipping for each shipping class individually', 'wc-multivendor-marketplace' ),
+													'order' => __('Per order: Charge shipping for the most expensive shipping class', 'wc-multivendor-marketplace' ),
+											)
+											
+										)
+									)
+								);
               ?>
             </div>
           <?php } ?>

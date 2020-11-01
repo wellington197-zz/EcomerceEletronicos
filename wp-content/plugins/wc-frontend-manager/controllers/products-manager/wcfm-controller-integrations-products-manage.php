@@ -85,6 +85,33 @@ class WCFM_Integrations_Products_Manage_Controller {
 			}
 		}
 		
+		// WooCommerce Tiered Table Price - 6.3.4
+    if( apply_filters( 'wcfm_is_allow_wc_tiered_price_table', true ) ) {
+			if( WCFM_Dependencies::wcfm_wc_tiered_price_table_active_check() || WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+				add_action( 'after_wcfm_products_manage_meta_save', array( &$this, 'wcfm_wc_tiered_price_table_product_meta_save' ), 170, 2 );
+				
+				add_action( 'wcfm_product_variation_data_factory', array( &$this, 'wcfm_wc_tiered_price_table_variations_product_meta_save' ), 110, 5 );
+			}
+		}
+		
+		// Post Expirator - 6.1.4
+    if( apply_filters( 'wcfm_is_allow_post_expirator', true ) ) {
+			if( WCFM_Dependencies::wcfm_post_expirator_plugin_active_check() ) {
+				add_action( 'after_wcfm_products_manage_meta_save', array( &$this, 'wcfm_post_expirator_product_meta_save' ), 180, 2 );
+			}
+		}
+		
+		// Woocommerce German Market Support - 3.3.2
+    if( apply_filters( 'wcfm_is_allow_wc_german_market', true ) ) {
+			if( WCFM_Dependencies::wcfm_wc_german_market_plugin_active_check() ) {
+				// Woocommerce Germanized Product Pricing & Shipping DataSave
+				add_action( 'after_wcfm_products_manage_meta_save', array( &$this, 'wcfm_wc_german_market_product_meta_save' ), 100, 2 );
+				
+				// Woocommerce Germanized Variation Pricing & Shipping DataSave
+				add_action( 'wcfm_product_variation_data_factory', array( &$this, 'wcfm_wc_german_market_variations_product_meta_save' ), 100, 5 );
+			}
+		}
+		
 		// Third Party Product Meta Data Save
     add_action( 'after_wcfm_products_manage_meta_save', array( &$this, 'wcfm_thirdparty_products_manage_meta_save' ), 100, 2 );
 	}
@@ -269,130 +296,201 @@ class WCFM_Integrations_Products_Manage_Controller {
 	  do_action( 'gmw_lf_after_'.$location['object_type'].'_location_updated', $location, $wcfm_products_manage_form_data );
 	}
 	
+	public function get_wcfm_woocommerce_germanized_default_product_data( $product ) {
+		$fields = array(
+			'product-type'           => $product->get_type(),
+			'sale_date_from' => '',
+			'sale_date_upto'   => '',
+			'_is_on_sale'            => $product->is_on_sale(),
+			'sale_price'            => $product->get_sale_price(),
+		);
+
+		if ( is_a( $fields['sale_date_from'], 'WC_DateTime' ) ) {
+			$fields['sale_date_from'] = $fields['_sale_price_dates_from']->date_i18n();
+		}
+
+		if ( is_a( $fields['sale_date_upto'], 'WC_DateTime' ) ) {
+			$fields['sale_date_upto'] = $fields['_sale_price_dates_to']->date_i18n();
+		}
+
+		return $fields;
+	}
+	
 	/**
 	 * Woocommerce Germanized Product Meta data save
 	 */
 	function wcfm_woocommerce_germanized_product_meta_save( $new_product_id, $wcfm_products_manage_form_data ) {
 		global $wpdb, $WCFM, $_POST;
 		
+		$is_variation = false;
 		$product = wc_get_product( $new_product_id );
+		
+		$data = apply_filters( 'woocommerce_gzd_product_saveable_data', $wcfm_products_manage_form_data, $product );
+
+		$data = wp_parse_args( $data, array(
+			'save'    => true,
+			'is_rest' => false,
+		) );
+		
+		$data = array_replace_recursive( $this->get_wcfm_woocommerce_germanized_default_product_data( $product ), $data );
+
+		$unit_data         = $data;
+		$unit_data['save'] = false;
+		
+		
+		$gzd_product       = wc_gzd_get_product( $product );
 		$product_type = ( ! isset( $wcfm_products_manage_form_data['product_type'] ) || empty( $wcfm_products_manage_form_data['product_type'] ) ) ? 'simple' : sanitize_title( stripslashes( $wcfm_products_manage_form_data['product_type'] ) );
 		
-		if ( isset( $wcfm_products_manage_form_data['_unit'] ) ) {
-
-			if ( empty( $wcfm_products_manage_form_data['_unit'] ) || in_array( $wcfm_products_manage_form_data['_unit'], array( 'none', '-1' ) ) )
-				$product = wc_gzd_unset_crud_meta_data( $product, '_unit' );
-			else
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit', sanitize_text_field( $wcfm_products_manage_form_data['_unit'] ) );
-
-		}
-
-		if ( isset( $wcfm_products_manage_form_data['_unit_base'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_base', ( $wcfm_products_manage_form_data['_unit_base'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_base'] ) );
-		}
-
-		if ( isset( $wcfm_products_manage_form_data['_unit_product'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_product', ( $wcfm_products_manage_form_data['_unit_product'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_product'] ) );
-		}
-
-		$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_auto', ( isset( $wcfm_products_manage_form_data['_unit_price_auto'] ) ) ? 'yes' : '' );
 		
-		if ( isset( $wcfm_products_manage_form_data['_unit_price_regular'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_regular', ( $wcfm_products_manage_form_data['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_regular'] ) );
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $wcfm_products_manage_form_data['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_regular'] ) );
+		if ( isset( $data['_unit'] ) ) {
+			if ( empty( $data['_unit'] ) || in_array( $data['_unit'], array( 'none', '-1' ) ) ) {
+				$gzd_product->set_unit( '' );
+			} else {
+				$gzd_product->set_unit( wc_clean( $data['_unit'] ) );
+			}
 		}
-		
-		if ( isset( $wcfm_products_manage_form_data['_unit_price_sale'] ) ) {
 
+		if ( isset( $data['_unit_base'] ) ) {
+			$gzd_product->set_unit_base( $data['_unit_base'] );
+		}
+
+		if ( isset( $data['_unit_product'] ) ) {
+			$gzd_product->set_unit_product( $data['_unit_product'] );
+		}
+
+		$gzd_product->set_unit_price_auto( ( isset( $data['_unit_price_auto'] ) ) ? 'yes' : 'no' );
+
+		if ( isset( $data['_unit_price_regular'] ) ) {
+			$gzd_product->set_unit_price_regular( $data['_unit_price_regular'] );
+			$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+		}
+
+		if ( isset( $data['_unit_price_sale'] ) ) {
 			// Unset unit price sale if no product sale price has been defined
-			if ( ! isset( $wcfm_products_manage_form_data['sale_price'] ) || $wcfm_products_manage_form_data['sale_price'] === '' )
-				$wcfm_products_manage_form_data['_unit_price_sale'] = '';
+			if ( ! isset( $data['sale_price'] ) || $data['sale_price'] === '' ) {
+				$data['_unit_price_sale'] = '';
+			}
 
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_sale', ( $wcfm_products_manage_form_data['_unit_price_sale'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_sale'] ) );
+			$gzd_product->set_unit_price_sale( $data['_unit_price_sale'] );
 		}
 
 		// Ignore variable data
-		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) ) {
+		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) && ! $is_variation ) {
 
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_regular', '' );
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_sale', '' );
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', '' );
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_auto', '' );
+			$gzd_product->set_unit_price_regular( '' );
+			$gzd_product->set_unit_price_sale( '' );
+			$gzd_product->set_unit_price( '' );
+			$gzd_product->set_unit_price_auto( false );
 
 		} else {
 
-			$date_from = isset( $wcfm_products_manage_form_data['sale_date_from'] ) ? wc_clean( $wcfm_products_manage_form_data['sale_date_from'] ) : '';
-			$date_to   = isset( $wcfm_products_manage_form_data['sale_date_upto'] ) ? wc_clean( $wcfm_products_manage_form_data['sale_date_upto'] ) : '';
+			$date_from  = isset( $data['sale_date_from'] ) ? wc_clean( $data['sale_date_from'] ) : '';
+			$date_to    = isset( $data['sale_date_upto'] ) ? wc_clean( $data['sale_date_upto'] ) : '';
+			$is_on_sale = isset( $data['_is_on_sale'] ) ? $data['_is_on_sale'] : null;
 
 			// Update price if on sale
-			if ( isset( $wcfm_products_manage_form_data['_unit_price_sale'] ) ) {
-				
-				if ( '' !== $wcfm_products_manage_form_data['_unit_price_sale'] && '' == $date_to && '' == $date_from ) {
-					$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_sale'] ) );
+			if ( isset( $data['_unit_price_sale'] ) ) {
+				if ( ! is_null( $is_on_sale ) ) {
+					if ( $is_on_sale ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					} else {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
 				} else {
-					$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $wcfm_products_manage_form_data['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_regular'] ) );
-				}
+					if ( '' !== $data['_unit_price_sale'] && '' == $date_to && '' == $date_from ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					} else {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
 
-				if ( '' !== $wcfm_products_manage_form_data['_unit_price_sale'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
-					$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_sale'] ) );
-				}
+					if ( '' !== $data['_unit_price_sale'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					}
 
-				if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) )
-					$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $wcfm_products_manage_form_data['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $wcfm_products_manage_form_data['_unit_price_regular'] ) );
+					if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
+				}
 			}
 		}
+
+		if ( $data['save'] ) {
+			$product->save();
+		}
+		
 		
 		$sale_price_labels = array( '_sale_price_label', '_sale_price_regular_label' );
 
 		foreach ( $sale_price_labels as $label ) {
+			if ( isset( $data[ $label ] ) ) {
+				$setter = "set{$label}";
 
-			if ( isset( $wcfm_products_manage_form_data[$label] ) ) {
-
-				if ( empty( $wcfm_products_manage_form_data[$label] ) || in_array( $wcfm_products_manage_form_data[$label], array( 'none', '-1' ) ) )
-					$product = wc_gzd_unset_crud_meta_data( $product, $label );
-				else
-					$product = wc_gzd_set_crud_meta_data( $product, $label, sanitize_text_field( $wcfm_products_manage_form_data[$label] ) );
+				if ( is_callable( array( $gzd_product, $setter ) ) ) {
+					if ( empty( $data[ $label ] ) || in_array( $data[ $label ], array( 'none', '-1' ) ) ) {
+						$gzd_product->$setter( '' );
+					} else {
+						$gzd_product->$setter( wc_clean( $data[ $label ] ) );
+					}
+				}
 			}
 		}
-		
-		if ( isset( $wcfm_products_manage_form_data[ '_mini_desc' ] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_mini_desc', ( $wcfm_products_manage_form_data[ '_mini_desc' ] === '' ? '' : wc_gzd_sanitize_html_text_field( $wcfm_products_manage_form_data[ '_mini_desc' ] ) ) );
+
+		if ( isset( $data['_mini_desc'] ) ) {
+			$gzd_product->set_mini_desc( $data['_mini_desc'] === '' ? '' : wc_gzd_sanitize_html_text_field( $data['_mini_desc'] ) );
 		}
 
-		if ( isset( $wcfm_products_manage_form_data[ 'delivery_time' ] ) && ! empty( $wcfm_products_manage_form_data[ 'delivery_time' ] ) ) {
-			$product = wc_gzd_set_crud_term_data( $product, $wcfm_products_manage_form_data[ 'delivery_time' ], 'product_delivery_time' );
+		if ( isset( $data['_min_age'] ) && array_key_exists( (int) $data['_min_age'], wc_gzd_get_age_verification_min_ages() ) ) {
+			$gzd_product->set_min_age( absint( $data['_min_age'] ) );
 		} else {
-			$product = wc_gzd_unset_crud_term_data( $product, 'product_delivery_time' );
+			$gzd_product->set_min_age( '' );
+		}
+
+		if ( isset( $data['delivery_time'] ) && ! empty( $data['delivery_time'] ) ) {
+			$product->update_meta_data( '_product_delivery_time', $data['delivery_time'] );
+		} else {
+			$product->update_meta_data( '_delete_product_delivery_time', true );
 		}
 
 		// Free shipping
-		$product = wc_gzd_set_crud_meta_data( $product, '_free_shipping', ( isset( $wcfm_products_manage_form_data['_free_shipping'] ) ) ? 'yes' : '' );
+		$gzd_product->set_free_shipping( isset( $data['_free_shipping'] ) ? 'yes' : 'no' );
 
 		// Is a service?
-		$product = wc_gzd_set_crud_meta_data( $product, '_service', ( isset( $wcfm_products_manage_form_data['_service'] ) ) ? 'yes' : '' );
-		
-		// Applies to differential taxation?
-		$product = wc_gzd_set_crud_meta_data( $product, '_differential_taxation', ( isset( $wcfm_products_manage_form_data['_differential_taxation'] ) ) ? 'yes' : '' );
+		$gzd_product->set_service( isset( $data['_service'] ) ? 'yes' : 'no' );
 
-		if ( isset( $wcfm_products_manage_form_data['_differential_taxation'] ) ) {
-		  $product = wc_gzd_set_crud_data( $product, 'tax_status', 'shipping' );
-    }
+		// Applies to differential taxation?
+		$gzd_product->set_differential_taxation( isset( $data['_differential_taxation'] ) ? 'yes' : 'no' );
+
+		if ( $gzd_product->is_differential_taxed() ) {
+			/**
+			 * Filter the tax status of a differential taxed product.
+			 *
+			 * @param string     $tax_status The tax status, e.g. none or shipping.
+             * @param WC_Product $product The product instance.
+			 *
+			 * @since 3.0.7
+			 */
+		    $tax_status_diff = apply_filters( 'woocommerce_gzd_product_differential_taxed_tax_status', 'none', $product );
+
+			$product->set_tax_status( $tax_status_diff );
+		}
 
 		// Ignore variable data
-		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_mini_desc', '' );
+		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) && ! $is_variation ) {
+			$gzd_product->set_mini_desc( '' );
+		}
+		
+		if ( isset( $data['_ts_gtin'] ) ) {
+			$product = wc_ts_set_crud_data( $product, '_ts_gtin', wc_clean( $data['_ts_gtin'] ) );
 		}
 
-		if ( wc_gzd_get_dependencies()->woocommerce_version_supports_crud() ) {
-			$product->save();
-			
-			// Lets update the display price
-			if ( $product->is_on_sale() ) {
-				update_post_meta( $new_product_id, '_unit_price', $wcfm_products_manage_form_data[ '_unit_price_sale' ] );
-			} else {
-				update_post_meta( $new_product_id, '_unit_price', $wcfm_products_manage_form_data[ '_unit_price_regular' ] );
-			}
+		if ( isset( $data['_ts_mpn'] ) ) {
+			$product = wc_ts_set_crud_data( $product, '_ts_mpn', wc_clean( $data['_ts_mpn'] ) );
 		}
+
+		if ( $data['save'] ) {
+			$product->save();
+		}
+		
 	}
 	
 	/**
@@ -401,89 +499,172 @@ class WCFM_Integrations_Products_Manage_Controller {
 	function wcfm_woocommerce_germanized_variations_product_meta_save( $wcfm_variation_data, $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data ) {
 		global $wpdb, $WCFM, $_POST;
 		
+		$is_variation = true;
 		$product = wc_get_product( $variation_id );
+		
+		$data = apply_filters( 'woocommerce_gzd_product_saveable_data', $variations, $product );
+
+		$data = wp_parse_args( $data, array(
+			'save'    => true,
+			'is_rest' => false,
+		) );
+		
+		$data = array_replace_recursive( $this->get_wcfm_woocommerce_germanized_default_product_data( $product ), $data );
+
+		$unit_data         = $data;
+		$unit_data['save'] = false;
+		
+		
+		$gzd_product       = wc_gzd_get_product( $product );
 		$product_type = ( ! isset( $wcfm_products_manage_form_data['product_type'] ) || empty( $wcfm_products_manage_form_data['product_type'] ) ) ? 'simple' : sanitize_title( stripslashes( $wcfm_products_manage_form_data['product_type'] ) );
 		
-		if ( isset( $variations['_unit'] ) ) {
-
-			if ( empty( $variations['_unit'] ) || in_array( $variations['_unit'], array( 'none', '-1' ) ) )
-				$product = wc_gzd_unset_crud_meta_data( $product, '_unit' );
-			else
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit', sanitize_text_field( $variations['_unit'] ) );
-
-		}
-
-		if ( isset( $variations['_unit_base'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_base', ( $variations['_unit_base'] === '' ) ? '' : wc_format_decimal( $variations['_unit_base'] ) );
-		}
-
-		if ( isset( $variations['_unit_product'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_product', ( $variations['_unit_product'] === '' ) ? '' : wc_format_decimal( $variations['_unit_product'] ) );
-		}
-
-		$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_auto', ( isset( $variations['_unit_price_auto'] ) ) ? 'yes' : '' );
 		
-		if ( isset( $variations['_unit_price_regular'] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_regular', ( $variations['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $variations['_unit_price_regular'] ) );
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $variations['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $variations['_unit_price_regular'] ) );
-		}
-		
-		if ( isset( $variations['_unit_price_sale'] ) ) {
-
-			// Unset unit price sale if no product sale price has been defined
-			if ( ! isset( $variations['sale_price'] ) || $variations['sale_price'] === '' )
-				$variations['_unit_price_sale'] = '';
-
-			$product = wc_gzd_set_crud_meta_data( $product, '_unit_price_sale', ( $variations['_unit_price_sale'] === '' ) ? '' : wc_format_decimal( $variations['_unit_price_sale'] ) );
-		}
-
-		$date_from = isset( $wcfm_products_manage_form_data['sale_date_from'] ) ? wc_clean( $wcfm_products_manage_form_data['sale_date_from'] ) : '';
-		$date_to   = isset( $wcfm_products_manage_form_data['sale_date_upto'] ) ? wc_clean( $wcfm_products_manage_form_data['sale_date_upto'] ) : '';
-
-		// Update price if on sale
-		if ( isset( $variations['_unit_price_sale'] ) ) {
-			
-			if ( '' !== $variations['_unit_price_sale'] && '' == $date_to && '' == $date_from ) {
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', wc_format_decimal( $variations['_unit_price_sale'] ) );
+		if ( isset( $data['_unit'] ) ) {
+			if ( empty( $data['_unit'] ) || in_array( $data['_unit'], array( 'none', '-1' ) ) ) {
+				$gzd_product->set_unit( '' );
 			} else {
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $variations['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $variations['_unit_price_regular'] ) );
+				$gzd_product->set_unit( wc_clean( $data['_unit'] ) );
 			}
-
-			if ( '' !== $variations['_unit_price_sale'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', wc_format_decimal( $variations['_unit_price_sale'] ) );
-			}
-
-			if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) )
-				$product = wc_gzd_set_crud_meta_data( $product, '_unit_price', ( $variations['_unit_price_regular'] === '' ) ? '' : wc_format_decimal( $variations['_unit_price_regular'] ) );
 		}
+
+		if ( isset( $data['_unit_base'] ) ) {
+			$gzd_product->set_unit_base( $data['_unit_base'] );
+		}
+
+		if ( isset( $data['_unit_product'] ) ) {
+			$gzd_product->set_unit_product( $data['_unit_product'] );
+		}
+
+		$gzd_product->set_unit_price_auto( ( isset( $data['_unit_price_auto'] ) ) ? 'yes' : 'no' );
+
+		if ( isset( $data['_unit_price_regular'] ) ) {
+			$gzd_product->set_unit_price_regular( $data['_unit_price_regular'] );
+			$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+		}
+
+		if ( isset( $data['_unit_price_sale'] ) ) {
+			// Unset unit price sale if no product sale price has been defined
+			if ( ! isset( $data['sale_price'] ) || $data['sale_price'] === '' ) {
+				$data['_unit_price_sale'] = '';
+			}
+
+			$gzd_product->set_unit_price_sale( $data['_unit_price_sale'] );
+		}
+
+		// Ignore variable data
+		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) && ! $is_variation ) {
+
+			$gzd_product->set_unit_price_regular( '' );
+			$gzd_product->set_unit_price_sale( '' );
+			$gzd_product->set_unit_price( '' );
+			$gzd_product->set_unit_price_auto( false );
+
+		} else {
+
+			$date_from  = isset( $data['sale_date_from'] ) ? wc_clean( $data['sale_date_from'] ) : '';
+			$date_to    = isset( $data['sale_date_upto'] ) ? wc_clean( $data['sale_date_upto'] ) : '';
+			$is_on_sale = isset( $data['_is_on_sale'] ) ? $data['_is_on_sale'] : null;
+
+			// Update price if on sale
+			if ( isset( $data['_unit_price_sale'] ) ) {
+				if ( ! is_null( $is_on_sale ) ) {
+					if ( $is_on_sale ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					} else {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
+				} else {
+					if ( '' !== $data['_unit_price_sale'] && '' == $date_to && '' == $date_from ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					} else {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
+
+					if ( '' !== $data['_unit_price_sale'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+						$gzd_product->set_unit_price( $data['_unit_price_sale'] );
+					}
+
+					if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) {
+						$gzd_product->set_unit_price( $data['_unit_price_regular'] );
+					}
+				}
+			}
+		}
+
+		if ( $data['save'] ) {
+			$product->save();
+		}
+		
 		
 		$sale_price_labels = array( '_sale_price_label', '_sale_price_regular_label' );
 
 		foreach ( $sale_price_labels as $label ) {
+			if ( isset( $data[ $label ] ) ) {
+				$setter = "set{$label}";
 
-			if ( isset( $variations[$label] ) ) {
-
-				if ( empty( $variations[$label] ) || in_array( $variations[$label], array( 'none', '-1' ) ) )
-					$product = wc_gzd_unset_crud_meta_data( $product, $label );
-				else
-					$product = wc_gzd_set_crud_meta_data( $product, $label, sanitize_text_field( $variations[$label] ) );
+				if ( is_callable( array( $gzd_product, $setter ) ) ) {
+					if ( empty( $data[ $label ] ) || in_array( $data[ $label ], array( 'none', '-1' ) ) ) {
+						$gzd_product->$setter( '' );
+					} else {
+						$gzd_product->$setter( wc_clean( $data[ $label ] ) );
+					}
+				}
 			}
 		}
-		
-		if ( isset( $variations[ '_mini_desc' ] ) ) {
-			$product = wc_gzd_set_crud_meta_data( $product, '_mini_desc', ( $variations[ '_mini_desc' ] === '' ? '' : wc_gzd_sanitize_html_text_field( $variations[ '_mini_desc' ] ) ) );
+
+		if ( isset( $data['_mini_desc'] ) ) {
+			$gzd_product->set_mini_desc( $data['_mini_desc'] === '' ? '' : wc_gzd_sanitize_html_text_field( $data['_mini_desc'] ) );
 		}
 
-		if ( isset( $variations[ 'delivery_time' ] ) && ! empty( $variations[ 'delivery_time' ] ) ) {
-			$product = wc_gzd_set_crud_term_data( $product, $variations[ 'delivery_time' ], 'product_delivery_time' );
+		if ( isset( $data['_min_age'] ) && array_key_exists( (int) $data['_min_age'], wc_gzd_get_age_verification_min_ages() ) ) {
+			$gzd_product->set_min_age( absint( $data['_min_age'] ) );
 		} else {
-			$product = wc_gzd_unset_crud_term_data( $product, 'product_delivery_time' );
+			$gzd_product->set_min_age( '' );
 		}
+
+		if ( isset( $data['delivery_time'] ) && ! empty( $data['delivery_time'] ) ) {
+			$product->update_meta_data( '_product_delivery_time', $data['delivery_time'] );
+		} else {
+			$product->update_meta_data( '_delete_product_delivery_time', true );
+		}
+
+		// Free shipping
+		$gzd_product->set_free_shipping( isset( $data['_free_shipping'] ) ? 'yes' : 'no' );
 
 		// Is a service?
-		$product = wc_gzd_set_crud_meta_data( $product, '_service', ( isset( $variations['_service'] ) ) ? 'yes' : '' );
+		$gzd_product->set_service( isset( $data['_service'] ) ? 'yes' : 'no' );
+
+		// Applies to differential taxation?
+		$gzd_product->set_differential_taxation( isset( $data['_differential_taxation'] ) ? 'yes' : 'no' );
+
+		if ( $gzd_product->is_differential_taxed() ) {
+			/**
+			 * Filter the tax status of a differential taxed product.
+			 *
+			 * @param string     $tax_status The tax status, e.g. none or shipping.
+             * @param WC_Product $product The product instance.
+			 *
+			 * @since 3.0.7
+			 */
+		    $tax_status_diff = apply_filters( 'woocommerce_gzd_product_differential_taxed_tax_status', 'none', $product );
+
+			$product->set_tax_status( $tax_status_diff );
+		}
+
+		// Ignore variable data
+		if ( in_array( $product_type, array( 'variable', 'grouped' ) ) && ! $is_variation ) {
+			$gzd_product->set_mini_desc( '' );
+		}
 		
-		if ( wc_gzd_get_dependencies()->woocommerce_version_supports_crud() ) {
+		if ( isset( $data['_ts_gtin'] ) ) {
+			$product = wc_ts_set_crud_data( $product, '_ts_gtin', wc_clean( $data['_ts_gtin'] ) );
+		}
+
+		if ( isset( $data['_ts_mpn'] ) ) {
+			$product = wc_ts_set_crud_data( $product, '_ts_mpn', wc_clean( $data['_ts_mpn'] ) );
+		}
+
+		if ( $data['save'] ) {
 			$product->save();
 		}
 		
@@ -686,6 +867,225 @@ class WCFM_Integrations_Products_Manage_Controller {
 	}
 	
 	/**
+	 * Product Manager WC Tiered Price Table Product Meta data save
+	 */
+	function wcfm_wc_tiered_price_table_product_meta_save( $new_product_id, $wcfm_products_manage_form_data ) {
+		global $wpdb, $WCFM, $_POST;
+		
+		$fixed_price_rules = array();
+		$percent_price_rules = array();
+		
+		if ( isset( $wcfm_products_manage_form_data['tiered_price_rules_type'] ) ) {
+			update_post_meta( $new_product_id, '_tiered_price_rules_type', $wcfm_products_manage_form_data['tiered_price_rules_type'] );
+		}
+		
+		if ( isset( $wcfm_products_manage_form_data['tiered_fixed_price_rules'] ) ) {
+			$price_rules = $wcfm_products_manage_form_data['tiered_fixed_price_rules'];
+			
+			if( !empty( $price_rules ) ) {
+				foreach( $price_rules as $price_rule ) {
+					if ( !empty($price_rule['quantity']) && !empty($price_rule['price']) && !key_exists( $price_rule['quantity'], $fixed_price_rules ) ) {
+						$fixed_price_rules[$price_rule['quantity']] = wc_format_decimal( $price_rule['price'] );
+					}
+				}
+			}
+			update_post_meta( $new_product_id, '_fixed_price_rules', $fixed_price_rules );
+		}
+		
+		if( WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+			if ( isset( $wcfm_products_manage_form_data['tiered_percent_price_rules'] ) ) {
+				$price_rules = $wcfm_products_manage_form_data['tiered_percent_price_rules'];
+				
+				if( !empty( $price_rules ) ) {
+					foreach( $price_rules as $price_rule ) {
+						if ( !empty($price_rule['quantity']) && !empty($price_rule['discount']) && !key_exists( $price_rule['quantity'], $percent_price_rules ) && ( $price_rule['discount'] < 99 ) ) {
+							$percent_price_rules[$price_rule['quantity']] = $price_rule['discount'];
+						}
+					}
+				}
+				update_post_meta( $new_product_id, '_percentage_price_rules', $percent_price_rules );
+			}
+			
+			if ( isset( $wcfm_products_manage_form_data['tiered_pricing_minimum'] ) ) {
+				update_post_meta( $new_product_id, '_tiered_price_minimum_qty', $wcfm_products_manage_form_data['tiered_pricing_minimum'] );
+			}
+		}
+	}
+	
+	/**
+	 * WC Tiered Price Table Variations Meta data save
+	 */
+	function wcfm_wc_tiered_price_table_variations_product_meta_save( $wcfm_variation_data, $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data ) {
+		global $wpdb, $WCFM, $_POST;
+		
+		$fixed_price_rules = array();
+		$percent_price_rules = array();
+		
+		if ( isset( $variations['tiered_fixed_price_rules'] ) ) {
+			$price_rules = $variations['tiered_fixed_price_rules'];
+			
+			if( !empty( $price_rules ) ) {
+				foreach( $price_rules as $price_rule ) {
+					if ( !empty($price_rule['quantity']) && !empty($price_rule['price']) && !key_exists( $price_rule['quantity'], $fixed_price_rules ) ) {
+						$fixed_price_rules[$price_rule['quantity']] = $price_rule['price'];
+					}
+				}
+			}
+			update_post_meta( $variation_id, '_fixed_price_rules', $fixed_price_rules );
+		}
+		
+		if( WCFM_Dependencies::wcfm_wc_tiered_price_table_premium_active_check() ) {
+			if ( isset( $variations['tiered_percent_price_rules'] ) ) {
+				$price_rules = $variations['tiered_percent_price_rules'];
+				
+				if( !empty( $price_rules ) ) {
+					foreach( $price_rules as $price_rule ) {
+						if ( !empty($price_rule['quantity']) && !empty($price_rule['discount']) && !key_exists( $price_rule['quantity'], $percent_price_rules ) && ( $price_rule['discount'] < 99 ) ) {
+							$percent_price_rules[$price_rule['quantity']] = $price_rule['discount'];
+						}
+					}
+				}
+				update_post_meta( $variation_id, '_percentage_price_rules', $percent_price_rules );
+			}
+			
+			if ( isset( $variations['tiered_pricing_minimum'] ) ) {
+				update_post_meta( $variation_id, '_tiered_price_minimum_qty', $variations['tiered_pricing_minimum'] );
+			}
+			
+			if ( isset( $variations['tiered_price_rules_type'] ) ) {
+				update_post_meta( $variation_id, '_tiered_price_rules_type', $variations['tiered_price_rules_type'] );
+			}
+		}
+		
+		return $wcfm_variation_data;
+	}
+	
+	/**
+	 * Post Expirator Product Meta Save
+	 */
+	function wcfm_post_expirator_product_meta_save( $new_product_id, $wcfm_products_manage_form_data ) {
+		global $wpdb, $WCFM, $_POST;
+		
+		if (isset($wcfm_products_manage_form_data['enable-expirationdate'])) {
+      $default = get_option('expirationdateDefaultDate',POSTEXPIRATOR_EXPIREDEFAULT);
+			if ($default == 'publish') {
+				$month 	 = intval($wcfm_products_manage_form_data['mm']);
+				$day 	 = intval($wcfm_products_manage_form_data['jj']);
+				$year 	 = intval($wcfm_products_manage_form_data['aa']);
+				$hour 	 = intval($wcfm_products_manage_form_data['hh']);
+				$minute  = intval($wcfm_products_manage_form_data['mn']);
+			} else {
+				$month	 = intval($wcfm_products_manage_form_data['expirationdate_month']);
+				$day 	 = intval($wcfm_products_manage_form_data['expirationdate_day']);
+				$year 	 = intval($wcfm_products_manage_form_data['expirationdate_year']);
+				$hour 	 = intval($wcfm_products_manage_form_data['expirationdate_hour']);
+				$minute  = intval($wcfm_products_manage_form_data['expirationdate_minute']);
+			}
+			$category = isset($wcfm_products_manage_form_data['expirationdate_category']) ? $wcfm_products_manage_form_data['expirationdate_category'] : 0;
+	
+			$ts = get_gmt_from_date("$year-$month-$day $hour:$minute:0",'U');
+	
+			
+			$opts = array();
+
+			// Schedule/Update Expiration
+			$opts['expireType'] = $wcfm_products_manage_form_data['expirationdate_expiretype'];
+			$opts['id'] = $new_product_id;
+
+			/*if ($opts['expireType'] == 'category' || $opts['expireType'] == 'category-add' || $opts['expireType'] == 'category-remove') {
+							if (isset($category) && !empty($category)) {
+					if (!empty($category)) {
+						$opts['category'] = $category;
+						$opts['categoryTaxonomy'] = $wcfm_products_manage_form_data['taxonomy-heirarchical'];
+					}
+				}
+			}*/
+				
+			_scheduleExpiratorEvent( $new_product_id, $ts, $opts);
+		} else {
+			_unscheduleExpiratorEvent( $new_product_id );
+		}
+	}
+	
+	/**
+	 * WooCommerce German Marketplace Product Meta Save
+	 */
+	function wcfm_wc_german_market_product_meta_save( $new_product_id, $wcfm_products_manage_form_data ) {
+		global $wpdb, $WCFM, $_POST;
+		
+		if(isset($wcfm_products_manage_form_data['_lieferzeit'])) {
+			update_post_meta( $new_product_id, '_lieferzeit', $wcfm_products_manage_form_data['_lieferzeit'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_alternative_shipping_information'])) {
+			update_post_meta( $new_product_id, '_alternative_shipping_information', $wcfm_products_manage_form_data['_alternative_shipping_information'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_suppress_shipping_notice'])) {
+			update_post_meta( $new_product_id, '_suppress_shipping_notice', 'on' );
+		} else {
+			delete_post_meta( $new_product_id, '_suppress_shipping_notice' );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_sale_label'])) {
+			update_post_meta( $new_product_id, '_sale_label', $wcfm_products_manage_form_data['_sale_label'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_gm_gtin'])) {
+			update_post_meta( $new_product_id, '_gm_gtin', $wcfm_products_manage_form_data['_gm_gtin'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_unit_regular_price_per_unit'])) {
+			update_post_meta( $new_product_id, '_unit_regular_price_per_unit', $wcfm_products_manage_form_data['_unit_regular_price_per_unit'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_auto_ppu_complete_product_quantity'])) {
+			update_post_meta( $new_product_id, '_auto_ppu_complete_product_quantity', $wcfm_products_manage_form_data['_auto_ppu_complete_product_quantity'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_unit_regular_price_per_unit_mult'])) {
+			update_post_meta( $new_product_id, '_unit_regular_price_per_unit_mult', $wcfm_products_manage_form_data['_unit_regular_price_per_unit_mult'] );
+		}
+		
+		if(isset($wcfm_products_manage_form_data['_age_rating_age'])) {
+			update_post_meta( $new_product_id, '_age_rating_age', $wcfm_products_manage_form_data['_age_rating_age'] );
+		}
+	}
+	
+	/**
+	 * WooCommerce German Market Variation Meta Save
+	 */
+	function wcfm_wc_german_market_variations_product_meta_save( $wcfm_variation_data, $new_product_id, $variation_id, $variations, $wcfm_products_manage_form_data ) {
+		global $wpdb, $WCFM, $_POST;
+		
+		if ( isset( $variations['_lieferzeit'] ) ) {
+			update_post_meta( $variation_id, '_lieferzeit', $variations['_lieferzeit'] );
+		}
+		
+		if ( isset( $variations['variable_used_setting_ppu'] ) ) {
+			update_post_meta( $variation_id, 'variable_used_setting_ppu', $variations['variable_used_setting_ppu'] );
+		}
+		
+		if ( isset( $variations['_variable_used_setting_shipping_info'] ) ) {
+			update_post_meta( $variation_id, '_variable_used_setting_shipping_info', $variations['_variable_used_setting_shipping_info'] );
+		}
+		
+		if ( isset( $variations['_sale_label'] ) ) {
+			update_post_meta( $variation_id, '_sale_label', $variations['_sale_label'] );
+		}
+		
+		if ( isset( $variations['_gm_gtin'] ) ) {
+			update_post_meta( $variation_id, '_gm_gtin', $variations['_gm_gtin'] );
+		}
+		
+		if(isset($variations['_age_rating_age'])) {
+			//update_post_meta( $variation_id, '_age_rating_age', $variations['_age_rating_age'] );
+		}
+		
+		return $wcfm_variation_data;
+	}
+	
+	/**
 	 * Third Party Product Meta data save
 	 */
 	function wcfm_thirdparty_products_manage_meta_save( $new_product_id, $wcfm_products_manage_form_data ) {
@@ -699,6 +1099,22 @@ class WCFM_Integrations_Products_Manage_Controller {
 			}
 			if(isset($wcfm_products_manage_form_data['yoast_wpseo_metadesc'])) {
 				update_post_meta( $new_product_id, '_yoast_wpseo_metadesc', strip_tags( $wcfm_products_manage_form_data['yoast_wpseo_metadesc'] ) );
+			}
+		}
+		
+		// All in One SEO Support
+		if( WCFM_Dependencies::wcfm_all_in_one_seo_plugin_active_check() || WCFM_Dependencies::wcfm_all_in_one_seo_pro_plugin_active_check() ) {
+			if(isset($wcfm_products_manage_form_data['aiosp_title'])) {
+				update_post_meta( $new_product_id, '_aioseop_title', $wcfm_products_manage_form_data['aiosp_title'] );
+				update_post_meta( $new_product_id, '_aioseop_description', $wcfm_products_manage_form_data['aiosp_description'] );
+			}
+		}
+		
+		// Rank Math SEO Support
+		if( WCFM_Dependencies::wcfm_rankmath_seo_plugin_active_check() ) {
+			if(isset($wcfm_products_manage_form_data['rank_math_focus_keyword'])) {
+				update_post_meta( $new_product_id, 'rank_math_focus_keyword', $wcfm_products_manage_form_data['rank_math_focus_keyword'] );
+				update_post_meta( $new_product_id, 'rank_math_description', $wcfm_products_manage_form_data['rank_math_description'] );
 			}
 		}
 		
@@ -815,5 +1231,29 @@ class WCFM_Integrations_Products_Manage_Controller {
 			}
 		}
 		
+		
+		// Woo Advanced Product Size Chart - 6.4.1
+    if( apply_filters( 'wcfm_is_allow_woo_product_size_chart', true ) ) {
+			if( WCFM_Dependencies::wcfm_woo_product_size_chart_plugin_active_check() ) {
+				if( isset( $wcfm_products_manage_form_data['wcfm_prod_chart'] ) ) {
+					update_post_meta( $new_product_id, 'prod-chart', $wcfm_products_manage_form_data['wcfm_prod_chart'] );	
+				}
+			}
+		}
+		
+		// WooCommerce Country Based Restrictions - 6.5.3
+    if( apply_filters( 'wcfm_is_allow_woo_country_based_restriction', true ) ) {
+			if( WCFM_Dependencies::wcfm_woo_country_based_restriction_active_check() ) {
+				if( isset( $wcfm_products_manage_form_data['_fz_country_restriction_type'] ) ) {
+					update_post_meta( $new_product_id, '_fz_country_restriction_type', sanitize_text_field( $wcfm_products_manage_form_data['_fz_country_restriction_type'] ) );	
+				}
+				
+				$countries = array();
+				if(isset($wcfm_products_manage_form_data["_restricted_countries"])) {
+					$countries = wc_clean( $wcfm_products_manage_form_data['_restricted_countries'] );
+					update_post_meta( $new_product_id, '_restricted_countries', $countries );
+				}
+			}
+		}
 	}
 }

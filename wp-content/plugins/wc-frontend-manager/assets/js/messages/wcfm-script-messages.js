@@ -117,6 +117,95 @@ jQuery(document).ready( function($) {
 		}
 	} );
 	
+	// Send Reply to Direct Message
+	$( document.body ).on( 'updated_wcfm-messages', function() {
+		$('.wcfm_messages_direct_reply').each(function() {
+			$(this).click(function(event) {
+				event.preventDefault();
+				//var rconfirm = confirm("Are you sure and want to 'Mark as Complete' this Order?");
+				sendReplyWCFMMessage($(this));
+				return false;
+			});
+		});
+	});
+	
+	function sendReplyWCFMMessage(item) {
+		$('#wcfm-messages_wrapper').block({
+			message: null,
+			overlayCSS: {
+				background: '#fff',
+				opacity: 0.6
+			}
+		});
+		var data = {
+			action    : 'wcfm_messages_send_reply',
+			messageid : item.data( 'messageid' ),
+			authorid  : item.data( 'authorid' )
+		}	
+		$.ajax({
+			type:		'POST',
+			url: wcfm_params.ajax_url,
+			data: data,
+			success :	function(response) {
+				// Intialize colorbox
+				jQuery.colorbox( { html: response, width: $popup_width,
+				  onComplete:function() {
+				    // Intialize Quick Update Action
+						jQuery('#wcfm_message_send_reply_button').click(function(event) {
+							event.preventDefault();
+							
+							jQuery('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+							
+							var wcfm_messages = getWCFMEditorContent( 'wcfm_message_send_reply' );
+		
+							var direct_to = 0;
+							if( $('#wcfm_message_send_reply_direct_to').length > 0 ) direct_to = $('#wcfm_message_send_reply_direct_to').val();
+							
+							if( !wcfm_messages ) return false;
+						
+							// Validations
+							$is_valid = true; //wcfm_coupons_manage_form_validate();
+							
+							if($is_valid) {
+								$('#wcfm_message_send_reply_form').block({
+									message: null,
+									overlayCSS: {
+										background: '#fff',
+										opacity: 0.6
+									}
+								});
+								var data = {
+									action             : 'wcfm_ajax_controller',
+									controller         : 'wcfm-message-sent',
+									wcfm_messages      : wcfm_messages,
+									direct_to          : direct_to
+								}	
+								$.post(wcfm_params.ajax_url, data, function(response) {
+									if(response) {
+										$response_json = $.parseJSON(response);
+										$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+										wcfm_notification_sound.play();
+										if($response_json.status) {
+											setTimeout(function() {
+												jQuery.colorbox.remove();
+											}, 2000);
+											$('#wcfm_message_send_reply_form .wcfm-message').html('<span class="wcicon-status-completed"></span>' + $response_json.message).addClass('wcfm-success').slideDown();
+										} else {
+											$('#wcfm_message_send_reply_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
+										}
+										$('#wcfm_message_send_reply_form').unblock();
+									}
+								});	
+							}
+						});
+				  }
+				} );
+				
+				$('#wcfm-messages_wrapper').unblock();
+			}
+		});
+	}
+	
 	// Mark Messages as Read
 	$( document.body ).on( 'updated_wcfm-messages', function() {
 		$('.wcfm_messages_mark_read').each(function() {

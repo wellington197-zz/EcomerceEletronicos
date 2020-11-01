@@ -125,4 +125,11 @@ jQuery(document).ready(function($) {
 			}
 		});
 	}
+	
+	// Screen Manager
+	$( document.body ).on( 'updated_wcfm-notice', function() {
+		$.each(wcfm_notices_screen_manage, function( column, column_val ) {
+		  $wcfm_notice_table.column(column).visible( false );
+		} );
+	});
 } );

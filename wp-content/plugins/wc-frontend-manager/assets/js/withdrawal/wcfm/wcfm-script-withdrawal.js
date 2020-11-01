@@ -16,6 +16,7 @@ jQuery(document).ready(function($) {
 										{ responsivePriority: 1 },
 										{ responsivePriority: 2 },
 										{ responsivePriority: 1 },
+										{ responsivePriority: 3 },
 										{ responsivePriority: 4 }
 								],
 		"columnDefs": [ { "targets": 0, "orderable" : false }, 
@@ -25,6 +26,7 @@ jQuery(document).ready(function($) {
 										{ "targets": 4, "orderable" : false },
 										{ "targets": 5, "orderable" : false },
 										{ "targets": 6, "orderable" : false },
+										{ "targets": 7, "orderable" : false },
 									],
 		'ajax': {
 			"type"   : "POST",
@@ -32,6 +34,8 @@ jQuery(document).ready(function($) {
 			"data"   : function( d ) {
 				d.action       = 'wcfm_ajax_controller',
 				d.controller   = 'wcfm-withdrawal',
+				d.start_date   = $filter_date_form,
+				d.end_date     = $filter_date_to
 				d.order        = 'asc'
 			},
 			"complete" : function () {
@@ -56,7 +60,7 @@ jQuery(document).ready(function($) {
 	// Request Withdrawals
 	$('#wcfm_withdrawal_request_button').click(function(event) {
 	  event.preventDefault();
-	  
+	  $('#wcfm_withdrawal_request_button').hide();
 	  $('.bulk_action_checkbox_all').attr( 'checked', false );
 	  
 		$('#wcfm-content').block({
@@ -85,14 +89,25 @@ jQuery(document).ready(function($) {
 				}
 				wcfmMessageHide();
 				$('#wcfm-content').unblock();
+				$('#wcfm_withdrawal_request_button').show();
 			}
 		});
 	});
 	
+	$( document.body ).on( 'wcfm-date-range-refreshed', function() {
+		$wcfm_withdrawal_table.ajax.reload();
+	});
+	
+	// Dashboard FIlter
+	if( $('.wcfm_filters_wrap').length > 0 ) {
+		$('.dataTable').before( $('.wcfm_filters_wrap') );
+		$('.wcfm_filters_wrap').css( 'display', 'inline-block' );
+	}
+	
 	// Screen Manager
 	$( document.body ).on( 'updated_wcfm-withdrawal', function() {
-		//$.each(wcfm_orders_screen_manage, function( column, column_val ) {
-		  $wcfm_withdrawal_table.column(2).visible( false );
-		//} );
+		$.each(wcfm_withdrawal_screen_manage, function( column, column_val ) {
+		  $wcfm_withdrawal_table.column(column).visible( false );
+		} );
 	});
 } );

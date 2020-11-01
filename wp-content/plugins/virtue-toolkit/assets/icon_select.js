@@ -24,7 +24,7 @@ for(var b=b.slice(0),a=a.slice(0),c=0;c<b.length;c++)for(var d=0;d<a.length;d++)
 
 
 
-jQuery( window ).load(function () {
+jQuery(window).on( 'load', function(){
   function format(icon) {
     return '<span class="kad_icomoon"><i class="' + icon.id + '"></i>' + icon.text + '</span>';
   }

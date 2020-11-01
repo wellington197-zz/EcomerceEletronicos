@@ -1,7 +1,7 @@
 jQuery(document).ready( function($) {
 	// Collapsible
   $('.page_collapsible:not(.page_collapsible_dummy)').collapsible({
-		defaultOpen: 'wcfm_settings_dashboard_head',
+		defaultOpen: wcfm_setting_options.default_tab,
 		speed: 'slow',
 		loadOpen: function (elem) { //replace the standard open state with custom function
 				elem.next().show();
@@ -82,6 +82,26 @@ jQuery(document).ready( function($) {
 		$(".exclude_product_types").select2({
 			placeholder: wcfm_dashboard_messages.choose_select2 + ' ...'
 		});
+	}
+	
+	if( $("#wc_frontend_manager_page_id").length > 0 ) {
+		$("#wc_frontend_manager_page_id").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#wcfm_vendor_membership_page_id").length > 0 ) {
+		$("#wcfm_vendor_membership_page_id").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#wcfm_vendor_registration_page_id").length > 0 ) {
+		$("#wcfm_vendor_registration_page_id").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#wcfm_affiliate_registration_page_id").length > 0 ) {
+		$("#wcfm_affiliate_registration_page_id").select2( $wcfm_page_select_args );
+	}
+	
+	if( $("#terms_page").length > 0 ) {
+		$("#terms_page").select2( $wcfm_page_select_args );
 	}
 	
 	// WC Vendors MangoPay paymode settings options
@@ -192,9 +212,33 @@ jQuery(document).ready( function($) {
 		}).change();
 	}
 	
+	// Delivery Times
+	if( $("#wcfm_default_delivery_time_off_days").length > 0 ) {
+		$("#wcfm_default_delivery_time_off_days").select2();
+		
+		$("#wcfm_default_delivery_time_off_days").change(function() {
+			$('.wcfm_delivery_time_fields').removeClass('wcfm_ele_hide');
+			if( $(this).val() ) {
+				$.each($(this).val(), function( $i, $off_days ) {
+					$('.wcfm_delivery_time_fields_'+$off_days).addClass('wcfm_ele_hide');	
+				});
+			}
+		}).change();
+	}
+	
+	// Live Chat
+	if( $("#wcfm_chatbox_setting_lib").length > 0 ) {
+		$("#wcfm_chatbox_setting_lib").change(function() {
+			$('.wcfm_chatbox_field').addClass('wcfm_ele_hide');
+			$('.wcfm_chatbox_field_'+$(this).val()).removeClass('wcfm_ele_hide');	
+		}).change();
+	}
+	
 	// Save Settings
 	$('#wcfm_settings_save_button').click(function(event) {
 	  event.preventDefault();
+	  
+	  $('.wcfm_submit_button').hide();
 	  
 	  var profile = getWCFMEditorContent( 'shop_description' );
 		
@@ -250,8 +294,11 @@ jQuery(document).ready( function($) {
 					}
 					wcfmMessageHide();
 					$('#wcfm_settings_form').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});	
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 });

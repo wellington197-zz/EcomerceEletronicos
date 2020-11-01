@@ -366,9 +366,10 @@ class WCFM_Dashboard_Setup {
 						background-color: #00798b;
 						font-size: 16px;
 						border: 1px solid #00798b;
-						width: 230px;
+						width: auto	;
 						padding: 10px;
-						margin: 25px 0 20px;
+						margin: 25px auto;
+						display: block;
 						cursor: pointer;
 				}
 				.wcfm-install-woocommerce form .button-primary:hover{
@@ -388,9 +389,9 @@ class WCFM_Dashboard_Setup {
 				<table class="form-table">
 					<?php
 					$wcfm_marketplace_options = get_option( 'wcfm_marketplace_options', array() );
-					$wcfmmp_marketplace_shipping_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_country_settings', array() );
+					$wcfmmp_marketplace_shipping_options = get_option( 'wcfm_shipping_options', array() );
           $wcfmmp_marketplace_shipping_weight_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_weight_settings', array() );
-					$wcfmmp_marketplace_shipping_enabled = ( !empty($wcfmmp_marketplace_shipping_options) && !empty($wcfmmp_marketplace_shipping_options['enabled']) ) ? 'no' : 'no';
+					$wcfmmp_marketplace_shipping_enabled = ( !empty($wcfmmp_marketplace_shipping_options) && !empty($wcfmmp_marketplace_shipping_options['enable_store_shipping']) ) ? 'no' : 'no';
           $wcfmmp_marketplace_shipping_by_weight_enabled = ( !empty($wcfmmp_marketplace_shipping_weight_options) && !empty($wcfmmp_marketplace_shipping_weight_options['enabled']) ) ? 'no' : 'no';
 				
 					$wcfm_store_url = isset( $wcfm_marketplace_options['wcfm_store_url'] ) ? $wcfm_marketplace_options['wcfm_store_url'] : 'store';
@@ -407,7 +408,7 @@ class WCFM_Dashboard_Setup {
 					$wcfm_google_map_api = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
 					
 					$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_store', array(
-																																											"vendor_store_url" => array('label' => __('Vendor Store URL', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'in_table' => 'yes', 'desc_class' => 'wcfm_page_options_desc', 'value' => $wcfm_store_url, 'desc' => sprintf( __( 'Define the seller store URL  (%s/[this-text]/[seller-name])', 'wc-multivendor-marketplace' ), get_site_url() )  ),
+																																											"vendor_store_url" => array('label' => __('Store URL Base', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'in_table' => 'yes', 'desc_class' => 'wcfm_page_options_desc', 'value' => $wcfm_store_url, 'desc' => sprintf( __( 'Define the seller store URL  (%s/[this-text]/[seller-name])', 'wc-multivendor-marketplace' ), get_site_url() )  ),
 																																											"vendor_sold_by" => array('label' => __('Visible Sold By', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $vendor_sold_by, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Uncheck this to disable Sold By display for products.', 'wc-multivendor-marketplace' ) ),
 																																											"vendor_sold_by_template" => array('label' => __('Sold By Template', 'wc-multivendor-marketplace'), 'type' => 'select', 'in_table' => 'yes', 'options' => array( 'simple' => __( 'Simple', 'wc-multivendor-marketplace' ), 'advanced' => __( 'Advanced', 'wc-multivendor-marketplace' ), 'tab' => __( 'As Tab', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $vendor_sold_by_template, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Single product page Sold By template.', 'wc-multivendor-marketplace' ) ),
 																																											"sold_by_template_simple" => array( 'label' => '&nbsp;', 'type' => 'html', 'in_table' => 'yes', 'wrapper_class' => 'vendor_sold_by_type vendor_sold_by_type_simple', 'label_class' => 'wcfm_title wcfm_ele', 'value' => '<img src="'.$WCFMmp->plugin_url.'assets/images/sold_by_simple.png" />', 'attributes' => array( 'style' => 'border: 1px dotted #ccc;margin-bottom:15px;' ) ),
@@ -419,7 +420,7 @@ class WCFM_Dashboard_Setup {
 																																											"store_sidebar_pos" => array( 'label' => __('Store Sidebar Position', 'wc-multivendor-marketplace'), 'type' => 'select', 'in_table' => 'yes', 'options' => array( 'left' => __( 'At Left', 'wc-multivendor-marketplace' ), 'right' => __( 'At Right', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_sidebar_pos ),
 																																											"store_related_products" => array( 'label' => __('Store Related Products', 'wc-multivendor-marketplace'), 'type' => 'select', 'in_table' => 'yes', 'options' => array( 'default' => __( 'As per WC Default Rule', 'wc-multivendor-marketplace' ), 'store' => __( 'Only same Store Products', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_related_products, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Single product page related products rule.', 'wc-frontend-manager' ) ),
 																																											"store_ppp" => array( 'label' => __('Products per page', 'wc-multivendor-marketplace'), 'type' => 'number', 'in_table' => 'yes', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_ppp, 'attributes' => array( 'min'=> 1, 'step' => 1 ), 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'No of products at Store per Page.', 'wc-frontend-manager' ) ),
-																																											"order_sync" => array('label' => __('Order Sync', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $order_sync, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to sync WC main order status when vendors update their order status.', 'wc-multivendor-marketplace' ) ),
+																																											//"order_sync" => array('label' => __('Order Sync', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $order_sync, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to sync WC main order status when vendors update their order status.', 'wc-multivendor-marketplace' ) ),
 																																											//"product_mulivendor" => array('label' => __('Product Mulivendor', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $product_mulivendor, 'desc_class' => 'wcfm_page_options_desc','desc' => __( 'Enable this to allow vendors to sell other vendor products, single product multiple seller.', 'wc-multivendor-marketplace' ) ),
 																																											"enable_marketplace_shipping" => array('label' => __('Marketplace Shipping', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $wcfmmp_marketplace_shipping_enabled, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to allow your vendors to setup their own shipping by country.', 'wc-multivendor-marketplace' ) ),
                                                                                       "enable_marketplace_shipping_by_weight" => array('label' => __('Marketplace Shipping by Weight', 'wc-multivendor-marketplace'), 'type' => 'checkboxoffon', 'in_table' => 'yes', 'class' => 'wcfm-checkbox input-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $wcfmmp_marketplace_shipping_by_weight_enabled, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to allow your vendors to setup their own shipping by weight.', 'wc-multivendor-marketplace' ) ),
@@ -1069,7 +1070,7 @@ class WCFM_Dashboard_Setup {
 				<div class="wc-setup-next-steps-first">
 						<h2><?php esc_html_e( 'Next steps', 'wc-frontend-manager' ); ?></h2>
 						<ul>
-								<li class="setup-product"><a class="button button-primary button-large" href="<?php echo esc_url( get_wcfm_url() ); ?>"><?php esc_html_e( "Let's go to Dashboard", 'wc-frontend-manager' ); ?></a></li>
+								<li class="setup-product"><a class="button button-primary button-large" href="<?php echo esc_url( get_wcfm_url() ); ?>"><?php esc_html_e( "Let's go to the Dashboard", 'wc-frontend-manager' ); ?></a></li>
 						</ul>
 				</div>
 				<div class="wc-setup-next-steps-last">
@@ -1140,7 +1141,9 @@ class WCFM_Dashboard_Setup {
 		if( !$float_button_disabled ) $options['float_button_disabled'] = 'no';
 		else $options['float_button_disabled'] = 'yes';
 		
+		$options['module_options']['membership'] = 'yes';
 		$options['module_options']['buddypress'] = 'yes';
+		$options['module_options']['shipstation'] = 'yes';
 		
 		update_option( 'wcfm_options', $options );
 		
@@ -1197,8 +1200,10 @@ class WCFM_Dashboard_Setup {
 		//if( !$product_mulivendor ) $wcfm_marketplace_options['product_mulivendor'] = 'yes';
 		$wcfm_marketplace_options['product_mulivendor'] = 'no';
 		
-		if( !$order_sync ) $wcfm_marketplace_options['order_sync'] = 'yes';
-		else $wcfm_marketplace_options['order_sync'] = 'no';
+		//if( !$order_sync ) $wcfm_marketplace_options['order_sync'] = 'yes';
+		//else $wcfm_marketplace_options['order_sync'] = 'no';
+		
+		$wcfm_marketplace_options['order_sync'] = 'no';
 		
 		$wcfm_marketplace_options['wcfm_google_map_api'] = $wcfm_google_map_api;
 		
@@ -1225,6 +1230,10 @@ class WCFM_Dashboard_Setup {
     $wcfmmp_marketplace_by_weight_shipping_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_weight_settings', array() );
     $wcfmmp_marketplace_by_weight_shipping_options['enabled'] = $enable_marketplace_shipping_by_weight;
     update_option( 'woocommerce_wcfmmp_product_shipping_by_weight_settings', $wcfmmp_marketplace_by_weight_shipping_options );
+    
+    $wcfmmp_marketplace_by_distance_shipping_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', array() );
+    $wcfmmp_marketplace_by_distance_shipping_options['enabled'] = 'yes';
+    update_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', $wcfmmp_marketplace_by_distance_shipping_options );
 		
 		wp_redirect(esc_url_raw($this->get_next_step_link()));
 		exit;

@@ -1,13 +1,5 @@
 <?php
-/**
- * Featured category block.
- *
- * @package WooCommerce\Blocks
- */
-
 namespace Automattic\WooCommerce\Blocks\BlockTypes;
-
-defined( 'ABSPATH' ) || exit;
 
 /**
  * FeaturedCategory class.
@@ -46,7 +38,7 @@ class FeaturedCategory extends AbstractDynamicBlock {
 	public function render( $attributes = array(), $content = '' ) {
 		$id       = isset( $attributes['categoryId'] ) ? (int) $attributes['categoryId'] : 0;
 		$category = get_term( $id, 'product_cat' );
-		if ( ! $category ) {
+		if ( ! $category || is_wp_error( $category ) ) {
 			return '';
 		}
 		$attributes = wp_parse_args( $attributes, $this->defaults );
@@ -64,7 +56,7 @@ class FeaturedCategory extends AbstractDynamicBlock {
 			wc_format_content( $category->description )
 		);
 
-		$output = sprintf( '<div class="%1$s" style="%2$s">', $this->get_classes( $attributes ), $this->get_styles( $attributes, $category ) );
+		$output = sprintf( '<div class="%1$s" style="%2$s">', esc_attr( $this->get_classes( $attributes ) ), esc_attr( $this->get_styles( $attributes, $category ) ) );
 
 		$output .= $title;
 		if ( $attributes['showDesc'] ) {
@@ -152,7 +144,7 @@ class FeaturedCategory extends AbstractDynamicBlock {
 			$classes[] = $attributes['className'];
 		}
 
-		return implode( $classes, ' ' );
+		return implode( ' ', $classes );
 	}
 
 	/**

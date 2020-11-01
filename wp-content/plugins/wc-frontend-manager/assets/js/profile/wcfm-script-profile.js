@@ -104,6 +104,12 @@ jQuery(document).ready( function($) {
 		}
 	}
 	
+	if( $(".wcfm_multi_select").length > 0 ) {
+		$(".wcfm_multi_select").select2({
+			placeholder: wcfm_dashboard_messages.choose_select2 + ' ...'
+		});
+	}
+	
 	if( $(".country_select").length > 0 ) {
 		$(".country_select").select2({
 			placeholder: wcfm_dashboard_messages.choose_select2 + ' ...'
@@ -300,9 +306,9 @@ jQuery(document).ready( function($) {
 	function checkStrength( password ) {
 		var strength = 0
 		if (password.length < 6) {
-			$('#passowrd_strength').removeClass();
-			$('#passowrd_strength').addClass('short')
-			$('#passowrd_strength').html(wcfm_profile_params.short);
+			$('#password_strength').removeClass();
+			$('#password_strength').addClass('short')
+			$('#password_strength').html(wcfm_profile_params.short);
 			return 'short';
 		}
 		if (password.length > 7) strength += 1
@@ -317,19 +323,19 @@ jQuery(document).ready( function($) {
 		// Calculated strength value, we can return messages
 		// If value is less than 2
 		if (strength < 2) {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('weak')
-			$('#passowrd_strength').html( wcfm_profile_params.weak );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('weak')
+			$('#password_strength').html( wcfm_profile_params.weak );
 			return 'weak';
 		} else if (strength == 2) {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('good')
-			$('#passowrd_strength').html( wcfm_profile_params.good );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('good')
+			$('#password_strength').html( wcfm_profile_params.good );
 			return 'good';
 		} else {
-			$('#passowrd_strength').removeClass()
-			$('#passowrd_strength').addClass('strong')
-			$('#passowrd_strength').html( wcfm_profile_params.strong );
+			$('#password_strength').removeClass()
+			$('#password_strength').addClass('strong')
+			$('#password_strength').html( wcfm_profile_params.strong );
 			return 'strong';
 		}
 	}
@@ -337,6 +343,8 @@ jQuery(document).ready( function($) {
 	// Save Profile
 	$('#wcfmprofile_save_button').click(function(event) {
 	  event.preventDefault();
+	  
+	  $('.wcfm_submit_button').hide();
 	  
 	  var about = getWCFMEditorContent( 'about' );
   
@@ -349,8 +357,8 @@ jQuery(document).ready( function($) {
 	  if( $is_valid ) {
 	  	$passowrd = $('#password').val();
 	  	if( $passowrd && wcfm_profile_params.is_strength_check ) {
-				$passowrd_strength = checkStrength( $passowrd );
-				if( ( $passowrd_strength == 'short') || ( $passowrd_strength == 'weak' ) ) {
+				$password_strength = checkStrength( $passowrd );
+				if( ( $password_strength == 'short') || ( $password_strength == 'weak' ) ) {
 					$('#passoword').removeClass('wcfm_validation_success').addClass('wcfm_validation_failed');
 					$('#wcfm_profile_form .wcfm-message').html( '<span class="wcicon-status-cancelled"></span>' + wcfm_profile_params.passowrd_failed ).addClass('wcfm-error').slideDown();
 					$is_valid = false;
@@ -385,8 +393,11 @@ jQuery(document).ready( function($) {
 						$('#wcfm_profile_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
 					}
 					$('#wcfm_profile_form').unblock();
+					$('.wcfm_submit_button').show();
 				}
 			});	
+		} else {
+			$('.wcfm_submit_button').show();
 		}
 	});
 });

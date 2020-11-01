@@ -32,6 +32,7 @@ class WPBakeryShortCode_mvc_countdown extends WPBakeryShortCode {
 		wp_enqueue_style( 'countdown-css', plugins_url( '../css/jquery.countdown.css' , __FILE__ ));
 		wp_enqueue_script( 'countdown-min-js', plugins_url( '../js/countdown.min.js' , __FILE__ ), array('jquery', 'jquery-ui-core'));
 		wp_enqueue_script( 'countdown-js', plugins_url( '../js/jquery.countdown.js' , __FILE__ ), array('jquery', 'jquery-ui-core'));
+		wp_enqueue_script( 'custom-countdown-js', plugins_url( '../js/front-js/countdown.js' , __FILE__ ), array('jquery') );
 		ob_start(); ?>
 		<div
 			id="defaultCountdown<?php echo $id; ?>"

@@ -75,7 +75,7 @@ class WCFM_Library {
 	}
 	
 	public function load_scripts( $end_point ) {
-	  global $WCFM;
+	  global $WCFM, $WCFMmp;
 	  
 	  // Load Menu JS
 	  wp_enqueue_script( 'wcfm_menu_js', $this->js_lib_url . 'wcfm-script-menu.js', array('jquery', 'wcfm_core_js'), $WCFM->version, true );
@@ -131,6 +131,7 @@ class WCFM_Library {
 	    	if( apply_filters( 'wcfm_products_additonal_data_hidden', true ) ) {
 	    		$wcfm_screen_manager_data[12] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'products' );
 	    	wp_localize_script( 'wcfm_products_js', 'wcfm_products_screen_manage', $wcfm_screen_manager_data );
       break;
       
@@ -160,9 +161,9 @@ class WCFM_Library {
         // Localized Script
         $wcfm_messages = get_wcfm_products_manager_messages();
 			  wp_localize_script( 'wcfm_products_manage_js', 'wcfm_products_manage_messages', $wcfm_messages );
-			  $wcfm_product_type_categories = get_option( 'wcfm_product_type_categories', array() );
+			  $wcfm_product_type_categories = wcfm_get_option( 'wcfm_product_type_categories', array() );
 			  wp_localize_script( 'wcfm_products_manage_js', 'wcfm_product_type_categories', $wcfm_product_type_categories );
-			  $wcfm_product_type_default_tab = apply_filters( 'wcfm_product_type_default_tab', array( 'simple' => 'wcfm_products_manage_form_inventory_head', 'variable' => 'wcfm_products_manage_form_inventory_head', 'external' => 'wcfm_products_manage_form_inventory_head', 'grouped' => 'wcfm_products_manage_form_grouped_head', 'booking' => 'wcfm_products_manage_form_booking_options_head', 'accommodation-booking' => 'wcfm_products_manage_form_accommodation_options_head', 'auction' => 'wcfm_products_manage_form_auction_head', 'redq_rental' => 'wcfm_products_manage_form_inventory_head', 'rental' => 'wcfm_products_manage_form_redq_rental_head', 'appointment' => 'wcfm_products_manage_form_appointment_options_head', 'bundle' => 'wcfm_products_manage_form_wc_product_bundle_head', 'lottery' => 'wcfm_products_manage_form_lottery_head', 'groupbuy' => 'wcfm_products_manage_form_groupbuy_head', 'composite' => 'wcfm_products_manage_form_wc_product_composite_head' ) );
+			  $wcfm_product_type_default_tab = apply_filters( 'wcfm_product_type_default_tab', array( 'simple' => 'wcfm_products_manage_form_inventory_head', 'variable' => 'wcfm_products_manage_form_variations_head', 'external' => 'wcfm_products_manage_form_inventory_head', 'grouped' => 'wcfm_products_manage_form_grouped_head', 'booking' => 'wcfm_products_manage_form_booking_options_head', 'accommodation-booking' => 'wcfm_products_manage_form_accommodation_options_head', 'auction' => 'wcfm_products_manage_form_auction_head', 'redq_rental' => 'wcfm_products_manage_form_inventory_head', 'rental' => 'wcfm_products_manage_form_redq_rental_head', 'appointment' => 'wcfm_products_manage_form_appointment_options_head', 'bundle' => 'wcfm_products_manage_form_wc_product_bundle_head', 'lottery' => 'wcfm_products_manage_form_lottery_head', 'groupbuy' => 'wcfm_products_manage_form_groupbuy_head', 'composite' => 'wcfm_products_manage_form_wc_product_composite_head' ) );
 			  wp_localize_script( 'wcfm_products_manage_js', 'wcfm_product_type_default_tab', $wcfm_product_type_default_tab );
 			  
 			  // Single Product Multi-seller support - 3.3.7
@@ -207,6 +208,7 @@ class WCFM_Library {
 				if( !$WCFM->is_marketplace || wcfm_is_vendor() ) {
 	    		$wcfm_screen_manager_data[3] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'coupons' );
 	    	wp_localize_script( 'wcfm_coupons_js', 'wcfm_coupons_screen_manage', $wcfm_screen_manager_data );
       break;
       
@@ -236,7 +238,7 @@ class WCFM_Library {
 				$wcfm_datatable_column_priority = '[{ "responsivePriority": 2 },{ "responsivePriority": 1 },{ "responsivePriority": 4 },{ "responsivePriority": 10 },{ "responsivePriority": 6 },{ "responsivePriority": 5 },{ "responsivePriority": 7 },{ "responsivePriority": 11 },{ "responsivePriority": 3 },{ "responsivePriority": 12 },{ "responsivePriority": 8 },{ "responsivePriority": 9 },{ "responsivePriority": 1 }]';
 				$wcfm_datatable_column_priority = apply_filters( 'wcfm_datatable_column_priority', $wcfm_datatable_column_priority, 'order' );
 				
-				wp_localize_script( 'dataTables_js', 'wcfm_datatable_columns', array( 'defs' => $wcfm_datatable_column_defs, 'priority' => $wcfm_datatable_column_priority, 'bFilter' => apply_filters( 'wcfm_datatable_bfiltery', ( wcfm_is_vendor() ) ? false : true, 'order' ) ) );
+				wp_localize_script( 'dataTables_js', 'wcfm_datatable_columns', array( 'defs' => $wcfm_datatable_column_defs, 'priority' => $wcfm_datatable_column_priority, 'bFilter' => apply_filters( 'wcfm_datatable_bfiltery', ( wcfm_is_vendor() ) ? true : true, 'order' ) ) );
         
         // Screen manager
 	    	$wcfm_screen_manager = get_option( 'wcfm_screen_manager', array() );
@@ -263,7 +265,7 @@ class WCFM_Library {
 	    	if( apply_filters( 'wcfm_orders_additonal_data_hidden', true ) ) {
 	    		$wcfm_screen_manager_data[10] = 'yes';
 	    	}
-	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data );
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'orders' );
 	    	wp_localize_script( 'wcfm_orders_js', 'wcfm_orders_screen_manage', $wcfm_screen_manager_data );
 	    	
 	    	$wcfm_screen_manager_hidden_data = array();
@@ -273,7 +275,7 @@ class WCFM_Library {
 	    	$wcfm_screen_manager_hidden_data    = apply_filters( 'wcfm_screen_manager_hidden_columns', $wcfm_screen_manager_hidden_data );
 	    	wp_localize_script( 'wcfm_orders_js', 'wcfm_orders_screen_manage_hidden', $wcfm_screen_manager_hidden_data );
 	    	
-	    	wp_localize_script( 'wcfm_orders_js', 'wcfm_orders_auto_refresher', array( 'is_allow' => apply_filters( 'wcfm_orders_is_allow_auto_refresher', false ) ) );
+	    	wp_localize_script( 'wcfm_orders_js', 'wcfm_orders_auto_refresher', array( 'is_allow' => apply_filters( 'wcfm_orders_is_allow_auto_refresher', false ), 'duration' => apply_filters( 'wcfm_order_auto_refresher_duration', 60000 ) ) );
       break;
       
       case 'wcfm-orders-details':
@@ -310,6 +312,7 @@ class WCFM_Library {
 	    	if( apply_filters( 'wcfm_listings_additonal_data_hidden', true ) ) {
 	    		$wcfm_screen_manager_data[9] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'listings' );
 	    	wp_localize_script( 'wcfm_listings_js', 'wcfm_listings_screen_manage', $wcfm_screen_manager_data );
       break;
       
@@ -333,11 +336,12 @@ class WCFM_Library {
 	    	if( apply_filters( 'wcfm_applications_additonal_data_hidden', true ) ) {
 	    		$wcfm_screen_manager_data[8] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'applications' );
 	    	wp_localize_script( 'wcfm_applications_js', 'wcfm_applications_screen_manage', $wcfm_screen_manager_data );
       break;
       
       case 'wcfm-reports-sales-by-date':
-       case 'wcfm-reports-sales-by-vendor':
+      case 'wcfm-reports-sales-by-vendor':
       	$this->load_chartjs_lib();
       	$this->load_select2_lib();
       	$this->load_daterangepicker_lib();
@@ -371,7 +375,7 @@ class WCFM_Library {
 				
       	wp_enqueue_script( 'wcfm_profile_js', $this->js_lib_url . 'profile/wcfm-script-profile.js', array('jquery','select2_js'), $WCFM->version, true );
       	
-      	$wcfm_profile_params = array( 'is_strength_check' => apply_filters( 'wcfm_is_allow_passowrd_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'passowrd_failed' => __( 'Password strength should be atleast "Good".', 'wc-frontend-manager' ) );
+      	$wcfm_profile_params = array( 'is_strength_check' => apply_filters( 'wcfm_is_allow_password_strength_check', true ), 'short' => __( 'Too short', 'wc-frontend-manager' ), 'weak' => __( 'Weak', 'wc-frontend-manager' ), 'good' => __( 'Good', 'wc-frontend-manager' ), 'strong' => __( 'Strong', 'wc-frontend-manager' ), 'Password_failed' => __( 'Password strength should be atleast "Good".', 'wc-frontend-manager' ) );
 				wp_localize_script( 'wcfm_profile_js', 'wcfm_profile_params', $wcfm_profile_params );
       break;
       
@@ -444,18 +448,35 @@ class WCFM_Library {
 							wp_enqueue_script( 'wcfm-wcmarketplace-setting-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places' );
 						}
       		} elseif( $WCFM->is_marketplace == 'wcfmmarketplace' ) {
+      			global $WCMPmp;
       			$scheme  = is_ssl() ? 'https' : 'http';
       			wp_enqueue_script( 'jquery-ui' );
       			wp_enqueue_script( 'wcfm-wcfmmarketplace-jquery-ui', $WCFM->plugin_url . 'includes/libs/jquery-progress/jquery-progress.js' );
       			wp_enqueue_script( 'wcfm_marketplace_settings_js', $this->js_lib_url . 'settings/wcfm-script-wcfmmarketplace-settings.js', array('jquery'), $WCFM->version, true );
       			
-      			$wcfm_marketplace_options = get_option( 'wcfm_marketplace_options', array() );
+      			$wcfm_marketplace_options = wcfm_get_option( 'wcfm_marketplace_options', array() );
 						$api_key = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
-						if ( $api_key ) {
+						$wcfm_map_lib = isset( $wcfm_marketplace_options['wcfm_map_lib'] ) ? $wcfm_marketplace_options['wcfm_map_lib'] : '';
+						if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+						if ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) {
 							//wp_enqueue_script( 'jquery-ui-core' );
 							wp_enqueue_script( 'jquery-ui-autocomplete' );
-							wp_enqueue_script( 'wcfm-wcfmmarketplace-setting-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places' );
+							$this->load_google_map_lib();
+							
+						} else {
+							$this->load_leaflet_map_lib();
+							$this->load_leaflet_search_lib();
 						}
+						
+						// Default Map Location
+						$default_geolocation = isset( $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] ) ? $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] : array();
+						$default_lat         = isset( $default_geolocation['lat'] ) ? esc_attr( $default_geolocation['lat'] ) : apply_filters( 'wcfmmp_map_default_lat', 30.0599153 );
+						$default_lng         = isset( $default_geolocation['lng'] ) ? esc_attr( $default_geolocation['lng'] ) : apply_filters( 'wcfmmp_map_default_lng', 31.2620199 );
+						$default_zoom        =  apply_filters( 'wcfmmp_map_default_zoom_level', 15 );
+						
+						$store_icon = apply_filters( 'wcfmmp_map_store_icon', $WCFMmp->plugin_url . 'assets/images/wcfmmp_map_icon.png', 0, '' );
+						
+						wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
             
 						if( apply_filters( 'wcfmmp_city_select_dropdown_enabled', false ) ) {
               global $wc_city_select;
@@ -483,6 +504,7 @@ class WCFM_Library {
 				
 				$this->load_multiinput_lib();
 				wp_enqueue_script( 'wcfm_settings_js', $this->js_lib_url . 'settings/wcfm-script-settings.js', array('jquery'), $WCFM->version, true );
+				wp_localize_script( 'wcfm_settings_js', 'wcfm_setting_options', array( 'default_tab' => apply_filters( 'wcfm_setting_default_tab', 'wcfm_settings_dashboard_head' ) ) );
 				
       break;
       
@@ -495,6 +517,11 @@ class WCFM_Library {
       case 'wcfm-knowledgebase':
       	$this->load_datatable_lib();
       	wp_enqueue_script( 'wcfm_knowledgebase_js', $this->js_lib_url . 'knowledgebase/wcfm-script-knowledgebase.js', array('jquery'), $WCFM->version, true );
+      	
+      	// Screen manager
+	    	$wcfm_screen_manager_data = array();
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'knowledgebase' );
+      	wp_localize_script( 'wcfm_knowledgebase_js', 'wcfm_knowledgebase_screen_manage', $wcfm_screen_manager_data );
       break;
       
       case 'wcfm-knowledgebase-manage':
@@ -507,6 +534,11 @@ class WCFM_Library {
       case 'wcfm-notices':
       	$this->load_datatable_lib();
       	wp_enqueue_script( 'wcfm_notices_js', $this->js_lib_url . 'notice/wcfm-script-notices.js', array('jquery'), $WCFM->version, true );
+      	
+      	// Screen manager
+	    	$wcfm_screen_manager_data = array();
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'notices' );
+      	wp_localize_script( 'wcfm_notices_js', 'wcfm_notices_screen_manage', $wcfm_screen_manager_data );
       break;
       
       case 'wcfm-notice-manage':
@@ -531,10 +563,13 @@ class WCFM_Library {
       	
       	// Screen manager
 	    	$wcfm_screen_manager_data = array();
-	    	if( wcfm_is_vendor() ) {
+	    	if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) {
 	    		$wcfm_screen_manager_data[3] = 'yes';
 	    		$wcfm_screen_manager_data[4] = 'yes';
+	    	} else {
+	    		$wcfm_screen_manager_data[4] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'messages' );
       	wp_localize_script( 'wcfm_messages_js', 'wcfm_messages_screen_manage', $wcfm_screen_manager_data );
       break;
       
@@ -547,12 +582,13 @@ class WCFM_Library {
       	
       	// Screen manager
 	    	$wcfm_screen_manager_data = array();
-	    	if( !WCFM_Dependencies::wcfmvm_plugin_active_check() ) {
+	    	if( !WCFM_Dependencies::wcfmvm_plugin_active_check() || !apply_filters( 'wcfm_is_pref_membership', true ) ) {
 	    		$wcfm_screen_manager_data = array( 4  => __( 'Membership', 'wc-frontend-manager' ) );
 	    	}
 	    	if( apply_filters( 'wcfm_vendors_additonal_data_hidden', true ) ) {
 	    		$wcfm_screen_manager_data[10] = 'yes';
 	    	}
+	    	$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'vendors' );
 	    	wp_localize_script( 'wcfm_vendors_js', 'wcfm_vendors_screen_manage', $wcfm_screen_manager_data );
       break;
       
@@ -574,19 +610,33 @@ class WCFM_Library {
       	wp_enqueue_script( 'wcfm_marketplace_settings_js', $this->js_lib_url . 'settings/wcfm-script-wcfmmarketplace-settings.js', array('jquery'), $WCFM->version, true );
       	
       	$scheme  = is_ssl() ? 'https' : 'http';
-				$wcfm_marketplace_options = get_option( 'wcfm_marketplace_options', array() );
+				$wcfm_marketplace_options = wcfm_get_option( 'wcfm_marketplace_options', array() );
 				$api_key = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
-				
-
-				if ( $api_key ) {
+				$wcfm_map_lib = isset( $wcfm_marketplace_options['wcfm_map_lib'] ) ? $wcfm_marketplace_options['wcfm_map_lib'] : '';
+				if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+				if ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) {
 					wp_enqueue_script( 'jquery-ui-core' );
 					wp_enqueue_script( 'jquery-ui-autocomplete' );
-					wp_enqueue_script( 'wcfm-wcfmmarketplace-setting-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places' );
+					$this->load_google_map_lib();
+					//wp_enqueue_script( 'wcfm-wcfmmarketplace-setting-google-maps', apply_filters( 'wcfm_google_map_api_url', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', $api_key ) );
+				} else {
+					$this->load_leaflet_map_lib();
+					$this->load_leaflet_search_lib();
 				}
       	
       	// Localized Script
         $wcfm_messages = get_wcfm_vendors_new_messages();
 			  wp_localize_script( 'wcfm_vendors_new_js', 'get_wcfm_vendors_new_messages', $wcfm_messages );
+			  
+			  // Default Map Location
+				$default_geolocation = isset( $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] ) ? $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] : array();
+				$default_lat         = isset( $default_geolocation['lat'] ) ? esc_attr( $default_geolocation['lat'] ) : apply_filters( 'wcfmmp_map_default_lat', 30.0599153 );
+				$default_lng         = isset( $default_geolocation['lng'] ) ? esc_attr( $default_geolocation['lng'] ) : apply_filters( 'wcfmmp_map_default_lng', 31.2620199 );
+				$default_zoom        =  apply_filters( 'wcfmmp_map_default_zoom_level', 15 );
+				
+				$store_icon = apply_filters( 'wcfmmp_map_store_icon', $WCFMmp->plugin_url . 'assets/images/wcfmmp_map_icon.png', 0, '' );
+				
+				wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
       	
       break;
       
@@ -612,14 +662,29 @@ class WCFM_Library {
       		wp_enqueue_script( 'wcfm_marketplace_settings_js', $this->js_lib_url . 'settings/wcfm-script-wcfmmarketplace-settings.js', array('jquery'), $WCFM->version, true );
       		
       		$scheme  = is_ssl() ? 'https' : 'http';
-					$wcfm_marketplace_options = get_option( 'wcfm_marketplace_options', array() );
+					$wcfm_marketplace_options = wcfm_get_option( 'wcfm_marketplace_options', array() );
 					$api_key = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
-					
-					if ( $api_key ) {
+					$wcfm_map_lib = isset( $wcfm_marketplace_options['wcfm_map_lib'] ) ? $wcfm_marketplace_options['wcfm_map_lib'] : '';
+					if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
+					if ( ($wcfm_map_lib == 'google') && !empty( $api_key ) ) {
 						wp_enqueue_script( 'jquery-ui-core' );
 						wp_enqueue_script( 'jquery-ui-autocomplete' );
-						wp_enqueue_script( 'wcfm-wcfmmarketplace-setting-google-maps', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places' );
+						$this->load_google_map_lib();
+						//wp_enqueue_script( 'wcfm-wcfmmarketplace-setting-google-maps', apply_filters( 'wcfm_google_map_api_url', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', $api_key ) );
+					} else {
+						$this->load_leaflet_map_lib();
+						$this->load_leaflet_search_lib();
 					}
+					
+					// Default Map Location
+					$default_geolocation = isset( $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] ) ? $WCFMmp->wcfmmp_marketplace_options['default_geolocation'] : array();
+					$default_lat         = isset( $default_geolocation['lat'] ) ? esc_attr( $default_geolocation['lat'] ) : apply_filters( 'wcfmmp_map_default_lat', 30.0599153 );
+					$default_lng         = isset( $default_geolocation['lng'] ) ? esc_attr( $default_geolocation['lng'] ) : apply_filters( 'wcfmmp_map_default_lng', 31.2620199 );
+					$default_zoom        =  apply_filters( 'wcfmmp_map_default_zoom_level', 15 );
+					
+					$store_icon = apply_filters( 'wcfmmp_map_store_icon', $WCFMmp->plugin_url . 'assets/images/wcfmmp_map_icon.png', 0, '' );
+					
+					wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
       	}
       break;
       
@@ -680,7 +745,11 @@ class WCFM_Library {
 	  // Load Float Button Style
 	  $is_float_button_disabled = isset( $wcfm_options['float_button_disabled'] ) ? $wcfm_options['float_button_disabled'] : 'no';
 	  if( $is_float_button_disabled != 'yes' ) {
-	  	if( apply_filters( 'wcfm_is_allow_float_button', true ) ) {
+	  	if( apply_filters( 'wcfm_is_allow_float_button', true ) && !wcfm_is_mobile() && !wcfm_is_tablet() ) {
+	  		wp_enqueue_style( 'wcfm_float_button_css',  $this->css_lib_url . 'wcfm-style-float-button.css', array( 'wcfm_menu_css' ), $WCFM->version );
+	  	}
+	  	
+	  	if( apply_filters( 'wcfm_is_allow_float_button_by_force', false ) && ( wcfm_is_mobile() || wcfm_is_tablet() ) ) {
 	  		wp_enqueue_style( 'wcfm_float_button_css',  $this->css_lib_url . 'wcfm-style-float-button.css', array( 'wcfm_menu_css' ), $WCFM->version );
 	  	}
 	  }
@@ -1267,6 +1336,7 @@ class WCFM_Library {
 			'minute'           => __( 'Minute', 'wc-frontend-manager' ),
 		);
 		wp_localize_script( 'wcfm-date-range-picker', 'wcfm_drp_lang', $date_range_picker_lang );
+		wp_localize_script( 'wcfm-date-range-picker', 'wcfm_drp_options', array( 'startOfWeek' => apply_filters( 'wcfm_drp_startOfWeek', 'sunday' ) ) );
 	}
 	
 	public function wcfm_date_range_picker_field(){
@@ -1356,6 +1426,60 @@ class WCFM_Library {
 	public function load_checkbox_offon_lib() {
 	  global $WCFM;
 	  wp_enqueue_style( 'checkbox-offon-style', $WCFM->plugin_url . 'includes/libs/checkbox-offon/checkbox_offon.css', array(), $WCFM->version );
+	}
+	
+	/**
+	 * Google Map library
+	*/
+	public function load_google_map_lib() {
+	  global $WCFM, $WCFMmp;
+	  $api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
+	  if( $api_key ) {
+	  	$scheme  = is_ssl() ? 'https' : 'http';
+	  	wp_enqueue_script( 'wcfm-google-maps', apply_filters( 'wcfm_google_map_api_url', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', $api_key ) );
+	  	wp_localize_script( 'wcfm-google-maps', 'wcfm_maps', array( 'lib' => 'google' ) );
+	  }
+	}
+	
+	/**
+	 * Leaflet Map library
+	*/
+	public function load_leaflet_map_lib() {
+	  global $WCFM;
+	  wp_enqueue_script( 'wcfm-leaflet-map-js', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.js', array('jquery'), $WCFM->version, true );
+	  wp_enqueue_style( 'wcfm-leaflet-map-style', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.css', array(), $WCFM->version );
+	  wp_localize_script( 'wcfm-leaflet-map-js', 'wcfm_maps', array( 'lib' => 'leaflet' ) );
+	}
+	
+	/**
+	 * Leaflet Search library
+	*/
+	public function load_leaflet_search_lib() {
+	  global $WCFM;
+	  wp_enqueue_script( 'wcfm-leaflet-search-js', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet-search.js', array('jquery'), $WCFM->version, true );
+	  wp_enqueue_style( 'wcfm-leaflet-search-style', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet-search.css', array(), $WCFM->version );
+	}
+	
+	/**
+	 * Mapbox Map library
+	*/
+	public function load_mapbox_map_lib() {
+	  global $WCFM;
+	  wp_enqueue_script( 'wcfm-mapbox-map-js', $WCFM->plugin_url . 'includes/libs/mapbox/mapbox-gl.js', array('jquery'), $WCFM->version, true );
+	  wp_enqueue_style( 'wcfm-mapbox-map-style', $WCFM->plugin_url . 'includes/libs/mapbox/mapbox-gl.css', array(), $WCFM->version );
+	  wp_localize_script( 'wcfm-mapbox-map-js', 'wcfm_maps', array( 'lib' => 'leaflet', 'mapboxToekn' => 'sk.eyJ1Ijoid2Nsb3ZlcnMiLCJhIjoiY2s1OTNtcnhhMGhydDNqcmZobmVua2dneCJ9.ZjAIBgbSGmAHpNmBiWoShA' ) );
+	}
+	
+	/**
+	 * Leaflet Search library
+	*/
+	public function load_mapbox_search_lib() {
+	  global $WCFM;
+	  wp_enqueue_script( 'wcfm-mapbox-search-js', $WCFM->plugin_url . 'includes/libs/mapbox/mapbox-gl-geocoder.js', array('jquery'), $WCFM->version, true );
+	  wp_enqueue_style( 'wcfm-mapbox-search-style', $WCFM->plugin_url . 'includes/libs/mapbox/mapbox-gl-geocoder.css', array(), $WCFM->version );
+	  
+	  wp_enqueue_script( 'wcfm-mapbox-search-promise-autojs', $WCFM->plugin_url . 'includes/libs/mapbox/es6-promise.auto.js', array('jquery'), $WCFM->version, true );
+	  wp_enqueue_script( 'wcfm-mapbox-search-promise-js', $WCFM->plugin_url . 'includes/libs/mapbox/es6-promise.js', array('jquery'), $WCFM->version, true );
 	}
 	
 	/**
@@ -1517,13 +1641,16 @@ class WCFM_Library {
 	
 	// Generate Taxonomy HTML
 	function generateTaxonomyHTML( $taxonomy, $product_taxonomies, $selected_taxonomies, $nbsp = '', $is_checklist = false, $is_custom = false, $is_hierarchical = true, $is_children = false, $super_parent = 0 ) {
-		global $WCFM;
+		global $WCFM, $WCFMmp;
 		
 		$default_category_id = absint( get_option( 'default_product_cat', 0 ) );
 		
 		foreach ( $product_taxonomies as $cat ) {
 			
 			if( apply_filters( 'wcfm_is_allow_hide_uncatorized', false, $cat->term_id ) && ( ( $cat->term_id == $default_category_id ) || ( in_array( $cat->slug, array( 'uncategorized', 'uncategorised' ) ) ) ) ) continue;
+			
+			$term_meta_vendor = get_term_meta( $cat->term_id, '_wcfm_vendor', true );
+			if( $term_meta_vendor && wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_restrict_vendor_own_term', false ) && ( $term_meta_vendor != $WCFMmp->vendor_id ) ) continue;
 			
 			$checklis_label_class = '';
 			$cat_group_class = '';
@@ -1548,7 +1675,7 @@ class WCFM_Library {
 					echo '<label class="selectit ' . $cat_group_class . '">' . $nbsp . '<input type="checkbox" data-super_parent="' . $super_parent . '" class="wcfm-checkbox checklist_type_' . $taxonomy . ' ' . $checklis_label_class . '" name="product_cats[]" value="' . esc_attr( $cat->term_id ) . '"' . checked( in_array( $cat->term_id, $selected_taxonomies ), true, false ) . ' ' . implode( ' ', $ptax_custom_arrtibutes ) . '/><span>' . __( esc_html( $cat->name ), 'wc-frontend-manager' ) . '</span></label>';
 				}
 			} else {
-				echo '<option class=" ' . $cat_group_class . '" data-super_parent="' . $super_parent . '" value="' . esc_attr( $cat->term_id ) . '"' . selected( in_array( $cat->term_id, $selected_taxonomies ), true, false ) . '>' . $nbsp . __( esc_html( $cat->name ), 'wc-frontend-manager' ) . '</option>';
+				echo '<option class=" ' . $cat_group_class . '" data-super_parent="' . $super_parent . '" data-item="' . esc_attr( $cat->term_id ) . '" value="' . esc_attr( $cat->term_id ) . '"' . selected( in_array( $cat->term_id, $selected_taxonomies ), true, false ) . '>' . $nbsp . __( esc_html( $cat->name ), 'wc-frontend-manager' ) . '</option>';
 			}
 			
 			$is_hierarchical = apply_filters( 'wcfm_is_allow_taxonomy_hierarchy', $is_hierarchical, $taxonomy, $cat->term_id );

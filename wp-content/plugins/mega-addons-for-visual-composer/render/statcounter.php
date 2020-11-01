@@ -12,32 +12,31 @@ class WPBakeryShortCode_mvc_counter extends WPBakeryShortCode {
 			'css' 				=>		 '',
 			'sec_style' 		=>		 'image',
 			'image_id' 			=>		 '',
+			'alt'	 			=>		 '',
 			'image_width' 		=>		 '80',
 			'image_height' 		=>		 '',
 			'count_icon' 		=>		 '',
 			'icon_size' 		=>		 '',
 			'icon_clr' 			=>		 '',
 			'count_title' 		=>		 '',
-			'icon_bg'			=>		'',
-			'icon_radius'		=>		'0px',
-			'icon_style'		=>		'',
+			'icon_bg'			=>		 '',
+			'icon_radius'		=>		 '0px',
+			'icon_style'		=>		 '',
 			'title_size' 		=>		 '30',
 			'title_font' 		=>		 '500',
 			'title_clr' 		=>		 '',
-			'lineheight'		=>		'1.1',
+			'lineheight'		=>		 '1.1',
 			'stat_numb' 		=>		 '4329',
 			'stat_size' 		=>		 '20',
 			'stat_font' 		=>		 '',
 			'stat_clr' 			=>		 '',
-			'count_decimal' 	=> 		 '0',
 			'count_speed' 		=>		 '4000',
 			'count_interv' 		=>		 '10',
 			'start_from' 		=>		 '0',
 		), $atts ) );
 		$css_class = apply_filters( VC_SHORTCODE_CUSTOM_CSS_FILTER_TAG, vc_shortcode_custom_css_class( $css, ' ' ), $this->settings['base'], $atts );
 		wp_enqueue_style( 'counter-css', plugins_url( '../css/statcounter.css' , __FILE__ ));
-		wp_enqueue_script( 'count-to', plugins_url( '../js/countTo.min.js' , __FILE__ ), array('jquery') );
-		wp_enqueue_script( 'custom-count-js', plugins_url( '../js/statcounter.js' , __FILE__ ), array('jquery') );
+		wp_enqueue_script( 'count-to', plugins_url( '../js/count-up.js' , __FILE__ ), array('jquery') );
 		if ($image_id != '') {
 			$image_url = wp_get_attachment_url( $image_id );		
 		}
@@ -46,19 +45,19 @@ class WPBakeryShortCode_mvc_counter extends WPBakeryShortCode {
 		
 	    	<!-- Counter style one -->
 		<?php if ($counter_style == 'style') { ?>
-			<div id="mega_count_bar" class="<?php echo $css_class; ?>">
+			<div id="mega_count_bar" class="<?php echo $css_class; ?> messive-wrapper-counter" data-delay="<?php echo $count_interv; ?>" data-time="<?php echo $count_speed; ?>">
 				<div class="mega_count_img">
 					<?php if ($sec_style == 'image') { ?>		   
-						<img src="<?php echo $image_url; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px">
+						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px">
 					<?php } ?>
 					<?php if ($sec_style == 'icon') { ?>
 						<i class="<?php echo $count_icon; ?>" style="width: <?php echo $image_width; ?>px; height: <?php echo $image_height; ?>px; line-height: <?php echo $image_height-4; ?>px; background: <?php echo $icon_bg; ?>; border-radius: <?php echo $icon_radius; ?>; border: <?php echo $icon_style; ?>; font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
 					<?php } ?>
 				</div>
-				<div class="mega_count_content">
-					<p class="timer" data-decimals="<?php echo $count_decimal; ?>" data-speed="<?php echo $count_speed; ?>" data-to="<?php echo $stat_numb; ?>" data-refresh-interval="<?php echo $count_interv; ?>" data-from="<?php echo $start_from; ?>" style="line-height: <?php echo $lineheight; ?>; text-align: center; font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;">
-						<?php echo $start_from; ?>
-					</p>
+				<div class="mega_count_content" style="text-align: center;">
+					<span class="main-counter" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>; line-height: <?php echo $lineheight; ?>;"><?php echo $stat_numb; ?></span>
+					<span class="counter-after" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"></span>
+					
 					<h3 style="font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>;">
 						<?php echo $count_title; ?>
 					</h3>
@@ -68,63 +67,60 @@ class WPBakeryShortCode_mvc_counter extends WPBakeryShortCode {
 
 		<!-- Counter style two -->
 		<?php if ($counter_style == 'style2') { ?>
-			<div id="mega_count_bar" class="<?php echo $css_class; ?>">
+			<div id="mega_count_bar" class="<?php echo $css_class; ?> messive-wrapper-counter" data-delay="<?php echo $count_interv; ?>" data-time="<?php echo $count_speed; ?>">
 				<div class="mega_count_img">
 					<?php if ($sec_style == 'image') { ?>		   
-						<img src="<?php echo $image_url; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
+						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
 					<?php } ?>
 					<?php if ($sec_style == 'icon') { ?>
 						<i class="<?php echo $count_icon; ?>" style="width: <?php echo $image_width; ?>px; height: <?php echo $image_height; ?>px; line-height: <?php echo $image_height-4; ?>px; background: <?php echo $icon_bg; ?>; border-radius: <?php echo $icon_radius; ?>; border: <?php echo $icon_style; ?>; font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
 					<?php } ?>
 				</div>
-				<div class="mega_count_content">
-					<h3 style="font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>;">
+				<div class="mega_count_content" style="text-align: center;">
+					<h3 style="font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>; margin-bottom: 0px;">
 						<?php echo $count_title; ?>
 					</h3>
-					<hr style="line-height: <?php echo $lineheight; ?>;">
-					<p class="timer" data-decimals="<?php echo $count_decimal; ?>" data-speed="<?php echo $count_speed; ?>" data-to="<?php echo $stat_numb; ?>" data-refresh-interval="<?php echo $count_interv; ?>" data-from="<?php echo $start_from; ?>" style="text-align: center; font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;">
-						<?php echo $start_from; ?>
-					</p>
+					<hr style="margin:<?php echo $lineheight; ?>px auto;">
+					<span class="main-counter" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"><?php echo $stat_numb; ?></span>
+					<span class="counter-after" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"></span>
 				</div>
 			</div>
 		<?php } ?>
 
 		<!-- Counter style three -->
 		<?php if ($counter_style == 'style3') { ?>
-			<div id="mega_count_bar_2" class="<?php echo $css_class; ?>">
+			<div id="mega_count_bar_2" class="<?php echo $css_class; ?> messive-wrapper-counter" data-delay="<?php echo $count_interv; ?>" data-time="<?php echo $count_speed; ?>">
 				<div class="mega_count_img">		   
 					<?php if ($sec_style == 'image') { ?>		   
-						<img src="<?php echo $image_url; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
+						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
 					<?php } ?>
 					<?php if ($sec_style == 'icon') { ?>
 						<i class="<?php echo $count_icon; ?>" style="width: <?php echo $image_width; ?>px; height: <?php echo $image_height; ?>px; line-height: <?php echo $image_height-2; ?>px; background: <?php echo $icon_bg; ?>; border-radius: <?php echo $icon_radius; ?>; border: <?php echo $icon_style; ?>; font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
 					<?php } ?>
 				</div>
-				<div class="mega_count_content">
+				<div class="mega_count_content" style="text-align: center;">
 					<h3 style="line-height: <?php echo $lineheight; ?>; font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>;">
 						<?php echo $count_title; ?>
 					</h3>
-					<p class="timer" data-decimals="<?php echo $count_decimal; ?>" data-speed="<?php echo $count_speed; ?>" data-to="<?php echo $stat_numb; ?>" data-refresh-interval="<?php echo $count_interv; ?>" data-from="<?php echo $start_from; ?>" style="text-align: center; font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;">
-						<?php echo $start_from; ?>
-					</p>		
+					<span class="main-counter" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"><?php echo $stat_numb; ?></span>
+					<span class="counter-after" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"></span>		
 				</div>
 			</div>
 		<?php } ?>
 
 		<!-- Counter style four -->
 		<?php if ($counter_style == 'style4') { ?>
-			<div id="mega_count_bar_3" class="<?php echo $css_class; ?>">
+			<div id="mega_count_bar_3" class="<?php echo $css_class; ?> messive-wrapper-counter" data-delay="<?php echo $count_interv; ?>" data-time="<?php echo $count_speed; ?>">
 				<div class="mega_count_content">
 					<h3 style="font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>;">
 						<?php echo $count_title; ?>
 					</h3>
-					<p class="timer" data-decimals="<?php echo $count_decimal; ?>" data-speed="<?php echo $count_speed; ?>" data-to="<?php echo $stat_numb; ?>" data-refresh-interval="<?php echo $count_interv; ?>" data-from="<?php echo $start_from; ?>" style="line-height: <?php echo $lineheight; ?>; text-align: right; font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;">
-						<?php echo $start_from; ?>
-					</p>
+					<span class="main-counter" style="font-size: <?php echo $stat_size; ?>px; text-align: right; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>; line-height: <?php echo $lineheight; ?>;"><?php echo $stat_numb; ?></span>
+					<span class="counter-after" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"></span>
 				</div>
 				<div class="mega_count_img">		   
 					<?php if ($sec_style == 'image') { ?>		   
-						<img src="<?php echo $image_url; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
+						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
 					<?php } ?>
 					<?php if ($sec_style == 'icon') { ?>
 						<i class="<?php echo $count_icon; ?>" style="width: <?php echo $image_width; ?>px; height: <?php echo $image_height; ?>px; line-height: <?php echo $image_height-2; ?>px; background: <?php echo $icon_bg; ?>; border-radius: <?php echo $icon_radius; ?>; border: <?php echo $icon_style; ?>; font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
@@ -135,7 +131,7 @@ class WPBakeryShortCode_mvc_counter extends WPBakeryShortCode {
 
 		<!-- Counter style five -->
 		<?php if ($counter_style == 'style5') { ?>
-			<div id="mega_count_bar_4" class="<?php echo $css_class; ?>">
+			<div id="mega_count_bar_4" class="<?php echo $css_class; ?> messive-wrapper-counter" data-delay="<?php echo $count_interv; ?>" data-time="<?php echo $count_speed; ?>">
 				<div class="mega_count_content">
 					<h3 style="font-size: <?php echo $title_size; ?>px; font-weight: <?php echo $title_font; ?>; color: <?php echo $title_clr; ?>;">
 						<?php echo $count_title; ?>
@@ -143,16 +139,15 @@ class WPBakeryShortCode_mvc_counter extends WPBakeryShortCode {
 				</div>
 				<div class="mega_count_img" style="line-height: <?php echo $lineheight; ?>;">		   
 					<?php if ($sec_style == 'image') { ?>		   
-						<img src="<?php echo $image_url; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
+						<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" width="<?php echo $image_width; ?>px" height="<?php echo $image_height; ?>px" alt="">
 					<?php } ?>
 					<?php if ($sec_style == 'icon') { ?>
-						<i class="<?php echo $count_icon; ?>" style="line-height: <?php echo $image_height-2; ?>px; font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
+						<i class="<?php echo $count_icon; ?>" style="font-size: <?php echo $icon_size; ?>px; color: <?php echo $icon_clr; ?>;"></i>
 					<?php } ?>
 				</div>
-				<div class="mega_count_content">
-					<p class="timer" data-decimals="<?php echo $count_decimal; ?>" data-speed="<?php echo $count_speed; ?>" data-to="<?php echo $stat_numb; ?>" data-refresh-interval="<?php echo $count_interv; ?>" data-from="<?php echo $start_from; ?>" style="text-align: center; font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;">
-						<?php echo $start_from; ?>
-					</p>
+				<div class="mega_count_content" style="text-align: center;">
+					<span class="main-counter" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"><?php echo $stat_numb; ?></span>
+					<span class="counter-after" style="font-size: <?php echo $stat_size; ?>px; font-weight: <?php echo $stat_font; ?>; color: <?php echo $stat_clr; ?>;"></span>
 				</div>
 			</div>
 		<?php } ?>
@@ -207,6 +202,15 @@ vc_map( array(
 		),
 
 		array(
+            "type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Alternate Text', 'info-banner-vc' ),
+			"param_name" 	=> 	"alt",
+			"description" 	=> 	__( 'It will be used as alt attribute of img tag', 'info-banner-vc' ),
+			"dependency" => array('element' => "sec_style", 'value' => 'image'),
+			"group" 		=> 	'General',
+        ),
+
+		array(
 			"type" 			=> 	"iconpicker",
 			"heading" 		=> 	__( 'Font Icon', 'counter' ),
 			"param_name" 	=> 	"count_icon",
@@ -238,7 +242,7 @@ vc_map( array(
 			"heading" 		=> 	__( 'Height', 'counter' ),
 			"param_name" 	=> 	"image_height",
 			"description" 	=> 	__( 'Set custom height in pixel or leave blank e.g 100', 'counter' ),
-			"value"			=>	"50",
+			"value"			=>	"",
 			"suffix" 		=> 	'px',
 			"group" 		=> 	'General',
 		),
@@ -296,6 +300,15 @@ vc_map( array(
 
 		// Content Section 
 		
+		
+		array(
+			"type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Line Height', 'counter' ),
+			"param_name" 	=> 	"lineheight",
+			"description" 	=> 	__( 'set line height', 'counter' ),
+			"value"			=>	"1",
+			"group" 		=> 	'Title',
+		),
 		array(
 			"type" 			=> 	"textfield",
 			"heading" 		=> 	__( 'Title', 'counter' ),
@@ -326,26 +339,24 @@ vc_map( array(
 			"description" 	=> 	__( 'Select title color', 'counter' ),
 			"group" 		=> 	'Title',
 		),
-		array(
-			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Line Height', 'counter' ),
-			"param_name" 	=> 	"lineheight",
-			"description" 	=> 	__( 'set line height', 'counter' ),
-			"value"			=>	"1",
-			"group" 		=> 	'Title',
-		),
 
 
 		// Counter Section 
 		
 		array(
-			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Stat Counts', 'counter' ),
+			"type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Number', 'counter' ),
 			"param_name" 	=> 	"stat_numb",
-			"description" 	=> 	__( 'write in numbers e.g 4329', 'counter' ),
+			"description" 	=> 	__( 'Here you can use integers: 12345, floats: 0.1234, formatted numbers: 1,234,567.00', 'counter' ),
 			"value"			=>	"4329",
 			"max"			=>	"",
-			"group" 		=> 	'Stat Counter',
+			"group" 		=> 	'Setting',
+		),
+		array(
+			"type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'After Text <a href="https://1.envato.market/02aNL" target="_blank">Pro feature</a>', 'counter' ),
+			"param_name" 	=> 	"stat_numbs",
+			"group" 		=> 	'Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
@@ -353,7 +364,7 @@ vc_map( array(
 			"param_name" 	=> 	"stat_size",
 			"description" 	=> 	__( 'set counter font size in pixel e.g 20', 'counter' ),
 			"suffix" 		=> 	'px',
-			"group" 		=> 	'Stat Counter',
+			"group" 		=> 	'Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
@@ -361,51 +372,36 @@ vc_map( array(
 			"param_name" 	=> 	"stat_font",
 			"description" 	=> 	__( 'set counter font thickness with difference of 100 in numbers e.g 500', 'counter' ),
 			"max"			=>	"",
-			"group" 		=> 	'Stat Counter',
+			"group" 		=> 	'Setting',
 		),
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Color', 'counter' ),
 			"param_name" 	=> 	"stat_clr",
 			"description" 	=> 	__( 'Select counter title color', 'counter' ),
-			"group" 		=> 	'Stat Counter',
+			"group" 		=> 	'Setting',
 		),
-
-		// Setting Section 
 		
 		array(
 			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Decimal', 'counter' ),
-			"param_name" 	=> 	"count_decimal",
-			"description" 	=> 	__( 'decimal value after points e.g 2 or leave blank', 'counter' ),
-			"group" 		=> 	'Setting',
-		),
-		array(
-			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Speed', 'counter' ),
+			"heading" 		=> 	__( 'Time', 'counter' ),
 			"param_name" 	=> 	"count_speed",
-			"description" 	=> 	__( 'set completion time from start to end in milli second 1s=1000 e.g 4000', 'counter' ),
+			"value"			=>	"4000",
+			"description" 	=> 	__( 'The total duration of the count up animation in milli second 1s=1000', 'counter' ),
 			"max"			=>	"",
 			"group" 		=> 	'Setting',
 		),
 		array(
 			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Start from', 'counter' ),
-			"param_name" 	=> 	"count_value",
-			"description" 	=> 	__( 'set counter from starting point in number default 0', 'counter' ),
-			"group" 		=> 	'Setting',
-		),
-		array(
-			"type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Count interval', 'counter' ),
+			"heading" 		=> 	__( 'Delay', 'counter' ),
 			"param_name" 	=> 	"count_interv",
-			"description" 	=> 	__( 'set counter interval e.g 100', 'counter' ),
+			"description" 	=> 	__( 'The delay in milliseconds per number count up', 'counter' ),
 			"max"			=>	"",
 			"group" 		=> 	'Setting',
 		),
 
-		/*=================================
-		Design Options====================*/ 
+		/* Design Options
+		============================*/ 
 
 		array(
 			"type" 			=> 	"css_editor",

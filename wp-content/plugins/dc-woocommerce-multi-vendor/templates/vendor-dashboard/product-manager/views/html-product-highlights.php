@@ -3,26 +3,23 @@
 /**
  * Product highlights template
  *
- * Used by edit-product.php template
+  * Override this template by copying it to yourtheme/dc-product-vendor/vendor-dashboard/product-manager/views/html-product-highlights.php
  *
- * This template can be overridden by copying it to yourtheme/dc-product-vendor/vendor-dashboard/product-manager/views/html-product-highlights.php.
- *
- * HOWEVER, on occasion WCMp will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
- *
- * @author 		WC Marketplace
- * @package 	WCMp/templates/vendor dashboard/product manager/views
- * @version     3.3.0
+ * @author  WC Marketplace
+ * @package     WCMp/Templates
+ * @version   3.3.0
  */
 defined( 'ABSPATH' ) || exit;
 global $WCMp;
 ?>
 <div class="cat-step3">
     <div class="panel-heading">
-        <h1><span class="primary-color"><span><?php _e( 'Step 2 of', 'dc-woocommerce-multi-vendor' );?></span> <?php _e( '2:', 'dc-woocommerce-multi-vendor' );?></span> <?php _e( 'Add Product Details', 'dc-woocommerce-multi-vendor' );?></h1>
+        <h1>
+            <?php if( !get_wcmp_vendor_settings('is_singleproductmultiseller', 'general') == 'Enable' && get_wcmp_vendor_settings('is_disable_marketplace_plisting', 'general') != 'Enable' ) : ?>
+            <span class="primary-color"><span><?php _e( 'Step 2 of', 'dc-woocommerce-multi-vendor' );?></span> <?php _e( '2:', 'dc-woocommerce-multi-vendor' );?></span> 
+            <?php endif; ?>
+            <?php _e( 'Add Product Details', 'dc-woocommerce-multi-vendor' );?>
+        </h1>
         <?php if( get_transient( 'classified_product_terms_vendor'. get_current_user_id() ) || ($self->is_spmv() && $post) || $is_update ) : ?>
         <?php do_action( 'wcmp_afm_before_product_highlights_category_wrap', $post->ID, $product_object, $post ); ?> 
         <div class="cat-breadcrumb-wrap">
@@ -103,12 +100,14 @@ global $WCMp;
                         </div>
                     </div>
                     <?php }
-                }
-                // save terms for post save handler 
-                if( $terms ){
-                    foreach ( $terms as $term_id ) {
-                        echo '<input type="hidden" name="tax_input[' . $term_tax . '][]" value="' . $term_id . '" />';
+                    if( get_wcmp_vendor_settings('is_disable_marketplace_plisting', 'general') != 'Enable' ) :
+                    // save terms for post save handler 
+                    if( $terms ){
+                        foreach ( $terms as $term_id ) {
+                            echo '<input type="hidden" name="tax_input[' . $term_tax . '][]" value="' . $term_id . '" />';
+                        }
                     }
+                    endif;
                 }
             }
         ?>
@@ -189,7 +188,9 @@ global $WCMp;
                         foreach ( $visibility_options as $name => $label ) {
                             echo '<div class="form-group"><label><input type="radio" name="_visibility" id="_visibility_' . esc_attr( $name ) . '" value="' . esc_attr( $name ) . '" ' . checked( $current_visibility, $name, false ) . ' data-label="' . esc_attr( $label ) . '" /> <span for="_visibility_' . esc_attr( $name ) . '" class="selectit">' . esc_html( $label ) . '</span></label></div>';
                         }
-                        echo '<hr><div class="form-group"><label><input type="checkbox" name="_featured" class="mt-0" id="_featured" ' . checked( $current_featured, 'yes', false ) . ' data-label="' . __( 'Featured', 'woocommerce' ) . '" /> <span for="_featured">' . esc_html__( 'This is a featured product', 'woocommerce' ) . '</label></label></div>';
+                        if( apply_filters( 'wcmp_feature_product_is_enable', true ) ) {
+                            echo '<hr><div class="form-group"><label><input type="checkbox" name="_featured" class="mt-0" id="_featured" ' . checked( $current_featured, 'yes', false ) . ' data-label="' . __( 'Featured', 'woocommerce' ) . '" /> <span for="_featured">' . esc_html__( 'This is a featured product', 'woocommerce' ) . '</label></label></div>';
+                        }
                         ?>
                         <div class="form-group mt-15">
                             <button type="button" class="btn btn-default btn-sm catalog-visiblity-btn"><?php _e('Ok', 'dc-woocommerce-multi-vendor'); ?></button>

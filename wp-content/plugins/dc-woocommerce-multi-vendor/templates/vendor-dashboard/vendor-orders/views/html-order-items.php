@@ -219,6 +219,14 @@ if ( wc_tax_enabled() ) {
                                             <?php echo $order->get_formatted_order_total(); // WPCS: XSS ok.  ?>
                                         </td>
                                     </tr>
+                                    
+                                    <tr>
+                                        <td class="label"><?php esc_html_e('Total Earned', 'dc-woocommerce-multi-vendor'); ?>:</td>
+                                        <td width="1%"></td>
+                                        <td class="total">
+                                            <?php echo $vendor_order->get_formatted_order_total_earned(); // WPCS: XSS ok.  ?>
+                                        </td>
+                                    </tr>
 
                                     <?php do_action('wcmp_vendor_order_totals_after_total', $order->get_id()); ?>
 
@@ -231,7 +239,7 @@ if ( wc_tax_enabled() ) {
                                         <tr>
                                             <td class="label refunded-total"><?php esc_html_e('Commission Refunded', 'dc-woocommerce-multi-vendor'); ?>:</td>
                                             <td width="1%"></td>
-                                            <td class="total refunded-total"><?php echo $vendor_order->get_items_commission_refunded_amount(); // WPCS: XSS ok.  ?></td>
+                                            <td class="total refunded-total"><?php echo $vendor_order->get_total_commission_refunded_amount(); // WPCS: XSS ok.  ?></td>
                                         </tr>
                                     <?php endif; ?>
 
@@ -243,7 +251,9 @@ if ( wc_tax_enabled() ) {
 
                             <div class="wcmp-order-actions  wcmp-order-data-row-toggle">
                                 <?php if (0 < $order->get_total() - $order->get_total_refunded() || 0 < absint($order->get_item_count() - $order->get_item_count_refunded())) : ?>
+                                <?php if( $order->get_status( 'edit' ) != 'cancelled' ) : ?>
                                     <button type="button" class="button refund-items btn btn-default"><?php esc_html_e('Refund', 'woocommerce'); ?></button>
+                                <?php endif; ?>
                                 <?php endif; ?>
                                 <?php
                                 // allow adding custom buttons
@@ -291,12 +301,12 @@ if ( wc_tax_enabled() ) {
 
                                         if (false !== $payment_gateway && $payment_gateway->can_refund_order($order)) {
                                             /* translators: refund amount, gateway name */
-                                            echo '<button type="button" class="button button-primary do-api-refund">' . sprintf(esc_html__('Refund %1$s via %2$s', 'woocommerce'), wp_kses_post($refund_amount), esc_html($gateway_name)) . '</button>';
+                                            //echo '<button type="button" class="button button-primary do-api-refund">' . sprintf(esc_html__('Refund %1$s via %2$s', 'woocommerce'), wp_kses_post($refund_amount), esc_html($gateway_name)) . '</button>';
                                         }
                                         ?>
                                         <?php /* translators: refund amount  */ ?>
                                         <button type="button" class="btn btn-default do-manual-refund tips" data-tip="<?php esc_attr_e('You will need to manually issue a refund through your payment gateway after using this.', 'woocommerce'); ?>"><?php printf(esc_html__('Refund %s manually', 'woocommerce'), wp_kses_post($refund_amount)); ?></button>
-                                        <button type="button" class="btn btn-default cancel-action"><?php esc_html_e('Cancel', 'woocommerce'); ?></button>
+                                        <button type="button" class="btn btn-secondary cancel-action"><?php esc_html_e('Cancel', 'woocommerce'); ?></button>
                                         <input type="hidden" id="refunded_amount" name="refunded_amount" value="<?php echo esc_attr($order->get_total_refunded()); ?>" />
                                         <div class="clear"></div>
                                     </div>

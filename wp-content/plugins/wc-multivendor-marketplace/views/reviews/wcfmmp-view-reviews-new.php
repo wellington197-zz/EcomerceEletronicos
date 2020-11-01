@@ -22,6 +22,8 @@ if ( !$wp_user_avatar ) {
 
 $is_start_with_full_rating = apply_filters( 'wcfm_add_review_start_with_full_rating', true );
 
+$rating_block_class = '';
+if( !apply_filters( 'wcfm_is_allow_review_rating', true ) ) { $rating_block_class = ' wcfm_custom_hide'; }
 ?>
 
   <div class="reviews_area reviews_add_area reviews_area_dummy">
@@ -38,7 +40,7 @@ $is_start_with_full_rating = apply_filters( 'wcfm_add_review_start_with_full_rat
 			<div class="lft review_photo"><img src="<?php echo $wp_user_avatar; ?>" alt="Review"/></div>
 			<div class="rgt review_text">
 			  <form method="post" name="wcfmmp_store_review_form" id="wcfmmp_store_review_form">
-					<div class="rating_area">
+					<div class="rating_area <?php echo $rating_block_class; ?>">
 						<?php foreach( $wcfm_review_categories as $wcfm_review_cat_key => $wcfm_review_category ) { ?>
 							<div class="rating_box rating-stars">
 								<ul class='stars'>

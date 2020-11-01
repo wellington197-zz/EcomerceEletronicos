@@ -44,8 +44,8 @@ if( isset( $_GET['orderby'] ) ) { $orderby = sanitize_text_field($_GET['orderby'
 			<option value="newness_desc" <?php selected( $orderby, 'newness_desc' ); ?>><?php _e( 'Sort by newness: new to old', 'wc-multivendor-marketplace' ); ?></option>
 			<option value="rating_asc" <?php selected( $orderby, 'rating_asc' ); ?>><?php _e( 'Sort by average rating: low to high', 'wc-multivendor-marketplace' ); ?></option>
 			<option value="rating_desc" <?php selected( $orderby, 'rating_desc' ); ?>><?php _e( 'Sort by average rating: high to low', 'wc-multivendor-marketplace' ); ?></option>
-			<option value="alphabetical_asc" <?php selected( $orderby, 'alphabetical_asc' ); ?>><?php _e( 'Sort by Alphabetical: A to Z', 'wc-multivendor-marketplace' ); ?></option>
-			<option value="alphabetical_desc" <?php selected( $orderby, 'alphabetical_desc' ); ?>><?php _e( 'Sort by Alphabetical: Z to A', 'wc-multivendor-marketplace' ); ?></option>
+			<option value="alphabetical_asc" <?php selected( $orderby, 'alphabetical_asc' ); ?>><?php _e( 'Sort Alphabetical: A to Z', 'wc-multivendor-marketplace' ); ?></option>
+			<option value="alphabetical_desc" <?php selected( $orderby, 'alphabetical_desc' ); ?>><?php _e( 'Sort Alphabetical: Z to A', 'wc-multivendor-marketplace' ); ?></option>
 		</select>
 		
 		<?php
@@ -58,6 +58,7 @@ if( isset( $_GET['orderby'] ) ) { $orderby = sanitize_text_field($_GET['orderby'
 		?>
 		<input type="hidden" name="wcfmmp_store_search" value="<?php echo $search_query; ?>" />
 		<input type="hidden" name="wcfmmp_store_category" value="<?php echo $search_category; ?>" />
+		<input type="hidden" name="wcfmsc_store_categories" value="<?php echo isset( $search_data['wcfmsc_store_categories'] ) ? $search_data['wcfmsc_store_categories'] : ''; ?>" />
 		<input type="hidden" name="paged" value="1">
 	</form>
 	<p class="woocommerce-result-count">

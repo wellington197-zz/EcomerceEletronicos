@@ -116,7 +116,7 @@ class WC_Stripe_Customer {
 				$billing_last_name = get_user_meta( $user->ID, 'last_name', true );
 			}
 
-			$description = __( 'Name', 'woocommerce-gateway-stripe' ) . ': ' . $billing_first_name . ' ' . $billing_last_name . ' ' . __( 'Username', 'woocommerce-gateway-stripe' ) . ': ' . $user->user_login;
+			$description = __( 'Name', 'wc-multivendor-marketplace' ) . ': ' . $billing_first_name . ' ' . $billing_last_name . ' ' . __( 'Username', 'wc-multivendor-marketplace' ) . ': ' . $user->user_login;
 
 			$defaults = array(
 				'email'       => $user->user_email,
@@ -200,7 +200,7 @@ class WC_Stripe_Customer {
 				return $response;
 			}
 		} elseif ( empty( $response->id ) ) {
-			return new WP_Error( 'error', __( 'Unable to add payment source.', 'woocommerce-gateway-stripe' ) );
+			return new WP_Error( 'error', __( 'Unable to add payment source.', 'wc-multivendor-marketplace' ) );
 		}
 
 		// Add token to WooCommerce.

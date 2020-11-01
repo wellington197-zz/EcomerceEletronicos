@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 global $WCFM, $WCFMmp;
 
-$wcfm_store_url    = get_option( 'wcfm_store_url', 'store' );
+$wcfm_store_url    = wcfm_get_option( 'wcfm_store_url', 'store' );
 $wcfm_store_name   = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 if ( empty( $wcfm_store_name ) ) return;
 $seller_info       = get_user_by( 'slug', $wcfm_store_name );
@@ -134,5 +134,13 @@ get_header( 'shop' );
 <?php do_action( 'wcfmmp_after_store', $store_user->data, $store_info ); ?>
 <?php //do_action( 'woocommerce_after_main_content' ); ?>
 <?php echo '</main></div>'; ?>
-
+<script>
+jQuery(document).ready(function($) {
+	$('#tab_links_area').find('a').each(function() {
+		$(this).off('click').on('click', function() {
+			window.location.href = $(this).attr('href');
+		});
+	});
+});
+</script>
 <?php get_footer( 'shop' ); ?>

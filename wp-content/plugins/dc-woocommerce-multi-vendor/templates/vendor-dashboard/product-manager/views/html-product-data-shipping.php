@@ -5,17 +5,11 @@
  *
  * Used by wcmp-afm-add-product.php template
  *
- * This template can be overridden by copying it to yourtheme/wcmp-afm/products/woocommerce/html-product-data-shipping.php.
+ * Override this template by copying it to yourtheme/dc-product-vendor/vendor-dashboard/product-manager/views/html-product-data-shipping.php
  *
- * HOWEVER, on occasion AFM will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
- *
- * @author 		WC Marketplace
- * @package 	WCMp_AFM/views/products/woocommerce
- * @version     3.0.0
+ * @author  WC Marketplace
+ * @package     WCMp/Templates
+ * @version   3.3.0
  */
 defined( 'ABSPATH' ) || exit;
 ?>
@@ -23,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
     <div class="row-padding"> 
         <?php if ( wc_product_weight_enabled() ) : ?> 
             <div class="form-group">
-                <label class="control-label col-sm-3 col-md-3" for="_weight"><?php _e( 'Weight', 'woocommerce' ); ?></label>
+                <label class="control-label col-sm-3 col-md-3" for="_weight"><?php _e( 'Weight (kg)', 'woocommerce' ); ?></label>
                 <div class="col-md-6 col-sm-9">
                     <input class="form-control" type="text" id="_weight" name="_weight" value="<?php echo $product_object->get_weight( 'edit' ); ?>" placeholder="<?php echo wc_format_localized_decimal( 0 ); ?>" />
                 </div>

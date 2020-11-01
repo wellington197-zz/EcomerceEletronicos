@@ -45,7 +45,15 @@ $previous_login = get_user_meta( $user_id, '_previous_login', true );
 				<?php } ?>
 			</div>
 			<div class="wcfm_welcomebox_user_details rgt">
-				<h3><?php echo apply_filters( 'wcfm_dashboard_welcometext', sprintf( __('Welcome to %s Dashboard', 'wc-frontend-manager' ), get_bloginfo() ) ); ?></h3>
+				<h3>
+				  <?php 
+				  if( !wp_is_mobile() && apply_filters( 'wcfm_is_allow_site_name_in_welcome_text', true ) ) {
+				  	echo apply_filters( 'wcfm_dashboard_welcometext', sprintf( __('Welcome to the %s Dashboard', 'wc-frontend-manager' ), get_bloginfo() ) );
+				  } else {
+				  	echo apply_filters( 'wcfm_dashboard_welcometext', __('Welcome to your Store Manager', 'wc-frontend-manager' ) );
+				  }
+				  ?>
+				</h3>
 				<div class="wcfm_welcomebox_membership">
 					<span>
 					<?php
@@ -65,8 +73,10 @@ $previous_login = get_user_meta( $user_id, '_previous_login', true );
 			<div class="spacer"></div>      
 		</div>
 		<?php if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_dashboard_limit_stats', true ) ) { ?>
-			<div class="rgt wcfm_welcomebox_user_right">
-				<div class="wcfm_welcomebox_user_right_box"><span class="wcfmfa fa-cube img_tip" data-tip="<?php _e( 'Product Limit Stats', 'wc-frontend-manager' ); ?>"></span><span><mark><?php echo $WCFM->wcfm_vendor_support->wcfm_vendor_product_limit_stat( $user_id ); ?></mark></span></div>
+			<div class="vrgt wcfm_welcomebox_user_right">
+			  <?php if( apply_filters( 'wcfm_is_allow_manage_products', true ) ) { ?>
+			  	<div class="wcfm_welcomebox_user_right_box"><span class="wcfmfa fa-cube img_tip" data-tip="<?php _e( 'Product Limit Stats', 'wc-frontend-manager' ); ?>"></span><span><mark><?php echo $WCFM->wcfm_vendor_support->wcfm_vendor_product_limit_stat( $user_id ); ?></mark></span></div>
+			  <?php } ?>
 				<div class="wcfm_welcomebox_user_right_box"><span class="wcfmfa fa-hdd img_tip" data-tip="<?php _e('Disk Space Usage Stats', 'wc-frontend-manager' ); ?>"></span><span><mark><?php echo $WCFM->wcfm_vendor_support->wcfm_vendor_space_limit_stat( $user_id ); ?></mark></span></div>
 			</div>
 		<?php } ?>			

@@ -6,7 +6,7 @@
 	float: left;
 }
 
-#wcfm_membership_container .wcfm_email_verified, #wcfm_membership_container .wcfm_sms_verified, #wcfm_membership_container .wcfm_store_slug_verified, #wcfm_membership_container #passowrd_strength {
+#wcfm_membership_container .wcfm_email_verified, #wcfm_membership_container .wcfm_sms_verified, #wcfm_membership_container .wcfm_store_slug_verified, #wcfm_membership_container #password_strength {
 	margin-left: 0px;
 	margin-right: 39%;
 }
@@ -18,4 +18,10 @@
 #wcfm_membership_container .wcfm_email_verified .wcfm_email_verified_button, #wcfm_membership_container .wcfm_sms_verified .wcfm_sms_verified_button {
 	float: right;
 	margin-right: 10px;
+}
+
+@media only screen and (max-width: 640px) {
+	#wcfm_membership_container .wcfm_email_verified, #wcfm_membership_container .wcfm_sms_verified, #wcfm_membership_container .wcfm_store_slug_verified, #wcfm_membership_container #password_strength {
+		margin-right: 0;
+	}
 }

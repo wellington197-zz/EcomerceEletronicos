@@ -32,7 +32,7 @@ if( !current_user_can( 'manage_bookings_settings' ) && !current_user_can( 'manag
 		<div class="wcfm-container-box">
 			<div>
 				<?php if( WCFM_Dependencies::wcfmu_plugin_active_check() ) { ?>
-					<?php if( !wcfm_is_vendor() || ( wcfm_is_vendor() && ( $WCFM->is_marketplace == 'wcpvendors' ) ) ) { ?>
+					<?php if( !wcfm_is_vendor() || ( wcfm_is_vendor() && ( in_array( $WCFM->is_marketplace, array( 'wcfmmarketplace', 'wcpvendors' ) ) ) ) ) { ?>
 					  <a class="wcfm_bookings_gloabl_settings wcfm_gloabl_settings text_tip" href="<?php echo get_wcfm_bookings_settings_url(); ?>" data-tip="<?php _e( 'Global Availability', 'woocommerce-bookings' ); ?>"><span class="wcfmfa fa-cog"></span></a>
 					<?php } ?>
 				<?php } else { ?>

@@ -1,5 +1,7 @@
 jQuery(document).ready(function($) {
 		
+	$current_location_fetched = false;
+		
 	// Set Bootstrap full width class
 	if( $('#wcfmmp-stores-lists').parent().hasClass('col-md-8') ) {
 		$('#wcfmmp-stores-lists').parent().removeClass('col-md-8');
@@ -82,8 +84,6 @@ jQuery(document).ready(function($) {
 	
 	function refreshStoreList() {
 	 data = {
-			search_term             : $('#search').val(),
-			wcfmmp_store_category   : $('#wcfmmp_store_category').val(),
 			action                  : 'wcfmmp_stores_list_search',
 			pagination_base         : form.find('#pagination_base').val(),
 			paged                   : form.find('#wcfm_paged').val(),
@@ -96,6 +96,8 @@ jQuery(document).ready(function($) {
 			has_product             : $has_product,
 			sidebar                 : $sidebar,
 			theme                   : $theme,
+			search_term             : $('.wcfmmp-store-search').val(),
+			wcfmmp_store_category   : $('#wcfmmp_store_category').val(),
 			search_data             : jQuery('.wcfmmp-store-search-form').serialize(),
 			_wpnonce                : form.find('#nonce').val()
 		};
@@ -124,6 +126,7 @@ jQuery(document).ready(function($) {
 					var data = response.data;
 					$('#wcfmmp-stores-wrap').html( $(data).find( '.wcfmmp-stores-content' ) );
 					fetchMarkers();
+					initiateTip();
 					initEnquiryButton();
 					setTimeout(function() { storeBoxHeightManage(); }, 200 );
 				}
@@ -134,39 +137,127 @@ jQuery(document).ready(function($) {
 	$wcfm_anr_loaded = false;
 	function initEnquiryButton() {
 		$('.wcfm_catalog_enquiry').each(function() {
-			$(this).off('click').on('click', function(event) {
-				event.preventDefault();
-				
-				$store   = $(this).data('store');
-				$product = $(this).data('product');
-				
-				$.colorbox( { inline:true, href: "#enquiry_form_wrapper", width: $popup_width,
-					onComplete:function() {
-						
-						$('#wcfm_enquiry_form').find('#enquiry_vendor_id').val($store);
-						$('#wcfm_enquiry_form').find('#enquiry_product_id').val($product);
-						
-						if( jQuery('.anr_captcha_field').length > 0 ) {
-							if (typeof grecaptcha != "undefined") {
-								if( $wcfm_anr_loaded ) {
-									grecaptcha.reset();
-								} else {
-									wcfm_anr_onloadCallback();
+			if( !$(this).hasClass( 'wcfm_login_popup' ) ) {
+				$(this).off('click').on('click', function(event) {
+					event.preventDefault();
+					
+					$store   = $(this).data('store');
+					$product = $(this).data('product');
+					
+					$.colorbox( { inline:true, href: "#enquiry_form_wrapper", width: $popup_width,
+						onComplete:function() {
+							
+							$('#wcfm_enquiry_form').find('#enquiry_vendor_id').val($store);
+							$('#wcfm_enquiry_form').find('#enquiry_product_id').val($product);
+							
+							if( jQuery('.anr_captcha_field').length > 0 ) {
+								if (typeof grecaptcha != "undefined") {
+									if( $wcfm_anr_loaded ) {
+										grecaptcha.reset();
+									} else {
+										wcfm_anr_onloadCallback();
+									}
+									$wcfm_anr_loaded = true;
 								}
-								$wcfm_anr_loaded = true;
 							}
 						}
-						
-					}
+					});
 				});
-			});
+			} else {
+				//wcfmInitLoginPopup();
+				jQuery('.wcfm_login_popup').each( function() {
+					jQuery(this).click( function( event ) {
+						event.preventDefault();
+						jQuerylogin_popup = jQuery(this);
+						
+						// Ajax Call for Fetching Quick Edit HTML
+						jQuery('body').block({
+							message: null,
+							overlayCSS: {
+								background: '#fff',
+								opacity: 0.6
+							}
+						});
+						var data = {
+							action  : 'wcfm_login_popup_form'
+						}	
+						
+						jQuery.ajax({
+							type    :		'POST',
+							url     : wcfm_params.ajax_url,
+							data    : data,
+							success :	function(response) {
+								// Intialize colorbox
+								jQuery.colorbox( { html: response, width: $popup_width,
+									onComplete:function() {
+								
+										// Intialize Quick Update Action
+										jQuery('#wcfm_login_popup_button').click(function() {
+											$wcfm_is_valid_form = true;
+											jQuery('#wcfm_login_popup_form').block({
+												message: null,
+												overlayCSS: {
+													background: '#fff',
+													opacity: 0.6
+												}
+											});
+											jQuery('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+											if( jQuery('input[name=wcfm_login_popup_username]').val().length == 0 ) {
+												jQuery('#wcfm_login_popup_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + wcfm_login_messages.no_username).addClass('wcfm-error').slideDown();
+												wcfm_notification_sound.play();
+												jQuery('#wcfm_login_popup_form').unblock();
+											} else if( jQuery('input[name=wcfm_login_popup_password]').val().length == 0 ) {
+												jQuery('#wcfm_login_popup_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + wcfm_login_messages.no_password).addClass('wcfm-error').slideDown();
+												wcfm_notification_sound.play();
+												jQuery('#wcfm_login_popup_form').unblock();
+											} else {
+												jQuery( document.body ).trigger( 'wcfm_form_validate', jQuery('#wcfm_login_popup_form') );
+												if( !$wcfm_is_valid_form ) {
+													wcfm_notification_sound.play();
+													jQuery('#wcfm_login_popup_form').unblock();
+												} else {
+													jQuery('#wcfm_login_popup_button').hide();
+													var data = {
+														action : 'wcfm_login_popup_submit', 
+														wcfm_login_popup_form : jQuery('#wcfm_login_popup_form').serialize()
+													}	
+													jQuery.post(wcfm_params.ajax_url, data, function(response) {
+														if(response) {
+															jQueryresponse_json = jQuery.parseJSON(response);
+															wcfm_notification_sound.play();
+															jQuery('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+															if(jQueryresponse_json.status) {
+																jQuery('#wcfm_login_popup_form .wcfm-message').html('<span class="wcicon-status-completed"></span>' + jQueryresponse_json.message).addClass('wcfm-success').slideDown();
+																window.location = window.location.href;
+															} else {
+																jQuery('#wcfm_login_popup_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + jQueryresponse_json.message).addClass('wcfm-error').slideDown();
+																jQuery('#wcfm_login_popup_button').show();
+																jQuery('#wcfm_login_popup_form').unblock();
+															}
+														}
+													} );
+												}
+											}
+										});
+									}
+								});
+								jQuery('body').unblock();
+							}
+						});
+						
+						return false;
+					} );
+				} );
+			}
 		});
 	}
 	
 	if( $('.wcfmmp-store-search-form').length > 0 ) {
 		
 		if( wcfmmp_store_list_options.is_geolocate ) {
-			refreshStoreList();
+			if( ( $('#wcfmmp_radius_addr').length == 0 ) || !navigator.geolocation ) {
+				refreshStoreList();
+			}
 		}
 		
 		form.on('keyup', '.wcfm-search-field', function() {
@@ -217,35 +308,68 @@ jQuery(document).ready(function($) {
 		} );
 		
 		// Store Radius Search
+		var searchControl = '';
 		if( $('#wcfmmp_radius_addr').length > 0 ) {
 			var max_radius = parseInt( wcfmmp_store_list_options.max_radius );
 			var wcfmmp_radius_addr_input = document.getElementById("wcfmmp_radius_addr");
-			var geocoder = new google.maps.Geocoder;
-			var awcfmmp_radius_addr_autocomplete = new google.maps.places.Autocomplete(wcfmmp_radius_addr_input);
-			awcfmmp_radius_addr_autocomplete.addListener("place_changed", function() {
-				var place = awcfmmp_radius_addr_autocomplete.getPlace();
-				$('#wcfmmp_radius_lat').val(place.geometry.location.lat());
-				$('#wcfmmp_radius_lng').val(place.geometry.location.lng());
-				refreshStoreList();
-			});
 			
-			$('#wcfmmp_radius_addr').blur(function() {
-				 if( $(this).val().length == 0 ) {
-				 	 $('#wcfmmp_radius_lat').val('');
-				 	 $('#wcfmmp_radius_lng').val('');
-				 	 refreshStoreList();
-				 }
-			});
+			if( wcfm_maps.lib == 'google' ) {
+				var geocoder = new google.maps.Geocoder;
+				var awcfmmp_radius_addr_autocomplete = new google.maps.places.Autocomplete(wcfmmp_radius_addr_input);
+				awcfmmp_radius_addr_autocomplete.addListener("place_changed", function() {
+					var place = awcfmmp_radius_addr_autocomplete.getPlace();
+					$('#wcfmmp_radius_lat').val(place.geometry.location.lat());
+					$('#wcfmmp_radius_lng').val(place.geometry.location.lng());
+					refreshStoreList();
+				});
+				
+				$('#wcfmmp_radius_addr').blur(function() {
+					 if( $(this).val().length == 0 ) {
+						 $('#wcfmmp_radius_lat').val('');
+						 $('#wcfmmp_radius_lng').val('');
+						 refreshStoreList();
+					 }
+				});
+			} else {
+				var searchControl = new L.Control.Search({
+														container: 'wcfm_radius_filter_container',
+														url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
+														jsonpParam: 'json_callback',
+														propertyName: 'display_name',
+														propertyLoc: ['lat','lon'],
+														marker: L.marker([0,0]),
+														moveToLocation: function(latlng, title, map) {
+															$('#wcfmmp_radius_lat').val(latlng.lat);
+															$('#wcfmmp_radius_lng').val(latlng.lng);
+															refreshStoreList();
+														},
+														//autoCollapse: true,
+														initial: false,
+														collapsed:false,
+														autoType: false,
+														minLength: 2
+													});
+			
+			}
 			
 			$('#wcfmmp_radius_range').on('input', function() {
-				$('.wcfmmp_radius_range_cur').html(this.value+'km');
-				$('.wcfmmp_radius_range_cur').css( 'left', ((this.value/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+				$('.wcfmmp_radius_range_cur').html(this.value+wcfmmp_store_list_options.radius_unit);
+				if( wcfmmp_store_list_options.is_rtl ) {
+					$('.wcfmmp_radius_range_cur').css( 'right', ((this.value/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+				} else {
+					$('.wcfmmp_radius_range_cur').css( 'left', ((this.value/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+				}
 				$wcfmmp_radius_lat = $('#wcfmmp_radius_lat').val();
 				if( $wcfmmp_radius_lat ) {
 					setTimeout(function() {refreshStoreList();}, 100);
 				}
 			});
-			$('.wcfmmp_radius_range_cur').css( 'left', ((10/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+			
+			if( wcfmmp_store_list_options.is_rtl ) {
+				$('.wcfmmp_radius_range_cur').css( 'right', (($('#wcfmmp_radius_range').val()/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+			} else {
+				$('.wcfmmp_radius_range_cur').css( 'left', (($('#wcfmmp_radius_range').val()/max_radius)*$('.wcfm_radius_slidecontainer').outerWidth())-(15/2)+'px' );
+			}
 			
 			if ( navigator.geolocation ) {
 				$('.wcfmmmp_locate_icon').on( 'click', function () {
@@ -258,20 +382,30 @@ jQuery(document).ready(function($) {
 				
 				function setUser_CurrentLocation() {
 					navigator.geolocation.getCurrentPosition( function( position ) {
+						$current_location_fetched = true;
 						console.log( position.coords.latitude, position.coords.longitude );
-						geocoder.geocode( {
-                location: {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                }
-            }, function ( results, status ) {
-                if ( 'OK' === status ) {
-									$('#wcfmmp_radius_addr').val( results[0].formatted_address );
-									$('#wcfmmp_radius_lat').val( position.coords.latitude );
-									$('#wcfmmp_radius_lng').val( position.coords.longitude );
-									refreshStoreList();
-                }
-            } )
+						if( wcfm_maps.lib == 'google' ) {
+							geocoder.geocode( {
+									location: {
+											lat: position.coords.latitude,
+											lng: position.coords.longitude
+									}
+							}, function ( results, status ) {
+									if ( 'OK' === status ) {
+										$('#wcfmmp_radius_addr').val( results[0].formatted_address );
+										$('#wcfmmp_radius_lat').val( position.coords.latitude );
+										$('#wcfmmp_radius_lng').val( position.coords.longitude );
+										refreshStoreList();
+									}
+							} )
+						} else {
+							$.get('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+position.coords.latitude+'&lon='+position.coords.longitude, function(data) {
+								$('#wcfmmp_radius_addr').val( data.address.road );
+								$('#wcfmmp_radius_lat').val( position.coords.latitude );
+								$('#wcfmmp_radius_lng').val( position.coords.longitude );
+								refreshStoreList();
+							});
+						}
 					});
 				}
 			}
@@ -375,10 +509,6 @@ jQuery(document).ready(function($) {
 			reloadMarkers();
 			
 			var data = {
-				search_term             : $('.wcfmmp-store-search').val(),
-				wcfmmp_store_category   : $('#wcfmmp_store_category').val(),
-				wcfmmp_store_country    : $('#wcfmmp_store_country').val(),
-				wcfmmp_store_state      : $('#wcfmmp_store_state').val(),
 				action                  : 'wcfmmp_stores_list_map_markers',
 				pagination_base         : form.find('#pagination_base').val(),
 				paged                   : form.find('#wcfm_paged').val(),
@@ -390,6 +520,10 @@ jQuery(document).ready(function($) {
 				has_orderby             : $has_orderby,
 				sidebar                 : $sidebar,
 				theme                   : $theme,
+				search_term             : $('.wcfmmp-store-search').val(),
+				wcfmmp_store_category   : $('#wcfmmp_store_category').val(),
+				wcfmmp_store_country    : $('#wcfmmp_store_country').val(),
+				wcfmmp_store_state      : $('#wcfmmp_store_state').val(),
 				search_data             : jQuery('.wcfmmp-store-search-form').serialize(),
 			};
 			
@@ -407,46 +541,94 @@ jQuery(document).ready(function($) {
 		$('.wcfmmp-store-list-map').css( 'height', $('.wcfmmp-store-list-map').outerWidth()/2);
 		
 		var markers = [];
-		var store_list_map = '';
+		var store_list_map = markerClusterer = markersGroup = '';
 		
 		function setMarkers(locations) {
-			var latlngbounds = new google.maps.LatLngBounds();
-			var infowindow = new google.maps.InfoWindow();
+			
+			$icon_width = parseInt( wcfmmp_store_list_options.icon_width );
+			$icon_height = parseInt( wcfmmp_store_list_options.icon_height );
+			
+			if( wcfm_maps.lib == 'google' ) {
+				var latlngbounds = new google.maps.LatLngBounds();
+				var infowindow = new google.maps.InfoWindow();
 				
-			$.each(locations, function( i, beach ) {
-				var myLatLng = new google.maps.LatLng(beach.lat, beach.lang);
-				latlngbounds.extend(myLatLng);
-				var marker = new google.maps.Marker({
-						position: myLatLng,
-						map: store_list_map,
-						animation: google.maps.Animation.DROP,
-						title: beach.name,
-						icon: beach.icon,
-						zIndex: i 
+				$.each(locations, function( i, beach ) {
+					var myLatLng = new google.maps.LatLng(beach.lat, beach.lang);
+					latlngbounds.extend(myLatLng);
+					var customIcon = {
+														url: beach.icon,
+														scaledSize: new google.maps.Size( $icon_width, $icon_height ), // scaled size
+														//origin: new google.maps.Point( 0, 0 ), // origin
+														//anchor: new google.maps.Point( 0, 0 ) // anchor
+													};
+					var marker = new google.maps.Marker({
+							position: myLatLng,
+							map: store_list_map,
+							animation: google.maps.Animation.DROP,
+							title: beach.name,
+							icon: customIcon,
+							zIndex: i 
+					});
+					
+					var infoWindowContent = beach.info_window_content;
+					
+					google.maps.event.addListener(marker, 'click', (function(marker, i) {
+						return function() {
+							infowindow.setContent(infoWindowContent);
+							infowindow.open(store_list_map, marker);
+						}
+					})(marker, i));
+					
+					store_list_map.setCenter(marker.getPosition());
+	
+					// Push marker to markers array                                   
+					markers.push(marker);
 				});
 				
-				var infoWindowContent = beach.info_window_content;
-				
-				google.maps.event.addListener(marker, 'click', (function(marker, i) {
-					return function() {
-						infowindow.setContent(infoWindowContent);
-						infowindow.open(store_list_map, marker);
-					}
-				})(marker, i));
-				
-				store_list_map.setCenter(marker.getPosition());
+				if( wcfmmp_store_list_options.is_cluster ) {
+					const imagePath = wcfmmp_store_list_options.cluster_image;
+					
+					if( markerClusterer )
+						markerClusterer.clearMarkers();
 
-				// Push marker to markers array                                   
-				markers.push(marker);
-			});
-			if( $auto_zoom && locations.length > 0 ) {
-			  store_list_map.fitBounds(latlngbounds);
+					markerClusterer = new MarkerClusterer(store_list_map, markers, {imagePath: imagePath});
+				}
+				
+				if( $auto_zoom && locations.length > 0 ) {
+					store_list_map.fitBounds(latlngbounds);
+				}
+			} else {
+				if( markersGroup )
+					markersGroup.clearLayers();
+				
+				$.each(locations, function( i, beach ) {
+					var customIcon = L.icon({
+						iconUrl: beach.icon,
+						iconSize: [ $icon_width, $icon_height ]
+					});
+					var marker = L.marker([beach.lat, beach.lang], {icon:customIcon}).bindPopup(beach.info_window_content);
+					
+					// Push marker to markers array                                   
+					markers.push(marker);
+					
+					markersGroup = L.featureGroup(markers).addTo(store_list_map);
+
+					if( $auto_zoom && locations.length > 0 ) {
+						setTimeout(function () {
+							store_list_map.fitBounds(markersGroup.getBounds());
+						}, 1000);
+					}
+				});
 			}
 		}
 		
 		function reloadMarkers() {
-			for( var i = 0; i < markers.length; i++ ) {
-				markers[i].setMap(null);
+			if( wcfm_maps.lib == 'google' ) {
+				for( var i = 0; i < markers.length; i++ ) {
+					markers[i].setMap(null);
+				}
+			} else {
+				
 			}
 			markers = [];
 		}
@@ -465,14 +647,41 @@ jQuery(document).ready(function($) {
 			var myStyles =[];
 		}
 		
-		var mapOptions = {
-        zoom: $map_zoom,
-        center: new google.maps.LatLng(wcfmmp_store_list_options.default_lat,wcfmmp_store_list_options.default_lng,13),
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
-        styles: myStyles
+		if( wcfm_maps.lib == 'google' ) {
+		
+			var mapOptions = {
+					zoom: $map_zoom,
+					center: new google.maps.LatLng(wcfmmp_store_list_options.default_lat,wcfmmp_store_list_options.default_lng,13),
+					mapTypeId: google.maps.MapTypeId.ROADMAP,
+					styles: myStyles
+			}
+    
+    	store_list_map = new google.maps.Map(document.getElementById('wcfmmp-store-list-map'), mapOptions);
+    } else {
+    	store_list_map = L.map( 'wcfmmp-store-list-map', {
+					center: [wcfmmp_store_list_options.default_lat, wcfmmp_store_list_options.default_lng],
+					minZoom: 2,
+					zoom: $map_zoom,
+					zoomAnimation: false
+			});
+			
+			if( !wcfmmp_store_list_options.is_allow_scroll_zoom ) {
+				store_list_map.scrollWheelZoom.disable();
+			}
+			
+			L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					subdomains: ['a','b','c']
+			}).addTo( store_list_map );
+			
+			if( searchControl && $('#wcfmmp_radius_addr').length > 0 ) {
+				$('#wcfmmp_radius_addr').remove();
+				store_list_map.addControl( searchControl );
+				$('#wcfm_radius_filter_container').find('.search-input').addClass('wcfmmp-radius-addr').attr( 'id', 'wcfmmp_radius_addr' ).css( 'float', 'none' ).attr( 'placeholder', wcfmmp_store_list_options.search_location );
+			}//inizialize search control
     }
-
-    store_list_map = new google.maps.Map(document.getElementById('wcfmmp-store-list-map'), mapOptions);
-    fetchMarkers();
+    
+    if( !wcfmmp_store_list_options.is_geolocate || !$current_location_fetched ) {
+    	fetchMarkers();
+    }
 	}
 });

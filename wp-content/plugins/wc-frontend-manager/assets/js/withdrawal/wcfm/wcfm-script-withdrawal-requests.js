@@ -21,6 +21,7 @@ jQuery(document).ready(function($) {
 										{ responsivePriority: 1 },
 										{ responsivePriority: 5 },
 										{ responsivePriority: 6 },
+										{ responsivePriority: 3 },
 										{ responsivePriority: 7 },
 										{ responsivePriority: 4 }
 								],
@@ -34,6 +35,7 @@ jQuery(document).ready(function($) {
 										{ "targets": 7, "orderable" : false },
 										{ "targets": 8, "orderable" : false },
 										{ "targets": 9, "orderable" : false },
+										{ "targets": 10, "orderable" : false },
 									],
 		'ajax': {
 			"type"   : "POST",
@@ -44,6 +46,8 @@ jQuery(document).ready(function($) {
 				d.transaction_id      = GetURLParameter( 'transaction_id' ),
 				d.status_type         = $status_type,
 				d.withdrawal_vendor   = $withdrawal_vendor,
+				d.start_date          = $filter_date_form,
+				d.end_date            = $filter_date_to
 				d.order               = 'desc'
 			},
 			"complete" : function () {
@@ -68,7 +72,8 @@ jQuery(document).ready(function($) {
 	// Request Withdrawals Approve
 	$('#wcfm_withdrawal_requests_approve_button').click(function(event) {
 	  event.preventDefault();
-	  
+	  $('#wcfm_withdrawal_requests_approve_button').hide();
+	  $('#wcfm_withdrawal_requests_cancel_button').hide();
 	  $('.bulk_action_checkbox_all').attr( 'checked', false );
 	  
 		$('#wcfm-content').block({
@@ -98,6 +103,8 @@ jQuery(document).ready(function($) {
 				wcfmMessageHide();
 				$('#withdraw_note').val('');
 				$('#wcfm-content').unblock();
+				$('#wcfm_withdrawal_requests_approve_button').show();
+				$('#wcfm_withdrawal_requests_cancel_button').show();
 			}
 		});
 	});
@@ -105,7 +112,8 @@ jQuery(document).ready(function($) {
 	// Request Withdrawals Cancel
 	$('#wcfm_withdrawal_requests_cancel_button').click(function(event) {
 	  event.preventDefault();
-	  
+	  $('#wcfm_withdrawal_requests_approve_button').hide();
+	  $('#wcfm_withdrawal_requests_cancel_button').hide();
 		$('#wcfm-content').block({
 			message: null,
 			overlayCSS: {
@@ -133,8 +141,14 @@ jQuery(document).ready(function($) {
 				wcfmMessageHide();
 				$('#withdraw_note').val('');
 				$('#wcfm-content').unblock();
+				$('#wcfm_withdrawal_requests_approve_button').show();
+				$('#wcfm_withdrawal_requests_cancel_button').show();
 			}
 		});
+	});
+	
+	$( document.body ).on( 'wcfm-date-range-refreshed', function() {
+		$wcfm_withdrawal_requests_table.ajax.reload();
 	});
 	
 	if( $('#dropdown_vendor').length > 0 ) {
@@ -157,8 +171,8 @@ jQuery(document).ready(function($) {
 	
 	// Screen Manager
 	$( document.body ).on( 'updated_wcfm-withdrawal-requests', function() {
-		//$.each(wcfm_orders_screen_manage, function( column, column_val ) {
-		  $wcfm_withdrawal_requests_table.column(7).visible( false );
-		//} );
+		$.each(wcfm_withdrawal_request_screen_manage, function( column, column_val ) {
+		  $wcfm_withdrawal_requests_table.column(column).visible( false );
+		} );
 	});
 } );

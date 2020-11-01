@@ -34,6 +34,9 @@ class WCFMmp_Notification_Manager {
 		// Notification Manager - SMS
 		add_action( 'after_wcfm_notification', array( &$this, 'wcfmmp_send_notification_sms' ), 500, 6 );
 		
+		// SMS Alter Plugin SMS contains HTML Restriction
+		add_filter( 'sa_before_send_sms', array( &$this, 'wcfmmp_strip_sa_sms' ), 500 );
+		
 		// Notification Manager - Mobile App
     add_action( 'after_wcfm_notification', array( &$this, 'wcfmmp_send_notification_onesignal' ), 500, 6 );
 		
@@ -82,14 +85,14 @@ class WCFMmp_Notification_Manager {
 				      <th style="width:25%;text-align:left;"><?php _e( 'Notification Type', 'wc-multivendor-marketplace' ); ?></th>
 				      <th style="width:12%;"><?php _e( 'Email', 'wc-multivendor-marketplace' ); ?></th>
 				      <th style="width:12%;"><?php _e( 'Message', 'wc-multivendor-marketplace' ); ?></th>
-				      <?php if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() ) { ?>
+				      <?php if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() || function_exists( 'netgsm_sendSMS_oneToMany' ) || apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) { ?>
 				      	<th style="width:12%;"><?php _e( 'SMS', 'wc-multivendor-marketplace' ); ?></th>
 				      <?php } else { ?>
 				      	<th style="width:12%;">&nbsp;</th>
 				      <?php } ?>
 				      <th style="width:12%;"><?php _e( 'Email', 'wc-multivendor-marketplace' ); ?></th>
 				      <th style="width:12%;"><?php _e( 'Message', 'wc-multivendor-marketplace' ); ?></th>
-				      <?php if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) { ?>
+				      <?php if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() || function_exists( 'netgsm_sendSMS_oneToMany' ) || apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) { ?>
 				      	<th style="width:12%;"><?php _e( 'SMS', 'wc-multivendor-marketplace' ); ?></th>
 				      <?php } else { ?>
 				      	<th style="width:12%;">&nbsp;</th>
@@ -109,7 +112,7 @@ class WCFMmp_Notification_Manager {
 																															$message_type.'_admin_message' => array( 'name' => 'wcfmmp_notification_options[' . $message_type . '][admin][message]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title module_options_title', 'wrapper_class' => 'wcfm_notification_checkbox', 'dfvalue' => $message_type_value_admin_message )
 																															) );
 					
-					if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) {
+					if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() || function_exists( 'netgsm_sendSMS_oneToMany' ) || apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) {
 						$message_type_value_admin_sms = isset( $wcfmmp_notification_options[$message_type]['admin']['sms'] ) ? $wcfmmp_notification_options[$message_type]['admin']['sms'] : 'no';
 						$WCFM->wcfm_fields->wcfm_generate_form_field( array(
 																															$message_type.'_admin_sms' => array( 'name' => 'wcfmmp_notification_options[' . $message_type . '][admin][sms]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title module_options_title', 'wrapper_class' => 'wcfm_notification_checkbox', 'dfvalue' => $message_type_value_admin_sms ),
@@ -125,7 +128,7 @@ class WCFMmp_Notification_Manager {
 																															$message_type.'_vendor_message' => array( 'name' => 'wcfmmp_notification_options[' . $message_type . '][vendor][message]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title module_options_title', 'wrapper_class' => 'wcfm_notification_checkbox', 'dfvalue' => $message_type_value_vendor_message ),
 																															) );
 					
-					if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) {
+					if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() || function_exists( 'netgsm_sendSMS_oneToMany' ) || apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) {
 						$message_type_value_vendor_sms = isset( $wcfmmp_notification_options[$message_type]['vendor']['sms'] ) ? $wcfmmp_notification_options[$message_type]['vendor']['sms'] : 'no';
 						$WCFM->wcfm_fields->wcfm_generate_form_field( array(
 																															$message_type.'_vendor_sms' => array( 'name' => 'wcfmmp_notification_options[' . $message_type . '][vendor][sms]', 'type' => 'checkboxoffon', 'class' => 'wcfm-checkbox wcfm_ele', 'value' => 'yes', 'label_class' => 'wcfm_title checkbox_title module_options_title', 'wrapper_class' => 'wcfm_notification_checkbox', 'dfvalue' => $message_type_value_vendor_sms ),
@@ -224,6 +227,8 @@ class WCFMmp_Notification_Manager {
 		
 		if( $message_to_user != 'vendor' ) return;
 		
+		if( !apply_filters( 'wcfm_is_allow_notification_email', true, $message_type, $message_to ) ) return;
+		
 		$message_label = '';
 		$message_types  = get_wcfm_message_types();
 		if( isset( $message_types[$message_type] ) ) $message_label = $message_types[$message_type];
@@ -254,8 +259,8 @@ class WCFMmp_Notification_Manager {
 		
 		$sms_messages  = get_bloginfo( 'name' ) . ': ' . apply_filters( 'wcfm_' . $message_to_user . '_' . $message_type . '_sms_text', $wcfm_messages, $message_to, $message_type, $message_to_user );
 		
-		$sms_messages  = esc_sql( $sms_messages );
 		$sms_messages  = strip_tags( $sms_messages );
+		$sms_messages  = esc_sql( $sms_messages );
 		
 		if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() ) {
 			if( !class_exists( 'SmsAlertcURLOTP' ) ) return;
@@ -349,6 +354,13 @@ class WCFMmp_Notification_Manager {
 				netgsm_sendSMS_oneToMany( $sms_number, $sms_messages );
 			}
 		}
+	}
+	
+	function wcfmmp_strip_sa_sms( $fields ) {
+		if( isset( $fields['text'] ) ) {
+			$fields['text'] = strip_tags( $fields['text'] );
+		}
+		return $fields;
 	}
 	
 	function wcfmmp_send_notification_onesignal( $author_id, $message_to, $author_is_admin, $author_is_vendor, $wcfm_messages, $message_type ) {

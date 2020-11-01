@@ -26,6 +26,7 @@ class WCFMvm {
 	public $ajax;
 	private $file;
 	public $settings;
+	public $wcfmvm_emails;
 	public $WCFMvm_fields;
 	public $is_marketplace;
 	public $WCFMvm_marketplace;
@@ -47,6 +48,8 @@ class WCFMvm {
 		add_action( 'init', array( &$this, 'run_wcfmvm_installer' ) );
 		
 		add_action( 'wcfm_init', array( &$this, 'init_wcfmvm' ), 12 );
+		
+		add_action( 'woocommerce_loaded', array( $this, 'load_wcfmvm' ) );
 		
 		add_action( 'init', array( &$this, 'init_wcfmvm_ipn' ), 16 );
 		
@@ -155,6 +158,18 @@ class WCFMvm {
 	}
 	
 	/**
+	 * Load WCFM 
+	 */
+	function load_wcfmvm() {
+		
+		if( WCFMvm_Dependencies::woocommerce_plugin_active_check() ) {
+			// WCFM Emails Load
+			$this->load_class('emails');
+			$this->wcfmvm_emails = new WCFMvm_Emails();
+		}
+	}
+	
+	/**
 	 * Load IP Listner Class
 	 */
 	function init_wcfmvm_ipn() {
@@ -179,7 +194,7 @@ class WCFMvm {
 				if( $application_status && ( $application_status == 'pending' ) ) {
 					//$WCFMvm->template->get_template('vendor_thankyou.php');
 				} else {
-					if( ($wcfm_free_membership = get_wcfm_free_membership()) && apply_filters( 'wcfmvm_is_allow_by_default_free_registration', true ) ) {
+					if( ($wcfm_free_membership = get_wcfm_free_membership()) && apply_filters( 'wcfm_is_pref_membership', true ) && apply_filters( 'wcfmvm_is_allow_by_default_free_registration', true ) ) {
 						// Session store
 						if( WC()->session ) {
 							do_action( 'woocommerce_set_cart_cookies', true );
@@ -268,25 +283,27 @@ class WCFMvm {
 		} 
 		
 		// Restore Membership Pages
-		$array_pages = get_option( 'wcfm_page_options', array() );
-		$membership_page_id = get_option( 'wcfm_vendor_membership_page_id', 0 );
-		if( $membership_page_id && ( !isset( $array_pages['wcfm_vendor_membership_page_id'] ) || ( isset( $array_pages['wcfm_vendor_membership_page_id'] ) && empty( $array_pages['wcfm_vendor_membership_page_id'] ) ) ) ) {
-			$array_pages['wcfm_vendor_membership_page_id'] = $membership_page_id;
-		}
-		$registration_page_id = get_option( 'wcfm_vendor_registration_page_id', 0 );
-		if( $registration_page_id && ( !isset( $array_pages['wcfm_vendor_registration_page_id'] ) || ( isset( $array_pages['wcfm_vendor_registration_page_id'] ) && empty( $array_pages['wcfm_vendor_registration_page_id'] ) ) ) ) {
-			$array_pages['wcfm_vendor_registration_page_id'] = $registration_page_id;
-		}
-		update_option( 'wcfm_page_options', $array_pages );
-		
-		// Init Membership Scheduler
-		$data = get_option( 'wcfmvm_membership_scheduler', array() );
-
-		if ( empty( $data['updated'] ) || ( time() - DAY_IN_SECONDS ) > $data['updated'] ) {
-			$next = WC()->queue()->get_next( 'wcfmvm_membership_scheduler' );
-			if ( ! $next ) {
-				WC()->queue()->cancel_all( 'wcfmvm_membership_scheduler' );
-				WC()->queue()->schedule_recurring( time(), DAY_IN_SECONDS, 'wcfmvm_membership_scheduler', array(), 'WCFM' );
+		if( WCFMvm_Dependencies::woocommerce_plugin_active_check() && WCFMvm_Dependencies::wcfm_plugin_active_check() ) {
+			$array_pages = get_option( 'wcfm_page_options', array() );
+			$membership_page_id = get_option( 'wcfm_vendor_membership_page_id', 0 );
+			if( $membership_page_id && ( !isset( $array_pages['wcfm_vendor_membership_page_id'] ) || ( isset( $array_pages['wcfm_vendor_membership_page_id'] ) && empty( $array_pages['wcfm_vendor_membership_page_id'] ) ) ) ) {
+				$array_pages['wcfm_vendor_membership_page_id'] = $membership_page_id;
+			}
+			$registration_page_id = get_option( 'wcfm_vendor_registration_page_id', 0 );
+			if( $registration_page_id && ( !isset( $array_pages['wcfm_vendor_registration_page_id'] ) || ( isset( $array_pages['wcfm_vendor_registration_page_id'] ) && empty( $array_pages['wcfm_vendor_registration_page_id'] ) ) ) ) {
+				$array_pages['wcfm_vendor_registration_page_id'] = $registration_page_id;
+			}
+			update_option( 'wcfm_page_options', $array_pages );
+			
+			// Init Membership Scheduler
+			$data = get_option( 'wcfmvm_membership_scheduler', array() );
+	
+			if ( empty( $data['updated'] ) || ( time() - DAY_IN_SECONDS ) > $data['updated'] ) {
+				$next = WC()->queue()->get_next( 'wcfmvm_membership_scheduler' );
+				if ( ! $next ) {
+					WC()->queue()->cancel_all( 'wcfmvm_membership_scheduler' );
+					WC()->queue()->schedule_recurring( time(), DAY_IN_SECONDS, 'wcfmvm_membership_scheduler', array(), 'WCFM' );
+				}
 			}
 		}
 	}
@@ -295,10 +312,19 @@ class WCFMvm {
 	 * List of WCFMvm modules
 	 */
 	function get_wcfmvm_modules( $wcfm_modules ) {
+		
+		$wcfmvm_module_index = array_search( 'catalog', array_keys( $wcfm_modules ) );
+		if( !$wcfmvm_module_index ) { $wcfmvm_module_index = 10; } else { $wcfmvm_module_index += 1; }
+		
 		$wcfmvm_modules = array(
 			                    'pay_for_product'  => array( 'label' => __( 'Pay for Product', 'wc-multivendor-membership' ) ),
 													);
-		$wcfm_modules = array_merge( $wcfmvm_modules, $wcfm_modules );
+		
+		$wcfm_modules = array_slice($wcfm_modules, 0, $wcfmvm_module_index, true) +
+																$wcfmvm_modules +
+																array_slice($wcfm_modules, $wcfmvm_module_index, count($wcfm_modules) - 1, true) ;
+		
+		
 		return $wcfm_modules;
 	}
 
@@ -312,9 +338,11 @@ class WCFMvm {
 		global $WCFM, $WCFMvm;
 		
 		// Delete Membership Scheduler
-		$next = WC()->queue()->get_next( 'wcfmvm_membership_scheduler' );
-		if ( $next ) {
-			WC()->queue()->cancel_all( 'wcfmvm_membership_scheduler' );
+		if( WCFMvm_Dependencies::woocommerce_plugin_active_check() ) {
+			$next = WC()->queue()->get_next( 'wcfmvm_membership_scheduler' );
+			if ( $next ) {
+				WC()->queue()->cancel_all( 'wcfmvm_membership_scheduler' );
+			}
 		}
 		
 		delete_option('wcfmvm_installed');
@@ -522,6 +550,7 @@ class WCFMvm {
 			}
 			
 			$wcfm_register_member = get_user_meta( $member_id, 'wcfm_register_member', true );
+			$is_membership_renewal= false;
 				
 			$is_marketplace = wcfm_is_marketplace();
 			
@@ -772,21 +801,28 @@ class WCFMvm {
 				do_action( 'dokan_new_seller_created', $member_id, $dokan_settings );
 			} elseif( $is_marketplace == 'wcfmmarketplace' ) {
 				// Update user role
-				$member_user->set_role('wcfm_vendor');
+				if( !wcfm_is_vendor( $member_id ) ) {
+					if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $member_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+						$member_user->add_role('wcfm_vendor');
+					} else {
+						$member_user->set_role('wcfm_vendor');
+					}
+				}
 				
 				$wcfmmp_settings = get_user_meta( $member_id, 'wcfmmp_profile_settings', true );
 				if( $wcfmmp_settings && !empty( $wcfmmp_settings ) ) $wcfm_register_member = true;
 				
 				if( !$wcfm_register_member ) {
 					$wcfmmp_settings = array(
-							'store_name'     => strip_tags( $shop_name ),
-							'social'         => array(),
-							'payment'        => array(),
-							'phone'          => '',
-							'show_email'     => 'no',
-							'location'       => '',
-							'find_address'   => '',
-							'banner'         => 0,
+							'store_name'       => strip_tags( $shop_name ),
+							'social'           => array(),
+							'payment'          => array(),
+							'phone'            => '',
+							'show_email'       => 'no',
+							'location'         => '',
+							'find_address'     => '',
+							'banner'           => 0,
+							'customer_support' => array()
 					);
 			
 					update_user_meta( $member_id, 'wcfmmp_profile_settings', $wcfmmp_settings );
@@ -797,6 +833,8 @@ class WCFMvm {
 					// Set Vendor Shipping
 					$wcfmmp_shipping = array ( '_wcfmmp_user_shipping_enable' => 'yes', '_wcfmmp_user_shipping_type' => 'by_zone' );
 					update_user_meta( $member_id, '_wcfmmp_shipping', $wcfmmp_shipping );
+					
+					$wcfmmp_settings['customer_support']['email'] = $member_user->user_email;
 					
 					// Set Vendor Static field data
 					if( !empty( $wcfmvm_registration_static_fields ) && !empty( $wcfmvm_static_infos ) ) {
@@ -826,11 +864,28 @@ class WCFMvm {
 												$wcfmmp_settings['address'][$store_address_field_key] = $field_value[$store_address_field];
 											}
 										}
+										
+										// Customer Support Address
+										$store_address_fields = array( 	
+																					'address1'   => 'addr_1',
+																					'address2'   => 'addr_2',
+																					'country'    => 'country',
+																					'city'       => 'city',
+																					'state'      => 'state',
+																					'zip'        => 'zip',
+																				);
+		
+										foreach( $store_address_fields as $store_address_field_key => $store_address_field ) {
+											if( isset( $field_value[$store_address_field] ) ) {
+												$wcfmmp_settings['customer_support'][$store_address_field_key] = $field_value[$store_address_field];
+											}
+										}
 									}
 								break;
 								
 								case 'phone':
 									$wcfmmp_settings['phone'] = $field_value;
+									$wcfmmp_settings['customer_support']['phone'] = $field_value;
 								break;
 								
 								default:
@@ -863,19 +918,20 @@ class WCFMvm {
 				
 				$current_time = strtotime( 'midnight', current_time( 'timestamp' ) );
 				
-				// WCFM Unique IDs
-				update_user_meta( $member_id, '_wcfmmp_profile_id', $member_id );
-				update_user_meta( $member_id, '_wcfmmp_unique_id', current_time( 'timestamp' ) );
-				
 				if( !$wcfm_register_member ) {
+					// WCFM Unique IDs
+					update_user_meta( $member_id, '_wcfmmp_profile_id', $member_id );
+					update_user_meta( $member_id, '_wcfmmp_unique_id', current_time( 'timestamp' ) );
+				
 					update_user_meta( $member_id, 'wcfm_register_on', $current_time );
+					update_user_meta( $member_id, '_wcfmmp_avg_review_rating', 0 );
 					update_user_meta( $member_id, 'wcfm_vendor_store_hours_migrated', 'yes' );
 				}
 				
 				if( ( $wcfm_membership != -1 ) && ( $wcfm_membership != '-1' ) ) {
 					// Check and release from old membership
 					$vendor_old_membership = get_user_meta( $member_id, 'wcfm_membership', true );
-					if( $vendor_old_membership && wcfm_is_valid_membership( $vendor_old_membership ) ) {
+					if( $vendor_old_membership && wcfm_is_valid_membership( $vendor_old_membership ) && ( $vendor_old_membership != $wcfm_membership ) ) {
 						// Old Membership list update
 						$old_membership_users = (array) get_post_meta( $vendor_old_membership, 'membership_users', true );
 						if( !empty( $old_membership_users ) ) {
@@ -940,6 +996,8 @@ class WCFMvm {
 								$current_time = $next_schedule;
 							}
 						}
+						
+						$is_membership_renewal = true;
 					}
 					
 					if( ( $is_free == 'no' ) && ( $subscription_type != 'one_time' ) ) {
@@ -969,7 +1027,7 @@ class WCFMvm {
 					update_post_meta( $wcfm_membership, 'membership_users', $membership_users );
 						
 					// Group user update
-					if( WCFM_Dependencies::wcfmgs_plugin_active_check() ) {
+					if( WCFM_Dependencies::wcfmgs_plugin_active_check() && !$is_membership_renewal ) {
 						$associated_group = get_post_meta( $wcfm_membership, 'associated_group', true );
 						if( $associated_group ) {
 							$associated_group = absint( $associated_group );
@@ -980,57 +1038,62 @@ class WCFMvm {
 							// User Group update
 							$wcfm_vendor_groups = array( $associated_group );
 							update_user_meta( $member_id, '_wcfm_vendor_group', $wcfm_vendor_groups  );
+							update_user_meta( $member_id, '_wcfm_vendor_group_list', implode( ",", array_unique( $wcfm_vendor_groups ) ) );
 						}
 					}
 				
 					do_action( 'wcfm_membership_subscription_complete', $member_id );
 					
 					// Plan Details Table
-					$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
-					$membership_feature_lists = array();
-					if( isset( $wcfm_membership_options['membership_features'] ) ) $membership_feature_lists = $wcfm_membership_options['membership_features'];
-					$features = (array) get_post_meta( $wcfm_membership, 'features', true );
-					
-					$wcfm_plan_details = '';
-					if( !empty( $membership_feature_lists ) ) {
-						$wcfm_plan_details = '<h2>' . __( 'Plan Details', 'wc-multivendor-membership' ) . '</h2><table width="100%" style="width:100%;">';
-						foreach( $membership_feature_lists as $membership_feature_key => $membership_feature_list ) {
-							if( isset( $membership_feature_list['feature'] ) && !empty( $membership_feature_list['feature'] ) ) {
-								$feature_val = 'x';
-								if( !empty( $features ) && isset( $features[$membership_feature_list['feature']] ) ) $feature_val = $features[$membership_feature_list['feature']];
-								if( !$feature_val ) $feature_val = 'x';
-								$wcfm_plan_details .= '<tr><td colspan="4" style="background-color: #eeeeee;padding: 1em 1.41575em;line-height: 1.5;">'. wcfm_removeslashes( $membership_feature_list['feature'] ) . '</td>';
-								$wcfm_plan_details .= '<td colspan="5" style="background-color: #f8f8f8;padding: 1em;">' . $feature_val . '</td></tr>';
-							}
-						}
-						$wcfm_plan_details .= '</table><br />';
-				  }
-					
+					$wcfm_plan_details = wcfm_membership_features_table( $wcfm_membership );
 				
 					if( !defined( 'DOING_WCFM_EMAIL' ) ) 
 						define( 'DOING_WCFM_EMAIL', true );
 					
 					// Sending Mail to new subscriber
 					if( !$wcfm_register_member ) {
-						$subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_subject', '{site_name}: Successfully Subscribed' );
-						$subscription_welcome_email_content = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_content', '' );
+						$subscription_welcome_email_subject = wcfm_get_post_meta( $wcfm_membership, 'subscription_welcome_email_subject', true );
+						$subscription_welcome_email_content = wcfm_get_post_meta( $wcfm_membership, 'subscription_welcome_email_content', true );
+						
+						if( !$subscription_welcome_email_subject ) {
+							$subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_subject', '[{site_name}] Successfully Subscribed' );
+						}
+						if( !$subscription_welcome_email_content ) {
+							$subscription_welcome_email_content = wcfm_get_option( 'wcfm_membership_subscription_welcome_email_content', '' );
+							if( !$subscription_welcome_email_content ) {
+								$subscription_welcome_email_content = "Hi {first_name},
+																			<br /><br />
+																			You have successfully registered as a vendor for <b>{site_name}</b>. 
+																			<br /><br />
+																			Your account has been setup and it is ready to be configured.
+																			<br /><br />
+																			{plan_details}
+																			<br /><br />
+																			Kindly follow the link below to visit your dashboard and start selling.
+																			<br /><br />
+																			Dashboard: {dashboard_url} 
+																			<br /><br />
+																			Thank You";
+							}
+						}
+					} elseif( $is_membership_renewal ) {
+						$subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_renewal_notication_subject', '[{site_name}] Membership Subscription Successfully Renewed' );
+						$subscription_welcome_email_content = wcfm_get_option( 'wcfm_membership_renewal_notication_content', '' );
 						if( !$subscription_welcome_email_content ) {
 							$subscription_welcome_email_content = "Hi {first_name},
-																		<br /><br />
-																		You have successfully registered as a vendor for <b>{site_name}</b>. 
-																		<br /><br />
-																		Your account has been setup and it is ready to be configured.
-																		<br /><br />
-																		{plan_details}
-																		<br /><br />
-																		Kindly follow the link below to visit your dashboard and start selling.
-																		<br /><br />
-																		Dashboard: {dashboard_url} 
-																		<br /><br />
-																		Thank You";
+																						<br /><br />
+																						You have successfully renewed membership plan <b>{membership_plan}</b>. 
+																						<br /><br />
+																						{plan_details}
+																						<br /><br />
+																						Kindly follow the below the link to visit your dashboard.
+																						<br /><br />
+																						Dashboard: {dashboard_url} 
+																						<br /><br />
+																						Thank You";
 						}
 					} else {
-						$subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_switch_notication_subject', '{site_name}: Membership Subscription Successfully Changed' );
+						$subscription_welcome_email_subject = wcfm_get_option( 'wcfm_membership_switch_notication_subject', '[{site_name}] Membership Subscription Successfully Changed' );
 						$subscription_welcome_email_content = wcfm_get_option( 'wcfm_membership_switch_notication_content', '' );
 						if( !$subscription_welcome_email_content ) {
 							$subscription_welcome_email_content = "Hi {first_name},
@@ -1055,19 +1118,26 @@ class WCFMvm {
 					$message = str_replace( '{first_name}', $member_user->first_name, $message );
 					$message = str_replace( '{site_name}', get_bloginfo( 'name' ), $message );
 					$message = str_replace( '{plan_details}', $wcfm_plan_details, $message );
+					$message = str_replace( '{store}', wcfm_get_vendor_store( $member_id ), $message );
+					$message = str_replace( '{store_name}', wcfm_get_vendor_store_name( $member_id ), $message );
+					$message = str_replace( '{store_url}', wcfmmp_get_store_url( $member_id ), $message );
 					$message = str_replace( '{membership_plan}', get_the_title( $wcfm_membership ), $message );
 					if( !$wcfm_register_member ) {
-						$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Welcome to the store!', 'wc-multivendor-membership' ) );
+						$message = apply_filters( 'wcfm_email_content_wrapper', $message, apply_filters( 'wcfm_welcome_email_header', __( 'Welcome to the store!', 'wc-multivendor-membership' ) ) );
+					} elseif( $is_membership_renewal ) {
+						$message = apply_filters( 'wcfm_email_content_wrapper', $message, apply_filters( 'wcfm_membership_renewal_header', __( 'Membership Subscription Renewed', 'wc-multivendor-membership' ) ) );
 					} else {
-						$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Membership Subscription Change', 'wc-multivendor-membership' ) );
+						$message = apply_filters( 'wcfm_email_content_wrapper', $message, apply_filters( 'wcfm_membership_change_header', __( 'Membership Subscription Change', 'wc-multivendor-membership' ) ) );
 					}
 					$attachments = apply_filters( 'wcfm_membership_subscription_attachment', '', $wcfm_membership, $member_id, $wcfm_register_member );
 					
-					wp_mail( $member_user->user_email, $subject, $message, '', $attachments );
+					if( apply_filters( 'wcfm_is_allow_vendor_welcome_email', true, $member_id, $wcfm_register_member, $is_membership_renewal ) ) {
+						wp_mail( $member_user->user_email, $subject, $message, '', $attachments );
+					}
 					
 					// Sending Mail to Admin
 					if( !$wcfm_register_member ) {
-						$subscription_admin_notication_subject = wcfm_get_option( 'wcfm_membership_subscription_admin_notication_subject', '{site_name}: A new vendor registered' );
+						$subscription_admin_notication_subject = wcfm_get_option( 'wcfm_membership_subscription_admin_notication_subject', '[{site_name}] A new vendor registered' );
 						$subscription_admin_notication_content = wcfm_get_option( 'wcfm_membership_subscription_admin_notication_content', '' );
 						if( !$subscription_admin_notication_content ) {
 							$subscription_admin_notication_content = "Dear Admin,
@@ -1082,8 +1152,24 @@ class WCFMvm {
 																												<br /><br />
 																												Thank You";
 						}
+					} elseif( $is_membership_renewal ) {
+						$subscription_admin_notication_subject = wcfm_get_option( 'wcfm_membership_renewal_admin_notication_subject', '[{site_name}] Vendor Membership Subscription Renewed' );
+						$subscription_admin_notication_content = wcfm_get_option( 'wcfm_membership_renewal_admin_notication_content', '' );
+						if( !$subscription_admin_notication_content ) {
+							$subscription_admin_notication_content = "Dear Admin,
+																												<br /><br />
+																												<b>{vendor_name}</b> (Store: <b>{vendor_store}</b>) has renewed membership plan <b>{membership_plan}</b>.
+																												<br /><br />
+																												{plan_details} 
+																												<br /><br />
+																												Kindly follow the below the link to more details.
+																												<br /><br />
+																												Dashboard: {vendor_url} 
+																												<br /><br />
+																												Thank You";
+									}
 					} else {
-						$subscription_admin_notication_subject = wcfm_get_option( 'wcfm_membership_switch_admin_notication_subject', '{site_name}: Vendor Membership Subscription Change' );
+						$subscription_admin_notication_subject = wcfm_get_option( 'wcfm_membership_switch_admin_notication_subject', '[{site_name}] Vendor Membership Subscription Change' );
 						$subscription_admin_notication_content = wcfm_get_option( 'wcfm_membership_switch_admin_notication_content', '' );
 						if( !$subscription_admin_notication_content ) {
 							$subscription_admin_notication_content = "Dear Admin,
@@ -1106,10 +1192,15 @@ class WCFMvm {
 					$message = str_replace( '{vendor_name}', $member_user->first_name, $message );
 					$message = str_replace( '{plan_details}', $wcfm_plan_details, $message );
 					$message = str_replace( '{vendor_store}', $shop_name, $message );
+					$message = str_replace( '{store}', wcfm_get_vendor_store( $member_id ), $message );
+					$message = str_replace( '{store_name}', wcfm_get_vendor_store_name( $member_id ), $message );
+					$message = str_replace( '{store_url}', wcfmmp_get_store_url( $member_id ), $message );
 					$message = str_replace( '{membership_plan}', get_the_title( $wcfm_membership ), $message );
 					$message = str_replace( '{vendor_url}', '<a href="' . get_wcfm_vendors_manage_url($member_id) . '">' . __( 'Visit now ...', 'wc-multivendor-membership' ) . '</a>', $message );
 					if( !$wcfm_register_member ) {
 						$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'New Vendor', 'wc-multivendor-membership' ) );
+					} elseif( $is_membership_renewal ) {
+						$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Membership Subscription Renewed', 'wc-multivendor-membership' ) );
 					} else {
 						$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Membership Subscription Change', 'wc-multivendor-membership' ) );
 					}
@@ -1119,6 +1210,8 @@ class WCFMvm {
 					// Admin Desktop Notification
 					if( !$wcfm_register_member ) {
 						$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) subscribed for <b>%s</b> membership plan.', 'wc-multivendor-membership' ), '<a href="' . get_wcfm_vendors_manage_url($member_id) . '" target="_blank">' . $member_user->first_name . '</a>', $shop_name, get_the_title( $wcfm_membership ) );
+					} elseif( $is_membership_renewal ) {
+						$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) has renewed membership plan to <b>%s</b>.', 'wc-multivendor-membership' ), '<a href="' . get_wcfm_vendors_manage_url($member_id) . '" target="_blank">' . $member_user->first_name . '</a>', $shop_name, get_the_title( $wcfm_membership ) );
 					} else {
 						$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) has changed membership plan to <b>%s</b>.', 'wc-multivendor-membership' ), '<a href="' . get_wcfm_vendors_manage_url($member_id) . '" target="_blank">' . $member_user->first_name . '</a>', $shop_name, get_the_title( $wcfm_membership ) );
 					}
@@ -1127,6 +1220,8 @@ class WCFMvm {
 					// Vendor Desktop Notification
 					if( !$wcfm_register_member ) {
 						$wcfm_messages = sprintf( __( 'You have subscribed for <b>%s</b> membership plan.', 'wc-multivendor-membership' ), get_the_title( $wcfm_membership ) );
+					} elseif( $is_membership_renewal ) {
+						$wcfm_messages = sprintf( __( 'You have renewed membership plan to <b>%s</b>.', 'wc-multivendor-membership' ), get_the_title( $wcfm_membership ) );
 					} else {
 						$wcfm_messages = sprintf( __( 'You have changed membership plan to <b>%s</b>.', 'wc-multivendor-membership' ), get_the_title( $wcfm_membership ) );
 					}
@@ -1138,7 +1233,7 @@ class WCFMvm {
 						define( 'DOING_WCFM_EMAIL', true );
 					
 					// Vendor Notification
-					$registration_email_subject = wcfm_get_option( 'wcfm_non_membership_welcome_email_subject', '{site_name}: Successfully Registered' );
+					$registration_email_subject = wcfm_get_option( 'wcfm_non_membership_welcome_email_subject', '[{site_name}] Successfully Registered' );
 					$registration_email_content = wcfm_get_option( 'wcfm_non_membership_welcome_email_content', '' );
 					if( !$registration_email_content ) {
 						$registration_email_content = "Hi {first_name},
@@ -1159,12 +1254,17 @@ class WCFMvm {
 					$message = str_replace( '{dashboard_url}', '<a href="' . get_wcfm_url() . '">' . __( 'Visit now ...', 'wc-multivendor-membership' ) . '</a>', $registration_email_content );
 					$message = str_replace( '{first_name}', $member_user->first_name, $message );
 					$message = str_replace( '{site_name}', get_bloginfo( 'name' ), $message );
+					$message = str_replace( '{store}', wcfm_get_vendor_store( $member_id ), $message );
+					$message = str_replace( '{store_name}', wcfm_get_vendor_store_name( $member_id ), $message );
+					$message = str_replace( '{store_url}', wcfmmp_get_store_url( $member_id ), $message );
 					$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Welcome to the store!', 'wc-multivendor-membership' ) );
 					
-					wp_mail( $member_user->user_email, $subject, $message );
+					if( apply_filters( 'wcfm_is_allow_vendor_welcome_email', true, $member_id, false, false ) ) {
+						wp_mail( $member_user->user_email, $subject, $message );
+					}
 					
 					// Admin Notification
-					$registration_admin_notication_subject = wcfm_get_option( 'wcfm_registration_admin_notication_subject', __( '{site_name}: A new vendor registered', 'wc-multivendor-membership' ) );
+					$registration_admin_notication_subject = wcfm_get_option( 'wcfm_registration_admin_notication_subject', __( '[{site_name}] A new vendor registered', 'wc-multivendor-membership' ) );
 					$registration_admin_notication_content = wcfm_get_option( 'wcfm_registration_admin_notication_content', '' );
 					if( !$registration_admin_notication_content ) {
 						$registration_admin_notication_content = "Dear Admin,
@@ -1183,6 +1283,9 @@ class WCFMvm {
 					$message = str_replace( '{dashboard_url}', get_wcfm_url(), $registration_admin_notication_content );
 					$message = str_replace( '{vendor_name}', $member_user->first_name, $message );
 					$message = str_replace( '{vendor_store}', $shop_name, $message );
+					$message = str_replace( '{store}', wcfm_get_vendor_store( $member_id ), $message );
+					$message = str_replace( '{store_name}', wcfm_get_vendor_store_name( $member_id ), $message );
+					$message = str_replace( '{store_url}', wcfmmp_get_store_url( $member_id ), $message );
 					$message = str_replace( '{vendor_url}', '<a href="' . get_wcfm_vendors_manage_url($member_id) . '">' . __( 'Visit now ...', 'wc-multivendor-membership' ) . '</a>', $message );
 					$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'New Vendor', 'wc-multivendor-membership' ) );
 					
@@ -1199,6 +1302,7 @@ class WCFMvm {
 							
 				delete_user_meta( $member_id, 'temp_wcfm_membership' );
 				delete_user_meta( $member_id, 'wcfm_membership_application_status' );
+				delete_user_meta( $member_id, 'wcfm_is_send_approval_reminder_admin' );
 				update_user_meta( $member_id, 'wcfm_register_member', 'yes' );
 				update_user_meta( $member_id, 'wcemailverified', 'true' );	
 			}
@@ -1300,7 +1404,16 @@ class WCFMvm {
 			$order         = new WC_Order( $order_id );
 			$line_items    = $order->get_items( apply_filters( 'woocommerce_admin_order_item_types', 'line_item' ) );
 			foreach ( $line_items as $item_id => $item ) {
-				if( in_array( $item->get_product_id(), $wcfm_subcription_products ) ) {
+				$product_id = $item->get_product_id();
+				
+				// WPML Support
+				if ( $product_id && defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+				  global $sitepress;
+				  $default_language = $sitepress->get_default_language();
+				  $product_id = icl_object_id( $product_id, 'product', false, $default_language );
+				}
+				
+				if( in_array( $product_id , $wcfm_subcription_products ) ) {
 					$member_id       = absint( $order->get_user_id() );
 					$member_user     = new WP_User( absint( $member_id ) );
 					$shop_name       = get_user_meta( $member_id, 'store_name', true );
@@ -1340,7 +1453,7 @@ class WCFMvm {
 						
 						$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
 						
-						if( $is_renewal || ($required_approval == 'no') ) {
+						if( $is_renewal || ($required_approval != 'yes') ) {
 							update_user_meta( $member_id, 'temp_wcfm_membership', $wcfm_membership );
 							$has_error = $WCFMvm->register_vendor( $member_id );
 							if( !$has_error ) $WCFMvm->store_subscription_data( $member_id, $paymode, '', $paymode.'_subscription', 'Completed', '' );
@@ -1402,7 +1515,7 @@ class WCFMvm {
 							if( apply_filters( 'wcfm_membership_active_on_subscription_active', false ) ) {
 								$required_approval = get_post_meta( $wcfm_membership, 'required_approval', true ) ? get_post_meta( $wcfm_membership, 'required_approval', true ) : 'no';
 								
-								if( $is_renewal || ($required_approval == 'no') ) {
+								if( $is_renewal || ($required_approval != 'yes') ) {
 									update_user_meta( $member_id, 'temp_wcfm_membership', $wcfm_membership );
 									$has_error = $WCFMvm->register_vendor( $member_id );
 									if( !$has_error ) $WCFMvm->store_subscription_data( $member_id, $paymode, '', $paymode.'_subscription', 'Completed', '' );
@@ -1468,59 +1581,75 @@ class WCFMvm {
 		
 		if( !$wcfm_membership ) return;
 		
-		if( !defined( 'DOING_WCFM_EMAIL' ) ) 
-			define( 'DOING_WCFM_EMAIL', true );
-		
-		// Vendor Approval Admin Email Notification
-		$onapproval_admin_notication_subject = get_option( 'wcfm_membership_onapproval_admin_notication_subject', '{site_name}: A vendor application waiting for approval' );
-		$onapproval_admin_notication_content = get_option( 'wcfm_membership_onapproval_admin_notication_content', '' );
-		if( !$onapproval_admin_notication_content ) {
-			$onapproval_admin_notication_content = "Dear Admin,
-																							<br /><br />
-																							A new vendor <b>{vendor_name}</b> (Store: <b>{vendor_store}</b>) has just applied to our membership plan <b>{membership_plan}</b>. 
-																							<br /><br />
-																							Kindly follow the below the link to approve/reject the application.
-																							<br /><br />
-																							Application: {notification_url} 
-																							<br /><br />
-																							Thank You";
+		if( apply_filters( 'wcfm_is_allow_notification_email', true, 'vendor_approval' ) ) {
+			if( !defined( 'DOING_WCFM_EMAIL' ) ) 
+				define( 'DOING_WCFM_EMAIL', true );
+			
+			// Vendor Approval Admin Email Notification
+			$onapproval_admin_notication_subject = get_option( 'wcfm_membership_onapproval_admin_notication_subject', '[{site_name}] A vendor application waiting for approval' );
+			$onapproval_admin_notication_content = get_option( 'wcfm_membership_onapproval_admin_notication_content', '' );
+			if( !$onapproval_admin_notication_content ) {
+				if( apply_filters( 'wcfm_is_pref_membership', true ) ) {
+					$onapproval_admin_notication_content = "Dear Admin,
+																									<br /><br />
+																									A new vendor <b>{vendor_name}</b> (Store: <b>{vendor_store}</b>) has just applied to our membership plan <b>{membership_plan}</b>. 
+																									<br /><br />
+																									Kindly follow the below the link to approve/reject the application.
+																									<br /><br />
+																									Application: {notification_url} 
+																									<br /><br />
+																									Thank You";
+				} else {
+					$onapproval_admin_notication_content = "Dear Admin,
+																									<br /><br />
+																									A new vendor <b>{vendor_name}</b> (Store: <b>{vendor_store}</b>) has just applied.
+																									<br /><br />
+																									Kindly follow the below the link to approve/reject the application.
+																									<br /><br />
+																									Application: {notification_url} 
+																									<br /><br />
+																									Thank You";
+				}
+			}
+															 
+			$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $onapproval_admin_notication_subject );
+			$subject = apply_filters( 'wcfm_email_subject_wrapper', $subject );
+			$message = str_replace( '{dashboard_url}', get_wcfm_url(), $onapproval_admin_notication_content );
+			$message = str_replace( '{vendor_name}', $member_user->first_name, $message );
+			$message = str_replace( '{vendor_store}', $shop_name, $message );
+			if( ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
+				$message = str_replace( '{membership_plan}', __( 'No Membership', 'wc-multivendor-membership' ), $message );
+			} else {
+				$message = str_replace( '{membership_plan}', get_the_title( $wcfm_membership ), $message );
+			}
+			$message = str_replace( '{notification_url}', '<a href="' . get_wcfm_messages_url() . '">' . __( 'Check Here ...', 'wc-multivendor-membership' ) . '</a>', $message );
+			$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Vendor Approval', 'wc-multivendor-membership' ) );
+			
+			wp_mail( apply_filters( 'wcfm_admin_email_notification_receiver', get_bloginfo( 'admin_email' ), 'vendor_approval' ), $subject, $message ); 
 		}
-														 
-		$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $onapproval_admin_notication_subject );
-		$subject = apply_filters( 'wcfm_email_subject_wrapper', $subject );
-		$message = str_replace( '{dashboard_url}', get_wcfm_url(), $onapproval_admin_notication_content );
-		$message = str_replace( '{vendor_name}', $member_user->first_name, $message );
-		$message = str_replace( '{vendor_store}', $shop_name, $message );
-		if( ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
-			$message = str_replace( '{membership_plan}', __( 'No Membership', 'wc-multivendor-membership' ), $message );
-		} else {
-			$message = str_replace( '{membership_plan}', get_the_title( $wcfm_membership ), $message );
-		}
-		$message = str_replace( '{notification_url}', '<a href="' . get_wcfm_messages_url() . '">' . __( 'Check Here ...', 'wc-multivendor-membership' ) . '</a>', $message );
-		$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Vendor Approval', 'wc-multivendor-membership' ) );
-		
-		wp_mail( apply_filters( 'wcfm_admin_email_notification_receiver', get_bloginfo( 'admin_email' ), 'vendor_approval' ), $subject, $message ); 
 		
 		// Vendor Approval Admin Desktop Notification
-		$author_id = $member_id;
-		$author_is_admin = 0;
-		$author_is_vendor = 1;
-		$message_to = 0;
-		$is_notice = 0;
-		$is_direct_message = 1;
-		$wcfm_messages_type = 'vendor_approval';
-		if( ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
-			$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) vendor application waiting for approval.', 'wc-multivendor-membership' ), $member_user->first_name, $shop_name );
-		} else {
-			$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) subscription for <b>%s</b> plan waiting for approval.', 'wc-multivendor-membership' ), $member_user->first_name, $shop_name, get_the_title( $wcfm_membership ) );
+		if( apply_filters( 'wcfm_is_allow_notification_message', true, 'vendor_approval' ) ) {
+			$author_id = $member_id;
+			$author_is_admin = 0;
+			$author_is_vendor = 1;
+			$message_to = 0;
+			$is_notice = 0;
+			$is_direct_message = 1;
+			$wcfm_messages_type = 'vendor_approval';
+			if( ( $wcfm_membership == -1 ) || ( $wcfm_membership == '-1' ) ) {
+				$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) vendor application waiting for approval.', 'wc-multivendor-membership' ), $member_user->first_name, $shop_name );
+			} else {
+				$wcfm_messages = sprintf( __( '<b>%s</b> (Store: <b>%s</b>) subscription for <b>%s</b> plan waiting for approval.', 'wc-multivendor-membership' ), $member_user->first_name, $shop_name, get_the_title( $wcfm_membership ) );
+			}
+			$wcfm_messages = esc_sql( $wcfm_messages );
+			$wcfm_create_message     = "INSERT into {$wpdb->prefix}wcfm_messages 
+															(`message`, `author_id`, `author_is_admin`, `author_is_vendor`, `is_notice`, `is_direct_message`, `message_to`, `message_type`)
+															VALUES
+															('{$wcfm_messages}', {$author_id}, {$author_is_admin}, {$author_is_vendor}, {$is_notice}, {$is_direct_message}, {$message_to}, '{$wcfm_messages_type}')";
+												
+			$wpdb->query($wcfm_create_message);
 		}
-		$wcfm_messages = esc_sql( $wcfm_messages );
-		$wcfm_create_message     = "INSERT into {$wpdb->prefix}wcfm_messages 
-														(`message`, `author_id`, `author_is_admin`, `author_is_vendor`, `is_notice`, `is_direct_message`, `message_to`, `message_type`)
-														VALUES
-														('{$wcfm_messages}', {$author_id}, {$author_is_admin}, {$author_is_vendor}, {$is_notice}, {$is_direct_message}, {$message_to}, '{$wcfm_messages_type}')";
-											
-		$wpdb->query($wcfm_create_message);
 		
 		update_user_meta( $member_id, 'wcfm_subscription_status', 'pending' );
 		update_user_meta( $member_id, 'wcfm_membership_application_status', 'pending' );
@@ -1604,7 +1733,12 @@ class WCFMvm {
 					$WCFMvm->register_vendor( $member_id );
 					$WCFMvm->store_subscription_data( $member_id, 'free', '', 'free_subscription', 'Completed', '' );
 				} else {
-					$member_user->set_role('disable_vendor');
+					if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $member_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+						$member_user->remove_role('wcfm_vendor');
+						$member_user->add_role('disable_vendor');
+					} else {
+						$member_user->set_role('disable_vendor');
+					}
 					
 					update_user_meta( $member_id, '_disable_vendor', true );
 					update_user_meta( $member_id, 'expired_wcfm_membership', $wcfm_membership_id );
@@ -1656,12 +1790,14 @@ class WCFMvm {
 				$membership_type_settings = array();
 				if( isset( $wcfm_membership_options['membership_type_settings'] ) ) $membership_type_settings = $wcfm_membership_options['membership_type_settings'];
 				$basic_membership = isset( $membership_type_settings['free_membership'] ) ? $membership_type_settings['free_membership'] : '';
+				$basic_membership = apply_filters( 'wcfm_membership_expire_basic_membership', $basic_membership, $member_id );
+				
 				
 				// Membership Expired Vendor Email Notification
 				if( !defined( 'DOING_WCFM_EMAIL' ) ) 
 					define( 'DOING_WCFM_EMAIL', true );
 				
-				$expire_notication_subject = wcfm_get_option( 'wcfm_membership_expire_notication_subject', '{site_name}: Membership Subscription Expired' );
+				$expire_notication_subject = wcfm_get_option( 'wcfm_membership_expire_notication_subject', '[{site_name}] Membership Subscription Expired' );
 				$expire_notication_content = wcfm_get_option( 'wcfm_membership_expire_notication_content', '' );
 				if( !$expire_notication_content ) {
 					$expire_notication_content = "Hi {vendor_name},
@@ -1710,7 +1846,12 @@ class WCFMvm {
 					$WCFMvm->register_vendor( $member_id );
 					$WCFMvm->store_subscription_data( $member_id, 'free', '', 'free_subscription', 'Completed', '' );
 				} else {
-					$member_user->set_role('disable_vendor');
+					if( ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate( $member_id ) ) || apply_filters( 'wcfm_is_allow_merge_vendor_role', false ) ) {
+						$member_user->remove_role('wcfm_vendor');
+						$member_user->add_role('disable_vendor');
+					} else {
+						$member_user->set_role('disable_vendor');
+					}
 					
 					update_user_meta( $member_id, '_disable_vendor', true );
 					update_user_meta( $member_id, 'expired_wcfm_membership', $wcfm_membership_id );
@@ -1898,7 +2039,7 @@ class WCFMvm {
 							if( isset( $wcfm_membership_options['membership_next_payment'] ) ) $membership_next_payment = $wcfm_membership_options['membership_next_payment'];
 							$first_remind = isset( $membership_next_payment['first_next_payment'] ) ? $membership_next_payment['first_next_payment'] : '5';
 							$second_remind = isset( $membership_next_payment['second_next_payment'] ) ? $membership_next_payment['second_next_payment'] : '2';
-							$reminder_notication_subject = wcfm_get_option( 'wcfm_membership_next_payment_notication_subject', '{site_name}: Membership Subscription Recurring Next Payment' );
+							$reminder_notication_subject = wcfm_get_option( 'wcfm_membership_next_payment_notication_subject', '[{site_name}] Membership Subscription Recurring Next Payment' );
 							$reminder_notication_content = wcfm_get_option( 'wcfm_membership_next_payment_notication_content', '' );
 							if( !$reminder_notication_content ) {
 								$reminder_notication_content = "Hi {vendor_name},
@@ -1914,7 +2055,7 @@ class WCFMvm {
 							if( isset( $wcfm_membership_options['membership_reminder'] ) ) $membership_reminder = $wcfm_membership_options['membership_reminder'];
 							$first_remind = isset( $membership_reminder['first_remind'] ) ? $membership_reminder['first_remind'] : '5';
 							$second_remind = isset( $membership_reminder['second_remind'] ) ? $membership_reminder['second_remind'] : '2';
-							$reminder_notication_subject = wcfm_get_option( 'wcfm_membership_reminder_notication_subject', '{site_name}: Membership Subscription Renewal Reminder' );
+							$reminder_notication_subject = wcfm_get_option( 'wcfm_membership_reminder_notication_subject', '[{site_name}] Membership Subscription Renewal Reminder' );
 							$reminder_notication_content = wcfm_get_option( 'wcfm_membership_reminder_notication_content', '' );
 							if( !$reminder_notication_content ) {
 								$reminder_notication_content = "Dear {vendor_name},
@@ -1975,7 +2116,9 @@ class WCFMvm {
 								$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'Subscription Next Payment', 'wc-multivendor-membership' ) );
 							}
 				
-							wp_mail( $member->user_email, $subject, $message ); 
+							if( apply_filters( 'wcfm_is_allow_vendor_membership_renewal_notification', true ) ) {
+								wp_mail( $member->user_email, $subject, $message ); 
+							}
 							
 							// Admin Desktop Notification
 							if( apply_filters( 'wcfm_is_allow_admin_membership_renewal_notification', true ) ) {
@@ -2059,6 +2202,7 @@ class WCFMvm {
 			
 			delete_user_meta( $member_id, 'wcfm_membership' );
 			delete_user_meta( $member_id, '_wcfm_vendor_group' );
+			delete_user_meta( $member_id, '_wcfm_vendor_group_list' );
 			delete_user_meta( $member_id, 'wcfm_membership_next_schedule' );
 			delete_user_meta( $member_id, 'wcfm_membership_billing_period' );
 			delete_user_meta( $member_id, 'wcfm_membership_billing_cycle' );

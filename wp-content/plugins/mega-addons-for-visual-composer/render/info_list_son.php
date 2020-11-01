@@ -8,7 +8,6 @@ class WPBakeryShortCode_info_list_son extends WPBakeryShortCode {
 	protected function content( $atts, $content = null ) {
 
 		extract( shortcode_atts( array(
-			'theme'			=>		'left',
 			'style'			=>		'image',
 			'image_id'		=>		'',
 			'alt'			=>		'',
@@ -25,24 +24,24 @@ class WPBakeryShortCode_info_list_son extends WPBakeryShortCode {
 			'borderclr'		=>		'',
 			'title'			=>		'',
 			'titlesize'		=>		'18',
+			'lineheight'	=>		'',
 			'titleclr'		=>		'#000',
 			'title_weight'	=>		'default',
 			'desc'			=>		'',
 			'descsize'		=>		'15',
-			'connector_h'	=>		'30',
 			'descclr'		=>		'#000',
-			'listwidth'		=>		'1',
-			'liststyle'		=>		'solid',
-			'listclr'		=>		'#000',
 		), $atts ) );
 		if ($image_id != '') {
 			$image_url = wp_get_attachment_url( $image_id );		
 		}
 		$content = wpb_js_remove_wpautop($content, true);
-		ob_start(); ?>
+		ob_start();
+
+		global $maw_infolist_theme; global $maw_infolist_connector_h; global $maw_infolist_listwidth; global $maw_infolist_liststyle; global $maw_infolist_listclr;
+		?>
 		<div class="vc_info_list_outer">
-			<?php if ($theme == 'left') { ?>			    	
-		    	<li class="vc_info_list" style="padding-bottom: <?php echo $connector_h; ?>px; border-left: <?php echo $listwidth; ?>px <?php echo $liststyle; ?> <?php echo $listclr; ?>; display: table;margin-left: <?php echo $width/2+$borderwidth; ?>px; float: none; margin-bottom: 2px;">
+			<?php if ($maw_infolist_theme == 'left') { ?>			    	
+		    	<li class="vc_info_list" style="padding-bottom: <?php echo $maw_infolist_connector_h; ?>px; border-left: <?php echo $maw_infolist_listwidth; ?>px <?php echo $maw_infolist_liststyle; ?> <?php echo $maw_infolist_listclr; ?>; display: table;margin-left: <?php echo $width/2+$borderwidth; ?>px; float: none; margin-bottom: 2px;">
 			      	<div class="media">
 					  <div class="media-left info-list-img" style="margin-left: -<?php echo $width/2+$borderwidth; ?>px; padding-right: 20px; float: left;">
 					    <?php if ($style == 'image') { ?>
@@ -61,7 +60,7 @@ class WPBakeryShortCode_info_list_son extends WPBakeryShortCode {
 						<?php } ?>
 					  </div>
 				  	  <div class="media-body">
-				    	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-style: <?php echo $title_weight; ?>;">
+				    	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-style: <?php echo $title_weight; ?>; line-height: <?php echo $lineheight; ?>;">
 				    		<?php echo $title; ?>
 				    	</h2>
 				    		<?php echo $content; ?>
@@ -70,11 +69,11 @@ class WPBakeryShortCode_info_list_son extends WPBakeryShortCode {
 		    	</li>
 			<?php } ?>
 
-			<?php if ($theme == 'right') { ?>
-			    <li class="vc_info_list" style="padding-bottom: <?php echo $connector_h; ?>px; border-right: <?php echo $listwidth; ?>px <?php echo $liststyle; ?> <?php echo $listclr; ?>; display: table;margin-right: <?php echo $width/2+$borderwidth; ?>px; float: none; margin-bottom: 2px;">
+			<?php if ($maw_infolist_theme == 'right') { ?>
+			    <li class="vc_info_list" style="padding-bottom: <?php echo $maw_infolist_connector_h; ?>px; border-right: <?php echo $maw_infolist_listwidth; ?>px <?php echo $maw_infolist_liststyle; ?> <?php echo $maw_infolist_listclr; ?>; display: table;margin-right: <?php echo $width/2+$borderwidth; ?>px; float: none; margin-bottom: 2px;">
 					<div class="media" style="margin-right: -<?php echo $width/2+$borderwidth; ?>px;">
 					   <div class="media-body text-right">
-					     <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-style: <?php echo $title_weight; ?>;">
+					     <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-style: <?php echo $title_weight; ?>; line-height: <?php echo $lineheight; ?>;">
 				    		<?php echo $title; ?>
 					     </h2>
 					     	<?php echo $content; ?>
@@ -114,17 +113,6 @@ vc_map( array(
 	"description" 	=> __('Info list for information', ''),
 	"icon" => plugin_dir_url( __FILE__ ).'../icons/infolist.png',
 	'params' => array(
-		array(
-			"type" 			=> 	"dropdown",
-			"heading" 		=> 	__( 'Style', 'infolist' ),
-			"param_name" 	=> 	"theme",
-			"description" 	=> 	__( 'choose style <a href="http://addons.topdigitaltrends.net/info-list/">See demo</a>', 'infolist' ),
-			"group" 		=> 'Icon/Image',
-			"value"			=> array(
-				"Left Align"			=>	"left",
-				"Right Align"			=>	"right",
-			)
-		),
 		array(
 			"type" 			=> 	"dropdown",
 			"heading" 		=> 	__( 'Image/Icon', 'infolist' ),
@@ -218,6 +206,15 @@ vc_map( array(
 			"group" 		=> 'Icon/Image',
 		),
 
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_url",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #0073aa;font-weight:600;"><a href="https://1.envato.market/02aNL" target="_blank" style="text-decoration: none;">Get the Pro version for more stunning elements and customization options.</a></span>', 'ihover' ),
+			"group" 		=> 'Icon/Image',
+		),
+
+
 		// Border
 		
 		array(
@@ -266,14 +263,6 @@ vc_map( array(
 			"group" 		=> 'Icon/Image',
 		),
 
-        array(
-			"type" 			=> "vc_links",
-			"param_name" 	=> "caption_url",
-			"class"			=>	"ult_param_heading",
-			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #0073aa;font-weight:600;"><a href="https://1.envato.market/02aNL" target="_blank" style="text-decoration: none;">Get the Pro version for more stunning elements and customization options.</a></span>', 'ihover' ),
-			"group" 		=> 'Icon/Image',
-		),
-
 		// Text File
 
 		array(
@@ -291,6 +280,12 @@ vc_map( array(
 			"value"			=>	"18",
 			"suffix" 		=> 'px',
 			"group" 		=> 	'Content',
+		),
+		array(
+			"type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Line Height', 'infolist' ),
+			"param_name" 	=> 	"lineheight",
+			"group" 		=> 'Content',
 		),
 		array(
 			"type" 			=> 	"colorpicker",
@@ -317,47 +312,6 @@ vc_map( array(
 			"heading" 		=> 	__( 'Description', 'infobox' ),
 			"param_name" 	=> 	"content",
 			"group" 		=> 	'Content',
-		),
-
-		// Settings
-		
-		array(
-            "type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Connector Line Height', 'infolist' ),
-			"param_name" 	=> 	"connector_h",
-			"description" 	=> 	__( 'line between to info list. set in pixel default 30', 'infolist' ),
-			"value"			=>	"30",
-			"suffix" 		=> 'px',
-			"group" 		=> 	'Settings',
-        ),
-		array(
-            "type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Connector Width', 'infolist' ),
-			"param_name" 	=> 	"listwidth",
-			"description" 	=> 	__( 'set connector line width for info list in pixel eg, 1', 'infolist' ),
-			"value"			=>	"1",
-			"suffix" 		=> 'px',
-			"group" 		=> 	'Settings',
-        ),
-		array(
-			"type" 			=> 	"dropdown",
-			"heading" 		=> 	__( 'Line Style', 'infolist' ),
-			"param_name" 	=> 	"liststyle",
-			"description" 	=> 	__( 'set border style for info list', 'infolist' ),
-			"group" 		=> 'Settings',
-			"value"			=> array(
-				"Solid"			=>	"solid",
-				"Dotted"		=>	"dotted",
-				"Dashed"		=>	"dashed",
-				"Inset"			=>	"inset",
-			)
-		),
-		array(
-			"type" 			=> 	"colorpicker",
-			"heading" 		=> 	__( 'Line color', 'infolist' ),
-			"param_name" 	=> 	"listclr",
-			"description" 	=> __('set connector line color for info list', 'infolist'),
-			"group" 		=> 'Settings',
 		),
 	),
 ) );

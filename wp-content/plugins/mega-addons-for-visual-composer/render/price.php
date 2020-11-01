@@ -31,6 +31,7 @@ class WPBakeryShortCode_mvc_price_listing extends WPBakeryShortCode {
 			'planesize'				=>	'',
 			'btnsize'				=>	'',
 		), $atts ) );	
+		$btn_url = vc_build_link($btn_url);
 		wp_enqueue_style( 'price-listing-css', plugins_url( '../css/price_listing.css' , __FILE__ ));
 		$content = wpb_js_remove_wpautop($content, true);
 		ob_start(); ?>
@@ -222,7 +223,7 @@ vc_map( array(
         ),
 
         array(
-            "type" 			=> 	"textfield",
+            "type" 			=> 	"vc_link",
 			"heading" 		=> 	__( 'Button Url', 'pt-vc' ),
 			"param_name" 	=> 	"btn_url",
 			"description" 	=> 	__( 'Write Button URL for link', 'pt-vc' ),

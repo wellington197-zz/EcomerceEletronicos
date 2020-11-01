@@ -71,7 +71,7 @@ class WCFMmp_Template {
             $template = $default_path . $template_name;
         }
 
-        return $template;
+        return apply_filters( 'wcfmmp_locate_template', $template, $template_path, $default_path );
     }
 
     /**

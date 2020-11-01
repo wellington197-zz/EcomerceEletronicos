@@ -34,7 +34,7 @@
 #cboxContent{background:#fff;background-color:#ffffff!important; overflow:hidden;margin-top:0px!important;}
 .cboxIframe{background:#fff;}
 #cboxError{padding:50px; border:1px solid #ccc;}
-#cboxLoadedContent{margin: 20px; margin-bottom:28px; border: 1px solid #ccc; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; padding: 20px;}
+#cboxLoadedContent{margin: 20px; margin-bottom:28px; box-shadow: 1px 1px 20px 0px #E9E9E9; border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; padding: 20px;}
 #cboxTitle{position:absolute; bottom:4px; left:0; text-align:center; width:100%; color:#949494;}
 #cboxCurrent{position:absolute; bottom:4px; left:58px; color:#949494;}
 #cboxLoadingOverlay{background:url(images/loading_background.png) no-repeat center center;}

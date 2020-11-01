@@ -34,7 +34,7 @@ class WCFMmp_Store_On_Sale_Products extends WP_Widget {
 		}
 		
 		if (  wcfm_is_store_page() ) {
-			$wcfm_store_url = get_option( 'wcfm_store_url', 'store' );
+			$wcfm_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 			$store_id  = 0;
 			if ( !empty( $store_name ) ) {
@@ -59,8 +59,11 @@ class WCFMmp_Store_On_Sale_Products extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
-		$number       = $instance['number'];
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
+		$number       = !empty( $instance['number'] ) ? $instance['number'] : 10;
 		$store_user   = wcfmmp_get_store( $store_id );
 		$store_info   = $store_user->get_shop_info();
 		

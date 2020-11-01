@@ -324,7 +324,7 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
         $response = rest_ensure_response( $vendor_object );
         $response->add_links( $this->prepare_links( $vendor_object, $request ) );
         
-        return apply_filters( 'wcmp_rest_prepare_{$this->post_type}_method', $response, $method, $request );
+        return apply_filters( "wcmp_rest_prepare_{$this->post_type}_method", $response, $method, $request );
     }
     
     /**
@@ -390,7 +390,15 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 			'role' => $this->post_type
 		);
 		
-		$user_id = wp_insert_user( $userdata ) ;
+                if( email_exists( $request['email'] ) || username_exists( $request['login'] ) ) {
+                    $user = ( email_exists( $request['email'] ) && get_user_by( 'email',  $request['email'] ) ) ? get_user_by( 'email',  $request['email'] ) : get_user_by( 'login',  $request['login'] );
+                    if( $user ) {
+                        $user->set_role( $this->post_type );
+                        $user_id = $user->ID;
+                    }
+                } else {
+                    $user_id = wp_insert_user( $userdata ) ;
+                }
 		
 		if ( is_wp_error( $user_id ) ) {
 			return $user_id;
@@ -428,38 +436,137 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
      */
     protected function update_additional_fields_for_vendor( $user_id, $request ) {
     	$vendor_meta_key_list = array(
-			'timezone_string' => isset($request['timezone_string']) ? $request['timezone_string'] : '',
-			'gmt_offset' => isset($request['gmt_offset']) ? $request['gmt_offset'] : '',
-			'_vendor_description' => isset($request['shop']['description']) ? $request['shop']['description'] : '',
-			'_vendor_address_1' => isset($request['address']['address_1']) ? $request['address']['address_1'] : '',
-			'_vendor_address_2' => isset($request['address']['address_2']) ? $request['address']['address_2'] : '',
-			'_vendor_city' => isset($request['address']['city']) ? $request['address']['city'] : '',
-			'_vendor_state' => isset($request['address']['state']) ? $request['address']['state'] : '',
-			'_vendor_country' => isset($request['address']['country']) ? $request['address']['country'] : '',
-			'_vendor_postcode' => isset($request['address']['postcode']) ? $request['address']['postcode'] : '',
-			'_vendor_phone' => isset($request['address']['phone']) ? $request['address']['phone'] : '',
-			'_vendor_fb_profile' => isset($request['social']['facebook']) ? $request['social']['facebook'] : '',
-			'_vendor_twitter_profile' => isset($request['social']['twitter']) ? $request['social']['twitter'] : '',
-			'_vendor_google_plus_profile' => isset($request['social']['google_plus']) ? $request['social']['google_plus'] : '',
-			'_vendor_linkdin_profile' => isset($request['social']['linkdin']) ? $request['social']['linkdin'] : '',
-			'_vendor_youtube' => isset($request['social']['youtube']) ? $request['social']['youtube'] : '',
-			'_vendor_instagram' => isset($request['social']['instagram']) ? $request['social']['instagram'] : '',
-			'_vendor_payment_mode' => isset($request['payment']['payment_mode']) ? $request['payment']['payment_mode'] : '',
-			'_vendor_bank_account_type' => isset($request['payment']['bank_account_type']) ? $request['payment']['bank_account_type'] : '',
-			'_vendor_bank_name' => isset($request['payment']['bank_name']) ? $request['payment']['bank_name'] : '',
-			'_vendor_bank_address' => isset($request['payment']['bank_address']) ? $request['payment']['bank_address'] : '',
-			'_vendor_account_holder_name' => isset($request['payment']['account_holder_name']) ? $request['payment']['account_holder_name'] : '',
-			'_vendor_bank_account_number' => isset($request['payment']['bank_account_number']) ? $request['payment']['bank_account_number'] : '',
-			'_vendor_aba_routing_number' => isset($request['payment']['aba_routing_number']) ? $request['payment']['aba_routing_number'] : '',
-			'_vendor_destination_currency' => isset($request['payment']['destination_currency']) ? $request['payment']['destination_currency'] : '',
-			'_vendor_iban' => isset($request['payment']['iban']) ? $request['payment']['iban'] : '',
-			'_vendor_paypal_email' => isset($request['payment']['paypal_email']) ? $request['payment']['paypal_email'] : '',
-			'_vendor_message_to_buyers' => $request['message_to_buyers']
+			'timezone_string' => isset($request['timezone_string']) ? wc_clean( wp_unslash( $request['timezone_string'] ) ) : '',
+			'gmt_offset' => isset($request['gmt_offset']) ? wc_clean( wp_unslash( $request['gmt_offset'] ) ) : '',
+			'_vendor_description' => isset($request['shop']['description']) ? wc_clean( wp_unslash( $request['shop']['description'] ) ) : '',
+			'_vendor_address_1' => isset($request['address']['address_1']) ? wc_clean( wp_unslash( $request['address']['address_1'] ) ) : '',
+			'_vendor_address_2' => isset($request['address']['address_2']) ? wc_clean( wp_unslash( $request['address']['address_2'] ) ) : '',
+			'_vendor_city' => isset($request['address']['city']) ? wc_clean( wp_unslash( $request['address']['city'] ) ) : '',
+			'_vendor_state' => isset($request['address']['state']) ? wc_clean( wp_unslash( $request['address']['state'] ) ) : '',
+			'_vendor_country' => isset($request['address']['country']) ? wc_clean( wp_unslash( $request['address']['country'] ) ) : '',
+			'_vendor_postcode' => isset($request['address']['postcode']) ? wc_clean( wp_unslash( $request['address']['postcode'] ) ) : '',
+			'_vendor_phone' => isset($request['address']['phone']) ? absint( $request['address']['phone'] ) : '',
+			'_vendor_fb_profile' => isset($request['social']['facebook']) ? esc_url( $request['social']['facebook'] ) : '',
+			'_vendor_twitter_profile' => isset($request['social']['twitter']) ? esc_url( $request['social']['twitter'] ) : '',
+			'_vendor_google_plus_profile' => isset($request['social']['google_plus']) ? esc_url( $request['social']['google_plus'] ) : '',
+			'_vendor_linkdin_profile' => isset($request['social']['linkdin']) ? esc_url( $request['social']['linkdin'] ) : '',
+			'_vendor_youtube' => isset($request['social']['youtube']) ? esc_url( $request['social']['youtube'] ) : '',
+			'_vendor_instagram' => isset($request['social']['instagram']) ? esc_url( $request['social']['instagram'] ) : '',
+			'_vendor_payment_mode' => isset($request['payment']['payment_mode']) ? wc_clean( wp_unslash( $request['payment']['payment_mode'] ) ) : '',
+			'_vendor_bank_account_type' => isset($request['payment']['bank_account_type']) ? wc_clean( wp_unslash( $request['payment']['bank_account_type'] ) ): '',
+			'_vendor_bank_name' => isset($request['payment']['bank_name']) ? wc_clean( wp_unslash( $request['payment']['bank_name'] ) ): '',
+			'_vendor_bank_address' => isset($request['payment']['bank_address']) ? wc_clean( wp_unslash( $request['payment']['bank_address'] ) ) : '',
+			'_vendor_account_holder_name' => isset($request['payment']['account_holder_name']) ? wc_clean( wp_unslash( $request['payment']['account_holder_name'] ) ): '',
+			'_vendor_bank_account_number' => isset($request['payment']['bank_account_number']) ? wc_clean( wp_unslash( $request['payment']['bank_account_number'] ) ) : '',
+			'_vendor_aba_routing_number' => isset($request['payment']['aba_routing_number']) ? wc_clean( wp_unslash( $request['payment']['aba_routing_number'] ) ) : '',
+			'_vendor_destination_currency' => isset($request['payment']['destination_currency']) ? wc_clean( wp_unslash( $request['payment']['destination_currency'] ) ) : '',
+			'_vendor_iban' => isset($request['payment']['iban']) ? wc_clean( wp_unslash( $request['payment']['iban'] ) ): '',
+			'_vendor_paypal_email' => isset($request['payment']['paypal_email']) ? wc_clean( wp_unslash( $request['payment']['paypal_email'] ) ) : '',
+			'_vendor_message_to_buyers' => wc_clean( wp_unslash( $request['message_to_buyers'] ) )
 		);
 		foreach($vendor_meta_key_list as $key => $value) {
 			if($value != '') update_user_meta($user_id, $key, $value);
 		}
+		// Check for cover/store images, upload it and set it.
+		if ( isset( $request['images'] ) ) {
+			$vendor = $this->set_vendor_images( $user_id, $request['images'] );
+		}
     }
+
+    /**
+	 * Set vendor images.
+	 *
+	 * @throws WC_REST_Exception REST API exceptions.
+	 * @param WC_vendor $vendor vendor instance.
+	 * @param array      $images  Images data.
+	 * @return WC_vendor
+	 *  Request Example:
+		{
+			"login": "abc",
+			"email": "abc@example.com",
+			"images": [
+				{
+					"src" / "id": "http://demo.woothemes.com/woocommerce/wp-content/uploads/sites/56/2013/06/T_2_front.jpg" / 12,
+					"position": "cover"/"store"
+				}
+			]
+		}
+	*/
+
+	protected function set_vendor_images( $vendor, $images ) {
+		if ( is_array( $images ) ) {
+			foreach ( $images as $image ) {
+				$attachment_id = isset( $image['id'] ) ? absint( $image['id'] ) : 0;
+				if ( 0 === $attachment_id && isset( $image['src'] ) ) {
+					$upload = wc_rest_upload_image_from_url( esc_url_raw( $image['src'] ) );
+
+					if ( is_wp_error( $upload ) ) {
+						if ( ! apply_filters( 'wcmp_rest_suppress_image_upload_error', false, $upload, $vendor, $images ) ) {
+							throw new WC_REST_Exception( 'wcmp_vendor_image_upload_error', $upload->get_error_message(), 400 );
+						} else {
+							continue;
+						}
+					}
+					$attachment_id = wc_rest_set_uploaded_image_as_attachment( $upload, $vendor );
+				}
+				if ( ! wp_attachment_is_image( $attachment_id ) ) {
+					throw new WC_REST_Exception( 'wcmp_vendor_invalid_image_id', sprintf( __( '#%s is an invalid image ID.', 'dc-woocommerce-multi-vendor' ), $attachment_id ), 400 );
+				}
+				// For crop section start
+				$cropped == false;
+				if ( isset( $image['position'] ) && 'store' === $image['position'] ) {
+					$cropped = wp_crop_image( $attachment_id, 0, 0, 1000,1000, 100, 100 );
+				} elseif ( isset( $image['position'] ) && 'cover' === $image['position'] ) {
+					$cropped = wp_crop_image( $attachment_id, 0, 0, 1920,622, 1200, 390 );
+				} else {
+					return new WP_Error( 'wcmp_rest_wrong_position', __( 'Wrong position name.', 'dc-woocommerce-multi-vendor' ), array( 'status' => 404 ) );
+				}
+				if (!$cropped || is_wp_error($cropped)) {
+					wp_send_json_error(array('message' => __('Image could not be processed. Please go back and try again.', 'dc-woocommerce-multi-vendor')));
+				}
+        		$cropped = apply_filters('wcmp_rest_create_file_in_uploads', $cropped, $attachment_id); 
+				$parent = get_post($attachment_id);
+				$parent_url = $parent->guid;
+				$url = str_replace(basename($parent_url), basename($cropped), $parent_url);
+
+				$size = @getimagesize($cropped);
+				$image_type = ( $size ) ? $size['mime'] : 'image/jpeg';
+				$object = array(
+					'ID' => $attachment_id,
+					'post_title' => basename($cropped),
+					'post_content' => $url,
+					'post_mime_type' => $image_type,
+					'guid' => $url
+					);
+
+				// Its override actual image with cropped one
+				if( !apply_filters( 'wcmp_crop_image_override_with_original', false, $attachment_id, $_POST ) ) unset($object['ID']); 
+
+				$attachment_id = wp_insert_attachment($object, $cropped);
+
+				$metadata = wp_generate_attachment_metadata($attachment_id, $cropped);
+				wp_update_attachment_metadata($attachment_id, $metadata);
+
+				/************* crop section end **************************/
+
+				if ( isset( $image['position'] ) && 'store' === $image['position'] ) {
+					update_user_meta( $vendor, '_vendor_image', $attachment_id );
+				} elseif ( isset( $image['position'] ) && 'cover' === $image['position'] ) {
+					update_user_meta( $vendor, '_vendor_banner', $attachment_id );
+				}
+				// Set the image alt if present.
+				if ( ! empty( $image['alt'] ) ) {
+					update_post_meta( $attachment_id, '_wp_attachment_image_alt', wc_clean( $image['alt'] ) );
+				}
+
+				// Set the image name if present.
+				if ( ! empty( $image['name'] ) ) {
+					wp_update_post( array( 'ID' => $attachment_id, 'post_title' => $image['name'] ) );
+				}
+			}
+		} 
+		return $vendor;
+	}
     
     /**
      * Get details for a single vendor for response
@@ -516,16 +623,17 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 		}
 
 		$userdata = array(
-			'ID' => $request['id'],
-			'user_email' => $request['email'],
-			'user_url' => $request['url'],
-			'user_pass' => $request['password'],
-			'user_nicename' => $request['nice_name'],
-			'display_name' => $request['display_name'],
-			'first_name' => $request['first_name'],
-			'last_name' => $request['last_name'],
+			'ID' => isset( $request['id'] ) ? $request['id'] : '',
+			'user_email' => isset( $request['email'] ) ? $request['email'] : '',
+			'user_url' => isset( $request['url'] ) ? $request['url'] : '',
+			'user_pass' => isset( $request['password'] ) ? $request['password'] : '',
+			'user_nicename' => isset( $request['nice_name'] ) ? $request['nice_name']: '',
+			'display_name' => isset( $request['display_name'] ) ? $request['display_name'] : '',
+			'first_name' => isset( $request['first_name'] ) ? $request['first_name'] : '',
+			'last_name' => isset( $request['last_name'] ) ? $request['last_name'] : '',
 			'role' => $this->post_type
 		);
+
 		
 		$user_id = wp_update_user( $userdata ) ;
 		

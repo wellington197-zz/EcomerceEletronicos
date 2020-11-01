@@ -2,35 +2,39 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { InnerBlocks } from '@wordpress/editor';
+import { InnerBlocks } from '@wordpress/block-editor';
 import { registerBlockType } from '@wordpress/blocks';
+import { DEFAULT_HEIGHT } from '@woocommerce/block-settings';
+import { Icon, star } from '@woocommerce/icons';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import './editor.scss';
+import { example } from './example';
 import Block from './block';
 
 /**
  * Register and run the "Featured Product" block.
  */
 registerBlockType( 'woocommerce/featured-product', {
-	title: __( 'Featured Product', 'woo-gutenberg-products-block' ),
+	title: __( 'Featured Product', 'woocommerce' ),
 	icon: {
-		src: 'star-filled',
+		src: <Icon srcElement={ star } />,
 		foreground: '#96588a',
 	},
 	category: 'woocommerce',
-	keywords: [ __( 'WooCommerce', 'woo-gutenberg-products-block' ) ],
+	keywords: [ __( 'WooCommerce', 'woocommerce' ) ],
 	description: __(
 		'Visually highlight a product or variation and encourage prompt action.',
-		'woo-gutenberg-products-block'
+		'woocommerce'
 	),
 	supports: {
 		align: [ 'wide', 'full' ],
 		html: false,
 	},
+	example,
 	attributes: {
 		/**
 		 * Alignment of content inside block.
@@ -68,7 +72,7 @@ registerBlockType( 'woocommerce/featured-product', {
 		 */
 		height: {
 			type: 'number',
-			default: wc_product_block_data.default_height,
+			default: DEFAULT_HEIGHT,
 		},
 
 		/**
@@ -106,7 +110,7 @@ registerBlockType( 'woocommerce/featured-product', {
 		 */
 		linkText: {
 			type: 'string',
-			default: __( 'Shop now', 'woo-gutenberg-products-block' ),
+			default: __( 'Shop now', 'woocommerce' ),
 		},
 
 		/**
@@ -131,10 +135,20 @@ registerBlockType( 'woocommerce/featured-product', {
 			type: 'boolean',
 			default: true,
 		},
+
+		/**
+		 * Product preview.
+		 */
+		previewProduct: {
+			type: 'object',
+			default: null,
+		},
 	},
 
 	/**
 	 * Renders and manages the block.
+	 *
+	 * @param {Object} props Props to pass to block.
 	 */
 	edit( props ) {
 		return <Block { ...props } />;

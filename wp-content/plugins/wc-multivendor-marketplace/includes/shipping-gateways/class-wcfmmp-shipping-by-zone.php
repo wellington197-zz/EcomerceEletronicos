@@ -232,6 +232,8 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 		if ( empty( $vendor_id ) ) {
 				return;
 		}
+		
+		if( !apply_filters( 'wcfm_is_allow_shipping_by_vendor_setting', true, $vendor_id ) ) return;
 
 		$shipping_methods = WCFMmp_Shipping_Zone::get_shipping_methods( $zone->get_id(), $vendor_id );
 		if ( !self::is_shipping_enabled_for_seller( $vendor_id ) ) {
@@ -242,8 +244,9 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 		}
 
 		foreach ( $shipping_methods as $key => $method ) {
-			$tax_rate = ( $method['settings']['tax_status'] == 'none' ) ? false : '';
-			$has_costs     = false;
+			$cost      = 0;
+			$tax_rate  = ( $method['settings']['tax_status'] == 'none' ) ? false : '';
+			$has_costs = false;
 
 			if ( 'yes' != $method['enabled'] ) {
 				continue;
@@ -277,7 +280,7 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 						$shipping_class_term = get_term_by( 'slug', $shipping_class, 'product_shipping_class' );
 						$class_cost_string   = $shipping_class_term && $shipping_class_term->term_id
 																		? ( ! empty( $method['settings']['class_cost_' . $shipping_class_term->term_id ] ) ? stripslashes_deep( $method['settings']['class_cost_' . $shipping_class_term->term_id] ) : '' )
-																		: ( ! empty( $method['settings']['no_class_cost'] ) ? $method['settings']['no_class_cost'] : '' );
+																		: ( ! empty( $method['settings']['class_cost_no_class_cost'] ) ? $method['settings']['class_cost_no_class_cost'] : '' );
 
 						if ( '' === $class_cost_string ) {
 							continue;
@@ -320,6 +323,11 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 			if ( ! $has_costs ) {
 					continue;
 			}
+			
+			if ( 'local_pickup' == $method['id'] ) {
+				$address = wcfm_get_vendor_store_address_by_vendor( $vendor_id );
+				$method['title'] = apply_filters( 'wcfmmp_local_pickup_shipping_option_label', $method['title']  . ' ('.$address.')', $vendor_id );
+			}
 
 			$rates[] = array(
 					'id'          => $this->get_method_rate_id( $method ),
@@ -343,6 +351,7 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 								'id'        => $rate['id'],
 								'label'     => apply_filters( 'wcfmmp_vendor_shipping_rate_label', $rate['label'], $rate ),
 								'cost'      => $rate['cost'],
+								'taxes'     => $rate['taxes'],
 								//'meta_data' => array( 'description' => $rate['description'] ),
 								'package'   => $package,
 						));
@@ -402,6 +411,7 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
   	
 		$has_met_min_amount = false;
 		$min_amount = ! empty( $method['settings']['min_amount'] ) ? $method['settings']['min_amount'] : 0;
+		$min_amount = apply_filters( 'wcfmmp_free_shipping_minimum_order_amount', $min_amount, $vendor_id );
 
 		$line_subtotal      = wp_list_pluck( $package['contents'], 'line_subtotal', null );
 		$line_total         = wp_list_pluck( $package['contents'], 'line_total', null );
@@ -410,7 +420,11 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
 		$line_total_tax     = wp_list_pluck( $package['contents'], 'line_tax', null );
 		$discount_tax_total = array_sum( $line_subtotal_tax ) - array_sum( $line_total_tax );
 
-		$total = array_sum( $line_subtotal ) + array_sum( $line_subtotal_tax );
+		if( apply_filters( 'wcfmmp_free_shipping_threshold_consider_tax', true ) ) {
+			$total = array_sum( $line_subtotal ) + array_sum( $line_subtotal_tax );
+		} else {
+			$total = array_sum( $line_subtotal );
+		}
 
 		if ( WC()->cart->display_prices_including_tax() ) {
 			$total = round( $total - ( $discount_total + $discount_tax_total ), wc_get_price_decimals() );
@@ -496,14 +510,42 @@ class WCFMmp_Shipping_By_Zone extends WC_Shipping_Method {
       
 
       if ( isset( $location_group['postcode'] ) ) {
+      	$destination_postcode           = wc_normalize_postcode( $destination_postcode );
+      	$wildcard_postcodes = array_map( 'wc_clean', wc_get_wildcard_postcodes( $destination_postcode ) );
 				$postcode_array = wp_list_pluck( $location_group['postcode'], 'code' );
 				$postcode_array = array_map( 'trim', $postcode_array );
 				
-				// Post Code Wildcard check
+				// Post Code Wildcard Rule check
 				if( !empty( $postcode_array ) ) {
 					$is_available = false;
-					foreach( $postcode_array as $postcode ) {
-						if( strtolower( substr( $destination_postcode, 0, strlen( $postcode ) ) ) === strtolower($postcode) ) $is_available = true;
+					foreach( $postcode_array as $compare_against ) {
+						// Handle postcodes containing ranges.
+						if ( strstr( $compare_against, '...' ) ) {
+							$range = array_map( 'trim', explode( '...', $compare_against ) );
+				
+							if ( 2 !== count( $range ) ) {
+								continue;
+							}
+				
+							list( $min, $max ) = $range;
+				
+							// If the postcode is non-numeric, make it numeric.
+							if ( ! is_numeric( $min ) || ! is_numeric( $max ) ) {
+								$compare = wc_make_numeric_postcode( $destination_postcode );
+								$min     = str_pad( wc_make_numeric_postcode( $min ), strlen( $compare ), '0' );
+								$max     = str_pad( wc_make_numeric_postcode( $max ), strlen( $compare ), '0' );
+							} else {
+								$compare = $destination_postcode;
+							}
+				
+							if ( $compare >= $min && $compare <= $max ) {
+								$is_available = true;
+							}
+						} elseif ( in_array( $compare_against, $wildcard_postcodes, true ) ) {
+							// Wildcard and standard comparison.
+							$is_available = true;
+						}
+						
 					}
 				}
 

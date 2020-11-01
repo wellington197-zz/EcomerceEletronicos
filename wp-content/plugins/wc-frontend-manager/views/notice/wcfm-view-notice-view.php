@@ -19,6 +19,7 @@ if( !apply_filters( 'wcfm_is_pref_notice', true ) || !apply_filters( 'wcfm_is_al
 $notice_id = 0;
 $topic_title = '';
 $topic_content = '';
+$content_type = '';
 $allow_reply = 'no';
 $close_new_reply = 'no';
 
@@ -30,11 +31,17 @@ if( isset( $wp->query_vars['wcfm-notice-view'] ) && !empty( $wp->query_vars['wcf
 		
 		$topic_title = $notice_post->post_title;
 		$topic_content = $notice_post->post_content;
+		$content_type = $notice_post->post_type;
 		
 		$allow_reply = get_post_meta( $notice_id, 'allow_reply', true ) ? get_post_meta( $notice_id, 'allow_reply', true ) : 'no';
 		$close_new_reply = get_post_meta( $notice_id, 'close_new_reply', true ) ? get_post_meta( $notice_id, 'close_new_reply', true ) : 'no';
 		
 	}
+}
+
+if( $content_type != 'wcfm_notice' ) {
+	wcfm_restriction_message_show( "Invalid Topic" );
+	return;
 }
 
 do_action( 'before_wcfm_notice_manage' );

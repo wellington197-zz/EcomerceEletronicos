@@ -54,6 +54,9 @@ jQuery(document).ready(function($) {
 	$('#wcfm_refund_requests_approve_button').click(function(event) {
 	  event.preventDefault();
 	  
+	  $('#wcfm_refund_requests_approve_button').hide();
+	  $('#wcfm_refund_requests_cancel_button').hide();
+	  
 		$('#wcfm-content').block({
 			message: null,
 			overlayCSS: {
@@ -79,6 +82,8 @@ jQuery(document).ready(function($) {
 					$('#wcfm_refund_requests_manage_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
 				}
 				$('#wcfm-content').unblock();
+				$('#wcfm_refund_requests_approve_button').show();
+				$('#wcfm_refund_requests_cancel_button').show();
 			}
 		});
 	});
@@ -86,6 +91,9 @@ jQuery(document).ready(function($) {
 	// Request Refunds Cancel
 	$('#wcfm_refund_requests_cancel_button').click(function(event) {
 	  event.preventDefault();
+	  
+	  $('#wcfm_refund_requests_approve_button').hide();
+	  $('#wcfm_refund_requests_cancel_button').hide();
 	  
 		$('#wcfm-content').block({
 			message: null,
@@ -112,6 +120,8 @@ jQuery(document).ready(function($) {
 					$('#wcfm_refund_requests_manage_form .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
 				}
 				$('#wcfm-content').unblock();
+				$('#wcfm_refund_requests_approve_button').show();
+				$('#wcfm_refund_requests_cancel_button').show();
 			}
 		});
 	});
@@ -135,9 +145,9 @@ jQuery(document).ready(function($) {
 	}
 	
 	// Screen Manager
-	/*$( document.body ).on( 'updated_wcfm-refund-requests', function() {
-		$.each(wcfm_reviews_screen_manage, function( column, column_val ) {
-		  $wcfm_reviews_table.column(column).visible( false );
+	$( document.body ).on( 'updated_wcfm-refund-requests', function() {
+		$.each(wcfm_refund_screen_manage, function( column, column_val ) {
+		  $wcfm_refund_requests_table.column(column).visible( false );
 		} );
-	});*/
+	});
 } );

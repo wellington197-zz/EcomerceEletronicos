@@ -118,7 +118,7 @@ class WCFMvm_Memberships_Controller {
 				$membership_users = get_post_meta( $wcfm_memberships_single->ID, 'membership_users', true );
 				if( $is_marketplace ) {
 					if( $membership_users && is_array( $membership_users ) ) {
-						$wcfm_memberships_json_arr[$index][] =  '<span class="vendor_count">' . count( $membership_users ) . '</span>';
+						$wcfm_memberships_json_arr[$index][] =  '<span class="vendor_count">' . apply_filters( 'wcfmvm_membership_vendor_count_display', count( $membership_users ), $wcfm_memberships_single->ID ) . '</span>';
 					} else {
 						$wcfm_memberships_json_arr[$index][] =  '<span class="vendor_count">&ndash;</span>';
 					}

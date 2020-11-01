@@ -35,14 +35,18 @@ class WCFMmp_Store_Location extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
-		$wcfm_store_url    = get_option( 'wcfm_store_url', 'store' );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
+		$wcfm_store_url    = wcfm_get_option( 'wcfm_store_url', 'store' );
 		$wcfm_store_name   = apply_filters( 'wcfmmp_store_query_var', get_query_var( $wcfm_store_url ) );
 		$seller_info       = get_user_by( 'slug', $wcfm_store_name );
 		if( !$seller_info ) return;
 		
 		$store_user        = wcfmmp_get_store( $seller_info->data->ID );
 		$store_info        = $store_user->get_shop_info();
+		$address           = $store_user->get_address_string(); 
 		$map_location      = isset( $store_info['location'] ) ? esc_attr( $store_info['location'] ) : '';
 		
 		$is_store_offline = get_user_meta( $store_user->get_id(), '_wcfm_store_offline', true );
@@ -54,10 +58,12 @@ class WCFMmp_Store_Location extends WP_Widget {
 		if ( $is_disable_vendor ) return;
 		
 		$api_key = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_google_map_api'] : '';
+		$wcfm_map_lib = isset( $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] ) ? $WCFMmp->wcfmmp_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $api_key ) { $wcfm_map_lib = 'google'; } elseif( !$wcfm_map_lib && !$api_key ) { $wcfm_map_lib = 'leaftlet'; }
 		$store_lat    = isset( $store_info['store_lat'] ) ? esc_attr( $store_info['store_lat'] ) : 0;
 		$store_lng    = isset( $store_info['store_lng'] ) ? esc_attr( $store_info['store_lng'] ) : 0;
 
-		if ( empty( $api_key ) || empty( $store_lat ) || empty( $store_lng ) || ( $store_info['store_hide_map'] == 'yes' ) || !$WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $store_user->get_id(), 'vendor_map' ) ) {
+		if ( ( ($wcfm_map_lib == 'google') && empty( $api_key ) ) || empty( $store_lat ) || empty( $store_lng ) || ( $store_info['store_hide_map'] == 'yes' ) || ( $store_info['store_hide_address'] == 'yes' )  || !$WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $store_user->get_id(), 'vendor_map' ) ) {
 			return;
 		}
 
@@ -72,6 +78,7 @@ class WCFMmp_Store_Location extends WP_Widget {
 		$WCFMmp->template->get_template( 'store/widgets/wcfmmp-view-store-location.php', array( 
 			                                             'store_user' => $store_user, 
 			                                             'store_info' => $store_info,
+			                                             'address'    => $address,
 			                                             'store_lat'  => $store_lat,
 			                                             'store_lng'  => $store_lng,
 			                                             'map_id'     => 'wcfm_sold_by_widget_map_'.rand(10,100)

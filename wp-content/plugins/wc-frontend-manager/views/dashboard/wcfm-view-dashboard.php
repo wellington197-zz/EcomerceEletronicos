@@ -108,7 +108,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 		
 		<?php if( apply_filters( 'wcfm_is_pref_stats_box', true ) ) { ?>
 			<div class="wcfm_dashboard_stats">
-				<?php if ( apply_filters( 'wcfm_is_allow_reports', true ) && current_user_can( 'view_woocommerce_reports' ) && ( $report_data_block ) ) { ?>
+				<?php if ( apply_filters( 'wcfm_is_allow_reports', true ) && apply_filters( 'wcfm_sales_report_is_allow_gross_sales', true ) && apply_filters( 'wcfm_is_allow_stats_block_gross_sales', true ) && current_user_can( 'view_woocommerce_reports' ) && ( $report_data_block ) ) { ?>
 					<div class="wcfm_dashboard_stats_block">
 						<a href="<?php echo get_wcfm_reports_url( 'month' ); ?>">
 							<span class="wcfmfa fa-currency"><?php echo get_woocommerce_currency_symbol() ; ?></span>
@@ -142,28 +142,32 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 						$commission = $grose_sell - $commission;
 					}
 				?>
-					<div class="wcfm_dashboard_stats_block">
-						<a href="<?php echo get_wcfm_reports_url( ); ?>">
-							<span class="wcfmfa fa-money fa-money-bill-alt"></span>
-							<div>
-								<strong><?php echo wc_price( $commission ); ?></strong><br />
-								<?php if( $admin_fee_mode ) { _e( 'admin fees in last 7 days', 'wc-frontend-manager' ); } else { _e( 'commission in last 7 days', 'wc-frontend-manager' ); } ?>
-							</div>
-						</a>
-					</div>
-					<div class="wcfm_dashboard_stats_block">
-						<a href="<?php echo apply_filters( 'sales_by_product_report_url', get_wcfm_reports_url( ), '' ); ?>">
-							<span class="wcfmfa fa-cube"></span>
-							<div>
-								<?php printf( _n( "<strong>%s item</strong>", "<strong>%s items</strong>", $report_data_block->total_items, 'wc-frontend-manager' ), $report_data_block->total_items ); ?>
-								<br /><?php _e( 'sold in last 7 days', 'wc-frontend-manager' ); ?>
-							</div>
-						</a>
-					</div>
+					<?php if( apply_filters( 'wcfm_is_allow_view_commission', true ) && apply_filters( 'wcfm_is_allow_stats_block_commission', true ) ) { ?>
+						<div class="wcfm_dashboard_stats_block">
+							<a href="<?php echo get_wcfm_reports_url( ); ?>">
+								<span class="wcfmfa fa-money fa-money-bill-alt"></span>
+								<div>
+									<strong><?php echo wc_price( $commission ); ?></strong><br />
+									<?php if( $admin_fee_mode ) { _e( 'admin fees in last 7 days', 'wc-frontend-manager' ); } else { _e( 'commission in last 7 days', 'wc-frontend-manager' ); } ?>
+								</div>
+							</a>
+						</div>
+					<?php } ?>
+					<?php if( apply_filters( 'wcfm_is_allow_stats_block_sold_item', true ) ) { ?>
+						<div class="wcfm_dashboard_stats_block">
+							<a href="<?php echo apply_filters( 'sales_by_product_report_url', get_wcfm_reports_url( ), '' ); ?>">
+								<span class="wcfmfa fa-cube"></span>
+								<div>
+									<?php printf( _n( "<strong>%s item</strong>", "<strong>%s items</strong>", $report_data_block->total_items, 'wc-frontend-manager' ), $report_data_block->total_items ); ?>
+									<br /><?php _e( 'sold in last 7 days', 'wc-frontend-manager' ); ?>
+								</div>
+							</a>
+						</div>
+					<?php } ?>
 				<?php
 				}
 				?>
-				<?php if ( apply_filters( 'wcfm_is_allow_orders', true ) && current_user_can( 'edit_shop_orders' ) ) { ?>
+				<?php if ( apply_filters( 'wcfm_is_allow_orders', true ) && apply_filters( 'wcfm_is_allow_stats_block_orders', true ) && current_user_can( 'edit_shop_orders' ) ) { ?>
 					<div class="wcfm_dashboard_stats_block">
 						<a href="<?php echo get_wcfm_orders_url( ); ?>">
 							<span class="wcfmfa fa-cart-plus"></span>
@@ -179,7 +183,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 		<?php } ?>
 		<?php do_action( 'wcfm_after_dashboard_stats_box' ); ?>
 		
-		<?php if ( apply_filters( 'wcfm_is_allow_reports', true ) && current_user_can( 'view_woocommerce_reports' ) ) { ?>
+		<?php if ( apply_filters( 'wcfm_is_allow_reports', true ) && current_user_can( 'view_woocommerce_reports' ) && apply_filters( 'wcfm_is_allow_dashboard_reports', true ) ) { ?>
 			<div class="wcfm_dashboard_wc_reports_sales">
 				<div class="wcfm-container">
 					<div id="wcfm_dashboard_wc_reports_expander_sales" class="wcfm-content">
@@ -203,7 +207,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 			<div class="wcfm_dashboard_wc_status_data">
 			
 			  <?php if ( $is_wcfm_analytics_enable = is_wcfm_analytics() ) { ?>
-					<?php if ( $wcfm_is_allow_analytics = apply_filters( 'wcfm_is_allow_analytics', true ) ) { ?>
+					<?php if ( apply_filters( 'wcfm_is_allow_analytics', true ) && apply_filters( 'wcfm_is_allow_dashboard_store_analytics', true ) ) { ?>
 						<div class="wcfm_dashboard_wcfm_analytics">
 							<div class="page_collapsible" id="wcfm_dashboard_wcfm_anaytics"><span class="wcfmfa fa-chart-line"></span><span class="dashboard_widget_head"><?php _e('Store Analytics', 'wc-frontend-manager'); ?></span></div>
 							<div class="wcfm-container">
@@ -227,7 +231,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 					<?php } ?>
 				<?php } ?>
 				
-				<?php if ( !is_wcfm_analytics() || WCFM_Dependencies::wcfma_plugin_active_check() ) { ?>
+				<?php if ( ( !is_wcfm_analytics() || WCFM_Dependencies::wcfma_plugin_active_check() ) && apply_filters( 'wcfm_is_allow_dashboard_product_stats', true ) ) { ?>
 					<div class="wcfm_dashboard_wcfm_product_stats">
 						<div class="page_collapsible" id="wcfm_dashboard_wcfm_product_status"><span class="wcfmfa fa-cubes"></span><span class="dashboard_widget_head"><?php _e('Product Stats', 'wc-frontend-manager'); ?></span></div>
 						<div class="wcfm-container">
@@ -246,7 +250,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 				
 				<?php do_action( 'after_wcfm_dashboard_product_stats' ); ?>
 				
-				<?php if( apply_filters( 'wcfm_is_pref_stats_box', true ) ) { ?>
+				<?php if( apply_filters( 'wcfm_is_dashboard_more_stats', true ) ) { ?>
 					<?php if( apply_filters( 'wcfm_is_allow_reports', true ) || apply_filters( 'wcfm_is_allow_orders', true ) ) { ?>
 						<div class="wcfm_dashboard_more_stats">
 							<div class="page_collapsible" id="wcfm_dashboard_wc_status">

@@ -30,10 +30,12 @@ if( empty( $latest_reviews ) ) return;
 				?>
 			  <img src="<?php echo apply_filters( 'wcfmmp_review_author_avatar', $wp_user_avatar, $latest_review ); ?>" alt="Review">
 			</div>
-			<div class="rated">
-				<strong><?php _e('rated', 'wc-multivendor-marketplace' ); ?></strong>
-				<div class="user_rated"><?php echo apply_filters( 'wcfmmp_review_rating', wc_format_decimal( $latest_review->review_rating, 1 ), $latest_review ); ?></div>
-			</div>
+			<?php if( apply_filters( 'wcfm_is_allow_review_rating', true ) ) { ?>
+				<div class="rated">
+					<strong><?php _e('rated', 'wc-multivendor-marketplace' ); ?></strong>
+					<div class="user_rated"><?php echo apply_filters( 'wcfmmp_review_rating', wc_format_decimal( $latest_review->review_rating, 1 ), $latest_review ); ?></div>
+				</div>
+			<?php } ?>
 		</div>
 		<div class="rgt user_review_sec">
 		  <div class="user_review_sec_left" style="display: inline-block;float: left;width: 60%;">
@@ -57,7 +59,7 @@ if( empty( $latest_reviews ) ) return;
 				<?php } ?>
 			</div>
 			<?php
-			if( apply_filters( 'wcfmmp_is_allow_review_categories', true ) ) {
+			if( apply_filters( 'wcfm_is_allow_review_rating', true ) && apply_filters( 'wcfmmp_is_allow_review_categories', true ) ) {
 				$wcfm_review_categories = get_wcfm_marketplace_active_review_categories();
 				$category_review_rating = $store_user->get_review_meta( $latest_review->ID );
 				if( $category_review_rating && !empty( $category_review_rating ) && is_array( $category_review_rating ) ) {

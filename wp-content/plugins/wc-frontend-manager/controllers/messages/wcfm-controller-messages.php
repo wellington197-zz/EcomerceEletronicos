@@ -64,7 +64,7 @@ class WCFM_Messages_Controller {
 		
 		$sql .= $type_filter;
 
-		if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) ) { 
+		if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) { 
 			//$vendor_filter = " AND `author_is_admin` = 1";
 			$vendor_filter = " AND ( `author_id` = {$message_to} OR `message_to` = -1 OR `message_to` = {$message_to} )";
 			$sql .= $vendor_filter;
@@ -98,7 +98,7 @@ class WCFM_Messages_Controller {
 		
 		$sql .= $type_filter;
 		
-		if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) ) { 
+		if( wcfm_is_vendor() || ( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) || ( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) ) { 
 			$sql .= $vendor_filter;
 		} else {
 			$group_manager_filter = apply_filters( 'wcfm_notification_group_manager_filter', '' );
@@ -158,30 +158,19 @@ class WCFM_Messages_Controller {
 					}
 				} else {
 					$is_marketplace = wcfm_is_marketplace();
-					if( $is_marketplace ) {
-						if( $wcfm_message->message_type == 'affiliate_approval' ) {
-							$author = get_user_by( 'ID', $wcfm_message->author_id );
-							if( $author ) {
-								$wcfm_messages_json_arr[$index][] =  $author->display_name;
-							} else {
-								$wcfm_messages_json_arr[$index][] =  __( 'Affiliate', 'wc-frontend-manager' );
-							}
-						} elseif( !wcfm_is_vendor() ) {
-							$wcfm_messages_json_arr[$index][] =  wcfm_get_vendor_store( absint($wcfm_message->author_id) );
+					if( $is_marketplace && wcfm_is_vendor( $wcfm_message->author_id ) ) {
+						$wcfm_messages_json_arr[$index][] =  wcfm_get_vendor_store( absint($wcfm_message->author_id) );
+					} elseif( $wcfm_message->author_id ) {
+						$author = get_user_by( 'ID', $wcfm_message->author_id );
+						if( $author ) {
+							$wcfm_messages_json_arr[$index][] =  $author->display_name;
+						} elseif( $wcfm_message->message_type == 'affiliate_approval' ) {
+							$wcfm_messages_json_arr[$index][] =  __( 'Affiliate', 'wc-frontend-manager' );
 						} else {
-							$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
+							$wcfm_messages_json_arr[$index][] =  __( 'System', 'wc-frontend-manager' );
 						}
 					} else {
-						if( !wcfm_is_vendor() ) {
-							$author = get_user_by( 'ID', $wcfm_message->author_id );
-							if( $author ) {
-								$wcfm_messages_json_arr[$index][] =  $author->display_name;
-							} else {
-								$wcfm_messages_json_arr[$index][] =  '&ndash;';
-							}
-						} else {
-							$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
-						}
+						$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
 					}
 				}
 				
@@ -192,25 +181,21 @@ class WCFM_Messages_Controller {
 					$wcfm_messages_json_arr[$index][] =  apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager' ) );
 				} elseif( function_exists( 'wcfm_is_delivery_boy' ) && wcfm_is_delivery_boy() ) {
 					$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
+				} elseif( function_exists( 'wcfm_is_affiliate' ) && wcfm_is_affiliate() ) {
+					$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
 				} else {
 					$is_marketplace = wcfm_is_marketplace();
-					if( $is_marketplace ) {
-						if( !wcfm_is_vendor() ) {
-							$wcfm_messages_json_arr[$index][] = wcfm_get_vendor_store( absint($wcfm_message->message_to) );
+					if( $is_marketplace && wcfm_is_vendor( $wcfm_message->message_to ) ) {
+						$wcfm_messages_json_arr[$index][] = wcfm_get_vendor_store( absint($wcfm_message->message_to) );
+					} elseif( $wcfm_message->message_to ) {
+						$receiver = get_user_by( 'ID', $wcfm_message->message_to );
+						if( $receiver ) {
+							$wcfm_messages_json_arr[$index][] =  $receiver->display_name;
 						} else {
-							$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
+							$wcfm_messages_json_arr[$index][] =  '&ndash;';
 						}
 					} else {
-						if( !wcfm_is_vendor() ) {
-							$receiver = get_user_by( 'ID', $wcfm_message->message_to );
-							if( $receiver ) {
-								$wcfm_messages_json_arr[$index][] =  $receiver->display_name;
-							} else {
-								$wcfm_messages_json_arr[$index][] =  '&ndash;';
-							}
-						} else {
-							$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
-						}
+						$wcfm_messages_json_arr[$index][] =  __( 'You', 'wc-frontend-manager' );
 					}
 				}
 				
@@ -218,8 +203,12 @@ class WCFM_Messages_Controller {
 				$wcfm_messages_json_arr[$index][] = date_i18n( wc_date_format() . ' ' . wc_time_format() , strtotime( $wcfm_message->created ) );
 				
 				// Action
-				$actions = '&ndash;';
+				$actions = '';
 				if( $message_status == 'unread' ) {
+					if( $wcfm_message->message_type == 'direct' ) {
+						$actions = '<a class="wcfm_messages_direct_reply wcfm-action-icon" href="#" data-authorid="' . $wcfm_message->author_id . '" data-messageid="' . $wcfm_message->ID . '"><span class="wcfmfa fa-reply text_tip" data-tip="' . esc_attr__( 'Send Reply', 'wc-frontend-manager' ) . '"></span></a><br/>';
+					}
+					
 					if( ( !wcfm_is_vendor() && $wcfm_message->message_type == 'verification' ) ) {
 						$actions = '<a class="wcfm_messages_seller_verification wcfm-action-icon" href="#" data-vendorid="' . $wcfm_message->author_id . '" data-messageid="' . $wcfm_message->ID . '"><span class="wcfmfa fa-check-circle text_tip" data-tip="' . esc_attr__( 'Approve / Reject', 'wc-frontend-manager' ) . '"></span></a>';
 					} elseif( ( !wcfm_is_vendor() && $wcfm_message->message_type == 'vendor_approval' ) ) {
@@ -227,7 +216,7 @@ class WCFM_Messages_Controller {
 					} elseif( ( !wcfm_is_vendor() && $wcfm_message->message_type == 'affiliate_approval' ) ) {
 						$actions = '<a class="wcfm_messages_affiliate_approval wcfm-action-icon" href="#" data-affiliateid="' . $wcfm_message->author_id . '" data-messageid="' . $wcfm_message->ID . '"><span class="wcfmfa fa-check-circle text_tip" data-tip="' . esc_attr__( 'Approve / Reject', 'wc-frontend-manager' ) . '"></span></a>';
 					} else {
-						$actions = '<a class="wcfm_messages_mark_read wcfm-action-icon" href="#" data-messageid="' . $wcfm_message->ID . '"><span class="wcfmfa fa-check text_tip" data-tip="' . esc_attr__( 'Mark Read', 'wc-frontend-manager' ) . '"></span></a>';
+						$actions .= '<a class="wcfm_messages_mark_read wcfm-action-icon" href="#" data-messageid="' . $wcfm_message->ID . '"><span class="wcfmfa fa-check text_tip" data-tip="' . esc_attr__( 'Mark Read', 'wc-frontend-manager' ) . '"></span></a>';
 					}
 				}
 				

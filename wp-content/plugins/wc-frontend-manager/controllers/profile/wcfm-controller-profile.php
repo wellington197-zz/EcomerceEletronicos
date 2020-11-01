@@ -61,6 +61,15 @@ class WCFM_Profile_Controller {
 		$wcfm_profile_form_data = array();
 	  parse_str($_POST['wcfm_profile_form'], $wcfm_profile_form);
 	  
+	  if( !defined('WCFM_REST_API_CALL') ) {
+	  	if( isset( $wcfm_profile_form['wcfm_nonce'] ) && !empty( $wcfm_profile_form['wcfm_nonce'] ) ) {
+	  		if( !wp_verify_nonce( $wcfm_profile_form['wcfm_nonce'], 'wcfm_profile' ) ) {
+	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			die;
+	  		}
+	  	}
+	  }
+	  
 	  // WCFM form custom validation filter
 		$custom_validation_results = apply_filters( 'wcfm_form_custom_validation', $wcfm_profile_form, 'profile_manage' );
 		if(isset($custom_validation_results['has_error']) && !empty($custom_validation_results['has_error'])) {
@@ -105,18 +114,24 @@ class WCFM_Profile_Controller {
 		}
 		
 		foreach( $wcfm_profile_default_fields as $wcfm_profile_default_key => $wcfm_profile_default_field ) {
-			update_user_meta( $user_id, $wcfm_profile_default_key, $wcfm_profile_form[$wcfm_profile_default_field] );
+			if( isset( $wcfm_profile_form[$wcfm_profile_default_field] ) ) {
+				update_user_meta( $user_id, $wcfm_profile_default_key, $wcfm_profile_form[$wcfm_profile_default_field] );
+			}
 		}
 		
 		if( isset( $wcfm_profile_form['same_as_billing'] ) ) {
 			update_user_meta( $user_id, 'same_as_billing', 'yes' );
 			foreach( $wcfm_profile_billing_shipping_fields as $wcfm_profile_shipping_key => $wcfm_profile_shipping_field ) {
-				update_user_meta( $user_id, $wcfm_profile_shipping_key, $wcfm_profile_form[$wcfm_profile_shipping_field] );
+				if( isset( $wcfm_profile_form[$wcfm_profile_shipping_field] ) ) {
+					update_user_meta( $user_id, $wcfm_profile_shipping_key, $wcfm_profile_form[$wcfm_profile_shipping_field] );
+				}
 			}
 		} else {
 			update_user_meta( $user_id, 'same_as_billing', 'no' );
 			foreach( $wcfm_profile_shipping_fields as $wcfm_profile_shipping_key => $wcfm_profile_shipping_field ) {
-				update_user_meta( $user_id, $wcfm_profile_shipping_key, $wcfm_profile_form[$wcfm_profile_shipping_field] );
+				if( isset( $wcfm_profile_form[$wcfm_profile_shipping_field] ) ) {
+					update_user_meta( $user_id, $wcfm_profile_shipping_key, $wcfm_profile_form[$wcfm_profile_shipping_field] );
+				}
 			}
 		}
 		

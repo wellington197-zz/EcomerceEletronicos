@@ -37,7 +37,10 @@ class WCFMmp_Store_Lists_Location_Filter extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
 		$is_state     = isset( $instance['is_state'] ) ? $instance['is_state'] : '';
 		$is_city      = isset( $instance['is_city'] ) ? $instance['is_city'] : '';
 		$is_zip       = isset( $instance['is_zip'] ) ? $instance['is_zip'] : '';
@@ -79,7 +82,7 @@ class WCFMmp_Store_Lists_Location_Filter extends WP_Widget {
 		$search_zip   = isset( $_GET['wcfmmp_store_zip'] ) ? sanitize_text_field( $_GET['wcfmmp_store_zip'] ) : '';
 		
 		if( apply_filters( 'wcfmmp_is_allow_store_list_country_filter', true ) ) {
-			$WCFM->wcfm_fields->wcfm_generate_form_field( array( "wcfmmp_store_country" => array( 'type' => 'country', 'class' => 'wcfm-select wcfm_ele', 'value' => $search_country ) ) );
+			$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfmmp_store_list_search_by_country_field', array( "wcfmmp_store_country" => array( 'type' => 'country', 'class' => 'wcfm-select wcfm_ele', 'value' => $search_country ) ) ) );
 		}
   
 		if( apply_filters( 'wcfmmp_is_allow_store_list_state_filter', true ) && !$is_state ) {
@@ -96,15 +99,15 @@ class WCFMmp_Store_Lists_Location_Filter extends WP_Widget {
 			
 			if( !empty( $state_options ) ) { $state_options = array( '' => __( 'Choose State', 'wc-multivendor-marketplace' ) ) + $state_options; }
 			
-			$WCFM->wcfm_fields->wcfm_generate_form_field( array( "wcfmmp_store_state" => array( 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'options' => $state_options, 'value' => $search_state ) ) );
+			$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfmmp_store_list_search_by_state_field', array( "wcfmmp_store_state" => array( 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'options' => $state_options, 'value' => $search_state ) ) ) );
   	}
   	
   	if( apply_filters( 'wcfmmp_is_allow_store_list_city_filter', true ) && !$is_city ) {
-			$WCFM->wcfm_fields->wcfm_generate_form_field( array( "wcfmmp_store_city" => array( 'placeholder' => __( 'Search by City', 'wc-multivendor-marketplace' ), 'type' => 'text', 'class' => 'wcfm-text wcfm-search-field wcfm_ele', 'value' => $search_city ) ) );
+			$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfmmp_store_list_search_by_city_field', array( "wcfmmp_store_city" => array( 'placeholder' => __( 'Search by City', 'wc-multivendor-marketplace' ), 'type' => 'text', 'class' => 'wcfm-text wcfm-search-field wcfm_ele', 'value' => $search_city ) ) ) );
   	}
   	
   	if( apply_filters( 'wcfmmp_is_allow_store_list_zip_filter', true ) && !$is_zip ) {
-			$WCFM->wcfm_fields->wcfm_generate_form_field( array( "wcfmmp_store_zip" => array( 'placeholder' => __( 'Search by ZIP', 'wc-multivendor-marketplace' ), 'type' => 'text', 'class' => 'wcfm-text wcfm-search-field wcfm_ele', 'value' => $search_zip ) ) );
+			$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfmmp_store_list_search_by_zip_field', array( "wcfmmp_store_zip" => array( 'placeholder' => __( 'Search by ZIP', 'wc-multivendor-marketplace' ), 'type' => 'text', 'class' => 'wcfm-text wcfm-search-field wcfm_ele', 'value' => $search_zip ) ) ) );
   	}
 		
 		do_action( 'wcfmmp_store_lists_after_sidebar_location_filter' );

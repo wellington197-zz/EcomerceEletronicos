@@ -27,9 +27,9 @@ global $WCFM, $WCFMmp, $post;
 
 	if ( ! empty( $search_query ) || ! empty( $search_category ) ) {
 		$pagination_args['add_args'] = array(
-				'wcfmmp_store_search'   => $search_query,
-				'wcfmmp_store_category' => $search_category,
-				'orderby'               => $orderby
+				'wcfmmp_store_search'     => $search_query,
+				'wcfmmp_store_category'   => $search_category,
+				'orderby'                 => $orderby
 		);
 	}
 	

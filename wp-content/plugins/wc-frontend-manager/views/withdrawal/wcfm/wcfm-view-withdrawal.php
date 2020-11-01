@@ -73,6 +73,10 @@ if( isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_mode'] ) ) {
 		</div>
 	  <div class="wcfm-clearfix"></div><br />
 	  
+	  <div class="wcfm_withdrawal_requests_filter_wrap wcfm_filters_wrap">
+			<?php $WCFM->library->wcfm_date_range_picker_field(); ?>
+		</div>
+	  
 	  <?php do_action( 'before_wcfm_withdrawal' ); ?>
 		
 		<form metod="post" id="wcfm_withdrawal_manage_form">
@@ -89,6 +93,7 @@ if( isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_mode'] ) ) {
 								<th><?php _e( 'My Earnings', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>
 						</thead>
@@ -102,6 +107,7 @@ if( isset( $WCFMmp->wcfmmp_withdrawal_options['withdrawal_mode'] ) ) {
 								<th><?php _e( 'My Earnings', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Charges', 'wc-frontend-manager' ); ?></th>
 								<th><?php _e( 'Payment', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( apply_filters( 'wcfm_withdrawal_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 								<th><?php _e( 'Date', 'wc-frontend-manager' ); ?></th>
 							</tr>
 						</tfoot>

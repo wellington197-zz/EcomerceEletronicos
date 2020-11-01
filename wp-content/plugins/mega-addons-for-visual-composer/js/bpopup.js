@@ -9,7 +9,7 @@
  	var y_url = $('iframe').attr('src');
 	$('.model-popup-btn').bind('click', function(event) {
 		var modal_id = $(this).data('id');
-		var bgcolor = $(this).closest('.modal-popup-box').data('bodybg');
+		var bgcolor = $(this).closest('.maw__modal_popup_box').data('bodybg');
 		$('#'+modal_id).bPopup({
 			followSpeed: 200,
 			speed: 200,

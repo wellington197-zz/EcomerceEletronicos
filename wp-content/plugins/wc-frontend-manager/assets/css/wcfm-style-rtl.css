@@ -197,3 +197,21 @@ p.wcfm_page_options_desc {
 	margin-left: 5px !important;
 	margin-right: 0px !important;
 }
+
+@media only screen and (max-width:768px) {
+	#wcfm-main-contentainer .wcfm_responsive_menu_toggler {
+		float:right!important;
+	}
+	
+	#wcfm_menu {
+		left: auto;
+		right: 0;
+		text-align: right!important;
+	}
+	
+	#wcfm_menu .wcfm_menu_items a.wcfm_menu_item {
+		text-align: right!important;
+		padding-left: 0!important;
+		padding-right: 10px!important;
+	}
+}

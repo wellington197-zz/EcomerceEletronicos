@@ -80,12 +80,10 @@ class WCFM_Product_Popup {
 																																		 //'wcfm-products-export',
 																																		 'wcfm-delivery-boys-manage',
 																																		 'wcfm-delivery-boys-stats',
-																																		 'wcfm-affiliate-manage',
-																																		 'wcfm-affiliate-stats',
 																																		 'wcfm-analytics',
 																																		 //'wcfm-listings-stats',
 																																		 'wcfm-fncy-product-designer',
-																																		 'wcfm-fncy-product-builder'
+																																		 'wcfm-fncy-product-builder',
 																																		 ) );
 	}
 	

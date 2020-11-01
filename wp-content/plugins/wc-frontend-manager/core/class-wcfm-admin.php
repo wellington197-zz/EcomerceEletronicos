@@ -97,7 +97,7 @@ class WCFM_Admin {
 		}
 
 		// check if it has already been dismissed
-		$offer_key = 'wcfm_wcfmu_inactive22092019';
+		$offer_key = 'wcfm_wcfmu_inactive09062020';
 		$hide_notice = get_option( $offer_key . '_tracking_notice', 'no' );
 
 		if ( 'hide' == $hide_notice ) {
@@ -107,21 +107,10 @@ class WCFM_Admin {
 		$offer_msg = __( '<h2>
 										 Notice something missing in your marketplace?
 										 </h2>', 'wc-frontend-manager' );
-    /*$offer_msg = __( '<h2>
-										 It\'s our Birthday!
-										 </h2>', 'wc-frontend-manager' );*/
-
-		/*$offer_msg = __( '<h2>
-										 Cyber Monday sale is on - it is best time to upgrade your WCFM. Hurry up!
-										 </h2>', 'wc-frontend-manager' );*/
 										 
-		/*$offer_msg = sprintf( __( '<h2>
-										           Happy New Year! It\'s time to grab your best deals ...
-								               </h2>', 'wc-frontend-manager' ) );*/
-								               
-		/*$offer_msg = sprintf( __( '<h2>
-										           Avail 20% discount as we celebrate 10k+ active installs. Hurry Up!
-								               </h2>', 'wc-frontend-manager' ) );*/	
+		/*$offer_msg = __( '<h2>
+										 Commemorating the Holy Week! Hurry up and get upto 30% off on all WCFM add-ons.
+										 </h2>', 'wc-frontend-manager' );*/
 								               
 		$offer_msg .= __( '<p>WooCommerce Frontend Manage - Ultimate is there to fill up all those for you. Live Chat, Store Invoice, Support Ticket, Shipment Tracking, Direct Messaging, Followers, Badges, Verificaton, Product Importer, Bulk Edit and many more, almost a never ending features list for you.</p>', 'wc-frontend-manager' );
 		//$offer_msg .= __( '<p>Growing is fun when we share it with you! As we mark our anniversary, celebrate with us and grab 15% discount on all our addons.</p>', 'wc-frontend-manager' );
@@ -143,6 +132,7 @@ class WCFM_Admin {
 				});
 			</script>
 		<?php
+		
 	}
 	
 	/**
@@ -205,7 +195,7 @@ class WCFM_Admin {
 		}
 
 		// check if it has already been dismissed
-		$offer_key = 'wcfm_wcfmgs_inactive22092019';
+		$offer_key = 'wcfm_wcfmgs_inactive09062020';
 		$hide_notice = get_option( $offer_key . '_tracking_notice', 'no' );
 
 		if ( 'hide' == $hide_notice ) {
@@ -216,17 +206,9 @@ class WCFM_Admin {
 										 Want to offer personalized experience for each of your vendors?
 										 </h2>', 'wc-frontend-manager' );
 										 
-		/*$offer_msg = sprintf( __( '<h2>
-										           It\'s our Birthday!
-								               </h2>', 'wc-frontend-manager' ) );*/
-		
-		/*$offer_msg = sprintf( __( '<h2>
-										           Happy New Year! It\'s time to grab your best deals ...
-								               </h2>', 'wc-frontend-manager' ) );*/
-								               
-		/*$offer_msg = sprintf( __( '<h2>
-										           Avail 20% discount as we celebrate 10k+ active installs. Hurry Up!
-								               </h2>', 'wc-frontend-manager' ) );*/
+		/*$offer_msg = __( '<h2>
+										 Commemorating the Holy Week! Hurry up and get upto 30% off on all WCFM add-ons.
+										 </h2>', 'wc-frontend-manager' );*/
 		
 		$offer_msg .= __( '<p>Get total control over how each of your vendors interacts with your marketplace with WCFM - Groups & Staffs. Configure everything the way you like - be it menu items, features, color scheme or commission - in groups or individually.</p>', 'wc-frontend-manager' );
 		//$offer_msg .= __( '<p>Growing is fun when we share it with you! As we mark our anniversary, celebrate with us and grab 15% discount on all our addons.</p>', 'wc-frontend-manager' );

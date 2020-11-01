@@ -124,6 +124,12 @@ jQuery(document).ready( function($) {
 		}
 	});
 	
+	if( $(".wcfm_multi_select").length > 0 ) {
+		$(".wcfm_multi_select").select2({
+			placeholder: wcfm_dashboard_messages.choose_select2 + ' ...'
+		});
+	}
+	
 	// WCfM Marketplace Settings Update
 	$('#wcfm-main-contentainer #country').select2();
 	$('#wcfm_store_setting_save_button, #wcfm_store_general_setting_save_button, #wcfm_store_address_setting_save_button').click(function(event) {
@@ -209,7 +215,7 @@ jQuery(document).ready( function($) {
 	});
 	
 	// WCfM Marketplace Commission Settings Update
-	$('#wcfm_store_commission_setting_save_button, #wcfm_store_withdrawal_setting_save_button, #wcfm_store_payment_setting_save_button').click(function(event) {
+	$('#wcfm_store_commission_setting_save_button, #wcfm_store_transaction_setting_save_button, #wcfm_store_withdrawal_setting_save_button, #wcfm_store_payment_setting_save_button').click(function(event) {
 	  event.preventDefault();
 	  
 	  // Validations
@@ -283,6 +289,86 @@ jQuery(document).ready( function($) {
 						$('#wcfm_vendor_manage_form_store_hours_setting_expander .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
 					}
 					$('#wcfm_vendor_manage_store_hours_setting_form').unblock();
+				}
+			});	
+		}
+	});
+	
+	// WCfM Marketplace Delivery Time Settings Update
+	$('#wcfm_delivery_time_setting_save_button').click(function(event) {
+	  event.preventDefault();
+	  
+	  // Validations
+		$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+		$wcfm_is_valid_form = true;
+		$( document.body ).trigger( 'wcfm_form_validate', $('#wcfm_vendor_manage_delivery_time_setting_form') );
+		$is_valid = $wcfm_is_valid_form;
+	  
+	  if($is_valid) {
+			$('#wcfm_vendor_manage_delivery_time_setting_form').block({
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			});
+			var data = {
+				action                    : 'wcfm_ajax_controller',
+				controller                : 'wcfm-vendors-manage-marketplace-settings',
+				wcfm_settings_form        : $('#wcfm_vendor_manage_delivery_time_setting_form').serialize()
+			}	
+			$.post(wcfm_params.ajax_url, data, function(response) {
+				if(response) {
+					$response_json = $.parseJSON(response);
+					$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+					if($response_json.status) {
+						wcfm_notification_sound.play();
+						$('#wcfm_settings_form_delivery_time_expander .wcfm-message').html('<span class="wcicon-status-completed"></span>' + $response_json.message).addClass('wcfm-success').slideDown();
+					} else {
+						wcfm_notification_sound.play();
+						$('#wcfm_settings_form_delivery_time_expander .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
+					}
+					$('#wcfm_vendor_manage_delivery_time_setting_form').unblock();
+				}
+			});	
+		}
+	});
+	
+	// WCfM Marketplace Store Invoice Settings Update
+	$('#wcfm_store_invoice_setting_save_button').click(function(event) {
+	  event.preventDefault();
+	  
+	  // Validations
+		$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+		$wcfm_is_valid_form = true;
+		$( document.body ).trigger( 'wcfm_form_validate', $('#wcfm_vendor_manage_store_invoice_setting_form') );
+		$is_valid = $wcfm_is_valid_form;
+	  
+	  if($is_valid) {
+			$('#wcfm_vendor_manage_store_invoice_setting_form').block({
+				message: null,
+				overlayCSS: {
+					background: '#fff',
+					opacity: 0.6
+				}
+			});
+			var data = {
+				action                    : 'wcfm_ajax_controller',
+				controller                : 'wcfm-vendors-manage-marketplace-settings',
+				wcfm_settings_form        : $('#wcfm_vendor_manage_store_invoice_setting_form').serialize()
+			}	
+			$.post(wcfm_params.ajax_url, data, function(response) {
+				if(response) {
+					$response_json = $.parseJSON(response);
+					$('.wcfm-message').html('').removeClass('wcfm-error').removeClass('wcfm-success').slideUp();
+					if($response_json.status) {
+						wcfm_notification_sound.play();
+						$('#wcfm_vendor_manage_form_vendor_invoice_expander .wcfm-message').html('<span class="wcicon-status-completed"></span>' + $response_json.message).addClass('wcfm-success').slideDown();
+					} else {
+						wcfm_notification_sound.play();
+						$('#wcfm_vendor_manage_form_vendor_invoice_expander .wcfm-message').html('<span class="wcicon-status-cancelled"></span>' + $response_json.message).addClass('wcfm-error').slideDown();
+					}
+					$('#wcfm_vendor_manage_store_invoice_setting_form').unblock();
 				}
 			});	
 		}

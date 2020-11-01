@@ -204,25 +204,25 @@ class WCFM_Stripe_Helper {
 	 */
 	public static function get_localized_messages() {
 		return apply_filters(
-			'wc_stripe_localized_messages',
+			'wcfmmp_stripe_localized_messages',
 			array(
-				'invalid_number'           => __( 'The card number is not a valid credit card number.', 'woocommerce-gateway-stripe' ),
-				'invalid_expiry_month'     => __( 'The card\'s expiration month is invalid.', 'woocommerce-gateway-stripe' ),
-				'invalid_expiry_year'      => __( 'The card\'s expiration year is invalid.', 'woocommerce-gateway-stripe' ),
-				'invalid_cvc'              => __( 'The card\'s security code is invalid.', 'woocommerce-gateway-stripe' ),
-				'incorrect_number'         => __( 'The card number is incorrect.', 'woocommerce-gateway-stripe' ),
-				'incomplete_number'        => __( 'The card number is incomplete.', 'woocommerce-gateway-stripe' ),
-				'incomplete_cvc'           => __( 'The card\'s security code is incomplete.', 'woocommerce-gateway-stripe' ),
-				'incomplete_expiry'        => __( 'The card\'s expiration date is incomplete.', 'woocommerce-gateway-stripe' ),
-				'expired_card'             => __( 'The card has expired.', 'woocommerce-gateway-stripe' ),
-				'incorrect_cvc'            => __( 'The card\'s security code is incorrect.', 'woocommerce-gateway-stripe' ),
-				'incorrect_zip'            => __( 'The card\'s zip code failed validation.', 'woocommerce-gateway-stripe' ),
-				'invalid_expiry_year_past' => __( 'The card\'s expiration year is in the past', 'woocommerce-gateway-stripe' ),
-				'card_declined'            => __( 'The card was declined.', 'woocommerce-gateway-stripe' ),
-				'missing'                  => __( 'There is no card on a customer that is being charged.', 'woocommerce-gateway-stripe' ),
-				'processing_error'         => __( 'An error occurred while processing the card.', 'woocommerce-gateway-stripe' ),
-				'invalid_request_error'    => __( 'Unable to process this payment, please try again or use alternative method.', 'woocommerce-gateway-stripe' ),
-				'invalid_sofort_country'   => __( 'The billing country is not accepted by SOFORT. Please try another country.', 'woocommerce-gateway-stripe' ),
+				'invalid_number'           => __( 'The card number is not a valid credit card number.', 'wc-multivendor-marketplace' ),
+				'invalid_expiry_month'     => __( 'The card\'s expiration month is invalid.', 'wc-multivendor-marketplace' ),
+				'invalid_expiry_year'      => __( 'The card\'s expiration year is invalid.', 'wc-multivendor-marketplace' ),
+				'invalid_cvc'              => __( 'The card\'s security code is invalid.', 'wc-multivendor-marketplace' ),
+				'incorrect_number'         => __( 'The card number is incorrect.', 'wc-multivendor-marketplace' ),
+				'incomplete_number'        => __( 'The card number is incomplete.', 'wc-multivendor-marketplace' ),
+				'incomplete_cvc'           => __( 'The card\'s security code is incomplete.', 'wc-multivendor-marketplace' ),
+				'incomplete_expiry'        => __( 'The card\'s expiration date is incomplete.', 'wc-multivendor-marketplace' ),
+				'expired_card'             => __( 'The card has expired.', 'wc-multivendor-marketplace' ),
+				'incorrect_cvc'            => __( 'The card\'s security code is incorrect.', 'wc-multivendor-marketplace' ),
+				'incorrect_zip'            => __( 'The card\'s zip code failed validation.', 'wc-multivendor-marketplace' ),
+				'invalid_expiry_year_past' => __( 'The card\'s expiration year is in the past', 'wc-multivendor-marketplace' ),
+				'card_declined'            => __( 'The card was declined.', 'wc-multivendor-marketplace' ),
+				'missing'                  => __( 'There is no card on a customer that is being charged.', 'wc-multivendor-marketplace' ),
+				'processing_error'         => __( 'An error occurred while processing the card.', 'wc-multivendor-marketplace' ),
+				'invalid_request_error'    => __( 'Unable to process this payment, please try again or use alternative method.', 'wc-multivendor-marketplace' ),
+				'invalid_sofort_country'   => __( 'The billing country is not accepted by SOFORT. Please try another country.', 'wc-multivendor-marketplace' ),
 			)
 		);
 	}

@@ -1,13 +1,14 @@
 jQuery(document).ready(function($) {
-    var icons = {
-        "header": "fa fa-plus",
-        "activeHeader": "fa fa-minus"
-    }
-
-    $( ".mega-accordion" ).each(function(index, el) {
+    jQuery( ".mega-accordion" ).each(function(index, el) {
         var active  = $(this).data('active');
         var anim    = $(this).data('anim');
-        var event    = $(this).data('event');
+        var event   = $(this).data('event');
+        var icon    = $(this).data('closeicons');
+        var activeicon    = $(this).data('activeicons');
+        var icons = {
+            "header": icon,
+            "activeHeader": activeicon,
+        }
         $(this).accordion({
             animate: anim,
             event: event,

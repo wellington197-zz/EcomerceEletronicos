@@ -156,13 +156,19 @@ class WCFM_Listings_Controller {
 
 				// Action
 				$actions = '';
-				$actions .= '<a target="_blank" class="wcfm-action-icon" href="' . get_permalink( $wcfm_listings_single->ID ) . '"><span class="wcfmfa fa-eye text_tip" data-tip="' . esc_attr__( 'View', 'wc-frontend-manager' ) . '"></span></a>';
 				
-				if( $wcfm_allow_listings_edit = apply_filters( 'wcfm_is_allow_listings_edit', true ) ) {
-					$actions .= '<a class="wcfm-action-icon" href="' . add_query_arg( array( 'action' => 'edit', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ) . '"><span class="wcfmfa fa-edit text_tip" data-tip="' . esc_attr__( 'Edit', 'wc-frontend-manager' ) . '"></span></a>';
+				if ( in_array( $wcfm_listings_single->post_status, [ 'pending', 'pending_payment' ], true ) && !wcfm_is_vendor() ) {
+					$actions .= '<a class="wcfm-action-icon" href="' . add_query_arg( array( 'action' => 'approve_listing', 'listing_id' => $wcfm_listings_single->ID ), WC()->ajax_url() ) . '"><span class="wcfmfa fa-check text_tip" data-tip="' . esc_attr__( 'Approve', 'wp-job-manager' ) . '"></span></a>';
 				}
 				
+				$actions .= '<a target="_blank" class="wcfm-action-icon" href="' . get_permalink( $wcfm_listings_single->ID ) . '"><span class="wcfmfa fa-eye text_tip" data-tip="' . esc_attr__( 'View', 'wc-frontend-manager' ) . '"></span></a>';
+				
 				if( $wcfm_listings_single->post_status == 'publish' ) {
+					// Edit
+					if( $wcfm_allow_listings_edit = apply_filters( 'wcfm_is_allow_listings_edit', true ) ) {
+						$actions .= '<a class="wcfm-action-icon" href="' . add_query_arg( array( 'action' => 'edit', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ) . '"><span class="wcfmfa fa-edit text_tip" data-tip="' . esc_attr__( 'Edit', 'wc-frontend-manager' ) . '"></span></a>';
+					}
+				
 					// Mark Filled
 					if( $wcfm_allow_listings_mark_filled = apply_filters( 'wcfm_is_allow_listings_mark_filled', true ) ) {
 						if ( is_position_filled( $wcfm_listings_single->ID ) ) {
@@ -188,12 +194,19 @@ class WCFM_Listings_Controller {
 					if( $wcfm_allow_listings_duplicate = apply_filters( 'wcfm_is_allow_listings_duplicate', true ) ) {
 						$actions .= '<a target="_blank" class="wcfm-action-icon" href="' . wp_nonce_url( add_query_arg( array( 'action' => 'duplicate', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ), 'job_manager_my_job_actions' ) . '"><span class="wcfmfa fa-copy text_tip" data-tip="' . esc_attr__( 'Duplicate', 'wp-job-manager' ) . '"></span></a>';
 					}
-				}
+				} else {
 				
-				if( $wcfm_allow_listings_relist = apply_filters( 'wcfm_is_allow_listings_relist', true ) ) {
-					if( $wcfm_listings_single->post_status == 'expired' ) {
-						if ( job_manager_get_permalink( 'submit_job_form' ) ) {
-							$actions .= '<a class="wcfm-action-icon" href="' . wp_nonce_url( add_query_arg( array( 'action' => 'relist', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ), 'job_manager_my_job_actions' ) . '"><span class="wcfmfa fa-retweet text_tip" data-tip="' . esc_attr__( 'Relist', 'wp-job-manager' ) . '"></span></a>';
+					// Continue Submission
+					if( $wcfm_listings_single->post_status != 'expired' ) {
+						$actions .= '<a class="wcfm-action-icon" href="' . wp_nonce_url( add_query_arg( array( 'action' => 'continue', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ), 'job_manager_my_job_actions' ) . '"><span class="wcfmfa fa-edit text_tip" data-tip="' . esc_attr__( 'Continue Submission', 'wc-frontend-manager' ) . '"></span></a>';
+					}
+					
+					// Relist
+					if( $wcfm_allow_listings_relist = apply_filters( 'wcfm_is_allow_listings_relist', true ) ) {
+						if( $wcfm_listings_single->post_status == 'expired' ) {
+							if ( job_manager_get_permalink( 'submit_job_form' ) ) {
+								$actions .= '<a class="wcfm-action-icon" href="' . wp_nonce_url( add_query_arg( array( 'action' => 'relist', 'job_id' => $wcfm_listings_single->ID ), $jobs_dashboard_url ), 'job_manager_my_job_actions' ) . '"><span class="wcfmfa fa-retweet text_tip" data-tip="' . esc_attr__( 'Relist', 'wp-job-manager' ) . '"></span></a>';
+							}
 						}
 					}
 				}

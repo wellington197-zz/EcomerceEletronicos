@@ -4,7 +4,7 @@
  * Plugin URI: http://sivel.net/wordpress/wordpress-reset/
  * Description: Resets the WordPress database back to it's defaults. Deletes all customizations and content. Does not modify files only resets the database.
  * Author: Aristeides Stathopoulos, Matt Martz
- * Version: 1.4.1
+ * Version: 1.4.2
  * Author URI: https://aristeides.com
  *
  * WordPress Reset is released under the GNU General Public License (GPL)

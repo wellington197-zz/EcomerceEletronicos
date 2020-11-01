@@ -39,6 +39,8 @@ class WCMp_Frontend {
         // store visitors stats
         if(!apply_filters('wcmp_is_disable_store_visitors_stats', false))
             add_action('template_redirect', array(&$this, 'wcmp_store_visitors_stats'), 99);
+
+        add_filter('woocommerce_get_zone_criteria', array(&$this, 'wcmp_shipping_zone_same_region_criteria'), 10, 3);
     }
 
     /**
@@ -53,7 +55,7 @@ class WCMp_Frontend {
         if (isset($_POST['wcmp_vendor_fields']) && isset($_POST['pending_vendor'])) {
 
             if (isset($_FILES['wcmp_vendor_fields'])) {
-                $attacment_files = $_FILES['wcmp_vendor_fields'];
+                $attacment_files = array_filter($_FILES['wcmp_vendor_fields']);
                 $files = array();
                 $count = 0;
                 if (!empty($attacment_files) && is_array($attacment_files)) {
@@ -95,7 +97,7 @@ class WCMp_Frontend {
                     }
                 }
             }
-            $wcmp_vendor_fields = $_POST['wcmp_vendor_fields'];
+            $wcmp_vendor_fields = isset( $_POST['wcmp_vendor_fields'] ) ? array_filter( array_map( 'wc_clean', (array) $_POST['wcmp_vendor_fields'] ) ) : '';
 
             $wcmp_vendor_fields = apply_filters('wcmp_save_registration_fields', $wcmp_vendor_fields, $customer_id);
             update_user_meta($customer_id, 'wcmp_vendor_fields', $wcmp_vendor_fields);
@@ -134,9 +136,9 @@ class WCMp_Frontend {
                 $validation_errors->add('recaptcha is not validate', __('Please Verify  Recaptcha', 'dc-woocommerce-multi-vendor'));
             }
         }elseif(isset($_POST['g-recaptchatype']) && $_POST['g-recaptchatype'] == 'v3') {
-            $recaptcha_secret = isset($_POST['recaptchav3_secretkey']) ? $_POST['recaptchav3_secretkey'] : '';
+            $recaptcha_secret = isset($_POST['recaptchav3_secretkey']) ? wc_clean( $_POST['recaptchav3_secretkey'] ) : '';
             $recaptcha_url = 'https://www.google.com/recaptcha/api/siteverify';
-            $recaptcha_response = isset($_POST['recaptchav3Response']) ? $_POST['recaptchav3Response'] : '';
+            $recaptcha_response = isset($_POST['recaptchav3Response']) ? wc_clean( $_POST['recaptchav3Response'] ) : '';
 
             $recaptcha = file_get_contents($recaptcha_url . '?secret=' . $recaptcha_secret . '&response=' . $recaptcha_response);
             $recaptcha = json_decode($recaptcha);
@@ -147,7 +149,7 @@ class WCMp_Frontend {
         }
         
         if (isset($_FILES['wcmp_vendor_fields'])) {
-            $attacment_files = $_FILES['wcmp_vendor_fields'];
+            $attacment_files = array_filter($_FILES['wcmp_vendor_fields']);
             if (!empty($attacment_files) && is_array($attacment_files)) {
                 foreach ($attacment_files['name'] as $key => $value) {
                     $file_type = array();
@@ -158,14 +160,14 @@ class WCMp_Frontend {
                     }
                     foreach ($attacment_files['type'][$key] as $file_key => $file_value) {
                         if (!empty($attacment_files['name'][$key][$file_key])) {
-                            if (!in_array($file_value, $file_type)) {
+                            if ($wcmp_vendor_registration_form_data[$key]['required'] && !in_array($file_value, $file_type)) {
                                 $validation_errors->add('file type error', __('Please Upload valid file', 'dc-woocommerce-multi-vendor'));
                             }
                         }
                     }
                     foreach ($attacment_files['size'][$key] as $file_size_key => $file_size_value) {
                         if (!empty($wcmp_vendor_registration_form_data[$key]['fileSize'])) {
-                            if ($file_size_value > $wcmp_vendor_registration_form_data[$key]['fileSize']) {
+                            if ($wcmp_vendor_registration_form_data[$key]['required'] && $file_size_value > $wcmp_vendor_registration_form_data[$key]['fileSize']) {
                                 $validation_errors->add('file size error', __('File upload limit exceeded', 'dc-woocommerce-multi-vendor'));
                             }
                         }
@@ -257,7 +259,7 @@ class WCMp_Frontend {
                 'contents_cost' => array_sum(wp_list_pluck($split_package, 'line_total')),
                 'applied_coupons' => WC()->cart->get_applied_coupons(),
                 'user' => array(
-                    'ID' => get_current_vendor_id(),
+                    'ID' => $vendor_id,
                 ),
                 'destination' => array(
                     'country' => WC()->customer->get_shipping_country(),
@@ -278,7 +280,8 @@ class WCMp_Frontend {
      * @param sting $package_key as $vendor_id
      */
     public function add_meta_date_in_shipping_package($item, $package_key, $package, $order) {
-        $item->add_meta_data('vendor_id', $package_key, true);
+        $vendor_id = ( isset( $package['vendor_id'] ) && $package['vendor_id'] ) ? $package['vendor_id'] : $package_key;
+        $item->add_meta_data('vendor_id', $vendor_id, true);
         $package_qty = array_sum(wp_list_pluck($package['contents'], 'quantity'));
         $item->add_meta_data('package_qty', $package_qty, true);
         do_action('wcmp_add_shipping_package_meta_data');
@@ -393,13 +396,16 @@ class WCMp_Frontend {
 
         wp_register_style('frontend_css', $frontend_style_path . 'frontend' . $suffix . '.css', array(), $WCMp->version);
         wp_register_style('product_css', $frontend_style_path . 'product' . $suffix . '.css', array(), $WCMp->version);
-        wp_register_style('vendor_order_by_product_css', $frontend_style_path . 'vendor_order_by_product' . $suffix . '.css', array(), $WCMp->version);
         wp_register_style('vandor-dashboard-style', $frontend_style_path . 'vendor_dashboard' . $suffix . '.css', array(), $WCMp->version);
+        wp_register_style('multiple_vendor', $frontend_style_path . 'multiple-vendor' . $suffix . '.css', array(), $WCMp->version);
+        wp_register_style('wcmp_custom_scroller', $frontend_style_path . 'lib/jquery.mCustomScrollbar.css', array(), $WCMp->version);
+        wp_register_style( 'advance-product-manager', $frontend_style_path . 'advance-product-manager.css', array(), $WCMp->version );
+        
         // Add RTL support
         wp_style_add_data('vandor-dashboard-style', 'rtl', 'replace');
-        wp_register_style('multiple_vendor', $frontend_style_path . 'multiple-vendor' . $suffix . '.css', array(), $WCMp->version);
-        wp_register_style('wcmp_custom_scroller', $frontend_style_path . 'jquery.mCustomScrollbar.css', array(), $WCMp->version);
-        wp_register_style( 'advance-product-manager', $frontend_style_path . 'advance-product-manager.css', array(), $WCMp->version );
+        wp_style_add_data('frontend_css', 'rtl', 'replace');
+        wp_style_add_data('product_css', 'rtl', 'replace');
+        wp_style_add_data('advance-product-manager', 'rtl', 'replace');
 
         if (is_vendor_dashboard() && is_user_logged_in() && (is_user_wcmp_vendor(get_current_user_id()) || is_user_wcmp_pending_vendor(get_current_user_id()) || is_user_wcmp_rejected_vendor(get_current_user_id()))) {
             wp_enqueue_style('dashicons');
@@ -549,6 +555,28 @@ class WCMp_Frontend {
                 wcmp_save_visitor_stats($product_vendor->id, $ip_data);
             }
         }
+    }
+
+    public function wcmp_shipping_zone_same_region_criteria( $criteria, $package, $postcode_locations ) {
+        global $wpdb;
+        $postcode  = wc_normalize_postcode( wc_clean( $package['destination']['postcode'] ) );
+        if( !$postcode ) return $criteria;
+        $search_results = $wpdb->get_results(
+            "SELECT vendor_id,zone_id
+            FROM {$wpdb->prefix}wcmp_shipping_zone_locations where location_code = '$postcode'"
+            );
+        $match_rates = array();
+        if ( !empty( $search_results ) ) {
+            foreach ($search_results as $key => $value) {
+                if( $value->vendor_id == $package['vendor_id'] ) {
+                    $match_rates[] = $value->zone_id;
+                }
+            }
+            if( !empty( $match_rates ) ) {
+                $criteria[] = 'AND zones.zone_id IN (' . implode( ',', $match_rates ) . ')';
+            }
+        }
+        return $criteria;
     }
 
 }

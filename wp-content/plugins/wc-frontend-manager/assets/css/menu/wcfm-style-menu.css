@@ -591,6 +591,7 @@ p.checkbox_title { vertical-align: middle; }
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
+	box-shadow: 1px 1px 5px 0px #E9E9E9;
 }
 
 #wcfm-main-contentainer textarea {
@@ -655,10 +656,10 @@ p.checkbox_title { vertical-align: middle; }
 	margin-right: 0px;
 	font-size: 15px;
 	display: inline-block;
-	box-shadow: none;
 	line-height: 18px;
 	min-height:35px;
 	max-width: 100%;
+	box-shadow: 1px 1px 5px 0px #E9E9E9;
 }
 
 #wcfm-main-contentainer .wp-editor-wrap {
@@ -704,8 +705,8 @@ p.checkbox_title { vertical-align: middle; }
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
-	-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
-	box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+	-webkit-box-shadow: 1px 1px 5px 0px #E9E9E9;
+	box-shadow: 1px 1px 5px 0px #E9E9E9;
 	-webkit-transition: .05s border-color ease-in-out;
 	transition: .05s border-color ease-in-out;
 	-webkit-appearance: none;
@@ -724,6 +725,7 @@ input.wcfm-checkbox:checked:before {
 	font-weight: 900;
 	margin-top: 0px;
 	line-height: 20px !important;
+	position:relative;
 }
 
 /* WCFM Fieldset Styleing */
@@ -784,6 +786,8 @@ input.wcfm-checkbox:checked:before {
 	background-color: #fdfdfd;
 }
 
+#wcfm-main-contentainer table.dataTable.display tbody tr.odd td{background-color:#f8f8f8;}
+
 #wcfm-main-contentainer .select2-container, #wcfm-main-contentainer .select2-container .select2-selection {
 	min-height: 38px !important; 
 }
@@ -796,6 +800,7 @@ input.wcfm-checkbox:checked:before {
 #wcfm-main-contentainer .select2-container {
 	margin-bottom: 15px;
 	position: relative !important;
+	box-shadow:1px 1px 5px 0 #E9E9E9;
 }
 
 /* Tiny MCE */
@@ -808,7 +813,7 @@ input.wcfm-checkbox:checked:before {
 /* WCFM Data Table Styling */
 #wcfm-main-contentainer table.dataTable thead .sorting_asc { background: none !important; }
 #wcfm-main-contentainer .dataTables_wrapper .select2-container { margin-bottom: 10px;}
-#wcfm-main-contentainer .dataTables_wrapper .select2-container, #wcfm-main-contentainer .dataTables_wrapper .select2-container .select2-selection { min-height: 35px !important; }
+#wcfm-main-contentainer .dataTables_wrapper .select2-container, #wcfm-main-contentainer .dataTables_wrapper .select2-container .select2-selection { min-height: 38px !important; box-shadow: 1px 1px 5px 0px #E9E9E9; }
 #wcfm-main-contentainer .dataTables_wrapper .select2-container--default .select2-selection--single .select2-selection__rendered, #wcfm-main-contentainer .select2-search input { padding-top: 0px !important; padding-bottom: 0px !important; line-height: 2.407em !important; }
 
 #wcfm-main-contentainer .dataTables_wrapper .dataTables_filter input {
@@ -854,7 +859,7 @@ input.wcfm-checkbox:checked:before {
 .dataTables_length select { max-width: 75px; width: 60px !important; min-width: 15px !important; padding: 5px !important; }
 .wcfm_filters_wrap { margin-top: 4px !important; opacity: 1; display: none; text-align: center; }
 .wcfm_filters_wrap input { margin-bottom: 10px; }
-.date-picker-wrapper { z-index: 25 !important; }
+.date-picker-wrapper { z-index: 255 !important; }
 
 table.dataTable.row-border tbody th, table.dataTable.row-border tbody td, table.dataTable.display tbody th, table.dataTable.display tbody td {
   border-top: 1px solid #ddd !important;
@@ -865,6 +870,7 @@ table.dataTable.row-border tbody th, table.dataTable.row-border tbody td, table.
 .media-menu a:nth-child(3),
 .media-menu a:nth-child(4),
 .wcfm-image-media-modal .media-frame-menu,
+.media-frame-menu-toggle,.media-frame-menu-heading
 .attachment-info .edit-attachment {
 	display: none !important;
 }

@@ -14,6 +14,8 @@ global $WCFM, $WCFMmp;
 
 //$total_review_rating = $store_user->get_total_review_rating();
 $avg_review_rating = $store_user->get_avg_review_rating();
+
+if( !apply_filters( 'wcfm_is_allow_review_rating', true ) ) return;
 ?>
 
 <?php if( $avg_review_rating ) { ?>

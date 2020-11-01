@@ -21,11 +21,11 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
         <?php
             if($banner != ''){
         ?>
-            <img src="<?php echo $banner; ?>" alt="<?php echo $vendor->page_title ?>">
+            <img src="<?php echo esc_url($banner); ?>" alt="<?php echo esc_attr($vendor->page_title) ?>">
         <?php
             } else{
         ?>
-            <img src="<?php echo $WCMp->plugin_url . 'assets/images/banner_placeholder.jpg'; ?>" alt="<?php echo $vendor->page_title ?>">
+            <img src="<?php echo $WCMp->plugin_url . 'assets/images/banner_placeholder.jpg'; ?>" alt="<?php echo esc_attr($vendor->page_title) ?>">
         <?php        
             }
         ?>
@@ -47,6 +47,7 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
             <?php if ($vendor_google_plus_profile) { ?> <a target="_blank" href="<?php echo esc_url($vendor_google_plus_profile); ?>"><i class="wcmp-font ico-google-plus-icon"></i></a><?php } ?>
             <?php if ($vendor_youtube) { ?> <a target="_blank" href="<?php echo esc_url($vendor_youtube); ?>"><i class="wcmp-font ico-youtube-icon"></i></a><?php } ?>
             <?php if ($vendor_instagram) { ?> <a target="_blank" href="<?php echo esc_url($vendor_instagram); ?>"><i class="wcmp-font ico-instagram-icon"></i></a><?php } ?>
+            <?php do_action( 'wcmp_vendor_store_header_social_link', $vendor_id ); ?>
         </div>
         <?php endif; ?>
 
@@ -55,7 +56,7 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
         ?>
         <div class="vendor_description">
             <div class="vendor_img_add">
-                <div class="img_div"><img src=<?php echo $profile; ?> alt="<?php echo $vendor->page_title ?>"/></div>
+                <div class="img_div"><img src=<?php echo $profile; ?> alt="<?php echo esc_attr($vendor->page_title) ?>"/></div>
                 <div class="vendor_address">
                     <p class="wcmp_vendor_name"><?php echo $vendor->page_title ?></p>
                     <?php do_action('before_wcmp_vendor_information',$vendor_id);?>
@@ -106,9 +107,9 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
     ?>
     <div class="vendor_description">
         <div class="vendor_img_add">
-            <div class="img_div"><img src=<?php echo $profile; ?> alt="<?php echo $vendor->page_title ?>"/></div>
-            <div class="vendor_address">
-                <p class="wcmp_vendor_name"><?php echo $vendor->page_title ?></p>
+            <div class="img_div"><img src=<?php echo esc_url($profile); ?> alt="<?php echo esc_attr($vendor->page_title) ?>"/></div>
+            <div class="">
+                <p class="wcmp_vendor_name"><?php echo esc_html($vendor->page_title) ?></p>
                 <?php do_action('before_wcmp_vendor_information',$vendor_id);?>
                 <div class="wcmp_vendor_rating">
                     <?php
@@ -121,7 +122,7 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
                     }
                     ?>      
                 </div>  
-                <?php if (!empty($location) && $vendor_hide_address != 'Enable') { ?><p class="wcmp_vendor_detail"><i class="wcmp-font ico-location-icon"></i><label><?php echo $location; ?></label></p><br /><?php } ?>
+                <?php if (!empty($location) && $vendor_hide_address != 'Enable') { ?><p class="wcmp_vendor_detail"><i class="wcmp-font ico-location-icon"></i><label><?php echo esc_html($location); ?></label></p><br /><?php } ?>
                 <?php if (!empty($mobile) && $vendor_hide_phone != 'Enable') { ?><p class="wcmp_vendor_detail"><i class="wcmp-font ico-call-icon"></i><label><?php echo apply_filters('vendor_shop_page_contact', $mobile, $vendor_id); ?></label></p><?php } ?>
                 <?php if (!empty($email) && $vendor_hide_email != 'Enable') { ?><a href="mailto:<?php echo apply_filters('vendor_shop_page_email', $email, $vendor_id); ?>" class="wcmp_vendor_detail"><i class="wcmp-font ico-mail-icon"></i><?php echo apply_filters('vendor_shop_page_email', $email, $vendor_id); ?></a><?php } ?>
                 <?php
@@ -131,7 +132,7 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
                     if (empty($external_store_label))
                         $external_store_label = __('External Store URL', 'dc-woocommerce-multi-vendor');
                     if (isset($external_store_url) && !empty($external_store_url)) {
-                        ?><p class="external_store_url"><label><a target="_blank" href="<?php echo apply_filters('vendor_shop_page_external_store', esc_url_raw($external_store_url), $vendor_id); ?>"><?php echo $external_store_label; ?></a></label></p><?php
+                        ?><p class="external_store_url"><label><a target="_blank" href="<?php echo apply_filters('vendor_shop_page_external_store', esc_url_raw($external_store_url), $vendor_id); ?>"><?php echo esc_html($external_store_label); ?></a></label></p><?php
                         }
                     }
                     ?>
@@ -158,5 +159,7 @@ $template_class = apply_filters('can_vendor_edit_shop_template', false) && get_u
     <div class="description_data"> 
         <?php echo htmlspecialchars_decode( wpautop( $description ), ENT_QUOTES ); ?>
     </div>
-    <?php } ?>
+    <?php } 
+    do_action('after_wcmp_vendor_description', $vendor_id);
+    ?>
 </div>  

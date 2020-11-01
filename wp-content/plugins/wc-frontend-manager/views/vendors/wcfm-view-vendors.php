@@ -2,7 +2,7 @@
 global $WCFM;
 
 $is_allow_vendors = apply_filters( 'wcfm_is_allow_vendors', true );
-if( !$is_allow_vendors ) {
+if( wcfm_is_vendor() || !$is_allow_vendors ) {
 	wcfm_restriction_message_show( "Vendors" );
 	return;
 }
@@ -14,7 +14,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 
   <div class="wcfm-page-headig">
 		<span class="wcfmfa fa-user-alt"></span>
-		<span class="wcfm-page-heading-text"><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendors', 'wc-frontend-manager'); ?></span>
+		<span class="wcfm-page-heading-text"><?php echo apply_filters( 'wcfm_vendor_listing_title', apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendors', 'wc-frontend-manager') ); ?></span>
 		<?php do_action( 'wcfm_page_heading' ); ?>
 	</div>
 	<div class="wcfm-collapse-content">
@@ -22,7 +22,7 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 		<?php do_action( 'before_wcfm_vendors' ); ?>
 		
 		<div class="wcfm-container wcfm-top-element-container">
-			<h2><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendors', 'wc-frontend-manager') . ' ' . __( 'Listing', 'wc-frontend-manager' ); ?></h2>
+			<h2><?php echo apply_filters( 'wcfm_vendor_listing_heading', apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendors', 'wc-frontend-manager') . ' ' . __( 'Listing', 'wc-frontend-manager' ) ); ?></h2>
 			<?php
 			if( ($WCFM->is_marketplace == 'wcfmmarketplace' ) && apply_filters( 'wcfm_add_new_vendor_sub_menu', true ) ) {
 				echo '<a id="add_new_vendor_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_vendors_new_url().'" data-tip="' . __('Add New', 'wc-frontend-manager') . ' ' . apply_filters( 'wcfm_sold_by_label', '', __( 'Store', 'wc-frontend-manager') ) . ' ' . __( 'Vendor', 'wc-frontend-manager') . '"><span class="wcfmfa fa-user-alt"></span><span class="text">' . __( 'Add New', 'wc-frontend-manager') . '</span></a>';

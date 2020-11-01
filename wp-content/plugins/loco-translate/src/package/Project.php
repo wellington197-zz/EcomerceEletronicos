@@ -323,6 +323,16 @@ class Loco_package_Project {
         return $finder;
     }
 
+
+    /**
+     * Check if target file or directory is excluded
+     * @param Loco_fs_File PO or POT file
+     * @return bool
+     */
+    private function isTargetExcluded( Loco_fs_File $file ){
+        return $this->xgpaths->has($file) || $this->xdpaths->has($file);
+    }
+
     
     /**
      * Add a path for excluding in a recursive target file search
@@ -513,19 +523,32 @@ class Loco_package_Project {
      */
     public function getPot(){
         if( ! $this->pot ){
-            // attempt to match POT exactly under configured domain paths
             $name = $this->getSlug().'.pot';
-            $targets = $this->getConfiguredTargets()->export();
-            // permit POT file in the bundle root (i.e. outside domain path)
-            if( $this->isDomainDefault() && $this->bundle->hasDirectoryPath() ){
-                $targets[] = $this->bundle->getDirectoryPath();
-            }
-            foreach( $targets as $dir ){
-                $file = new Loco_fs_File( $name );
-                $file->normalize( $dir );
-                if( $file->exists() ){
-                    $this->pot = $file;
-                    break;
+            if( '.pot' !== $name ){
+                // find under configured domain paths
+                $targets = $this->getConfiguredTargets()->copy();
+                // always permit POT file in the bundle root (i.e. outside domain path)
+                if( $this->isDomainDefault() && $this->bundle->hasDirectoryPath() ){
+                    $root = $this->bundle->getDirectoryPath();
+                    $targets->add( new Loco_fs_Directory($root) );
+                    // look in alternative language directories if only root is configured
+                    if( 1 === count($targets) ){
+                        foreach( array('languages','language','lang','l10n','i18n') as $d ) {
+                            $alt = new Loco_fs_Directory($root.'/'.$d);
+                            if( ! $this->isTargetExcluded($alt) ){
+                                $targets->add($alt);
+                            }
+                        }
+                     }
+                }
+                // pot check is for exact name and not recursive
+                foreach( $targets as $dir ){
+                    $file = new Loco_fs_File($name);
+                    $file->normalize( $dir->getPath() );
+                    if( $file->exists() && ! $this->isTargetExcluded($file) ){
+                        $this->pot = $file;
+                        break;
+                    }
                 }
             }
         }
@@ -645,9 +668,14 @@ class Loco_package_Project {
         $prefix = $this->getSlug(); 
         $domain = $this->domain->getName();
         $default = $this->isDomainDefault();
+        $prefs = Loco_data_Preferences::get();
         /* @var $file Loco_fs_File */
         foreach( $files[$ext] as $file ){
             $file = new Loco_fs_LocaleFile( $file );
+            // restrict locale by user preference
+            if( $prefs && ! $prefs->has_locale( $file->getLocale() ) ){
+                continue;
+            }
             // add file if prefix matches and has a suffix. locale will be validated later
             if( $file->getPrefix() === $prefix && $file->getSuffix() ){
                 $list->addLocalized( $file );
@@ -703,23 +731,19 @@ class Loco_package_Project {
         $suffix = sprintf( '%s.po', $locale );
         $prefix = $slug ? sprintf('%s-',$slug) : '';
         $choice = new Loco_fs_FileList;
-        /* @var $dir Loco_fs_Directory */
+        /* @var Loco_fs_Directory $dir */
         foreach( $this->getConfiguredTargets() as $dir ){
             // theme files under their own directory normally have no file prefix
             if( $default && $dir->underThemeDirectory() ){
                 $path = $dir->getPath().'/'.$suffix;
             }
-            // plugin files are prefixed even in their own directory, so empty prefix here implies incorrect bundle configuration
-            //else if( $default && ! $prefix && $dir->underPluginDirectory() ){
-            //    $path = $dir->getPath().'/'.$domain.'-'.$suffix;
-            //}
             // all other paths use configured prefix, which may be empty
             else {
                 $path = $dir->getPath().'/'.$prefix.$suffix;
             }
             $choice->add( new Loco_fs_LocaleFile($path) );
         }
-        /* @var $dir Loco_fs_Directory */
+        /* @var Loco_fs_Directory $dir */
         foreach( $this->getSystemTargets() as $dir ){
             $path = $dir->getPath();
             // themes and plugins under global locations will be loaded by domain, regardless of prefix
@@ -734,6 +758,26 @@ class Loco_package_Project {
         }
 
         return $choice;
+    }
+
+
+    /**
+     * Initialize a PO file path from required location
+     * @param Loco_fs_Directory
+     * @param Loco_Locale
+     * @return Loco_fs_LocaleFile
+     * @throws Loco_error_Exception
+     */
+    public function initLocaleFile( Loco_fs_Directory $dir, Loco_Locale $locale ){
+        $choice = $this->initLocaleFiles($locale);
+        $pattern = '!^'.preg_quote($dir->getPath(),'!').'/[^/.]+\\.po$!';
+        /* @var Loco_fs_LocaleFile $file */
+        foreach( $choice as $file ){
+            if( preg_match($pattern,$file->getPath()) ){
+                return $file;
+            }
+        }
+        throw new Loco_error_Exception('Unexpected file location: '.$dir );
     }
 
 

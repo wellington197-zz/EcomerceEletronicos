@@ -30,7 +30,7 @@ class WCMp_Vendor_Order {
         }else{
             $this->id = 0;
         }
-        $this->vendor_id = get_post_meta($this->id, '_vendor_id', true);
+        $this->vendor_id = absint( get_post_meta($this->id, '_vendor_id', true) );
         
         $this->order = wc_get_order( $this->id );
     }
@@ -105,6 +105,16 @@ class WCMp_Vendor_Order {
     }
     
     /**
+     * Get total commission refunded amount.
+     *
+     * @since 3.4.7
+     */
+    public function get_total_commission_refunded_amount($context = 'view') {
+        $commission_id = $this->get_prop('_commission_id');
+        return WCMp_Commission::commission_refunded_totals($commission_id, $context);
+    }
+    
+    /**
      * Get vendor shipping amount.
      *
      * @since 3.4.0
@@ -132,6 +142,21 @@ class WCMp_Vendor_Order {
      */
     public function get_order() {
         return $this->order ? $this->order : false;
+    }
+    
+    /**
+     * Get formatted order total earned.
+     *
+     * @since 3.4.3
+     */
+    public function get_formatted_order_total_earned($context = 'view') {
+        $commission_id = $this->get_prop('_commission_id');
+        $commission_total = get_post_meta( $commission_id, '_commission_total', true );
+        if($commission_total != WCMp_Commission::commission_totals($commission_id, 'edit')){
+            return '<del>' . wc_price($commission_total, array('currency' => $this->order->get_currency())) . '</del> <ins>' . WCMp_Commission::commission_totals($commission_id, $context).'</ins>'; 
+        }else{
+            return WCMp_Commission::commission_totals($commission_id, $context);
+        }
     }
     
 }

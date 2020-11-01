@@ -96,11 +96,18 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
             'name' => __('New language','loco-translate'),
             'icon' => 'add',
         ) );
+        
+        // offer PO file upload
+        $p['nav'][] = new Loco_mvc_ViewParams( array(
+            'href' => $this->getProjectLink('upload', $project ),
+            'name' => __('Upload PO','loco-translate'),
+            'icon' => 'upload',
+        ) );
 
         $pot = $project->getPot();
         
         // prevent editing of POT when config prohibits
-        if( $project->isPotLocked() ) {
+        if( $project->isPotLocked() || 1 < Loco_data_Settings::get()->pot_protect ) {
             if( $pot && $pot->exists() ){
                 $meta = Loco_gettext_Metadata::load($pot);
                 $p['nav'][] = new Loco_mvc_ViewParams( array(
@@ -135,6 +142,10 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
 
     /**
      * Collect PO/MO pairings, ignoring any PO that is in use as a template
+     * @param Loco_fs_FileList PO files
+     * @param Loco_fs_FileList MO files
+     * @param Loco_fs_File POT file
+     * @return array[]
      */
     private function createPairs( Loco_fs_FileList $po, Loco_fs_FileList $mo, Loco_fs_File $pot = null ){     
         $pairs = array();
@@ -166,6 +177,9 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
     
     /**
      * Initialize view parameters for each row representing a localized resource pair
+     * @param Loco_package_Project
+     * @param Loco_fs_LocaleFileList localized PO files
+     * @param Loco_fs_LocaleFileList localized MO files
      * @return array collection of entries corresponding to available PO/MO pair.
      */
     private function createProjectPairs( Loco_package_Project $project, Loco_fs_LocaleFileList $po, Loco_fs_LocaleFileList $mo ){
@@ -268,10 +282,12 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
         // bundle may not be fully configured
         $configured = $bundle->isConfigured();
 
-        // Hello Dolly is an exception. don't show unless configured deliberately 
-        if( ! $configured && 'hello.php' === $bundle->getHandle() && 'Hello Dolly' === $bundle->getName() ){
-            $this->set( 'redirect', Loco_mvc_AdminRouter::generate('core-view') );
-            return $this->view('admin/bundle/alias');
+        // Hello Dolly is an exception. don't show unless configured deliberately
+        if( 'Hello Dolly' === $bundle->getName() && 'hello.php' === basename($bundle->getHandle()) ){
+            if( ! $configured || 'meta' === $configured ){
+                $this->set( 'redirect', Loco_mvc_AdminRouter::generate('core-view') );
+                return $this->view('admin/bundle/alias');
+            }
         }
 
         // Collect all configured projects
@@ -287,15 +303,22 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
             $prefixes = array();
             $po = new Loco_fs_LocaleFileList;
             $mo = new Loco_fs_LocaleFileList;
+            $prefs = Loco_data_Preferences::get();
             foreach( Loco_package_Inverter::export($bundle) as $ext => $files ){
                 $list = 'mo' === $ext ? $mo : $po;
                 foreach( $files as $file ){
                     $file = new Loco_fs_LocaleFile($file);
+                    $locale = $file->getLocale();
+                    if( $prefs && ! $prefs->has_locale($locale) ){
+                        continue;
+                    }
                     $list->addLocalized( $file );
                     // Only look in system locations if locale is valid and domain/prefix available
-                    $locale = $file->getLocale();
-                    if( $locale->isValid() && ( $domain = $file->getPrefix() ) ){
-                        $prefixes[$domain] = true;
+                    if( $locale->isValid() ){
+                        $domain = $file->getPrefix();
+                        if( $domain ) {
+                            $prefixes[$domain] = true;
+                        }
                     }
                 }
             }
@@ -318,5 +341,5 @@ class Loco_admin_bundle_ViewController extends Loco_admin_bundle_BaseController 
         return $this->view( 'admin/bundle/view' );
     }
 
-    
+   
 }

@@ -34,10 +34,13 @@ class WCFMmp_Store_Hours {
 		add_action( 'woocommerce_single_product_summary', array( &$this, 'wcfmmp_store_close_message' ), 29 );
 		
 		// YiTH Quick View Store Close Message Show
-		add_action( 'yith_wcqv_product_summary',			array( &$this, 'wcfmmp_store_close_message' ), 30 );
+		add_action( 'yith_wcqv_product_summary', array( &$this, 'wcfmmp_store_close_message' ), 30 );
 		
 		// Flatsome Quick View Store Close Message Show
-		add_action( 'woocommerce_single_product_lightbox_summary',			array( &$this, 'wcfmmp_store_close_message' ), 30 );
+		add_action( 'woocommerce_single_product_lightbox_summary', array( &$this, 'wcfmmp_store_close_message' ), 30 );
+		
+		// WooCommerce Quick View Pro Store Close Message Show
+		add_action( 'wc_quick_view_pro_quick_view_product_details', array( &$this, 'wcfmmp_store_close_message' ), 30 );
 		
 		// Store Page Close Message
 		add_action( 'wcfmmp_before_store_product', array( &$this, 'wcfmmp_store_close_message' ), 25 );
@@ -72,7 +75,7 @@ class WCFMmp_Store_Hours {
 				<div class="store_address">
 				  <?php
 					$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_settings_fields_store_hours', array(
-																																																								"wcfm_default_store_hours_off_days" => array( 'label' => __( 'Set Week OFF', 'wc-multivendor-marketplace'), 'type' => 'select', 'name' => 'wcfm_store_hours[off_days]', 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'options' => array( 0 => __( 'Monday', 'wc-multivendor-marketplace' ), 1 => __( 'Tuesday', 'wc-multivendor-marketplace' ), 2 => __( 'Wednesday', 'wc-multivendor-marketplace' ), 3 => __( 'Thursday', 'wc-multivendor-marketplace' ), 4 => __( 'Friday', 'wc-multivendor-marketplace' ), 5 => __( 'Saturday', 'wc-multivendor-marketplace' ), 6 => __( 'Sunday', 'wc-multivendor-marketplace') ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_store_hours_off_days ),
+																																																								"wcfm_default_store_hours_off_days" => array( 'label' => __( 'Set Day OFF', 'wc-multivendor-marketplace'), 'type' => 'select', 'name' => 'wcfm_store_hours[off_days]', 'attributes' => array( 'multiple' => 'multiple', 'style' => 'width: 60%;' ), 'options' => array( 0 => __( 'Monday', 'wc-multivendor-marketplace' ), 1 => __( 'Tuesday', 'wc-multivendor-marketplace' ), 2 => __( 'Wednesday', 'wc-multivendor-marketplace' ), 3 => __( 'Thursday', 'wc-multivendor-marketplace' ), 4 => __( 'Friday', 'wc-multivendor-marketplace' ), 5 => __( 'Saturday', 'wc-multivendor-marketplace' ), 6 => __( 'Sunday', 'wc-multivendor-marketplace') ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $wcfm_store_hours_off_days ),
 																																																							 ) ) );
 					?>
 				</div>
@@ -281,13 +284,15 @@ class WCFMmp_Store_Hours {
 	function wcfmmp_store_product_is_purchasable( $is_purchasable, $product ) {
 		global $WCFM, $WCFMmp;
 		
-		$product_id = $product->get_id();
-		if( $product_id ) {
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
-			
-			if( $vendor_id ) {
-				$is_store_close = $this->wcfmmp_is_store_close( $vendor_id );
-				if( $is_store_close ) $is_purchasable = false;
+		if( method_exists( $product, 'get_id' ) ) {
+			$product_id = $product->get_id();
+			if( $product_id ) {
+				$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
+				
+				if( $vendor_id ) {
+					$is_store_close = $this->wcfmmp_is_store_close( $vendor_id );
+					if( $is_store_close ) $is_purchasable = false;
+				}
 			}
 		}
 		
@@ -300,23 +305,25 @@ class WCFMmp_Store_Hours {
 	function wcfmmp_store_product_after_shop_loop_item() {
 		global $WCFM, $WCFMmp, $product;
 		
-		$product_id = $product->get_id();
-		if( $product_id ) {
-			$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
-			
-			$is_store_close = $this->wcfmmp_is_store_close( $vendor_id );
-			if( $is_store_close ) {
-				$WCFMmp->wcfm_is_store_close = true;
-				remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+		if( method_exists( $product, 'get_id' ) ) {
+			$product_id = $product->get_id();
+			if( $product_id ) {
+				$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 				
-				if( !wcfm_is_store_page() && apply_filters( 'wcfm_is_allow_product_loop_store_close_message', false ) ) {
-					echo '<div class="wcfm_store_close_msg">';
-					echo apply_filters( 'wcfm_store_close_message', __( 'This store is now closed!', 'wc-multivendor-marketplace' ) );
-					echo '</div>';
-				}
-		  } elseif( !has_action('woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart') && $WCFMmp->wcfm_is_store_close ) {
-				if ( apply_filters( 'wcfm_is_allow_add_to_cart_restore', true ) && !function_exists( 'rehub_option' ) && !function_exists( 'astra_header' ) && !function_exists( 'zita_post_loader' ) && !function_exists( 'oceanwp_get_sidebar' ) && !function_exists( 'martfury_content_columns' ) && !function_exists( 'x_get_stack' ) ) {
-					add_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+				$is_store_close = $this->wcfmmp_is_store_close( $vendor_id );
+				if( $is_store_close ) {
+					$WCFMmp->wcfm_is_store_close = true;
+					remove_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+					
+					if( !wcfm_is_store_page() && apply_filters( 'wcfm_is_allow_product_loop_store_close_message', false ) ) {
+						echo '<div class="wcfm_store_close_msg">';
+						echo apply_filters( 'wcfm_store_close_message', __( 'This store is now closed!', 'wc-multivendor-marketplace' ) );
+						echo '</div>';
+					}
+				} elseif( !has_action('woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart') && $WCFMmp->wcfm_is_store_close ) {
+					if ( apply_filters( 'wcfm_is_allow_add_to_cart_restore', true ) && !function_exists( 'rehub_option' ) && !function_exists( 'astra_header' ) && !function_exists( 'zita_post_loader' ) && !function_exists( 'oceanwp_get_sidebar' ) && !function_exists( 'martfury_content_columns' ) && !function_exists( 'x_get_stack' ) ) {
+						add_action( 'woocommerce_after_shop_loop_item', 'woocommerce_template_loop_add_to_cart', 10 );
+					}
 				}
 			}
 		}
@@ -332,7 +339,7 @@ class WCFMmp_Store_Hours {
 		
 		$vendor_id = '';
 		if( wcfm_is_store_page() ) {
-			$custom_store_url = get_option( 'wcfm_store_url', 'store' );
+			$custom_store_url = wcfm_get_option( 'wcfm_store_url', 'store' );
 			$store_name = get_query_var( $custom_store_url );
 			if ( !empty( $store_name ) ) {
 				$store_user = get_user_by( 'slug', $store_name );
@@ -340,10 +347,10 @@ class WCFMmp_Store_Hours {
 			if( $store_user ) {
 				$vendor_id  = $store_user->ID;
 			}
-		} elseif( $product ) {
+		} elseif( $product && method_exists( $product, 'get_id' ) ) {
 			$product_id = $product->get_id();
 			if( $product_id ) {
-				$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+				$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 			}
 		}
 		
@@ -351,6 +358,16 @@ class WCFMmp_Store_Hours {
 			$is_store_close = $this->wcfmmp_is_store_close( $vendor_id );
 			if( $is_store_close ) {
 				remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_add_to_cart', 30 );
+				
+				// YiTH Quick View Support
+				remove_action( 'yith_wcqv_product_summary', 'woocommerce_template_single_add_to_cart', 25 );
+				
+				// Flatsome Quick View Support
+				remove_action( 'woocommerce_single_product_lightbox_summary', 'woocommerce_template_single_add_to_cart', 30 );
+				
+				// WooCommerce Quick View Pro Support
+				remove_action( 'wc_quick_view_pro_quick_view_product_details', 'woocommerce_template_single_add_to_cart', 30 );
+				
 				echo '<div class="wcfm_store_close_msg">';
 				echo apply_filters( 'wcfm_store_close_message', __( 'This store is now closed!', 'wc-multivendor-marketplace' ) );
 				echo '</div>';
@@ -383,7 +400,7 @@ class WCFMmp_Store_Hours {
 						$today = date( 'N', $current_time );
 						$today -= 1;
 						
-						$today_date = date( wc_date_format(), $current_time );
+						$today_date = date( 'Y-m-d', $current_time );
 						
 						// OFF Day Check
 						if( !empty( $wcfm_store_hours_off_days ) ) {

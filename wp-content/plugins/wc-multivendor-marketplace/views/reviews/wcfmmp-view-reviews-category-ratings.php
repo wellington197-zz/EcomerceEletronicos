@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 global $WCFM, $WCFMmp;
 
 $category_review_rating = $store_user->get_category_review_rating();
+
+if( !apply_filters( 'wcfm_is_allow_review_rating', true ) ) return;
 ?>
 
 <?php if( $category_review_rating && !empty( $category_review_rating ) && is_array( $category_review_rating ) ) { ?>

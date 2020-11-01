@@ -4,11 +4,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * @class 		WCMp User Class
+ * @class       WCMp User Class
  *
- * @version		2.2.0
- * @package		WCMp
- * @author 		WC Marketplace
+ * @version     2.2.0
+ * @package     WCMp
+ * @author      WC Marketplace
  */
 class WCMp_User {
 
@@ -45,7 +45,7 @@ class WCMp_User {
         add_filter('woocommerce_login_redirect', array($this, 'wcmp_vendor_login'), 10, 2);
         add_filter('login_redirect', array($this, 'wp_wcmp_vendor_login'), 10, 3);
         // set cookie
-        $this->set_wcmp_user_cookies();
+        add_action('template_redirect', array(&$this, 'set_wcmp_user_cookies'), 99);
         //User Avatar override
         add_filter( 'get_avatar', array( &$this, 'wcmp_user_avatar_override' ), 10, 6 );
     
@@ -61,23 +61,23 @@ class WCMp_User {
     }
     
     function remove_wp_admin_access_for_suspended_vendor() {
-		if(is_user_wcmp_vendor(get_current_vendor_id())) {
-			$is_block = get_user_meta(get_current_vendor_id(), '_vendor_turn_off', true);
-			if( $is_block && is_admin() ) {
-				wp_redirect(get_permalink(wcmp_vendor_dashboard_page_id()));
-				exit;
-			}
-		}
-	}
-	
-	function remove_backend_access_for_suspended_vendor($panel_nav) {
-		if(is_user_wcmp_vendor(get_current_vendor_id())) {
-			$is_block = get_user_meta(get_current_vendor_id(), '_vendor_turn_off', true);
-			if($is_block) unset($panel_nav['wp-admin']);
-		}
-					
-		return $panel_nav;
-	}
+        if(is_user_wcmp_vendor(get_current_vendor_id())) {
+            $is_block = get_user_meta(get_current_vendor_id(), '_vendor_turn_off', true);
+            if( $is_block && is_admin() ) {
+                wp_redirect(get_permalink(wcmp_vendor_dashboard_page_id()));
+                exit;
+            }
+        }
+    }
+    
+    function remove_backend_access_for_suspended_vendor($panel_nav) {
+        if(is_user_wcmp_vendor(get_current_vendor_id())) {
+            $is_block = get_user_meta(get_current_vendor_id(), '_vendor_turn_off', true);
+            if($is_block) unset($panel_nav['wp-admin']);
+        }
+                    
+        return $panel_nav;
+    }
 
     /**
      * Wordpress Login redirect
@@ -156,7 +156,7 @@ class WCMp_User {
                 }
 
                 if (isset($_FILES['wcmp_vendor_fields'])) {
-                    $attacment_files = $_FILES['wcmp_vendor_fields'];
+                    $attacment_files = array_filter($_FILES['wcmp_vendor_fields']);
                     if (!empty($attacment_files) && is_array($attacment_files)) {
                         foreach ($attacment_files['name'] as $key => $value) {
                             $file_type = array();
@@ -166,13 +166,13 @@ class WCMp_User {
                                 }
                             }
                             foreach ($attacment_files['type'][$key] as $file_key => $file_value) {
-                                if (!in_array($file_value, $file_type)) {
+                                if ($wcmp_vendor_registration_form_data[$key]['required'] && !in_array($file_value, $file_type)) {
                                     $validation_errors->add('file type error', __('Please Upload valid file', 'dc-woocommerce-multi-vendor'));
                                 }
                             }
                             foreach ($attacment_files['size'][$key] as $file_size_key => $file_size_value) {
                                 if (!empty($wcmp_vendor_registration_form_data[$key]['fileSize'])) {
-                                    if ($file_size_value > $wcmp_vendor_registration_form_data[$key]['fileSize']) {
+                                    if ($wcmp_vendor_registration_form_data[$key]['required'] && $file_size_value > $wcmp_vendor_registration_form_data[$key]['fileSize']) {
                                         $validation_errors->add('file size error', __('File upload limit exceeded', 'dc-woocommerce-multi-vendor'));
                                     }
                                 }
@@ -187,7 +187,7 @@ class WCMp_User {
                 }
 
                 if (isset($_FILES['wcmp_vendor_fields'])) {
-                    $attacment_files = $_FILES['wcmp_vendor_fields'];
+                    $attacment_files = array_filter($_FILES['wcmp_vendor_fields']);
                     $files = array();
                     $count = 0;
                     if (!empty($attacment_files) && is_array($attacment_files)) {
@@ -229,7 +229,7 @@ class WCMp_User {
                         }
                     }
                 }
-                $wcmp_vendor_fields = $_POST['wcmp_vendor_fields'];
+                $wcmp_vendor_fields = isset( $_POST['wcmp_vendor_fields'] ) ? array_filter( array_map( 'wc_clean', (array) $_POST['wcmp_vendor_fields'] ) ) : '';
 
                 $wcmp_vendor_fields = apply_filters('wcmp_save_registration_fields', $wcmp_vendor_fields, $customer_id);
                 update_user_meta($customer_id, 'wcmp_vendor_fields', $wcmp_vendor_fields);
@@ -485,7 +485,7 @@ class WCMp_User {
                 'url' => $vendor->get_image('banner') ? $vendor->get_image('banner') : '',
                 'value' => $vendor->banner,
                 'class' => "user-profile-fields"
-            ), // Upload			
+            ), // Upload            
             "vendor_csd_return_address1" => array(
                 'label' => __('Customer address1', 'dc-woocommerce-multi-vendor'),
                 'type' => 'text',
@@ -633,23 +633,12 @@ class WCMp_User {
                 $_wp_editor_settings['media_buttons'] = false;
             }
             $_wp_editor_settings = apply_filters('wcmp_vendor_policies_wp_editor_settings', $_wp_editor_settings);
-
-//            $fields['vendor_policy_tab_title'] = array(
-//                'label' => __('Enter the title of Policies Tab', 'dc-woocommerce-multi-vendor'),
-//                'type' => 'text',
-//                'value' => $vendor->policy_tab_title,
-//                'class' => 'user-profile-fields regular-text'
-//            );
-        //}
-        //if (get_wcmp_vendor_settings('is_policy_on', 'general') == 'Enable' && isset($policies_settings['can_vendor_edit_cancellation_policy']) && isset($policies_settings['is_cancellation_on'])) {
             $fields['vendor_cancellation_policy'] = array(
                 'label' => __('Cancellation/Return/Exchange Policy', 'dc-woocommerce-multi-vendor'),
                 'type' => 'wpeditor',
                 'value' => $vendor->cancellation_policy,
                 'class' => 'user-profile-fields'
             );
-        //}
-        //if (get_wcmp_vendor_settings('is_policy_on', 'general') == 'Enable' && isset($policies_settings['can_vendor_edit_refund_policy']) && isset($policies_settings['is_refund_on'])) {
             $fields['vendor_refund_policy'] = array(
                 'label' => __('Refund Policy', 'dc-woocommerce-multi-vendor'),
                 'type' => 'wpeditor',
@@ -657,8 +646,6 @@ class WCMp_User {
                 'class' => 'user-profile-fields',
                 'settings' => $_wp_editor_settings
             );
-        //}
-        //if (get_wcmp_vendor_settings('is_policy_on', 'general') == 'Enable' && isset($policies_settings['can_vendor_edit_shipping_policy']) && isset($policies_settings['is_shipping_on'])) {
             $fields['vendor_shipping_policy'] = array(
                 'label' => __('Shipping Policy', 'dc-woocommerce-multi-vendor'),
                 'type' => 'wpeditor',
@@ -666,9 +653,6 @@ class WCMp_User {
                 'class' => 'user-profile-fields regular-text',
                 'settings' => $_wp_editor_settings
             );
-        //}
-        //if (apply_filters('can_vendor_add_message_on_email_and_thankyou_page', true)) {
-            
         }
         $_wp_editor_settings = array('tinymce' => true);
         if (!$WCMp->vendor_caps->vendor_can('is_upload_files')) {
@@ -687,7 +671,7 @@ class WCMp_User {
         if (is_array($user->roles) && in_array('administrator', $user->roles)) {
             $fields['vendor_commission'] = array(
                 'label' => __('Commission Amount', 'dc-woocommerce-multi-vendor'),
-                'type' => 'text',
+                'type' => 'number',
                 'value' => $vendor->commission,
                 'class' => "user-profile-fields regular-text"
             );
@@ -719,13 +703,13 @@ class WCMp_User {
                 unset($fields['vendor_commission']);
                 $fields['vendor_commission_percentage'] = array(
                     'label' => __('Commission Percentage(%)', 'dc-woocommerce-multi-vendor'),
-                    'type' => 'text',
+                    'type' => 'number',
                     'value' => $vendor->commission_percentage,
                     'class' => 'user-profile-fields regular-text'
                 );
                 $fields['vendor_commission_fixed_with_percentage'] = array(
                     'label' => __('Commission(fixed), Per Transaction', 'dc-woocommerce-multi-vendor'),
-                    'type' => 'text',
+                    'type' => 'number',
                     'value' => $vendor->commission_fixed_with_percentage,
                     'class' => 'user-profile-fields regular-text'
                 );
@@ -735,13 +719,13 @@ class WCMp_User {
                 unset($fields['vendor_commission']);
                 $fields['vendor_commission_percentage'] = array(
                     'label' => __('Commission Percentage(%)', 'dc-woocommerce-multi-vendor'),
-                    'type' => 'text',
+                    'type' => 'number',
                     'value' => $vendor->commission_percentage,
                     'class' => 'user-profile-fields regular-text'
                 );
                 $fields['vendor_commission_fixed_with_percentage_qty'] = array(
                     'label' => __('Commission Fixed Per Unit', 'dc-woocommerce-multi-vendor'),
-                    'type' => 'text',
+                    'type' => 'number',
                     'value' => $vendor->commission_fixed_with_percentage_qty,
                     'class' => 'user-profile-fields regular-text'
                 );
@@ -795,7 +779,7 @@ class WCMp_User {
         }
         $vendor = get_wcmp_vendor($user_id);
         if ($vendor) {
-            $product_count = count($vendor->get_products());
+            $product_count = count($vendor->get_products_ids());
             return "<a href='edit.php?post_type=product&dc_vendor_shop=" . $vendor->page_slug . "'><strong>{$product_count}</strong></a>";
         } else {
             return "<strong></strong>";
@@ -919,12 +903,12 @@ class WCMp_User {
                             $errors->add('vendor_slug_exists', __('Slug already exists', 'dc-woocommerce-multi-vendor'));
                         }
                     } elseif ($fieldkey == 'vendor_description') {
-                        update_user_meta($user_id, '_' . $fieldkey, $_POST[$fieldkey]);
+                        update_user_meta($user_id, '_' . $fieldkey, wc_clean(wp_unslash($_POST[$fieldkey])));
                     } else {
-                        update_user_meta($user_id, '_' . $fieldkey, $_POST[$fieldkey]);
+                        update_user_meta($user_id, '_' . $fieldkey, wc_clean(wp_unslash($_POST[$fieldkey])));
                     }
                 } else if (isset($_POST['vendor_commission']) && $fieldkey == 'vendor_commission') {
-                    update_user_meta($user_id, '_vendor_commission', $_POST[$fieldkey]);
+                    update_user_meta($user_id, '_vendor_commission', absint( $_POST[$fieldkey] ));
                 } else if (!isset($_POST['vendor_hide_description']) && $fieldkey == 'vendor_hide_description') {
                     delete_user_meta($user_id, '_vendor_hide_description');
                 } else if (!isset($_POST['vendor_hide_address']) && $fieldkey == 'vendor_hide_address') {
@@ -967,7 +951,7 @@ class WCMp_User {
 
             if (isset($_POST['reassign_user']) && !empty($_POST['reassign_user']) && ( $_POST['delete_option'] == 'reassign' )) {
                 if (is_user_wcmp_vendor(absint($_POST['reassign_user']))) {
-                    if ($products = $vendor->get_products(array('fields' => 'ids'))) {
+                    if ($products = wp_list_pluck( $vendor->get_products_ids(), 'ID' )) {
                         foreach ($products as $product_id) {
                             $new_vendor = get_wcmp_vendor(absint($_POST['reassign_user']));
                             wp_set_object_terms($product_id, absint($new_vendor->term_id), $WCMp->taxonomy->taxonomy_name);
@@ -1028,29 +1012,32 @@ class WCMp_User {
      * WCMp set user cookies
      */
     public function set_wcmp_user_cookies() {
-        $current_user_id = get_current_user_id();
-        $_cookie_id = "_wcmp_user_cookie_".$current_user_id;
-        if ( ! headers_sent() ) {
-            $secure = ( 'https' === parse_url( home_url(), PHP_URL_SCHEME ) );
-            if(!isset($_COOKIE[$_cookie_id])) { 
-                setcookie( $_cookie_id, uniqid('wcmp_cookie'), time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, $secure );
-            }else{
-                setcookie( $_cookie_id, $_COOKIE[$_cookie_id], time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, $secure );
+        global $WCMp;
+        if ( is_product() || is_tax($WCMp->taxonomy->taxonomy_name) ) {
+            $current_user_id = get_current_user_id();
+            $_cookie_id = "_wcmp_user_cookie_".$current_user_id;
+            if ( ! headers_sent() ) {
+                $secure = ( 'https' === parse_url( home_url(), PHP_URL_SCHEME ) );
+                if(!isset($_COOKIE[$_cookie_id])) { 
+                    setcookie( $_cookie_id, uniqid('wcmp_cookie'), time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, $secure );
+                }else{
+                    setcookie( $_cookie_id, $_COOKIE[$_cookie_id], time() + YEAR_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, $secure );
+                }
             }
         }
     }
     
     /**
-	* avatar_override()
-	*
-	* Overrides an avatar with a profile image
-	*
-	* @param string $avatar SRC to the avatar
-	* @param mixed $id_or_email 
-	* @param int $size Size of the image
-	* @param string $default URL to the default image
-	* @param string $alt Alternative text
-	**/
+    * avatar_override()
+    *
+    * Overrides an avatar with a profile image
+    *
+    * @param string $avatar SRC to the avatar
+    * @param mixed $id_or_email 
+    * @param int $size Size of the image
+    * @param string $default URL to the default image
+    * @param string $alt Alternative text
+    **/
     public function wcmp_user_avatar_override( $avatar, $id_or_email, $size, $default, $alt, $args=array()) {
         //Get user data
         if ( is_numeric( $id_or_email ) ) {
@@ -1073,7 +1060,7 @@ class WCMp_User {
             'avatar',
             sprintf( 'avatar-%s', esc_attr( $size ) ),
             'photo'
-        );	
+        );  
         if ( isset( $args[ 'class' ] ) ) {
             if ( is_array( $args['class'] ) ) {
                 $classes = array_merge( $classes, $args['class'] );

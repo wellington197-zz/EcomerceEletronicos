@@ -27,6 +27,7 @@ class WCMp_Calculate_Commission {
             add_action( 'wcmp_checkout_vendor_order_processed', array( $this, 'wcmp_create_commission' ), 10, 3);
             add_action( 'woocommerce_order_refunded', array( $this, 'wcmp_create_commission_refunds' ), 99, 2);
         }
+        add_action( 'woocommerce_order_status_changed', array( $this, 'wcmp_vendor_new_order_mail' ), 99, 3 );
 
         // support of WooCommerce subscription plugin
         //add_filter('wcs_renewal_order_meta_query', array(&$this, 'wcs_renewal_order_meta_query'), 10, 1);
@@ -59,10 +60,42 @@ class WCMp_Calculate_Commission {
                 // Mark commissions as processed
                 update_post_meta($vendor_order_id, '_commissions_processed', 'yes');
                 
-                $email_admin = WC()->mailer()->emails['WC_Email_Vendor_New_Order'];
-                $email_admin->trigger($vendor_order_id);
+                do_action( 'after_wcmp_calculate_commission', $commission_id, $vendor_order_id );
             }
         }
+    }
+    
+    public function wcmp_vendor_new_order_mail( $order_id, $from_status, $to_status ){
+        if( !$order_id ) return;
+        if( !in_array( $from_status, apply_filters( 'wcmp_vendor_new_order_mail_statuses_transition_from', array(
+            'pending',
+            'failed',
+            'cancelled',
+        ), $order_id, $from_status, $to_status ) ) || $to_status == 'failed') return;
+        
+        if( !wp_get_post_parent_id( $order_id ) && get_post_meta( $order_id, 'has_wcmp_sub_order', true ) ) {
+            $suborders = get_wcmp_suborders( $order_id, false, false);
+            if( $suborders ) {
+                foreach ( $suborders as $v_order_id ) {
+                    $wcmp_order_version = get_post_meta( $v_order_id, '_wcmp_order_version', true );
+                    $already_triggered = get_post_meta( $v_order_id, '_wcmp_vendor_new_order_mail_triggered', true );
+                    if( version_compare( $wcmp_order_version, '3.4.2', '>=') && !$already_triggered ){
+                        $email_admin = WC()->mailer()->emails['WC_Email_Vendor_New_Order'];
+                        $result = $email_admin->trigger( $v_order_id );
+                        if( $result ) update_post_meta( $v_order_id, '_wcmp_vendor_new_order_mail_triggered', true );
+                    }
+                }
+            }
+        }elseif( is_wcmp_vendor_order( $order_id ) ){
+            $wcmp_order_version = get_post_meta( $order_id, '_wcmp_order_version', true );
+            $already_triggered = get_post_meta( $order_id, '_wcmp_vendor_new_order_mail_triggered', true );
+            if( version_compare( $wcmp_order_version, '3.4.2', '>=') && !$already_triggered ){
+                $email_admin = WC()->mailer()->emails['WC_Email_Vendor_New_Order'];
+                $result = $email_admin->trigger( $order_id );
+                if( $result ) update_post_meta( $order_id, '_wcmp_vendor_new_order_mail_triggered', true );
+            }
+        }
+        
     }
 
     /**
@@ -208,7 +241,7 @@ class WCMp_Calculate_Commission {
                                  *
                                  * @since 3.4.0
                                  */
-                                do_action( 'wcmp_create_commission_refund_after_commission_note', $commission_id, $commissions_refunded, $refund_id, $order );
+                                do_action( 'wcmp_create_commission_refund_after_commission_note', $commission_id, $data_amount, $refund_id, $order );
                             }
                             //update_post_meta( $commission_id, '_commission_amount', $amount );
 
@@ -464,6 +497,10 @@ class WCMp_Calculate_Commission {
         } else {
             $line_total = $order->get_item_subtotal($item, false, false) * $item['qty'];
         }
+
+        // Filter the item total before calculating item commission.
+        $line_total = apply_filters('wcmp_get_commission_line_total', $line_total, $product_id, $variation_id, $item, $order_id, $item_id);
+
         if ($product_id) {
             $vendor_id = wc_get_order_item_meta($item_id, '_vendor_id', true);
             if ($vendor_id) {
@@ -641,9 +678,48 @@ class WCMp_Calculate_Commission {
                 $category_wise_commission->commission_percentage = get_term_meta($terms[0]->term_id, 'commission_percentage', true) ? get_term_meta($terms[0]->term_id, 'commission_percentage', true) : 0;
                 $category_wise_commission->fixed_with_percentage = get_term_meta($terms[0]->term_id, 'fixed_with_percentage', true) ? get_term_meta($terms[0]->term_id, 'fixed_with_percentage', true) : 0;
                 $category_wise_commission->fixed_with_percentage_qty = get_term_meta($terms[0]->term_id, 'fixed_with_percentage_qty', true) ? get_term_meta($terms[0]->term_id, 'fixed_with_percentage_qty', true) : 0;
+            }else{
+                $category_wise_commission = $this->get_multiple_category_wise_commission( $terms, $product_id );
             }
         }
         return apply_filters('wcmp_category_wise_commission', $category_wise_commission, $product_id);
+    }
+    
+    /**
+     * Fetch multiple category wise commission
+     * @param terms $terms
+     * @param id $product_id
+     * @return Object
+     */
+    public function get_multiple_category_wise_commission( $terms, $product_id = 0 ) {
+        global $WCMp;
+        $terms_commission_values = array();
+        foreach ( $terms as $term ) {
+            if ( $WCMp->vendor_caps->payment_cap['commission_type'] == 'fixed_with_percentage' ) {
+                $commission_percentage = get_term_meta( $term->term_id, 'commission_percentage', true ) ? get_term_meta( $term->term_id, 'commission_percentage', true ) : 0;
+                $fixed_with_percentage = get_term_meta( $term->term_id, 'fixed_with_percentage', true ) ? get_term_meta( $term->term_id, 'fixed_with_percentage', true ) : 0;
+                $terms_commission_values[$term->term_id] = $commission_percentage + $fixed_with_percentage;
+            } else if ($WCMp->vendor_caps->payment_cap['commission_type'] == 'fixed_with_percentage_qty') {
+                $commission_percentage = get_term_meta( $term->term_id, 'commission_percentage', true ) ? get_term_meta( $term->term_id, 'commission_percentage', true ) : 0;
+                $fixed_with_percentage_qty = get_term_meta( $term->term_id, 'fixed_with_percentage_qty', true ) ? get_term_meta( $term->term_id, 'fixed_with_percentage_qty', true ) : 0;
+                $terms_commission_values[$term->term_id] = $commission_percentage + $fixed_with_percentage_qty;
+            } else {
+                $commision = get_term_meta( $term->term_id, 'commision', true ) ? get_term_meta( $term->term_id, 'commision', true ) : 0;
+                $terms_commission_values[$term->term_id] = $commision;
+            }
+        }
+        $max_comm_val_term_id = '';
+        if( $terms_commission_values ){
+            $max_comm_val = max( $terms_commission_values );
+            $max_comm_val_term_id = array_search ( $max_comm_val, $terms_commission_values );
+        }
+        $term_id = apply_filters( 'wcmp_get_multiple_category_wise_max_commission_term_id', $max_comm_val_term_id, $terms_commission_values, $product_id );
+        $category_wise_commission = new stdClass();
+        $category_wise_commission->commision = get_term_meta( $term_id, 'commision', true ) ? get_term_meta( $term_id, 'commision', true ) : 0;
+        $category_wise_commission->commission_percentage = get_term_meta( $term_id, 'commission_percentage', true ) ? get_term_meta( $term_id, 'commission_percentage', true ) : 0;
+        $category_wise_commission->fixed_with_percentage = get_term_meta( $term_id, 'fixed_with_percentage', true ) ? get_term_meta( $term_id, 'fixed_with_percentage', true ) : 0;
+        $category_wise_commission->fixed_with_percentage_qty = get_term_meta( $term_id, 'fixed_with_percentage_qty', true ) ? get_term_meta( $term_id, 'fixed_with_percentage_qty', true ) : 0;
+        return apply_filters( 'wcmp_multiple_category_wise_commission', $category_wise_commission, $product_id );
     }
 
 }

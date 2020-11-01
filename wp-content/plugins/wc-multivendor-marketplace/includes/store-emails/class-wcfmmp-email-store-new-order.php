@@ -63,16 +63,17 @@ if (!class_exists('WCFMmp_Email_Store_New_Order')) :
 			$order_vendors = array(); 
 			$items = $order->get_items('line_item');
 			if( !empty( $items ) ) {
-				foreach( $items as $order_item_id => $item ) {
+				foreach( $items as $item_id => $item ) {
+					$order_item_id = $item->get_id();
 					$line_item = new WC_Order_Item_Product( $item );
 					$product  = $line_item->get_product();
 					$product_id = $line_item->get_product_id();
 					$variation_id = $line_item->get_variation_id();
 					
 					if( $product_id ) {
-						$vendor_id = $WCFM->wcfm_vendor_support->wcfm_get_vendor_id_from_product( $product_id );
+						$vendor_id = wcfm_get_vendor_id_by_post( $product_id );
 						if( $vendor_id && !isset( $order_vendors[$vendor_id] ) ) {
-							$order_vendors[$vendor_id] = $WCFM->wcfm_vendor_support->wcfm_get_vendor_email_by_vendor( $vendor_id );
+							$order_vendors[$vendor_id] = wcfm_get_vendor_store_email_by_vendor( $vendor_id );
 						}
 					}
 				}
@@ -87,7 +88,7 @@ if (!class_exists('WCFMmp_Email_Store_New_Order')) :
 				
 				foreach( $order_vendors as $vendor_id => $vendor_email ) {
 					
-					if( !$WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'view_orders' ) || !apply_filters( 'wcfmmp_is_allow_store_new_order_email', true, $vendor_id ) ) continue;
+					if( !wcfm_vendor_has_capability( $vendor_id, 'view_orders' ) || !apply_filters( 'wcfmmp_is_allow_store_new_order_email', true, $vendor_id ) ) continue;
 
 					if( $vendor_email ) {
 						
@@ -98,6 +99,9 @@ if (!class_exists('WCFMmp_Email_Store_New_Order')) :
 
 						$this->find[]       = '{order_number}';
 						$this->replace[]    = $this->order->get_order_number();
+						
+						$this->find[]       = '{store_name}';
+						$this->replace[]    = wcfm_get_vendor_store_name( $vendor_id );
 						
 						$this->vendor_id    = $vendor_id;
 						$this->recipient    = $vendor_email;
@@ -114,8 +118,10 @@ if (!class_exists('WCFMmp_Email_Store_New_Order')) :
 					
 					// Filter to add Group Managers in CC
 					$headers = apply_filters( 'wcfmmp_store_new_order_email_header', $headers, $vendor_id );
+					
+					$subject = apply_filters( 'wcfmmp_store_new_order_email_subject', $this->get_subject(), $vendor_id );
 
-					$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $headers, $this->get_attachments() );
+					$this->send( $this->get_recipient(), $subject, $this->get_content(), $headers, $this->get_attachments() );
 				}
 			}
 		}

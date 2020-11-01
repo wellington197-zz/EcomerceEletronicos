@@ -40,7 +40,10 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
 		
 		echo $before_widget;
 
@@ -62,6 +65,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 				<?php
 				foreach( $vendor_categories as $vendor_category_id => $vendor_category ) {
 					if( $vendor_category_id ) {
+						if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_id, $preferred_taxonomy ) ) continue;
 						if( is_array( $vendor_category ) && !empty( $vendor_category ) ) {
 							$vendor_term = get_term( absint( $vendor_category_id ), $preferred_taxonomy ); 
 							$tax_toggle_class = '';
@@ -71,6 +75,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 								<?php
 							}
 							foreach( $vendor_category as $vendor_category_child_id => $vendor_category_child ) {
+								if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child_id, $preferred_taxonomy ) ) continue;
 								$vendor_term = get_term( absint( $vendor_category_child_id ), $preferred_taxonomy );
 								if( !is_array( $vendor_category_child ) ) {
 									if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -85,6 +90,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 									<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>><?php echo $vendor_term->name; ?></option>
 									<?php
 									foreach( $vendor_category_child as $vendor_category_child2_id => $vendor_category_child2 ) {
+										if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child2_id, $preferred_taxonomy ) ) continue;
 										$vendor_term = get_term( absint( $vendor_category_child2_id ), $preferred_taxonomy ); 
 										if( !is_array( $vendor_category_child2 ) ) {
 											if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -99,6 +105,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 											<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>>&nbsp;<?php echo $vendor_term->name; ?></option>
 											<?php
 											foreach( $vendor_category_child2 as $vendor_category_child3_id => $vendor_category_child3 ) {
+												if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child3_id, $preferred_taxonomy ) ) continue;
 												$vendor_term = get_term( absint( $vendor_category_child3_id ), $preferred_taxonomy ); 
 												if( !is_array( $vendor_category_child3 ) ) {
 													if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -113,6 +120,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 													<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>>&nbsp;&nbsp;<?php echo $vendor_term->name; ?></option>
 													<?php
 													foreach( $vendor_category_child3 as $vendor_category_child4_id => $vendor_category_child4 ) {
+														if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child4_id, $preferred_taxonomy ) ) continue;
 														$vendor_term = get_term( absint( $vendor_category_child4_id ), $preferred_taxonomy ); 
 														if( !is_array( $vendor_category_child4 ) ) {
 															if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -127,6 +135,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 															<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>>&nbsp;&nbsp;&nbsp;<?php echo $vendor_term->name; ?></option>
 															<?php
 															foreach( $vendor_category_child4 as $vendor_category_child5_id => $vendor_category_child5 ) {
+																if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child5_id, $preferred_taxonomy ) ) continue;
 																$vendor_term = get_term( absint( $vendor_category_child5_id ), $preferred_taxonomy ); 
 																if( !is_array( $vendor_category_child5 ) ) {
 																	if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -141,6 +150,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 																	<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $vendor_term->name; ?></option>
 																	<?php
 																	foreach( $vendor_category_child5 as $vendor_category_child6_id => $vendor_category_child6 ) {
+																		if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child6_id, $preferred_taxonomy ) ) continue;
 																		$vendor_term = get_term( absint( $vendor_category_child6_id ), $preferred_taxonomy ); 
 																		if( !is_array( $vendor_category_child6 ) ) {
 																			if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {
@@ -155,6 +165,7 @@ class WCFMmp_Store_Lists_Category_Filter extends WP_Widget {
 																			<option value="<?php echo $vendor_term->term_id; ?>" <?php if( $vendor_term->term_id == $search_category ) echo 'selected'; ?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?php echo $vendor_term->name; ?></option>
 																			<?php
 																			foreach( $vendor_category_child6 as $vendor_category_child7_id => $vendor_category_child7 ) {
+																				if( !apply_filters( 'wcfm_is_allow_store_list_taxomony_by_id', true, $vendor_category_child7_id, $preferred_taxonomy ) ) continue;
 																				$vendor_term = get_term( absint( $vendor_category_child7_id ), $preferred_taxonomy ); 
 																				if( !is_array( $vendor_category_child7 ) ) {
 																					if( $vendor_term && $vendor_term->term_id && $vendor_term->name ) {

@@ -8,9 +8,10 @@ class WPBakeryShortCode_accordion_son extends WPBakeryShortCode {
 	protected function content( $atts, $content = null ) {
 
 		extract( shortcode_atts( array(
-			'titlemargin'		=>		'0',
 			'title'				=>		'',
-			'height'			=>		'50',
+			'title_align'		=>		'left',
+			'titleradius'		=>		'',
+			'title_padding'		=>		'10',
 			'size'				=>		'16',
 			'clr'				=>		'',
 			'borderwidth'		=>		'0px 0px 0px 0px',
@@ -22,11 +23,13 @@ class WPBakeryShortCode_accordion_son extends WPBakeryShortCode {
 			'bodybg'			=>		'',
 		), $atts ) );
 		$content = wpb_js_remove_wpautop($content);
-		ob_start(); ?>
-		<h3 class="ac-style" style="margin-top: <?php echo $titlemargin; ?>px; border-width: <?php echo $borderwidth; ?>; border-style: solid; border-color: <?php echo $borderclr; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?> <?php echo $gradientbg; ?>; font-size: <?php echo $size; ?>px;height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;">
+		ob_start();
+		global $maw_accordion_margin;
+		?>
+		<h3 class="ac-style" style="text-align: <?php echo $title_align; ?>; margin-top: <?php echo $maw_accordion_margin; ?>px; border-width: <?php echo $borderwidth; ?>; border-style: solid; border-color: <?php echo $borderclr; ?>; border-radius: <?php echo $titleradius; ?>px; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?> <?php echo $gradientbg; ?>; font-size: <?php echo $size; ?>px; padding-top: <?php echo $title_padding; ?>px; padding-bottom: <?php echo $title_padding; ?>px;">
 			<?php echo $title; ?>
 		</h3>
-		<div class="mega-panel" style="margin-bottom: <?php echo $titlemargin; ?>px;background: <?php echo $bodybg; ?>; border-width: <?php echo $borderwidth2; ?>; border-style: solid; border-color: <?php echo $borderclr2; ?>;">
+		<div class="mega-panel" style="margin-bottom: <?php echo $maw_accordion_margin; ?>px;background: <?php echo $bodybg; ?>; border-width: <?php echo $borderwidth2; ?>; border-style: solid; border-color: <?php echo $borderclr2; ?>;">
 		  <?php echo $content; ?>
 		</div>
 
@@ -48,16 +51,6 @@ vc_map( array(
 		// Title Section
 
 		array(
-            "type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Margin', 'accordion' ),
-			"param_name" 	=> 	"titlemargin",
-			"description" 	=> 	__( 'margin from bottom for each tab, set in pixel', 'accordion' ),
-			"value"			=>	"0",
-			"suffix" 		=> 	'px',
-			"group" 		=> 	'General',
-        ),
-
-		array(
             "type" 			=> 	"textfield",
 			"heading" 		=> 	__( 'Title', 'accordion' ),
 			"param_name" 	=> 	"title",
@@ -65,18 +58,29 @@ vc_map( array(
 			"group" 		=> 	'Title',
         ),
 
+		array(
+			"type" 			=> 	"dropdown",
+			"heading" 		=> 	__( 'Title Align', 'button' ),
+			"param_name" 	=> 	"title_align",
+			"group" 		=> 	'Title',
+			"value"			=>	array(
+				"Left"			=>	"left",
+				"Center"		=>	"center",
+				"Right"			=>	"right",
+			)
+		),
 
 		array(
             "type" 			=> 	"vc_number",
-			"heading" 		=> 	__( 'Title Section Height', 'accordion' ),
-			"param_name" 	=> 	"height",
-			"description" 	=> 	__( 'set in pixel default 50', 'accordion' ),
-			"value"			=>	"50",
+			"heading" 		=> 	__( 'Title Padding', 'accordion' ),
+			"param_name" 	=> 	"title_padding",
+			"description" 	=> 	__( 'from top and bottom', 'accordion' ),
+			"value"			=>	"10",
 			"suffix" 		=> 	'px',
 			"group" 		=> 	"Title",
         ),
 		array(
-            "type" 			=> 	"textfield",
+            "type" 			=> 	"vc_number",
 			"heading" 		=> 	__( 'Font Size', 'accordion' ),
 			"param_name" 	=> 	"size",
 			"description" 	=> 	__( 'set in pixel eg, 16', 'accordion' ),
@@ -130,6 +134,13 @@ vc_map( array(
 			"param_name" 	=> 	"borderwidth",
 			"description" 	=> 	__( 'border width for title [top right bottom left]', 'accordion' ),
 			"value"			=>	"0px 0px 0px 0px",
+			"group" 		=> 	'Border',
+        ),
+        array(
+            "type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Title [Border Radius]', 'accordion' ),
+			"param_name" 	=> 	"titleradius",
+			"suffix" 		=> 	'px',
 			"group" 		=> 	'Border',
         ),
         array(

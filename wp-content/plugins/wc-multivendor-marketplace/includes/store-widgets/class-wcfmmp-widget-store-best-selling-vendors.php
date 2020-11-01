@@ -31,7 +31,10 @@ class WCFMmp_Store_Best_Selling_Vendors extends WP_Widget {
 
 		extract( $args, EXTR_SKIP );
 
-		$title        = apply_filters( 'widget_title', $instance['title'] );
+		$title        = '';
+		if( isset( $instance['title'] ) && !empty( $instance['title'] ) ) {
+			$title        = apply_filters( 'widget_title', $instance['title'] );
+		}
 		$number       = $instance['number'];
     $vendors =  $WCFMmp->wcfmmp_vendor->wcfmmp_best_selling_vendors($number);
     if ( isset( $vendors ) && count($vendors) ) {

@@ -27,6 +27,7 @@ class WCFM {
 	public $ajax;
 	public $non_ajax;
 	public $file;
+	public $wcfm_emails;
 	public $wcfm_fields;
 	public $is_marketplace;
 	public $wcfm_marketplace;
@@ -68,6 +69,8 @@ class WCFM {
 		add_action( 'init', array( &$this, 'clean_wcfm_page_setting_conflict' ) );
 
 		add_action( 'init', array( &$this, 'init' ), 10 );
+		
+		add_action( 'woocommerce_loaded', array( $this, 'load_wcfm' ) );
 		
 		// WC Vendors shop_order_vendor - register post type fix - since 2.0.4
 		add_filter( 'woocommerce_register_post_type_shop_order_vendor', array( &$this, 'wcvendors_register_post_type_shop_order_vendor' ) );
@@ -323,14 +326,22 @@ class WCFM {
 		$this->load_class( 'shortcode' );
 		$this->shortcode = new WCFM_Shortcode();
 		
-		if( !is_admin() && ( WCFM_Dependencies::wcfm_wc_dhl_shipping_active_check() || WCFM_Dependencies::wcfm_wc_fedex_shipping_active_check() || WCFM_Dependencies::wcfm_wc_easypost_shipping_active_check() ) ) {
-			include_once( $this->library->views_path . 'orders/wcfm-view-orders-details-fedex-dhl-express.php' );
-		}
-		
 		// WCFM Fields Lib
 		$this->wcfm_fields = $this->library->load_wcfm_fields();
 		
 		do_action( 'wcfm_init' );
+	}
+	
+	/**
+	 * Load WCFM 
+	 */
+	function load_wcfm() {
+		
+		if( WCFM_Dependencies::woocommerce_plugin_active_check() ) {
+			// WCFM Emails Load
+			$this->load_class('emails');
+			$this->wcfm_emails = new WCFM_Emails();
+		}
 	}
 	
 	/**
@@ -340,23 +351,35 @@ class WCFM {
 		$user = wp_get_current_user();
 		
 		if ( in_array( 'vendor', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} elseif ( in_array( 'seller', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} elseif ( in_array( 'dc_vendor', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} elseif ( in_array( 'wc_product_vendors_admin_vendor', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} elseif ( in_array( 'wc_product_vendors_manager_vendor', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} elseif ( in_array( 'wcfm_vendor', $user->roles ) ) {
-			$wcfm_capability_options['manage_commission'] = 'yes';
 			$wcfm_capability_options['wp_admin_view'] = 'yes';
+			$wcfm_capability_options['manage_vendors'] = 'yes';
+			$wcfm_capability_options['manage_commission'] = 'yes';
+			$wcfm_capability_options['capability_controller'] = 'yes';
 		} else {
 			$wcfm_capability_options = array();
 		}
@@ -387,9 +410,9 @@ class WCFM {
 		
 		include_once( dirname( WC_PLUGIN_FILE ) . '/includes/emails/class-wc-email.php' );
 		// include css inliner
-		if ( ! class_exists( 'Emogrifier' ) && class_exists( 'DOMDocument' ) ) {
-			include_once( dirname( WC_PLUGIN_FILE ) . '/includes/libraries/class-emogrifier.php' );
-		}
+		//if ( ! class_exists( 'Emogrifier' ) && class_exists( 'DOMDocument' ) ) {
+			//include_once( dirname( WC_PLUGIN_FILE ) . '/includes/libraries/class-emogrifier.php' );
+		//}
 		$wcemail  = new WC_Email();
 		$content_body  = $content_body_head . $content_body . $content_body_foot;
 		$content_body  = str_replace( '{site_title}', wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES ), $content_body );
@@ -497,8 +520,9 @@ class WCFM {
         
 		wcfm_check_php_mail( true );
 		
-		update_option('wcfm_disable_vendor_installed', 1);
-		update_option('wcfm_installed', 1);
+		update_option( 'wcfm_disable_vendor_installed', 1 );
+		update_option( 'wcfm_updated_6_5_2', 1 );
+		update_option( 'wcfm_installed', 1 );
 	}
 	
 	/**
@@ -510,16 +534,23 @@ class WCFM {
 	static function update_wcfm() {
 		global $WCFM, $WCFM_Query, $wpdb;
 		
-		$wcfm_tables = $wpdb->query( "SHOW tables like '{$wpdb->prefix}wcfm_support_response_meta'");
+		if( !get_option( 'wcfm_updated_6_5_2' ) ) {
+			$options = get_option( 'wcfm_options', array() );
+			$options['module_options']['shipstation'] = 'yes';
+			update_option( 'wcfm_options', $options );
+			update_option( 'wcfm_updated_6_5_2', 1 );
+		}
+		
+		$wcfm_tables = $wpdb->query( "SHOW tables like '{$wpdb->prefix}wcfm_fbc_chat_rows'");
 		if( !$wcfm_tables ) {
-			delete_option( 'wcfm_updated_6_1_5' );
+			delete_option( 'wcfm_updated_6_4_1' );
 			delete_option( 'wcfm_table_install' );
 		}
-		if( !get_option( 'wcfm_updated_6_1_5' ) ) {
+		if( !get_option( 'wcfm_updated_6_4_1' ) ) {
 			delete_option( 'wcfm_table_install' );
 			require_once ( $WCFM->plugin_path . 'helpers/class-wcfm-install.php' );
 			$WCFM_Install = new WCFM_Install();
-			update_option( 'wcfm_updated_6_1_5', 1 );
+			update_option( 'wcfm_updated_6_4_1', 1 );
 		}
 		
 		// Disable Vendor role - 4.0.2
@@ -705,7 +736,7 @@ class WCFM {
 							if( isset( $wcfm_managed_menu['enable'] ) ) {
 								$wcfm_menu['priority'] = $wcfm_managed_menu_key;
 								$wcfm_menu['label'] = $wcfm_managed_menu['label'];
-								if( $wcfm_menu_key == 'wcfm-vendors' ) $wcfm_menu['label'] = apply_filters( 'wcfm_sold_by_label', '', $wcfm_managed_menu['label'] ) . ' ' . __( 'Vendors', 'wc-frontend-manager');
+								if( ( $wcfm_menu_key == 'wcfm-vendors' ) && apply_filters( 'wcfm_is_allow_vendors_menu_label_update_by_sold_label', true ) ) $wcfm_menu['label'] = apply_filters( 'wcfm_sold_by_label', '', $wcfm_managed_menu['label'] ) . ' ' . __( 'Vendors', 'wc-frontend-manager');
 								$wcfm_menu['icon'] = wcfm_replace_unsupported_icons( $wcfm_managed_menu['icon'] );
 								$wcfm_menu['menu_for'] = 'both';
 								$wcfm_menu['new_tab'] = 'no';
@@ -760,24 +791,25 @@ class WCFM {
 	 */
 	function get_wcfm_modules() {
 		$wcfm_modules = array(
-													'product_popup'       => array( 'label' => __( 'Popup Add Product', 'wc-frontend-manager' ) ),
-													'enquiry'             => array( 'label' => __( 'Enquiry', 'wc-frontend-manager' ) ),
-													'enquiry_tab'         => array( 'label' => __( 'Enquiry Tab', 'wc-frontend-manager' ), 'hints' => __( 'If you just want to hide Single Product page `Enquiry Tab`, but keep enable `Enquiry Module` for `Catalog Mode`.', 'wc-frontend-manager' ) ),
-													'catalog'             => array( 'label' => __( 'Catalog', 'wc-frontend-manager' ), 'hints' => __( 'If you disable `Enquiry Module` then `Catalog Module` will stop working automatically.', 'wc-frontend-manager' ) ),
 													'article'             => array( 'label' => __( 'Article', 'wc-frontend-manager' ) ),
 													'customer'            => array( 'label' => __( 'Customer', 'wc-frontend-manager' ) ),
 													'coupon'              => array( 'label' => __( 'Coupon', 'wc-frontend-manager' ) ),
-													'profile'             => array( 'label' => __( 'Profile', 'wc-frontend-manager' ) ),
 													'policies'            => array( 'label' => __( 'Policies', 'wc-frontend-manager' ) ),
+													'membership'          => array( 'label' => __( 'Membership', 'wc-frontend-manager' ) ),
+													'profile'             => array( 'label' => __( 'Profile', 'wc-frontend-manager' ) ),
+													'withdrawal'          => array( 'label' => __( 'Withdrawal', 'wc-frontend-manager' ) ),
+													'refund'              => array( 'label' => __( 'Refund', 'wc-frontend-manager' ) ),
+													'enquiry'             => array( 'label' => __( 'Enquiry', 'wc-frontend-manager' ) ),
+													'enquiry_tab'         => array( 'label' => __( 'Enquiry Tab', 'wc-frontend-manager' ), 'hints' => __( 'If you just want to hide Single Product page `Enquiry Tab`, but keep enable `Enquiry Module` for `Catalog Mode`.', 'wc-frontend-manager' ) ),
+													'catalog'             => array( 'label' => __( 'Catalog Mode', 'wc-frontend-manager' ), 'hints' => __( 'If you disable `Enquiry Module` then `Catalog Module` will stop working automatically.', 'wc-frontend-manager' ) ),
+													'product_popup'       => array( 'label' => __( 'Popup Add Product', 'wc-frontend-manager' ) ),
 													'custom_field'        => array( 'label' => __( 'Custom Field', 'wc-frontend-manager' ) ),
-													'menu_manager'        => array( 'label' => __( 'Menu Manager', 'wc-frontend-manager' ) ),
 													'notification'        => array( 'label' => __( 'Notification', 'wc-frontend-manager' ) ),
 													'direct_message'      => array( 'label' => __( 'Direct Message', 'wc-frontend-manager' ) ),
 													'knowledgebase'       => array( 'label' => __( 'Knowledgebase', 'wc-frontend-manager' ) ),
 													'notice'              => array( 'label' => __( 'Annoncement', 'wc-frontend-manager' ) ),
+													//'menu_manager'        => array( 'label' => __( 'Menu Manager', 'wc-frontend-manager' ) ),
 													//'submenu'             => array( 'label' => __( 'Sub-menu', 'wc-frontend-manager' ), 'hints' => __( 'This will disable `Add New` sub-menus on hover.', 'wc-frontend-manager' ) ),
-													'withdrawal'          => array( 'label' => __( 'Withdrawal', 'wc-frontend-manager' ) ),
-													'refund'              => array( 'label' => __( 'Refund', 'wc-frontend-manager' ) ),
 													);
 		
 		if( WCFM_Dependencies::wcfm_biddypress_plugin_active_check() ) {
@@ -909,9 +941,12 @@ class WCFM {
 		$upload_dir_paths = wp_upload_dir();
 		$attachment_id = 0;
 		
+		if( $attachment_url && is_numeric( $attachment_url ) )
+			return $attachment_url;
+		
 		$attachment_url = apply_filters( 'wcfm_attachment_url', $attachment_url );
 		
-		if( class_exists('WPH') ) {
+		/*if( class_exists('WPH') ) {
 			global $wph;
 			
 			$attachment_id = (int) attachment_url_to_postid( $attachment_url );
@@ -935,8 +970,8 @@ class WCFM {
 			
 			$attachment_id = (int) attachment_url_to_postid( $attachment_url );
 			if( !$attachment_id ) {
-				$new_upload_path = trim($HideMyWP->opt('new_upload_path'));
-				$new_content_path = trim($HideMyWP->opt('new_content_path'));
+				$new_upload_path = trim($HideMyWP->opt('new_upload_path'), '/ ');
+				$new_content_path = trim($HideMyWP->opt('new_content_path'), '/ ');
 				if( $new_upload_path ) {
 					$attachment_url = str_replace( $new_upload_path, 'uploads', $attachment_url );
 				}
@@ -945,7 +980,7 @@ class WCFM {
 				}
 			}
 			//$attachment_url = str_replace( $new_content_path, '/wp-content', str_replace( $new_upload_path, '/uploads', $attachment_url ) );
-		}
+		}*/
 		
 		//if( function_exists( 'ud_get_stateless_media' ) ) {
 			//$bucketLink = ud_get_stateless_media()->get_gs_host();
@@ -954,7 +989,7 @@ class WCFM {
 		//}
 		
 		// If this is the URL of an auto-generated thumbnail, get the URL of the original image
-		if ( false !== strpos( $attachment_url, $upload_dir_paths['baseurl'] . '/' ) ) {
+		/*if ( false !== strpos( $attachment_url, $upload_dir_paths['baseurl'] . '/' ) ) {
 			$attachment_id = (int) attachment_url_to_postid( $attachment_url );
 		} elseif( class_exists( 'Amazon_S3_And_CloudFront' ) ) {
 			global $as3cf;
@@ -971,9 +1006,15 @@ class WCFM {
 			$attachment_url = str_replace( $amazon_s3_url_domain, '', $attachment_url );
 		
 			$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT wposts.ID FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta WHERE wposts.ID = wpostmeta.post_id AND wpostmeta.meta_key = 'amazonS3_info' AND wpostmeta.meta_value LIKE '%s' AND wposts.post_type = 'attachment'", '%' . $attachment_url . '%' ) );
+			
+			if( !$attachment_id ) {
+				$attachment_id = $wpdb->get_var( $wpdb->prepare( "SELECT wposts.ID FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta WHERE wposts.ID = wpostmeta.post_id AND wpostmeta.meta_key = '_wp_attachment_metadata' AND wpostmeta.meta_value LIKE '%s' AND wposts.post_type = 'attachment'", '%' . $attachment_url . '%' ) );
+			}
 		} else {
 			$attachment_id = (int) attachment_url_to_postid( $attachment_url );
-		}
+		}*/
+		
+		$attachment_id = (int) attachment_url_to_postid( $attachment_url );
 		
 		return apply_filters( 'wcfm_attachment_id', $attachment_id, $attachment_url ); 
 	}
@@ -993,7 +1034,7 @@ class WCFM {
 				if( $chart_data_label != '' ) $chart_data_label .= ',';
 				if( $chart_data_set != '' ) $chart_data_set .= ',';
 				
-				$chart_data_label .= '"' . date( 'm d', ($chart_data_key/1000) ) . '"';
+				$chart_data_label .= '"' . date( 'm d y', ($chart_data_key/1000) ) . '"';
 				$chart_data_set   .= '"' . $chart_data[1] . '"';
 				
 			}

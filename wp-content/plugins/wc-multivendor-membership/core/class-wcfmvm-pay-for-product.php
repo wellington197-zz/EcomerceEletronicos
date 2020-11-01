@@ -85,11 +85,11 @@ class WCFMvm_Pay_For_Product {
 		global $WCFM, $WCFMvm;
 		if( isset( $wcfm_membership_settings_form_data['pay_for_product_settings'] ) ) {
 			$pay_for_product_settings = $wcfm_membership_settings_form_data['pay_for_product_settings'];
-			$cost = isset( $pay_for_product_settings['cost'] ) ? $pay_for_product_settings['cost'] : '';
+			$cost = isset( $pay_for_product_settings['cost'] ) ? $pay_for_product_settings['cost'] : 0;
 			$credit = isset( $pay_for_product_settings['credit'] ) ? $pay_for_product_settings['credit'] : '1';
 			$default_limit = isset( $pay_for_product_settings['default_limit'] ) ? $pay_for_product_settings['default_limit'] : 'by_cap';
 			
-			if( !$cost ) return;
+			//if( !$cost ) return;
 			
 			$wcfm_pay_for_product_settings = get_option( 'wcfm_pay_for_product_settings', array() );
 			$pay_for_product_id = isset( $wcfm_pay_for_product_settings['product'] ) ? absint( $wcfm_pay_for_product_settings['product'] ) : '';
@@ -316,6 +316,7 @@ class WCFMvm_Pay_For_Product {
 	  switch( $end_point ) {
 	  	
 	  	case 'wcfm-products-manage':
+	  	case 'wcfm-products-import':
 	    	wp_enqueue_script( 'wcfmvm_per_for_product_js', $WCFMvm->library->js_lib_url . 'wcfmvm-script-per-for-product.js', array('jquery'), $WCFMvm->version, true );
       break;
     }
@@ -327,6 +328,7 @@ class WCFMvm_Pay_For_Product {
 	  switch( $end_point ) {
 	  	
 	  	case 'wcfm-products-manage':
+	  	case 'wcfm-products-import':
 	    	wp_enqueue_style( 'wcfmvm_per_for_product_css',  $WCFMvm->library->css_lib_url . 'wcfmvm-style-pay-for-product.css', array(), $WCFMvm->version );
 		  break;
 		}

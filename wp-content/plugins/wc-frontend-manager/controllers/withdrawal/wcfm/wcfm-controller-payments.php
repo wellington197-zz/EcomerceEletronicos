@@ -109,7 +109,7 @@ class WCFM_Payments_Controller {
 				} else {
 					$transaction_label = '<span class="wcfm_dashboard_item_title"># ' . sprintf( '%06u', $wcfm_payments_single->ID ) . '</span>';
 				}
-				if( apply_filters( 'wcfm_is_pref_vendor_invoice', true ) && ( $wcfm_payments_single->withdraw_status != 'cancelled' ) && WCFM_Dependencies::wcfmu_plugin_active_check() && WCFM_Dependencies::wcfm_wc_pdf_invoices_packing_slips_plugin_active_check() ) {
+				if( apply_filters( 'wcfm_is_pref_vendor_invoice', true ) && apply_filters( 'wcfm_is_allow_withdrawal_invoice', true ) && ( $wcfm_payments_single->withdraw_status != 'cancelled' ) && WCFM_Dependencies::wcfmu_plugin_active_check() && WCFM_Dependencies::wcfm_wc_pdf_invoices_packing_slips_plugin_active_check() ) {
 					$invoice_url = add_query_arg( array( 'withdraw_id' => $wcfm_payments_single->ID, 'action' => 'store_payment_invoice' ), WC()->ajax_url() );
 					$transaction_label .= '<br /><a class="wcfm_withdrawal_invoice wcfm-action-icon withdrawal_quick_action wcfmfa fa-file-pdf text_tip" href="'.$invoice_url.'" data-withdrawalid="' . $wcfm_payments_single->ID . '" data-tip="' . esc_attr__( 'Invoice', 'wc-frontend-manager' ) . '"></a>';
 				}
@@ -122,7 +122,7 @@ class WCFM_Payments_Controller {
 					foreach( $withdrawal_order_ids as $withdrawal_order_id ) {
 						if( $withdrawal_order_id ) {
 							if( $withdrawal_orders ) $withdrawal_orders .= ', ';
-							$withdrawal_orders .= '<a class="wcfm_dashboard_item_title transaction_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $withdrawal_order_id ) .'">#'.  $withdrawal_order_id . '</a>';;
+							$withdrawal_orders .= '<a class="wcfm_dashboard_item_title transaction_order_ids" target="_blank" href="'. get_wcfm_view_order_url( $withdrawal_order_id ) .'">#'.  wcfm_get_order_number( $withdrawal_order_id ) . '</a>';;
 						}
 					}
 				}
@@ -173,6 +173,9 @@ class WCFM_Payments_Controller {
 					}
 				}
 				$wcfm_payments_json_arr[$index][] = $withdrawal_mode;
+				
+				// Additional Info
+				$wcfm_payments_json_arr[$index][] = apply_filters( 'wcfm_payments_additonal_data', '&ndash;', $wcfm_payments_single->ID, $wcfm_payments_single->order_ids, $wcfm_payments_single->commission_ids, $wcfm_payments_single->vendor_id );
 				
 				// Note
 				if( $wcfm_payments_single->withdraw_note ) {

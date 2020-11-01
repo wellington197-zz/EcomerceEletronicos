@@ -21,6 +21,9 @@ class WCFMmp_Settings {
 		// Geo Locate Setting
 		add_action( 'begin_wcfm_settings_form_style', array( &$this, 'wcfm_geolocate_settings' ), 14 );
 		
+		// Order Setting
+		add_action( 'begin_wcfm_settings_form_style', array( &$this, 'wcfm_marketplace_order_settings' ), 14 );
+		
 		// Commission Setting
 		add_action( 'begin_wcfm_settings_form_style', array( &$this, 'wcfm_commission_settings' ), 14 );
 		add_action( 'wcfm_settings_update', array( &$this, 'wcfm_commission_settings_update' ), 14 );
@@ -70,12 +73,12 @@ class WCFMmp_Settings {
 		$vendor_sold_by_template  = isset( $wcfm_marketplace_options['vendor_sold_by_template'] ) ? $wcfm_marketplace_options['vendor_sold_by_template'] : 'advanced';
 		$vendor_sold_by_position  = isset( $wcfm_marketplace_options['vendor_sold_by_position'] ) ? $wcfm_marketplace_options['vendor_sold_by_position'] : 'bellow_atc';
 		$store_name_position      = isset( $wcfm_marketplace_options['store_name_position'] ) ? $wcfm_marketplace_options['store_name_position'] : 'on_banner';
-		$store_list_sidebar       = isset( $wcfm_marketplace_options['store_list_sidebar'] ) ? $wcfm_marketplace_options['store_list_sidebar'] : 'yes';
+		$store_list_sidebar       = isset( $wcfm_marketplace_options['store_list_sidebar'] ) ? $wcfm_marketplace_options['store_list_sidebar'] : 'no';
 		$store_sidebar            = isset( $wcfm_marketplace_options['store_sidebar'] ) ? $wcfm_marketplace_options['store_sidebar'] : 'yes';
 		$store_sidebar_pos        = isset( $wcfm_marketplace_options['store_sidebar_pos'] ) ? $wcfm_marketplace_options['store_sidebar_pos'] : 'left';
 		$store_related_products   =  isset( $wcfm_marketplace_options['store_related_products'] ) ? $wcfm_marketplace_options['store_related_products'] : 'default';
 		$store_ppp                =  isset( $wcfm_marketplace_options['store_ppp'] ) ? $wcfm_marketplace_options['store_ppp'] : get_option('posts_per_page');
-		$order_sync               = isset( $wcfm_marketplace_options['order_sync'] ) ? $wcfm_marketplace_options['order_sync'] : 'no';
+		
 		//$product_mulivendor       = isset( $wcfm_marketplace_options['product_mulivendor'] ) ? $wcfm_marketplace_options['product_mulivendor'] : 'yes';
 		
 		$store_default_logo   = !empty( $wcfm_marketplace_options['store_default_logo'] ) ? $wcfm_marketplace_options['store_default_logo'] : $WCFM->plugin_url . 'assets/images/wcfmmp-blue.png';
@@ -103,23 +106,27 @@ class WCFMmp_Settings {
 				<div class="wcfm_clearfix"></div>
 				<?php
 				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_store', array(
-					                                                                        "vendor_store_url" => array('label' => __('Vendor Store URL', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_slug_input', 'label_class' => 'wcfm_title wcfm_ele', 'desc_class' => 'wcfm_page_options_desc', 'value' => $wcfm_store_url, 'desc' => sprintf( __( 'Define the seller store URL  (%s/[this-text]/[seller-name])', 'wc-multivendor-marketplace' ), get_site_url() ), 'custom_attributes' => array( 'required' => true )  ),
+					                                                                        "product_approval" => array('label' => __('Product Approval', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => 'no', 'attributes' => array( 'disabled' => true ), 'desc_class' => 'wcfm_page_options_desc', 'desc' => sprintf( __( 'Manager vendor capabilities from %sCapability Setting%s', 'wc-multivendor-marketplace' ), '<a target="_blank" style="color:#17a2b8;" href="'.get_wcfm_capability_url().'">', '</a>' ) ),
+					                                                                        
+					                                                                        "vendor_store_url" => array('label' => __('Store URL Base', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_slug_input', 'label_class' => 'wcfm_title wcfm_ele', 'desc_class' => 'wcfm_page_options_desc', 'value' => $wcfm_store_url, 'desc' => sprintf( __( 'Define the seller store URL  (%s/[this-text]/[seller-name])', 'wc-multivendor-marketplace' ), get_site_url() ), 'custom_attributes' => array( 'required' => true )  ),
 					                                                                        "vendor_sold_by" => array('label' => __('Visible Sold By', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $vendor_sold_by, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Uncheck this to disable Sold By display for products.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "sold_by_label" => array('label' => __('Sold By Label', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $sold_by_label, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Sold By label along with store name under product archive pages.', 'wc-multivendor-marketplace' ) ),
+					                                                                        
 					                                                                        "vendor_sold_by_template" => array('label' => __('Sold By Template', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'simple' => __( 'Simple', 'wc-multivendor-marketplace' ), 'advanced' => __( 'Advanced', 'wc-multivendor-marketplace' ), 'tab' => __( 'As Tab', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $vendor_sold_by_template, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Single product page Sold By template.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "sold_by_template_simple" => array( 'type' => 'html', 'class' => 'vendor_sold_by_type vendor_sold_by_type_simple', 'label_class' => 'wcfm_title wcfm_ele', 'value' => '<img src="'.$WCFMmp->plugin_url.'assets/images/sold_by_simple.png" />', 'attributes' => array( 'style' => 'margin-left:35%;border: 1px dotted #ccc;margin-bottom:15px;' ) ),
 					                                                                        "sold_by_template_advanced" => array( 'type' => 'html', 'class' => 'vendor_sold_by_type vendor_sold_by_type_advanced', 'label_class' => 'wcfm_title wcfm_ele', 'value' => '<img src="'.$WCFMmp->plugin_url.'assets/images/sold_by_advanced.png" />', 'attributes' => array( 'style' => 'margin-left:35%;border: 1px dotted #ccc;margin-bottom:15px;' ) ),
 					                                                                        "sold_by_template_tab" => array( 'type' => 'html', 'class' => 'vendor_sold_by_type vendor_sold_by_type_tab', 'label_class' => 'wcfm_title wcfm_ele', 'value' => '<img src="'.$WCFMmp->plugin_url.'assets/images/sold_by_tab.png" />', 'attributes' => array( 'style' => 'margin-left:35%;border: 1px dotted #ccc;margin-bottom:15px;' ) ),
+					                                                                        
 					                                                                        "vendor_sold_by_position" => array( 'label' => __('Sold By Position', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'bellow_title' => __( 'Below Title', 'wc-multivendor-marketplace' ), 'bellow_price' => __( 'Below Price', 'wc-multivendor-marketplace' ), 'bellow_sc' => __( 'Below Short Description', 'wc-multivendor-marketplace' ), 'bellow_atc' => __( 'Below Add to Cart', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $vendor_sold_by_position, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Sold by display position at Single Product Page.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "store_name_position" => array( 'label' => __('Store Name Position', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'on_banner' => __( 'On Banner', 'wc-multivendor-marketplace' ), 'on_header' => __( 'At Header', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_name_position, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Store name position at Vendor Store Page.', 'wc-multivendor-marketplace' ) ),
 					                                                                        
 					                                                                        "store_list_sidebar" => array( 'label' => __('Store List Sidebar', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $store_list_sidebar, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Uncheck this to disable store list sidebar.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "store_sidebar" => array( 'label' => __('Store Sidebar', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $store_sidebar, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Uncheck this to disable vendor store sidebar.', 'wc-multivendor-marketplace' ) ),
 					                                                                        "store_sidebar_pos" => array( 'label' => __('Store Sidebar Position', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'left' => __( 'At Left', 'wc-multivendor-marketplace' ), 'right' => __( 'At Right', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_sidebar_pos ),
-					                                                                        "store_related_products" => array( 'label' => __('Store Related Products', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'default' => __( 'As per WC Default Rule', 'wc-multivendor-marketplace' ), 'store' => __( 'Only same Store Products', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_related_products, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Single product page related products rule.', 'wc-frontend-manager' ) ),
-					                                                                        "store_ppp" => array( 'label' => __('Products per page', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_ppp, 'attributes' => array( 'min'=> 1, 'step' => 1 ), 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'No of products at Store per Page.', 'wc-frontend-manager' ) ),
 					                                                                        
-					                                                                        "order_sync" => array('label' => __('Order Sync', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $order_sync, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to sync WC main order status when vendors update their order status.', 'wc-multivendor-marketplace' ) ),
+					                                                                        "store_ppp" => array( 'label' => __('Products per page', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_ppp, 'attributes' => array( 'min'=> 1, 'step' => 1 ), 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'No of products at Store per Page.', 'wc-frontend-manager' ) ),
+					                                                                        "store_related_products" => array( 'label' => __('Store Related Products', 'wc-multivendor-marketplace'), 'type' => 'select', 'options' => array( 'default' => __( 'As per WC Default Rule', 'wc-multivendor-marketplace' ), 'store' => __( 'Only same Store Products', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $store_related_products, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Single product page related products rule.', 'wc-frontend-manager' ) ),
+					                                                                        
 					                                                                        //"product_mulivendor" => array('label' => __('Product Multi-vendor', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $product_mulivendor, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to allow vendors to sell other vendor products, single product multiple seller.', 'wc-multivendor-marketplace' ) ),
 																																									
 																																									"store_default_logo" => array('label' => __('Store Default Logo', 'wc-multivendor-marketplace') , 'type' => 'upload', 'class' => 'wcfm-text wcfm_ele wcfm-logo-uploads', 'label_class' => 'wcfm_title', 'prwidth' => 75, 'value' => $store_default_logo ),
@@ -137,7 +144,6 @@ class WCFMmp_Settings {
 					                                                                        "delete_data_on_uninstall" => array('label' => __('On Uninstall', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $delete_data_on_uninstall, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Delete all marketplace data on uninstall. Be careful, there is no way to retrieve those data if once deleted!', 'wc-multivendor-marketplace' ) ),
 																																									) ) );
 			  ?>
-			  
 			  <div class="wcfm_clearfix"></div>
 			</div>
 		</div>
@@ -145,7 +151,41 @@ class WCFMmp_Settings {
 		<!-- end collapsible -->
 		
 		<?php
+	}
+	
+	function wcfm_marketplace_order_settings( $wcfm_options ) {
+		global $WCFM, $WCFMmp;
 		
+		if( !apply_filters( 'wcfm_is_allow_marketplace_manage', true ) ) return; 
+		
+		$wcfm_marketplace_options = wcfm_get_option( 'wcfm_marketplace_options', array() );
+		
+		$disable_multivendor_checkout = isset( $wcfm_marketplace_options['disable_multivendor_checkout'] ) ? $wcfm_marketplace_options['disable_multivendor_checkout'] : 'no';
+		$order_sync                   = isset( $wcfm_marketplace_options['order_sync'] ) ? $wcfm_marketplace_options['order_sync'] : 'no';
+		
+		?>
+		<!-- collapsible -->
+		<div class="page_collapsible" id="wcfm_settings_form_marketplace_order_head">
+			<label class="wcfmfa fa-shopping-cart"></label>
+			<?php _e('Order Settings', 'wc-multivendor-marketplace'); ?><span></span>
+		</div>
+		<div class="wcfm-container">
+			<div id="wcfm_settings_form_marketplace_order_expander" class="wcfm-content">
+			  <h2><?php _e('Order Settings', 'wc-multivendor-marketplace'); ?></h2>
+				<div class="wcfm_clearfix"></div>
+				<?php
+				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_order_settings_fields_store', array(
+																																		"disable_multivendor_checkout" => array('label' => __('Disable Multivendor Checkout', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $disable_multivendor_checkout, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this restrict multiple vendors product checkout at same order.', 'wc-multivendor-marketplace' ) ),
+																																		"order_sync" => array('label' => __('Order Sync', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $order_sync, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to sync WC main order status when vendors update their order status.', 'wc-multivendor-marketplace' ) ),
+																																		) ) );
+				?>
+			  <div class="wcfm_clearfix"></div>
+			</div>
+		</div>
+		<div class="wcfm_clearfix"></div>
+		<!-- end collapsible -->
+		
+		<?php
 	}
 	
 	function wcfm_geolocate_settings( $wcfm_options ) {
@@ -157,12 +197,21 @@ class WCFMmp_Settings {
 		
 		$wcfm_google_map_api           = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
 		
+		$wcfm_map_lib           = isset( $wcfm_marketplace_options['wcfm_map_lib'] ) ? $wcfm_marketplace_options['wcfm_map_lib'] : '';
+		if( !$wcfm_map_lib && $wcfm_google_map_api ) { $wcfm_map_lib = 'google'; }
+		
 		$enable_wcfm_storelist_radius  = isset( $wcfm_marketplace_options['enable_wcfm_storelist_radius'] ) ? $wcfm_marketplace_options['enable_wcfm_storelist_radius'] : 'no';
 		$enable_wcfm_product_radius    = isset( $wcfm_marketplace_options['enable_wcfm_product_radius'] ) ? $wcfm_marketplace_options['enable_wcfm_product_radius'] : 'no';
 		
 		$max_radius_to_search          = isset( $wcfm_marketplace_options['max_radius_to_search'] ) ? $wcfm_marketplace_options['max_radius_to_search'] : '100';
 		
+		$radius_unit                   = isset( $wcfm_marketplace_options['radius_unit'] ) ? $wcfm_marketplace_options['radius_unit'] : 'km';
+		
 		$enable_wcfm_geo_locate        = isset( $wcfm_marketplace_options['enable_wcfm_geo_locate'] ) ? $wcfm_marketplace_options['enable_wcfm_geo_locate'] : 'no';
+		
+		$show_product_location         = isset( $wcfm_marketplace_options['show_product_location'] ) ? $wcfm_marketplace_options['show_product_location'] : 'no';
+		
+		$checkout_user_location        = isset( $wcfm_marketplace_options['checkout_user_location'] ) ? $wcfm_marketplace_options['checkout_user_location'] : 'no';
 		
 		// Default Map Location
 		$default_geolocation = isset( $wcfm_marketplace_options['default_geolocation'] ) ? $wcfm_marketplace_options['default_geolocation'] : array();
@@ -184,19 +233,28 @@ class WCFMmp_Settings {
 				<div class="wcfm_clearfix"></div>
 				<?php
 				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_geo_locate', array(
-					                                                         "wcfm_google_map_api" => array('label' => __('Google Map API Key', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'desc_class' => 'wcfm_page_options_desc', 'value' => $wcfm_google_map_api, 'desc' => sprintf( __( '%sAPI Key%s is needed to display map on store page', 'wc-multivendor-marketplace' ), '<a target="_blank" href="https://developers.google.com/maps/documentation/javascript/">', '</a>' ) ),
+					
+																																	"wcfm_map_lib" => array('label' => __('Map Library', 'wc-multivendor-marketplace'), 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'options' => apply_filters( 'wcfm_google_map_lib_options', array( 'leaflet' => 'Open Street Map', 'google' => 'Google Map' ) ), 'value' => $wcfm_map_lib ),
+					
+					                                                         "wcfm_google_map_api" => array('label' => __('Google Map API Key', 'wc-multivendor-marketplace') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_map_lib_field wcfm_map_lib_field_google', 'label_class' => 'wcfm_title wcfm_ele wcfm_map_lib_field wcfm_map_lib_field_google', 'desc_class' => 'wcfm_page_options_desc wcfm_map_lib_field wcfm_map_lib_field_google', 'value' => $wcfm_google_map_api, 'desc' => sprintf( __( '%sAPI Key%s is needed to display map on store page', 'wc-multivendor-marketplace' ), '<a target="_blank" href="https://developers.google.com/maps/documentation/javascript/">', '</a>' ) ),
 					                                                         
 					                                                         "enable_wcfm_storelist_radius"  => array('label' => __('Store List Radius Search', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $enable_wcfm_storelist_radius, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Check this to enable store list radius filter by user location.', 'wc-multivendor-marketplace' ) ),
 					                                                         
 					                                                         "enable_wcfm_product_radius"  => array('label' => __('Product List Radius Search', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $enable_wcfm_product_radius, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Check this to enable product list radius filter by user location.', 'wc-multivendor-marketplace' ) ),
 					                                                         
-					                                                         "max_radius_to_search"  => array('label' => __('Maximum Radius to Search', 'wc-multivendor-marketplace'), 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'options' => apply_filters( 'wcfm_max_radius_to_search_options', array( '50' => '50', '100' => '100', '150' => '150', '200' => '200', '500' => '500' ) ), 'value' => $max_radius_to_search, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Set maximum radius allow to search.', 'wc-multivendor-marketplace' ) ),
+					                                                         "max_radius_to_search"  => array('label' => __('Maximum Radius to Search', 'wc-multivendor-marketplace'), 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'options' => apply_filters( 'wcfm_max_radius_to_search_options', array( '1' => '1', '2' => '2', '3' => '3', '5' => '5', '10' => '10', '15' => '15', '20' => '20', '50' => '50', '100' => '100', '150' => '150', '200' => '200', '500' => '500' ) ), 'value' => $max_radius_to_search, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Set maximum radius allow to search.', 'wc-multivendor-marketplace' ) ),
+					                                                         
+					                                                         "radius_unit"  => array('label' => __('Radius Unit', 'wc-multivendor-marketplace'), 'type' => 'select', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title', 'options' => array( 'km' => 'Kilometer', 'mi' => 'Miles' ), 'value' => $radius_unit ),
 					                                                         
 					                                                         "enable_wcfm_geo_locate"  => array('label' => __('Enable Auto Filter', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $enable_wcfm_geo_locate, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Check this to enable auto-filter by user\'s location.', 'wc-multivendor-marketplace' ) ),
+					                                                         
+					                                                         "show_product_location"  => array('label' => __('Show Product Location', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $show_product_location, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Check this to show product\'s location at single product page.', 'wc-multivendor-marketplace' ) ),
+					                                                         
+					                                                         "checkout_user_location"  => array('label' => __('Checkout User Location', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $checkout_user_location, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Check this to enable user\'s location input using map at checkout.', 'wc-multivendor-marketplace' ) ),
 					                                                         ) ) );
 				
 				$api_key = isset( $wcfm_marketplace_options['wcfm_google_map_api'] ) ? $wcfm_marketplace_options['wcfm_google_map_api'] : '';
-				if ( $api_key ) {
+				if ( ( $wcfm_map_lib != 'google' ) || ( ( $wcfm_map_lib == 'google' ) && $api_key ) ) {
 					$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_geo_locate_default_location', array(
 																																																			"find_address" => array( 'label' => __( 'Map Default Location', 'wc-frontend-manager' ), 'placeholder' => __( 'Type an address to find', 'wc-frontend-manager' ), 'name' => 'default_geolocation[address]', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => $map_address ),
 																																																			"store_location" => array( 'type' => 'hidden', 'name' => 'default_geolocation[location]', 'value' => $store_location ),
@@ -243,7 +301,7 @@ class WCFMmp_Settings {
 		
 		if( isset( $wcfm_settings_form['vendor_store_url'] ) ) {
 			$wcfm_marketplace_options['wcfm_store_url'] = sanitize_title( $wcfm_settings_form['vendor_store_url'] );
-			update_option( 'wcfm_store_url', sanitize_title( $wcfm_settings_form['vendor_store_url'] ) );
+			wcfm_update_option( 'wcfm_store_url', sanitize_title( $wcfm_settings_form['vendor_store_url'] ) );
 		}
 		
 		if( isset( $wcfm_settings_form['vendor_sold_by'] ) ) {
@@ -332,6 +390,12 @@ class WCFMmp_Settings {
 			$wcfm_marketplace_options['order_sync'] = 'no';
 		}
 		
+		if( isset( $wcfm_settings_form['disable_multivendor_checkout'] ) ) {
+			$wcfm_marketplace_options['disable_multivendor_checkout'] = 'yes';
+		} else {
+			$wcfm_marketplace_options['disable_multivendor_checkout'] = 'no';
+		}
+		
 		if( isset( $wcfm_settings_form['disable_wcfm_store_setup'] ) ) {
 			$wcfm_marketplace_options['disable_wcfm_store_setup'] = 'yes';
 		} else {
@@ -349,6 +413,10 @@ class WCFMmp_Settings {
 			$wcfm_marketplace_options['enable_wcfm_geo_locate'] = 'yes';
 		} else {
 			$wcfm_marketplace_options['enable_wcfm_geo_locate'] = 'no';
+		}
+		
+		if( isset( $wcfm_settings_form['wcfm_map_lib'] ) ) {
+			$wcfm_marketplace_options['wcfm_map_lib'] = $wcfm_settings_form['wcfm_map_lib'];
 		}
 		
 		if( isset( $wcfm_settings_form['wcfm_google_map_api'] ) ) {
@@ -371,6 +439,24 @@ class WCFMmp_Settings {
 			$wcfm_marketplace_options['max_radius_to_search'] = $wcfm_settings_form['max_radius_to_search'];
 		} else {
 			$wcfm_marketplace_options['max_radius_to_search'] = '100';
+		}
+		
+		if( isset( $wcfm_settings_form['radius_unit'] ) ) {
+			$wcfm_marketplace_options['radius_unit'] = $wcfm_settings_form['radius_unit'];
+		} else {
+			$wcfm_marketplace_options['radius_unit'] = 'km';
+		}
+		
+		if( isset( $wcfm_settings_form['show_product_location'] ) ) {
+			$wcfm_marketplace_options['show_product_location'] = 'yes';
+		} else {
+			$wcfm_marketplace_options['show_product_location'] = 'no';
+		}
+		
+		if( isset( $wcfm_settings_form['checkout_user_location'] ) ) {
+			$wcfm_marketplace_options['checkout_user_location'] = 'yes';
+		} else {
+			$wcfm_marketplace_options['checkout_user_location'] = 'no';
 		}
 		
 		if( isset( $wcfm_settings_form['default_geolocation'] ) ) {
@@ -456,7 +542,7 @@ class WCFMmp_Settings {
 				
 				<?php
 					$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_commission_tax', array(  
-																																			'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $tax_enable, 'desc_class' => 'wcfm_page_options_desc', 'desc' => __( 'Enable this to deduct tax from vendor\'s commission.', 'wc-multivendor-marketplace' ) ),
+																																			'tax_enable' => array( 'label' => __( 'Enable', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $tax_enable ),
 																																			'tax_name' => array( 'label' => __( 'Tax Label', 'wc-multivendor-marketplace' ), 'placeholder' => __( 'Tax', 'wc-multivendor-marketplace' ), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title', 'value' => $tax_name ),
 																																			'tax_percent' => array( 'label' => __( 'Tax Percent (%)', 'wc-multivendor-marketplace' ), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input', 'label_class' => 'wcfm_title', 'value' => $tax_percent ),
 																																			) ) );
@@ -682,6 +768,9 @@ class WCFMmp_Settings {
 		$withdrawal_charge_skrill             = isset( $withdrawal_charge['skrill'] ) ? $withdrawal_charge['skrill'] : array();
 		$withdrawal_charge_bank_transfer      = isset( $withdrawal_charge['bank_transfer'] ) ? $withdrawal_charge['bank_transfer'] : array();
 		
+		$active_order_payment_methods         = get_wcfm_marketplace_disallow_order_payment_methods();
+		$transaction_charge_type              = isset( $wcfm_withdrawal_options['transaction_charge_type'] ) ? $wcfm_withdrawal_options['transaction_charge_type'] : 'no';
+		$transaction_charge                   = isset( $wcfm_withdrawal_options['transaction_charge'] ) ? $wcfm_withdrawal_options['transaction_charge'] : array();
 		?>
 		<!-- collapsible -->
 		<div class="page_collapsible" id="wcfm_settings_form_payment_head">
@@ -733,8 +822,34 @@ class WCFMmp_Settings {
 					?>
 				</div>
 				
+				<?php if( !empty( $active_order_payment_methods ) ) { ?>
+					<div class="wcfm_clearfix"></div><br/>
+					<h2><?php _e('Transaction Charges', 'wc-multivendor-marketplace'); ?></h2>
+					<p class="description instructions"><?php printf( __( 'These charges will be deducted from vendor\'s total order commission depending upon %sOrder Payment Method%s.', 'wc-multivendor-marketplace' ), '<b>', '</b>' ); ?></p>
+					<div class="wcfm_clearfix"></div>
+					<div class="store_address">
+						<?php
+						$transactional_charges_fileds = array(
+																									"transaction_charge_type" => array('label' => __( 'Charge Type', 'wc-multivendor-marketplace'), 'name' => 'wcfm_withdrawal_options[transaction_charge_type]', 'type' => 'select', 'options' => array( 'no' => __( 'No Charge', 'wc-multivendor-marketplace' ), 'percent' => __( 'Percent', 'wc-multivendor-marketplace' ), 'fixed'   => __( 'Fixed', 'wc-multivendor-marketplace' ), 'percent_fixed' => __( 'Percent + Fixed', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'desc_class' => 'wcfm_page_options_desc', 'value' => $transaction_charge_type ),
+																									"transaction_setting_break_4" => array( 'type' => 'html', 'value' => '<div style="height: 15px;"></div>' ),
+																								);
+						 foreach( $active_order_payment_methods as $method_id => $metnohd_name ) {
+						 	 $transactional_charges_fileds['transaction_charge_'.$method_id] = array( 'label' => $metnohd_name . ' ' . __('Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[transaction_charge]['.$method_id.']', 'class' => 'wcfm_non_sortable transaction_charge_block transaction_charge_'.$method_id, 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele transaction_charge_block transaction_charge_'.$method_id, 'value' => isset( $transaction_charge[$method_id] ) ? $transaction_charge[$method_id] : array(), 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																								"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input transaction_charge_field transaction_charge_percent transaction_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele transaction_charge_field transaction_charge_percent transaction_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
+																																								"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input transaction_charge_field transaction_charge_fixed transaction_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele transaction_charge_field transaction_charge_fixed transaction_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
+																																								//"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for transaction charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
+																																								) );
+						 }
+						
+						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_transaction_charges', $transactional_charges_fileds , $wcfm_withdrawal_options, $transaction_charge ) );
+																																											
+						?>
+					</div>
+				<?php } ?>
+				
 				<div class="wcfm_clearfix"></div><br/>
 				<h2><?php _e('Withdrawal Charges', 'wc-multivendor-marketplace'); ?></h2>
+				<p class="description instructions"><?php printf( __( 'These charges will be deducted from vendor\'s withdrawal amount depending upon %sWithdrawal Payment Method%s.', 'wc-multivendor-marketplace' ), '<b>', '</b>' ); ?></p>
 				<div class="wcfm_clearfix"></div>
 				<div class="store_address">
 					<?php
@@ -742,22 +857,22 @@ class WCFMmp_Settings {
 																																										"withdrawal_charge_type" => array('label' => __( 'Charge Type', 'wc-multivendor-marketplace'), 'name' => 'wcfm_withdrawal_options[withdrawal_charge_type]', 'type' => 'select', 'options' => array( 'no' => __( 'No Charge', 'wc-multivendor-marketplace' ), 'percent' => __( 'Percent', 'wc-multivendor-marketplace' ), 'fixed'   => __( 'Fixed', 'wc-multivendor-marketplace' ), 'percent_fixed' => __( 'Percent + Fixed', 'wc-multivendor-marketplace' ) ), 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'desc_class' => 'wcfm_page_options_desc', 'value' => $withdrawal_charge_type , 'desc' => __('Charges applicable for each withdarwal.', 'wc-multivendor-marketplace') ),
 																																										"withdrawal_setting_break_4" => array( 'type' => 'html', 'value' => '<div style="height: 15px;"></div>' ),
 																																										
-																																										"withdrawal_charge_paypal" => array( 'label' => __('PayPal Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][paypal]', 'class' => 'withdraw_charge_block withdraw_charge_paypal', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdraw_charge_block withdraw_charge_paypal', 'value' => $withdrawal_charge_paypal, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																										"withdrawal_charge_paypal" => array( 'label' => __('PayPal Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][paypal]', 'class' => 'wcfm_non_sortable withdraw_charge_block withdraw_charge_paypal', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdraw_charge_block withdraw_charge_paypal', 'value' => $withdrawal_charge_paypal, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																												"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																												) ),
-																																										"withdrawal_charge_stripe" => array( 'label' => __('Stripe Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][stripe]', 'class' => 'withdraw_charge_block withdraw_charge_stripe', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdraw_charge_block withdraw_charge_stripe', 'value' => $withdrawal_charge_stripe, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																										"withdrawal_charge_stripe" => array( 'label' => __('Stripe Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][stripe]', 'class' => 'wcfm_non_sortable withdraw_charge_block withdraw_charge_stripe', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdraw_charge_block withdraw_charge_stripe', 'value' => $withdrawal_charge_stripe, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																												"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																												) ),
-																																										"withdrawal_charge_skrill" => array( 'label' => __('Skrill Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][skrill]', 'class' => 'withdraw_charge_block withdraw_charge_skrill', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdraw_charge_block withdraw_charge_skrill', 'value' => $withdrawal_charge_skrill, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																										"withdrawal_charge_skrill" => array( 'label' => __('Skrill Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][skrill]', 'class' => 'wcfm_non_sortable withdraw_charge_block withdraw_charge_skrill', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdraw_charge_block withdraw_charge_skrill', 'value' => $withdrawal_charge_skrill, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																												"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
 																																																												) ),
-																																										"withdrawal_charge_bank_transfer" => array( 'label' => __('Bank Transfer Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][bank_transfer]', 'class' => 'withdraw_charge_block withdraw_charge_bank_transfer', 'label_class' => 'wcfm_title wcfm_ele wcfm_fill_ele withdraw_charge_block withdraw_charge_bank_transfer', 'value' => $withdrawal_charge_bank_transfer, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
+																																										"withdrawal_charge_bank_transfer" => array( 'label' => __('Bank Transfer Charge', 'wc-multivendor-marketplace'), 'type' => 'multiinput', 'name' => 'wcfm_withdrawal_options[withdrawal_charge][bank_transfer]', 'class' => 'wcfm_non_sortable withdraw_charge_block withdraw_charge_bank_transfer', 'label_class' => 'wcfm_title wcfm_ele wcfm_full_ele withdraw_charge_block withdraw_charge_bank_transfer', 'value' => $withdrawal_charge_bank_transfer, 'custom_attributes' => array( 'limit' => 1 ), 'options' => array(
 																																																												"percent" => array('label' => __('Percent Charge(%)', 'wc-multivendor-marketplace'),  'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_percent withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"fixed" => array('label' => __('Fixed Charge', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'label_class' => 'wcfm_title wcfm_ele withdraw_charge_field withdraw_charge_fixed withdraw_charge_percent_fixed', 'attributes' => array( 'min' => '0.1', 'step' => '0.1') ),
 																																																												"tax" => array('label' => __('Charge Tax', 'wc-multivendor-marketplace'), 'type' => 'number', 'class' => 'wcfm-text wcfm_ele wcfm_non_negative_input ', 'label_class' => 'wcfm_title wcfm_ele', 'attributes' => array( 'min' => '0.1', 'step' => '0.1'), 'hints' => __( 'Tax for withdrawal charge, calculate in percent.', 'wc-multivendor-marketplace' ) ),
@@ -925,6 +1040,9 @@ class WCFMmp_Settings {
     
     $wcfmmp_marketplace_shipping_by_weight_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_weight_settings', array() );
     $wcfmmp_marketplace_shipping_by_weight_enabled = ( !empty($wcfmmp_marketplace_shipping_by_weight_options) && !empty($wcfmmp_marketplace_shipping_by_weight_options['enabled']) ) ? $wcfmmp_marketplace_shipping_by_weight_options['enabled'] : 'yes';
+    
+    $wcfmmp_marketplace_shipping_by_distance_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', array() );
+    $wcfmmp_marketplace_shipping_by_distance_enabled = ( !empty($wcfmmp_marketplace_shipping_by_distance_options) && !empty($wcfmmp_marketplace_shipping_by_distance_options['enabled']) ) ? $wcfmmp_marketplace_shipping_by_distance_options['enabled'] : 'no';
 		
 		?>
 		<!-- collapsible -->
@@ -983,6 +1101,8 @@ class WCFMmp_Settings {
 											"wcfmmp_additional_product" => array('label' => __('Per Product Additional Price', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_additional_product]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_additional_product']) ? $wcfmmp_shipping_by_country['_wcfmmp_additional_product'] : '', 'hints' => __('If a customer buys more than one type product from your store, first product of the every second type will be charged with this price', 'wc-multivendor-marketplace') ),
 											"wcfmmp_additional_qty" => array('label' => __('Per Qty Additional Price', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_additional_qty]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_additional_qty']) ? $wcfmmp_shipping_by_country['_wcfmmp_additional_qty'] : '', 'hints' => __('Every second product of same type will be charged with this price', 'wc-multivendor-marketplace') ),
 											"wcfmmp_byc_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_free_shipping_amount']) ? $wcfmmp_shipping_by_country['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+											"wcfmmp_byc_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_country['_enable_local_pickup']) ? 'yes' : '' ),
+											"wcfmmp_byc_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_local_pickup_cost']) ? $wcfmmp_shipping_by_country['_local_pickup_cost'] : '' ),
 											"wcfmmp_form_location" => array('label' => __('Ships from:', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_country[_wcfmmp_form_location]','type' => 'country', 'class' => 'wcfm-select wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => isset($wcfmmp_shipping_by_country['_wcfmmp_form_location']) ? $wcfmmp_shipping_by_country['_wcfmmp_form_location'] : '', 'hints' => __( 'Location from where the products are shipped for delivery. Usually it is same as the store.', 'wc-multivendor-marketplace' ) ),
 											) )
 									);
@@ -1016,6 +1136,7 @@ class WCFMmp_Settings {
 										"wcfmmp_shipping_rates" => array(
 												'label' => __('Shipping Rates by Country', 'wc-multivendor-marketplace') , 
 												'type' => 'multiinput', 
+												'class' => 'wcfm_admin_shipping_setting_block',
 												'label_class' => 'wcfm_title wcfm_full_title', 
 												'value' => $wcfmmp_shipping_rates, 
 												'desc' => __( 'Add the countries you deliver your products to. You can specify states as well. If the shipping price is same except some countries, there is an option Everywhere Else, you can use that.', 'wc-multivendor-marketplace' ),
@@ -1068,15 +1189,20 @@ class WCFMmp_Settings {
         </div>
         
         
-				<div id="wcfm_settings_form_shipping_by_country_expander" class="wcfm_store_shipping_fields" style="margin-top:50px;">
+				<div id="wcfm_settings_form_shipping_by_weight_expander" class="wcfm_store_shipping_fields" style="margin-top:50px;">
 				  <div class="wcfm_vendor_settings_heading"><h2><?php _e('Shipping By Weight', 'wc-multivendor-marketplace'); ?></h2></div>
 				  <div class="wcfm_clearfix"></div>
 					<div class="store_address">
 				  
 						<?php
+						$wcfmmp_shipping_by_weight = get_option( '_wcfmmp_shipping_by_weight', array() );
+						
 						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_shipping_weight', array(																																					
 																																									"enable_marketplace_shipping_by_weight" => array('label' => __('Enable', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_store_shipping_fields', 'label_class' => 'wcfm_title checkbox_title wcfm_store_shipping_fields', 'value' => 'yes', 'dfvalue' => $wcfmmp_marketplace_shipping_by_weight_enabled, 'desc_class' => 'wcfm_page_options_desc wcfm_store_shipping_fields', 'desc' => __( 'Uncheck this to disable weight based shipping options.', 'wc-multivendor-marketplace' ) ),
 																																									"store_shipping_break_2" => array( 'type' => 'html', 'value' => '<div style="padding-bottom:30px;" class="wcfm_clearfix"></div>' ),
+																																									"wcfmmp_byw_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_weight_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_weight_fields', 'value' => isset($wcfmmp_shipping_by_weight['_free_shipping_amount']) ? $wcfmmp_shipping_by_weight['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byw_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_store_shipping_weight_fields', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele wcfm_store_shipping_weight_fields', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_weight['_enable_local_pickup']) ? 'yes' : '' ),
+																																									"wcfmmp_byw_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_weight[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_weight_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_weight_fields', 'value' => isset($wcfmmp_shipping_by_weight['_local_pickup_cost']) ? $wcfmmp_shipping_by_weight['_local_pickup_cost'] : '' ),
 																																				) ) );
 						?>
 						
@@ -1105,6 +1231,7 @@ class WCFMmp_Settings {
 												"wcfmmp_shipping_rates_by_weight" => array(
 														'label' => __('Country and Weight wise Shipping Rate Calculation', 'wc-multivendor-marketplace') , 
 														'type' => 'multiinput', 
+														'class' => 'wcfm_admin_shipping_setting_block',
 														'label_class' => 'wcfm_title wcfm_full_title', 
 														'value' => $wcfmmp_country_weight_shipping_value, 
 														'desc' => __( 'Add the countries you deliver your products to and specify rates for weight range. If the shipping price is same except some countries/states, there is an option Everywhere Else, you can use that.', 'wc-multivendor-marketplace' ),
@@ -1182,7 +1309,74 @@ class WCFMmp_Settings {
 								?>
 						 </div>
           </div>
-        </div>					
+        </div>
+        
+        <div id="wcfm_settings_form_shipping_by_distance_expander" class="wcfm_store_shipping_fields" style="margin-top:50px;">
+				  <div class="wcfm_vendor_settings_heading"><h2><?php _e('Shipping By Distance', 'wc-multivendor-marketplace'); ?></h2></div>
+				  <div class="wcfm_clearfix"></div>
+					<div class="store_address">
+				  
+						<?php
+						$radius_unit   = isset( $WCFMmp->wcfmmp_marketplace_options['radius_unit'] ) ? $WCFMmp->wcfmmp_marketplace_options['radius_unit'] : 'km';
+						$wcfmmp_shipping_by_distance = get_option( '_wcfmmp_shipping_by_distance', array() );
+						
+						$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_shipping_distance', array(																																					
+																																									"enable_marketplace_shipping_by_distance" => array('label' => __('Enable', 'wc-multivendor-marketplace'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_store_shipping_fields', 'label_class' => 'wcfm_title checkbox_title wcfm_store_shipping_fields', 'value' => 'yes', 'dfvalue' => $wcfmmp_marketplace_shipping_by_distance_enabled, 'desc_class' => 'wcfm_page_options_desc wcfm_store_shipping_fields', 'desc' => __( 'Uncheck this to disable distance based shipping options.', 'wc-multivendor-marketplace' ) ),
+																																									"store_shipping_break_22" => array( 'type' => 'html', 'value' => '<div style="padding-bottom:30px;" class="wcfm_clearfix"></div>' ),
+																																									"wcfmmp_byd_default_cost" => array('label' => __('Default Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_default_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_distance_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_distance_fields', 'value' => isset($wcfmmp_shipping_by_distance['_default_cost']) ? $wcfmmp_shipping_by_distance['_default_cost'] : '', 'hints' => __('Default shipping cost, will be added with distance rule cost. Leave empty to consider default cost as `0`.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_max_distance" => array('label' => __('Max Distance', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_max_distance]', 'placeholder' => __('No Limit', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_distance_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_distance_fields', 'value' => isset($wcfmmp_shipping_by_distance['_max_distance']) ? $wcfmmp_shipping_by_distance['_max_distance'] : '', 'hints' => __('Upto maximum distance shipping supported. Leave empty to consider no limit.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_free_shipping_amount" => array('label' => __('Free Shipping Minimum Order Amount', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_free_shipping_amount]', 'placeholder' => __( 'NO Free Shipping', 'wc-multivendor-marketplace'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_distance_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_distance_fields', 'value' => isset($wcfmmp_shipping_by_distance['_free_shipping_amount']) ? $wcfmmp_shipping_by_distance['_free_shipping_amount'] : '', 'hints' => __('Free shipping will be available if order amount more than this. Leave empty to disable Free Shipping.', 'wc-multivendor-marketplace') ),
+																																									"wcfmmp_byd_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_store_shipping_distance_fields', 'label_class' => 'wcfm_title checkbox_title checkbox-title wcfm_ele wcfm_store_shipping_distance_fields', 'value' => 'yes', 'dfvalue' => isset($wcfmmp_shipping_by_distance['_enable_local_pickup']) ? 'yes' : '' ),
+																																									"wcfmmp_byd_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'wc-multivendor-marketplace'), 'name' => 'wcfmmp_shipping_by_distance[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'wcfm-text wcfm_ele wcfm_store_shipping_distance_fields', 'label_class' => 'wcfm_title wcfm_ele wcfm_store_shipping_distance_fields', 'value' => isset($wcfmmp_shipping_by_distance['_local_pickup_cost']) ? $wcfmmp_shipping_by_distance['_local_pickup_cost'] : '' ),
+																																				) ) );
+						?>
+						
+						<div class="wcfm_store_shipping_distance_fields">
+						  <?php
+								$wcfmmp_shipping_by_distance_rates       = get_option( '_wcfmmp_shipping_by_distance_rates', array() );
+								
+								$WCFM->wcfm_fields->wcfm_generate_form_field( 
+											apply_filters( 'wcfmmp_settings_fields_shipping_rates_by_distance', array( 
+												"wcfmmp_shipping_by_distance_rates" => array(
+													'label'       => __('Distance-Cost Rules', 'wc-multivendor-marketplace'), 
+													'type'        => 'multiinput', 
+													'class'       => 'wcfmmp_distance_wise_rule wcfm_admin_shipping_setting_block',
+													'label_class' => 'wcfm_title wcfmmp_shipping_distance_rates_label wcfmmp_distance_wise_rule', 
+													'value'       => $wcfmmp_shipping_by_distance_rates,
+													'options' => array(
+															"wcfmmp_distance_rule" => array( 
+																	'label' => __('Distance Rule', 'wc-multivendor-marketplace'), 
+																	'type' => 'select', 
+																	'class' => 'wcfm-select wcfmmp_distance_rule_select', 
+																	'label_class' => 'wcfm_title', 
+																	'options' => array(
+																		'up_to' => __('Distance up to', 'wc-multivendor-marketplace'),
+																		'more_than' => __('Distance more than', 'wc-multivendor-marketplace')
+																	) 
+															),
+															"wcfmmp_distance_unit" => array( 
+																	'label' => __('Distance', 'wc-multivendor-marketplace') . ' ('.$radius_unit.')', 
+																	'type' => 'number', 
+																	'class' => 'wcfm-text', 
+																	'label_class' => 'wcfm_title' 
+															),
+															"wcfmmp_distance_price" => array( 
+																	'label' => __('Cost', 'wc-multivendor-marketplace') . ' ('.get_woocommerce_currency_symbol().')', 
+																	'type' => 'number', 
+																	'placeholder' => '0.00 (' . __('Free Shipping', 'wc-multivendor-marketplace') . ')',
+																	'class' => 'wcfm-text', 
+																	'label_class' => 'wcfm_title' 
+															),
+													)
+												)
+											) 
+									  )
+									);
+								?>
+						 </div>
+          </div>
+        </div>
+        
 			</div>
 		</div>
 		<div class="wcfm_clearfix"></div>
@@ -1255,6 +1449,10 @@ class WCFMmp_Settings {
 		} else {
 			$enable_marketplace_shipping_by_weight = 'no';
 		}
+		
+		if( isset( $wcfm_settings_form['wcfmmp_shipping_by_weight'] ) ) {
+			update_option( '_wcfmmp_shipping_by_weight', $wcfm_settings_form['wcfmmp_shipping_by_weight'] );
+		}
     
     $wcfmmp_marketplace_shipping_by_weight_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_weight_settings', array() );
     $wcfmmp_marketplace_shipping_by_weight_options['enabled'] = $enable_marketplace_shipping_by_weight;
@@ -1279,6 +1477,25 @@ class WCFMmp_Settings {
 		update_option( '_wcfmmp_country_weight_mode', $wcfmmp_country_weight_mode );
 		update_option( '_wcfmmp_country_weight_unit_cost', $wcfmmp_country_weight_unit_cost );
 		update_option( '_wcfmmp_country_weight_default_costs', $wcfmmp_country_weight_default_costs );
+		
+		// Shipping by Distance
+    if( isset( $wcfm_settings_form['enable_marketplace_shipping_by_distance'] ) ) {
+			$enable_marketplace_shipping_by_distance = 'yes';
+		} else {
+			$enable_marketplace_shipping_by_distance = 'no';
+		}
+		
+		if( isset( $wcfm_settings_form['wcfmmp_shipping_by_distance'] ) ) {
+			update_option( '_wcfmmp_shipping_by_distance', $wcfm_settings_form['wcfmmp_shipping_by_distance'] );
+		}
+		
+		if( isset( $wcfm_settings_form['wcfmmp_shipping_by_distance_rates'] ) ) {
+			update_option( '_wcfmmp_shipping_by_distance_rates', $wcfm_settings_form['wcfmmp_shipping_by_distance_rates'] );
+		}
+    
+    $wcfmmp_marketplace_shipping_by_distance_options = get_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', array() );
+    $wcfmmp_marketplace_shipping_by_distance_options['enabled'] = $enable_marketplace_shipping_by_distance;
+    update_option( 'woocommerce_wcfmmp_product_shipping_by_distance_settings', $wcfmmp_marketplace_shipping_by_distance_options );
 	}
 	
 	function wcfm_refund_settings( $wcfm_options ) {
@@ -1386,6 +1603,8 @@ class WCFMmp_Settings {
 	function wcfm_vendor_registration_settings() {
 		global $WCFM, $WCFMmp, $_POST;
 		
+		if( !function_exists( 'get_wcfm_memberships_settings_url' ) ) return;
+		
 		$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
 		
 		$membership_reject_rules = array();
@@ -1400,7 +1619,7 @@ class WCFMmp_Settings {
 		$wcfmvm_registration_static_fields = wcfm_get_option( 'wcfmvm_registration_static_fields', array() );
 		$enable_address = isset( $wcfmvm_registration_static_fields['address'] ) ? 'yes' : '';
 		
-		$field_types = apply_filters( 'wcfm_registration_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'textarea', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select / Drop Down', 'upload' => 'File/Image' ) );
+		$field_types = apply_filters( 'wcfm_registration_custom_filed_types', array( 'text' => 'Text', 'number' => 'Number', 'textarea' => 'textarea', 'datepicker' => 'Date Picker', 'timepicker' => 'Time Picker', 'checkbox' => 'Check Box', 'select' => 'Select / Drop Down', 'mselect' => 'Multi-Select Drop Down', 'upload' => 'File/Image', 'html' => 'HTML' ) );
 		$wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custom_fields', array() );
 		
 		$hide_become_vendor = wcfm_get_option( 'wcfmvm_hide_become_vendor', 'no' );
@@ -1422,7 +1641,7 @@ class WCFMmp_Settings {
 																																		"wcfmvm_email_verification" => array( 'label' => __( 'Email Verification', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $email_verification ),
 																																		) ) );
 				
-				if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() ) {
+				if( WCFMmp_Dependencies::wcfm_sms_alert_plugin_active_check() || WCFMmp_Dependencies::wcfm_twilio_plugin_active_check() || WCFMmp_Dependencies::wcfm_msg91_plugin_active_check() || function_exists( 'netgsm_sendSMS_oneToMany' ) || apply_filters( 'wcfm_is_allow_custom_otp_verification', false ) ) {
 					$WCFM->wcfm_fields->wcfm_generate_form_field( array(  
 																															"wcfmvm_sms_verification" => array( 'label' => __( 'SMS (via OTP) Verification', 'wc-multivendor-marketplace' ), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes', 'dfvalue' => $sms_verification ),
 																															) );
@@ -1432,13 +1651,10 @@ class WCFMmp_Settings {
 				<h2><?php _e( 'Registration Form Fields', 'wc-multivendor-marketplace' ); ?></h2>
 				<div class="wcfm_clearfix"></div>
 				<?php
-				$pages = get_pages(); 
-				$pages_array = array( '' => __( '-- Choose Terms Page --', 'wc-multivendor-marketplace' ) );
-				$woocommerce_pages = array ( wc_get_page_id('shop'), wc_get_page_id('cart'), wc_get_page_id('checkout'), wc_get_page_id('myaccount'));
-				foreach ( $pages as $page ) {
-					if(!in_array($page->ID, $woocommerce_pages)) {
-						$pages_array[$page->ID] = $page->post_title;
-					}
+				$terms_page = isset( $wcfmvm_registration_static_fields['terms_page'] ) ? $wcfmvm_registration_static_fields['terms_page'] : '';
+				$pages_array = array();
+				if( $terms_page ) {
+					 $pages_array[$terms_page] = get_post( $terms_page )->post_title; 
 				}
 				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfmvm_registration_static_fields', array(
 					                                                                                                    "first_name"  => array( 'label' => __( 'First Name', 'wc-frontend-manager' ), 'type' => 'checkbox', 'name' => 'wcfmvm_registration_static_fields[first_name]', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox-title', 'value' => 'yes', 'dfvalue' => isset( $wcfmvm_registration_static_fields['first_name'] ) ? 'yes' : '' ),
@@ -1457,11 +1673,16 @@ class WCFMmp_Settings {
 																																																						"type" => array( 'label' => __('Field Type', 'wc-frontend-manager'), 'type' => 'select', 'options' => $field_types, 'class' => 'wcfm-select wcfm_ele field_type_options', 'label_class' => 'wcfm_title'),           
 																																																						"label" => array( 'label' => __('Label', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title'),
 																																																						"options" => array( 'label' => __('Options', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele field_type_select_options field_type_dropdown_options', 'label_class' => 'wcfm_title field_type_select_options field_type_dropdown_options', 'placeholder' => __( 'Insert option values | separated', 'wc-frontend-manager' ) ),
+																																																						"content" => array( 'label' => __('Content', 'wc-frontend-manager'), 'type' => 'textarea', 'class' => 'wcfm-textarea wcfm_ele field_type_html_options', 'label_class' => 'wcfm_title field_type_html_options' ),
 																																																						"help_text" => array( 'label' => __('Help Content', 'wc-frontend-manager'), 'type' => 'text', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title' ),
 																																																						"required" => array( 'label' => __('Required?', 'wc-frontend-manager'), 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele', 'label_class' => 'wcfm_title checkbox_title', 'value' => 'yes' ),
 																																															) )
 																																											) ) );
 				?>
+				
+				<div class="wcfm_clearfix"></div><br />
+				<a id="wcfm_registration_advanced_settings" style="color:#17a2b8;font-weight:600;float:right;" href="<?php echo get_wcfm_memberships_settings_url(); ?>"><span class="wcfmfa fa-user-plus"></span>&nbsp;<span class="text"><?php _e( 'Registration Advanced Setting', 'wc-frontend-manager'); ?></span></a>
+				<div class="wcfm_clearfix"></div>
 			</div>
 		</div>
 		<div class="wcfm_clearfix"></div>
@@ -1471,6 +1692,8 @@ class WCFMmp_Settings {
 	
 	function wcfm_vendor_registration_settings_update( $wcfm_settings_form ) {
 		global $WCFM, $WCFMmp, $_POST;
+		
+		if( !function_exists( 'get_wcfm_memberships_settings_url' ) ) return;
 		
 		$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
 		
@@ -1528,7 +1751,8 @@ class WCFMmp_Settings {
 																																				 'wcfmmp_tabs_text_color' => array( 'label' => __( 'Tabs Text', 'wc-multivendor-marketplace' ), 'name' => 'tabs_text', 'default' => '#999999', 'element' => '#wcfmmp-store .tab_area .tab_links li a', 'style' => 'color' ),
 																																				 'wcfmmp_tabs_active_text_color' => array( 'label' => __( 'Tabs Active Text', 'wc-multivendor-marketplace' ), 'name' => 'tabs_active_text', 'default' => '#17a2b8', 'element' => '#wcfmmp-store .tab_area .tab_links li:hover a, #wcfmmp-store .tab_area .tab_links li.active a, .wcfmmp_store_hours .wcfmmp-store-hours-day', 'style' => 'color', 'element2' => '#wcfmmp-store .tab_area .tab_links li:after', 'style2' => 'background', 'element3' => '#wcfmmp-store .tab_area .tab_links li.active', 'style3' => 'border-top-color' ),
 																																				 'wcfmmp_store_card_heighlight' => array( 'label' => __( 'Store Card Highlight Color', 'wc-multivendor-marketplace' ), 'name' => 'ctore_card_highlight', 'default' => '#17a2b8', 'element' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-4 .store-data-container .store-data .store-phone i, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li.coloum-5 .store-data-container .store-data .store-phone i', 'style' => 'color', 'element2' => '#wcfmmp-stores-wrap .paginations ul li span.current, #wcfmmp-stores-wrap .paginations ul li a:hover', 'style2' => 'background', 'element3' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-wrapper .store-content', 'style3' => 'border-bottom-color' ),
-																																				 'wcfmmp_store_card_color' => array( 'label' => __( 'Store Card Text Color', 'wc-multivendor-marketplace' ), 'name' => 'ctore_card_text', 'default' => '#ffffff', 'element' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2 a, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data-container .store-address, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data-container .store-phone', 'style' => 'color'),
+																																				 'wcfmmp_store_card_title_color' => array( 'label' => __( 'Store Card Title Color', 'wc-multivendor-marketplace' ), 'name' => 'ctore_card_title_text', 'default' => '#000000', 'element' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data h2 a', 'style' => 'color'),
+																																				 'wcfmmp_store_card_color' => array( 'label' => __( 'Store Card Text Color', 'wc-multivendor-marketplace' ), 'name' => 'ctore_card_text', 'default' => '#ffffff', 'element' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data-container .store-address, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data-container .store-phone', 'style' => 'color'),
 																																				 'wcfmmp_button_bg_color' => array( 'label' => __( 'Button Background', 'wc-multivendor-marketplace' ), 'name' => 'button_bg', 'default' => '#17a2b8', 'element' => '#wcfmmp-store .add_review button, #wcfmmp-store .user_rated, #wcfmmp-store .bd_icon_box .follow, #wcfmmp-store .bd_icon_box .wcfm_store_enquiry, #wcfmmp-store .bd_icon_box .wcfm_store_chatnow, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data p.store-enquiry a.wcfm_catalog_enquiry, #wcfmmp-stores-wrap .store-footer a.wcfmmp-visit-store, .wcfm_vacation_msg, .wcfm_store_close_msg', 'style' => 'background', 'element2' => '#wcfmmp-store .reviews_heading a, #wcfmmp-store .reviews_count a', 'style2' => 'color', 'element3' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-content, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data p.store-enquiry a.wcfm_catalog_enquiry, #wcfmmp-stores-wrap .store-footer a.wcfmmp-visit-store', 'style3' => 'border-bottom-color' ),
 																																				 'wcfmmp_button_text_color' => array( 'label' => __( 'Button Text', 'wc-multivendor-marketplace' ), 'name' => 'button_text', 'default' => '#ffffff', 'element' => '#wcfmmp-store .add_review button, #wcfmmp-store .user_rated, #wcfmmp-store .bd_icon_box .follow, #wcfmmp-store .bd_icon_box .wcfm_store_enquiry, #wcfmmp-store .bd_icon_box .wcfm_store_chatnow, #wcfmmp-store .bd_icon_box .follow span, #wcfmmp-store .bd_icon_box .wcfm_store_enquiry span, #wcfmmp-store .bd_icon_box .wcfm_store_chatnow span, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data p.store-enquiry a.wcfm_catalog_enquiry, #wcfmmp-stores-wrap .store-footer a.wcfmmp-visit-store, .wcfm_vacation_msg, .wcfm_store_close_msg', 'style' => 'color' ),
 																																				 'wcfmmp_button_active_bg_color' => array( 'label' => __( 'Button Hover Background', 'wc-multivendor-marketplace' ), 'name' => 'button_active_bg', 'default' => '#000000', 'element' => '#wcfmmp-store .add_review button:hover, #wcfmmp-store .bd_icon_box .follow:hover, #wcfmmp-store .bd_icon_box:hover .wcfm_store_enquiry:hover, #wcfmmp-store .bd_icon_box .wcfm_store_chatnow:hover, #wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data p.store-enquiry a.wcfm_catalog_enquiry:hover, #wcfmmp-stores-wrap .store-footer a.wcfmmp-visit-store:hover', 'style' => 'background', 'element2' => '#wcfmmp-stores-wrap ul.wcfmmp-store-wrap li .store-data p.store-enquiry a.wcfm_catalog_enquiry:hover, #wcfmmp-stores-wrap .store-footer a.wcfmmp-visit-store:hover', 'style2' => 'border-bottom-color' ),
@@ -1550,7 +1774,7 @@ class WCFMmp_Settings {
 		</div>
 		<div class="wcfm-container">
 			<div id="wcfmmp_settings_form_store_style_expander" class="wcfm-content">
-				<h2><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Vendor', 'wc-frontend-manager' ) ) . ' ' . __('Store Display Setting', 'wc-multivendor-marketplace'); ?></h2>
+				<h2><?php echo apply_filters( 'wcfm_sold_by_label', '', __( 'Vendor', 'wc-frontend-manager' ) ) . ' ' . __('Page Display Setting', 'wc-multivendor-marketplace'); ?></h2>
 				<div class="wcfm_clearfix"></div>
 				<?php
 					$color_options = $this->wcfmmp_store_color_setting_options();

@@ -62,7 +62,7 @@ $count_articles['any']     = $count_articles['publish'] + $count_articles['pendi
 			}
 			
 			if( $has_new = apply_filters( 'wcfm_add_new_article_sub_menu', true ) ) {
-				echo '<a id="add_new_article_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_articles_manage_url().'" data-tip="' . __('Add New Article', 'wc-frontend-manager') . '"><span class="wcfmfa fa-cube"></span><span class="text">' . __( 'Add New', 'wc-frontend-manager') . '</span></a>';
+				echo '<a id="add_new_article_dashboard" class="add_new_wcfm_ele_dashboard text_tip" href="'.get_wcfm_articles_manage_url().'" data-tip="' . __('Add New Article', 'wc-frontend-manager') . '"><span class="wcfmfa fa-file-pdf"></span><span class="text">' . __( 'Add New', 'wc-frontend-manager') . '</span></a>';
 			}
 			?>
 			

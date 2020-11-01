@@ -41,6 +41,8 @@ class WCFMvm_Shortcode {
 		
 		if( is_admin() ) return;
 		
+		if( !apply_filters( 'wcfm_is_pref_membership', true ) ) return;
+		
 		if( current_user_can( 'administrator' ) ) {
 			ob_start();
 			_e( 'Kindly logout from Admin account to have "Subscribe Now" button.', 'wc-multivendor-membership' );

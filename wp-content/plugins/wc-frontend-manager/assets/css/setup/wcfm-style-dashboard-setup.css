@@ -86,12 +86,28 @@
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	border-radius: 3px;
-	border-color: #5d9dd9 !important;
-	padding: 5px;
+	background-color: #fff!important;
+	border: 1px solid #ccc!important;
+	padding: 8px 10px;
 	font-size: 15px;
+	line-height: 18px;
+	min-height: 35px;
 	display: inline-block;
-	box-shadow: none;
+	box-shadow: 1px 1px 5px 0 #E9E9E9;
 	margin-top: 18px;
+}
+
+.wc-setup-content .select2-container {
+	min-height: 38px!important;
+	box-shadow: 1px 1px 5px 0 #E9E9E9;
+	background-color: #fff!important;
+}
+
+.wc-setup-content .select2-container .select2-selection {
+	background-color: #fff;
+	border: 1px solid #aaa;
+	border-radius: 4px;
+	min-height: 38px!important;
 }
 
 .wc-setup-content textarea {
@@ -160,4 +176,18 @@
 
 #find_address {
 	
+}
+
+@media screen and (max-width: 782px) {
+	.wc-setup-content p.wcfm_title {
+		margin: 0 !important;
+	}
+	
+	#wcfm-marketplace-map {
+		width: 218px;
+	}
+	
+	.wc-setup .wc-setup-actions .button {
+		font-size: 15px;
+	}
 }

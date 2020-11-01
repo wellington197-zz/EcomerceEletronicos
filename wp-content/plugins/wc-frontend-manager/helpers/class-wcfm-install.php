@@ -122,7 +122,7 @@ class WCFM_Install {
 		
 		// User Table Alter
 		$create_tables_query[] = "ALTER TABLE `" . $wpdb->prefix . "users` CHANGE `user_registered` `user_registered` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP";
-		$create_tables_query[] = "ALTER TABLE `" . $wpdb->prefix . "users` CHANGE `user_nicename` `user_nicename` VARCHAR(255) NOT NULL DEFAULT ''";
+		$create_tables_query[] = "ALTER TABLE `" . $wpdb->prefix . "users` CHANGE `user_nicename` `user_nicename` VARCHAR(250) NOT NULL DEFAULT ''";
 		
 		$create_tables_query[] = "CREATE TABLE IF NOT EXISTS `" . $wpdb->prefix . "wcfm_daily_analysis` (
 															`ID` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -309,6 +309,50 @@ class WCFM_Install {
 															`posted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,	
 															PRIMARY KEY (`ID`)
 															) $collate;";		
+															
+		$create_tables_query[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wcfm_fbc_offline_messages (
+															id                  int                     NOT NULL    AUTO_INCREMENT,
+															user_name           longtext                NOT NULL,
+															user_email          longtext                NOT NULL,
+															user_message        longtext                NOT NULL,
+															user_info           longtext                NOT NULL,
+															mail_date           date                    NOT NULL    DEFAULT '0000-00-00',
+															mail_read           boolean                 NOT NULL    DEFAULT false,
+															vendor_id           varchar(30)             NOT NULL    DEFAULT '',
+															PRIMARY KEY (id)
+															) $collate;";
+															
+   $create_tables_query[] =  "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wcfm_fbc_chat_rows (
+															message_id        varchar(30)             NOT NULL    DEFAULT '',
+															conversation_id   varchar(30)             NOT NULL,
+															user_id           varchar(30)             NOT NULL    DEFAULT '',
+															user_name         varchar(32)                         DEFAULT NULL,
+															msg               text                    NOT NULL,
+															msg_time          bigint(13)  unsigned    NOT NULL,
+															UNIQUE KEY message_id (message_id)
+														) $collate;";
+														
+   $create_tables_query[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wcfm_fbc_chat_sessions (
+															conversation_id   varchar(30)             NOT NULL    DEFAULT '',
+															user_id           varchar(30)             NOT NULL    DEFAULT '',
+															evaluation        varchar(30)             NOT NULL    DEFAULT '',
+															created_at        bigint(13)  unsigned    NOT NULL,
+															duration          varchar(30)             NOT NULL    DEFAULT '00:00:00',
+															receive_copy      boolean                 NOT NULL    DEFAULT false,
+															UNIQUE KEY conversation_id (conversation_id),
+															KEY created_at (created_at)
+														) $collate;";
+														
+   $create_tables_query[] = "CREATE TABLE IF NOT EXISTS {$wpdb->prefix}wcfm_fbc_chat_visitors (
+															user_id           varchar(30)             NOT NULL    DEFAULT '',
+															user_type         varchar(12)             NOT NULL    DEFAULT '',
+															user_name         varchar(32)                         DEFAULT NULL,
+															user_ip           int(11)     unsigned                DEFAULT NULL,
+															user_email        varchar(90)                         DEFAULT NULL,
+															last_online       bigint(13)  unsigned                DEFAULT NULL,
+															vendor_id         varchar(30)             NOT NULL    DEFAULT '',
+															UNIQUE KEY user_id (user_id)
+														) $collate;";
 
 		foreach ($create_tables_query as $create_table_query) {
 			$wpdb->query($create_table_query);

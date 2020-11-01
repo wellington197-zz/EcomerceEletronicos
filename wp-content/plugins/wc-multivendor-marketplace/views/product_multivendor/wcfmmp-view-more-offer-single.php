@@ -23,7 +23,10 @@ if( $store_id ) {
 }
 ?>
 
-<div class="wcfmmp_product_mulvendor_row wcfmmp_product_mulvendor_rowbody">						
+<div class="wcfmmp_product_mulvendor_row wcfmmp_product_mulvendor_rowbody">		
+
+  <?php do_action( 'wcfmmp_more_offers_single_line_before', $offer_product_id ); ?>
+  
 	<div class="wcfmmp_product_mulvendor_rowsub ">
 		<div class="vendor_name">
 			<?php 
@@ -45,18 +48,24 @@ if( $store_id ) {
 				$WCFMmp->wcfmmp_reviews->show_star_rating( 0, $store_id );
 				echo '</div>';
 			}
-			do_action('after_wcfmmp_sold_by_label_product_page', $store_id );
+			do_action('wcfmmp_sold_by_label_more_offers_after', $store_id, $offer_product_id );
 		}
 		?>
 	</div>
+	<?php do_action( 'wcfmmp_more_offers_single_line_after_store', $offer_product_id ); ?>
 	<div class="wcfmmp_product_mulvendor_rowsub">
 		<?php echo $_product->get_price_html(); ?>
 	</div>
+	<?php do_action( 'wcfmmp_more_offers_single_line_after_price', $offer_product_id ); ?>
 	<div class="wcfmmp_product_mulvendor_rowsub">
 		<?php if( $_product->get_type() == 'simple' ) { ?>
 			<a href="<?php echo '?add-to-cart='.$offer_product_id; ?>" class="buttongap button wcfmmp_product_multivendor_action_button" style="<?php echo $button_style; ?>"><?php echo apply_filters( 'add_to_cart_text', __( 'Add to Cart', 'wc-multivendor-marketplace') ); ?></a>
 		<?php } ?>
 		<a href="<?php echo get_permalink($offer_product_id); ?>" class="buttongap button wcfmmp_product_multivendor_action_button" style="<?php echo $button_style; ?>"><?php echo __( 'Details', 'wc-multivendor-marketplace' ); ?></a>
 	</div>
+	<?php do_action( 'wcfmmp_more_offers_single_line_after_details', $offer_product_id ); ?>
+	
+	<?php do_action( 'wcfmmp_more_offers_single_line_after', $offer_product_id ); ?>
+	
 	<div class="wcfm_clearfix"></div>							
 </div>

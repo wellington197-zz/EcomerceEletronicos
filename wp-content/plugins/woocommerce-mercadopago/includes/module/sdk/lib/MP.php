@@ -1,7 +1,7 @@
 <?php
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly.
+    exit;
 }
 
 $GLOBALS['LIB_LOCATION'] = dirname(__FILE__);
@@ -119,6 +119,7 @@ class MP
     /**
      * @param $id
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function search_paymentV1($id)
     {
@@ -137,6 +138,7 @@ class MP
     /**
      * @param $payer_email
      * @return array|mixed|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_or_create_customer($payer_email)
     {
@@ -151,21 +153,21 @@ class MP
         }
 
         return $customer;
-
     }
 
     /**
      * @param $email
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function create_customer($email)
     {
 
         $request = array(
-            'uri' => '/v1/customers',
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/v1/customers',
             'data' => array(
                 'email' => $email
             )
@@ -173,27 +175,28 @@ class MP
 
         $customer = MPRestClient::post($request);
         return $customer;
-
     }
 
     /**
      * @param $email
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function search_customer($email)
     {
 
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/v1/customers/search',
             'params' => array(
-                'access_token' => $this->get_access_token(),
                 'email' => $email
             )
         );
 
         $customer = MPRestClient::get($request);
         return $customer;
-
     }
 
     /**
@@ -202,16 +205,20 @@ class MP
      * @param null $payment_method_id
      * @param null $issuer_id
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
-    public function create_card_in_customer($customer_id, $token, $payment_method_id = null,
-                                            $issuer_id = null)
-    {
+    public function create_card_in_customer(
+        $customer_id,
+        $token,
+        $payment_method_id = null,
+        $issuer_id = null
+    ) {
 
         $request = array(
-            'uri' => '/v1/customers/' . $customer_id . '/cards',
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/v1/customers/' . $customer_id . '/cards',
             'data' => array(
                 'token' => $token,
                 'issuer_id' => $issuer_id,
@@ -221,53 +228,51 @@ class MP
 
         $card = MPRestClient::post($request);
         return $card;
-
     }
 
     /**
      * @param $customer_id
      * @param $token
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_all_customer_cards($customer_id, $token)
     {
 
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/v1/customers/' . $customer_id . '/cards',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
         );
 
         $cards = MPRestClient::get($request);
         return $cards;
-
     }
 
     //=== COUPOM AND DISCOUNTS FUNCTIONS ===
-
     /**
      * @param $transaction_amount
      * @param $payer_email
      * @param $coupon_code
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function check_discount_campaigns($transaction_amount, $payer_email, $coupon_code)
     {
-
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/discount_campaigns',
             'params' => array(
-                'access_token' => $this->get_access_token(),
                 'transaction_amount' => $transaction_amount,
                 'payer_email' => $payer_email,
                 'coupon_code' => $coupon_code
             )
         );
-
         $discount_info = MPRestClient::get($request);
         return $discount_info;
-
     }
 
     //=== CHECKOUT AUXILIARY FUNCTIONS ===
@@ -275,99 +280,96 @@ class MP
     /**
      * @param $id
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_authorized_payment($id)
     {
 
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/authorized_payments/{$id}',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
         );
 
         $authorized_payment_info = MPRestClient::get($request);
         return $authorized_payment_info;
-
     }
 
     /**
      * @param $preference
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function create_preference($preference)
     {
 
         $request = array(
             'uri' => '/checkout/preferences',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            ),
             'headers' => array(
-                'user-agent' => 'platform:desktop,type:woocommerce,so:' . WC_WooMercadoPago_Constants::VERSION
+                'user-agent' => 'platform:desktop,type:woocommerce,so:' . WC_WooMercadoPago_Constants::VERSION,
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
             'data' => $preference
         );
 
         $preference_result = MPRestClient::post($request);
         return $preference_result;
-
     }
 
     /**
      * @param $id
      * @param $preference
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function update_preference($id, $preference)
     {
 
         $request = array(
-            'uri' => '/checkout/preferences/{$id}',
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/checkout/preferences/{$id}',
             'data' => $preference
         );
 
         $preference_result = MPRestClient::put($request);
         return $preference_result;
-
     }
 
     /**
      * @param $id
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_preference($id)
     {
 
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/checkout/preferences/{$id}',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
         );
 
         $preference_result = MPRestClient::get($request);
         return $preference_result;
-
     }
 
     /**
      * @param $preference
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function create_payment($preference)
     {
 
         $request = array(
             'uri' => '/v1/payments',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            ),
             'headers' => array(
-                'X-Tracking-Id' => 'platform:v1-whitelabel,type:woocommerce,so:' . WC_WooMercadoPago_Constants::VERSION
+                'X-Tracking-Id' => 'platform:v1-whitelabel,type:woocommerce,so:' . WC_WooMercadoPago_Constants::VERSION,
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
             'data' => $preference
         );
@@ -379,78 +381,76 @@ class MP
     /**
      * @param $preapproval_payment
      * @return array|null
+     * @throws WC_WooMercadoPago_Exception
      */
     public function create_preapproval_payment($preapproval_payment)
     {
 
         $request = array(
-            'uri' => '/preapproval',
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/preapproval',
             'data' => $preapproval_payment
         );
 
         $preapproval_payment_result = MPRestClient::post($request);
         return $preapproval_payment_result;
-
     }
 
     /**
      * @param $id
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_preapproval_payment($id)
     {
 
         $request = array(
-            'uri' => '/preapproval/' . $id,
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
+            'uri' => '/preapproval/' . $id
         );
 
         $preapproval_payment_result = MPRestClient::get($request);
         return $preapproval_payment_result;
-
     }
 
     /**
      * @param $id
      * @param $preapproval_payment
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function update_preapproval_payment($id, $preapproval_payment)
     {
 
         $request = array(
-            'uri' => '/preapproval/' . $id,
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/preapproval/' . $id,
             'data' => $preapproval_payment
         );
 
         $preapproval_payment_result = MPRestClient::put($request);
         return $preapproval_payment_result;
-
     }
 
     /**
      * @param $id
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function cancel_preapproval_payment($id)
     {
 
         $request = array(
-            'uri' => '/preapproval/' . $id,
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/preapproval/' . $id,
             'data' => array(
                 'status' => 'cancelled'
             )
@@ -458,7 +458,6 @@ class MP
 
         $response = MPRestClient::put($request);
         return $response;
-
     }
 
     //=== REFUND AND CANCELING FLOW FUNCTIONS ===
@@ -466,21 +465,20 @@ class MP
     /**
      * @param $id
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function refund_payment($id)
     {
 
         $request = array(
-            'uri' => '/v1/payments/' . $id . '/refunds',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
+            'uri' => '/v1/payments/' . $id . '/refunds'
         );
 
         $response = MPRestClient::post($request);
         return $response;
-
     }
 
     /**
@@ -489,13 +487,16 @@ class MP
      * @param $reason
      * @param $external_reference
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function partial_refund_payment($id, $amount, $reason, $external_reference)
     {
 
         $request = array(
-            'uri' => '/v1/payments/' . $id . '/refunds?access_token=' . $this->get_access_token(),
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
+            'uri' => '/v1/payments/' . $id . '/refunds',
             'data' => array(
                 'amount' => $amount,
                 'metadata' => array(
@@ -507,46 +508,76 @@ class MP
 
         $response = MPRestClient::post($request);
         return $response;
-
     }
 
     /**
      * @param $id
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function cancel_payment($id)
     {
 
         $request = array(
-            'uri' => '/v1/payments/' . $id,
-            'params' => array(
-                'access_token' => $this->get_access_token()
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
             ),
+            'uri' => '/v1/payments/' . $id,
             'data' => '{"status":"cancelled"}'
         );
 
         $response = MPRestClient::put($request);
         return $response;
-
     }
 
     /**
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function get_payment_methods()
     {
         $request = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $this->get_access_token()
+            ),
             'uri' => '/v1/payment_methods',
-            'params' => array(
-                'access_token' => $this->get_access_token()
-            )
         );
 
         $response = MPRestClient::get($request);
-
+        asort($result);
         return $response;
+    }
+
+    /**
+     * Validate if the seller is homologated
+     * @param $access_token
+     * @param $public_key
+     * @return array|null
+     * @throws WC_WooMercadoPago_Exception
+     */
+    public function getCredentialsWrapper($access_token = null, $public_key = null)
+    {
+        $request = array(
+            'uri' => '/plugins-credentials-wrapper/credentials',
+        );
+
+        if (!empty($access_token) && empty($public_key)) {
+            $request['headers'] = array('Authorization' => 'Bearer ' . $access_token);
+        }
+
+        if (empty($access_token) && !empty($public_key)) {
+            $request['params'] = array('public_key' => $public_key);
+        }
+
+        $response = MPRestClient::get($request);
+
+        if ($response['status'] > 202) {
+            $log = WC_WooMercadoPago_Log::init_mercado_pago_log('getCredentialsWrapper');
+            $log->write_log('API GET Credentials Wrapper error:', $response['response']['message']);
+            return false;
+        }
+
+        return $response['response'];
     }
 
     //=== GENERIC RESOURCE CALL METHODS ===
@@ -556,30 +587,28 @@ class MP
      * @param null $params
      * @param bool $authenticate
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
-    public function get($request, $params = null, $authenticate = true)
+    public function get($request, $headers = [], $authenticate = true)
     {
 
         if (is_string($request)) {
             $request = array(
+                'headers' => $headers,
                 'uri' => $request,
-                'params' => $params,
                 'authenticate' => $authenticate
             );
         }
 
-        $request['params'] = isset($request['params']) && is_array($request['params']) ?
-            $request['params'] :
-            array();
-
         if (!isset($request['authenticate']) || $request['authenticate'] !== false) {
-            $request['params']['access_token'] = $this->get_access_token();
+            $access_token = $this->get_access_token();
+            if (!empty($access_token)) {
+                $request['headers'] = array('Authorization'=> 'Bearer ' . $access_token);
+            }
         }
 
         $result = MPRestClient::get($request);
         return $result;
-
     }
 
     /**
@@ -587,13 +616,14 @@ class MP
      * @param null $data
      * @param null $params
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function post($request, $data = null, $params = null)
     {
 
         if (is_string($request)) {
             $request = array(
+                'headers' => array('Authorization' => 'Bearer ' . $this->get_access_token()),
                 'uri' => $request,
                 'data' => $data,
                 'params' => $params
@@ -604,13 +634,8 @@ class MP
             $request["params"] :
             array();
 
-        if (!isset ($request['authenticate']) || $request['authenticate'] !== false) {
-            $request['params']['access_token'] = $this->get_access_token();
-        }
-
         $result = MPRestClient::post($request);
         return $result;
-
     }
 
     /**
@@ -618,13 +643,14 @@ class MP
      * @param null $data
      * @param null $params
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function put($request, $data = null, $params = null)
     {
 
         if (is_string($request)) {
             $request = array(
+                'headers' => array('Authorization' => 'Bearer ' . $this->get_access_token()),
                 'uri' => $request,
                 'data' => $data,
                 'params' => $params
@@ -635,26 +661,22 @@ class MP
             $request['params'] :
             array();
 
-        if (!isset ($request['authenticate']) || $request['authenticate'] !== false) {
-            $request['params']['access_token'] = $this->get_access_token();
-        }
-
         $result = MPRestClient::put($request);
         return $result;
-
     }
 
     /**
      * @param $request
      * @param null $params
      * @return array|null
-     * @throws MercadoPagoException
+     * @throws WC_WooMercadoPago_Exception
      */
     public function delete($request, $params = null)
     {
 
         if (is_string($request)) {
             $request = array(
+                'headers' => array('Authorization' => 'Bearer ' . $this->get_access_token()),
                 'uri' => $request,
                 'params' => $params
             );
@@ -664,33 +686,8 @@ class MP
             $request['params'] :
             array();
 
-        if (!isset($request['authenticate']) || $request['authenticate'] !== false) {
-            $request['params']['access_token'] = $this->get_access_token();
-        }
-
         $result = MPRestClient::delete($request);
         return $result;
-
-    }
-
-    //=== MODULE ANALYTICS FUNCTIONS ===
-
-    /**
-     * @param $module_info
-     * @return array|null
-     * @throws MercadoPagoException
-     */
-    public function analytics_save_settings($module_info)
-    {
-
-        $request = array(
-            'uri' => '/modules/tracking/settings?access_token=' . $this->get_access_token(),
-            'data' => $module_info
-        );
-
-        $result = MPRestClient::post($request);
-        return $result;
-
     }
 
     /**
@@ -711,29 +708,4 @@ class MP
         return $this->paymentClass;
     }
 
-     /**
-     * @param $accessToken
-     * @return null
-     */
-    public function homologValidate($accessToken)
-    {
-        $seller = explode('-', $accessToken);
-
-        $response = MeliRestClient::get(
-            array('uri' => '/applications/' . $seller[1]), WC_WooMercadoPago_Constants::VERSION
-        ); 
-        
-        //in case of failures
-        if ($response['status'] > 202) {
-            $log = WC_WooMercadoPago_Log::init_mercado_pago_log('WC_WooMercadoPago_Module');
-            $log->write_log('API application_search_owner_id error:', $response['response']['message']);
-            return 0;
-        }
-        //response treatment
-        $result = $response['response'];
-        if(in_array('payments',$result['scopes'])){
-            return 1;
-        }
-        return 0;
-    }
 }

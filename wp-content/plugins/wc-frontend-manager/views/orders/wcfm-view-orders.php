@@ -45,6 +45,15 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 				?>
 				<div class="wcfm_orders_filter_wrap wcfm_filters_wrap">
 					<?php $WCFM->library->wcfm_date_range_picker_field(); ?>
+					<?php
+					$is_marketplace = wcfm_is_marketplace();
+					if( $is_marketplace && ( $is_marketplace == 'wcfmmarketplace' ) ) {
+						$vendor_arr = array(); //$WCFM->wcfm_vendor_support->wcfm_get_vendor_list();
+						$WCFM->wcfm_fields->wcfm_generate_form_field( array(
+																											"dropdown_vendor" => array( 'type' => 'select', 'options' => $vendor_arr, 'attributes' => array( 'style' => 'width: 150px;' ) )
+																											 ) );
+					}
+					?>
 					<?php do_action( 'wcfm_after_orders_filter_wrap' ); ?>
 				</div>
 				<?php
@@ -75,6 +84,8 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 		</div>
 	  <div class="wcfm-clearfix"></div><br />
 	  
+	  <?php do_action( 'before_wcfm_orders_container' ); ?>
+	  
 		<div class="wcfm-container">
 			<div id="wwcfm_orders_listing_expander" class="wcfm-content">
 				<table id="wcfm-orders" class="display" cellspacing="0" width="100%">
@@ -90,18 +101,18 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 							<th><?php _e( 'Gross Sales', 'wc-frontend-manager' ); ?></th>
 							<th><?php _e( 'Gross Sales Amount', 'wc-frontend-manager' ); ?></th>
 							<?php if( $admin_fee_mode ) { ?>
-								<th><?php _e( 'Fees', 'wc-frontend-manager' ); ?></th>
+								<th><?php _e( 'Admin Fee', 'wc-frontend-manager' ); ?></th>
 							<?php } elseif( wcfm_is_vendor() ) { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earnings', 'wc-frontend-manager' ) ) ); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earning', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php } else { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Commission', 'wc-frontend-manager' ) ) ); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Vendor Earning', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php } ?>
 							<?php if( $admin_fee_mode ) { ?>
-								<th><?php _e( 'Fees', 'wc-frontend-manager' ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php echo __( 'Admin Fee', 'wc-frontend-manager' ) . ' ' . __( 'Amount', 'wc-frontend-manager'); ?></th>
 							<?php } elseif( wcfm_is_vendor() ) { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earnings', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earning', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
 							<?php } else { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Commission', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Vendor Earning', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
 							<?php } ?>
 							<th><?php printf( apply_filters( 'wcfm_orders_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php do_action( 'wcfm_order_columns_before' ); ?>
@@ -123,16 +134,16 @@ $admin_fee_mode = apply_filters( 'wcfm_is_admin_fee_mode', false );
 							<?php if( $admin_fee_mode ) { ?>
 								<th><?php _e( 'Fees', 'wc-frontend-manager' ); ?></th>
 							<?php } elseif( wcfm_is_vendor() ) { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earnings', 'wc-frontend-manager' ) ) ); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earning', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php } else { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Commission', 'wc-frontend-manager' ) ) ); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Vendor Earning', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php } ?>
 							<?php if( $admin_fee_mode ) { ?>
-								<th><?php _e( 'Fees', 'wc-frontend-manager' ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php echo __( 'Admin Fee', 'wc-frontend-manager' ) . ' ' . __( 'Amount', 'wc-frontend-manager'); ?></th>
 							<?php } elseif( wcfm_is_vendor() ) { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earnings', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_label', __( 'Earning', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
 							<?php } else { ?>
-								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Commission', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
+								<th><?php printf( apply_filters( 'wcfm_vendors_earned_commission_label', __( 'Vendor Earning', 'wc-frontend-manager' ) ) ); _e( ' Amount', 'wc-frontend-manager'); ?></th>
 							<?php } ?>
 							<th><?php printf( apply_filters( 'wcfm_orders_additional_info_column_label', __( 'Additional Info', 'wc-frontend-manager' ) ) ); ?></th>
 							<?php do_action( 'wcfm_order_columns_before' ); ?>

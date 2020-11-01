@@ -8,6 +8,7 @@ class WPBakeryShortCode_tm_carousel_son extends WPBakeryShortCode {
 	protected function content( $atts, $content = null ) {
 
 		extract( shortcode_atts( array(
+			'content_padding'	=>		'0',
 			'contain_url'		=>		'',
 			'image_id'			=>		'',
 			'alt'				=>		'',
@@ -54,7 +55,7 @@ class WPBakeryShortCode_tm_carousel_son extends WPBakeryShortCode {
 			  	<img src="<?php echo $image_url; ?>" alt="<?php echo $alt; ?>" class="ultimate-slide-img" style="max-width: 100%; width: <?php echo $img_width; ?>; height: <?php echo $img_height; ?>; border-radius: <?php echo $img_radius; ?>; margin-bottom: 15px;">
 			<?php } ?>	
 				</a>
-		  	<span class="content-section" style="text-align: <?php echo $align ?>;">
+		  	<span class="content-section" style="text-align: <?php echo $align ?>; display: block; top: <?php echo $content_padding ?>%;">
 			  	<h2 class="tdt-slider-heading" style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-weight: <?php echo $fontweight; ?>; line-height: <?php echo $line_height; ?>;">
 			  		<?php echo $title; ?>
 			  	</h2>
@@ -73,6 +74,7 @@ class WPBakeryShortCode_tm_carousel_son extends WPBakeryShortCode {
 				  	</a>
 				</span>
 			  	<?php } ?>
+			  	<p>&nbsp;</p>
 		  	</span>
 		  </div>
 		</div>
@@ -310,6 +312,15 @@ vc_map( array(
 
 		// Description Section
 
+		array(
+			"type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Padding Top', 'slider' ),
+			"param_name" 	=> 	"content_padding",
+			"description"	=>	__('set in %. padding will apply from top for the content. It works only if you select theme "Content Over Image" from carousel settings.', 'slider'),
+			"suffix" 		=> 	'%',
+			"value"			=>	"0",
+			"group" 		=> 'Description',
+		),
 		array(
 			"type" 			=> 	"textarea_html",
 			"heading" 		=> 	__( 'Carousel Detail', 'slider' ),

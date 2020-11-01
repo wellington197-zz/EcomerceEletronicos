@@ -19,7 +19,7 @@ if( !apply_filters( 'wcfm_is_pref_profile', true ) || !apply_filters( 'wcfm_is_a
 $user_id = get_current_user_id();
 
 $wp_user_avatar_id = get_user_meta( $user_id, $wpdb->get_blog_prefix($blog_id).'user_avatar', true );
-$wp_user_avatar = wp_get_attachment_url( $wp_user_avatar_id );
+$wp_user_avatar = $wp_user_avatar_id; //wp_get_attachment_url( $wp_user_avatar_id );
 if( !$wp_user_avatar && apply_filters( 'wcfm_is_pref_buddypress', true ) && WCFM_Dependencies::wcfm_biddypress_plugin_active_check() ) {
 	$wp_user_avatar = bp_core_fetch_avatar( array( 'html' => false, 'item_id' => $user_id ) );
 } 
@@ -208,25 +208,31 @@ if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_email_verification', true 
 																																																"email" => array('label' => __('Email', 'wc-frontend-manager') , 'type' => 'text', 'class' => 'wcfm-text wcfm_ele ' . $wcfm_verification_code_sender, 'label_class' => 'wcfm_title wcfm_ele', 'custom_attributes' => array( 'required' => true ), 'attributes' => array( 'readonly' => true ), 'value' => $email ),
 																																																), $user_id ) );
 							
-							if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_email_verification', true ) ) {
-								if( $email_verified ) {
-									?>
-									<div class="wcfm_email_verified">
-										<span class="wcfmfa fa-envelope wcfm_email_verified_icon">
-											<span class="wcfm_email_verified_text"><?php _e( 'Email already verified', 'wc-frontend-manager' ); ?></span>
-											<input type="hidden" name="email_verified" value="true" />
-										</span>
-									</div>
-									<div class="wcfm_clearfix"></div>
-									<?php
-								} else {
-									?>
-									<div class="wcfm_email_verified">
-										<input type="number" name="wcfm_email_verified_input" data-required="<?php echo apply_filters( 'wcfm_is_required_email_verification', '1' ); ?>" data-required_message="<?php _e( 'Email Verification Code: ', 'wc-frontend-manager' ) . _e( 'This field is required.', 'wc-frontend-manager' ); ?>" class="wcfm-text wcfm_email_verified_input" placeholder="<?php _e( 'Verification Code', 'wc-frontend-manager' ); ?>" value="" />
-										<input type="button" name="wcfm_email_verified_button" class="wcfm-text wcfm_submit_button wcfm_email_verified_button" value="<?php _e( 'Get Code', 'wc-frontend-manager' ); ?>" />
-									</div>
-									<div class="wcfm_clearfix"></div>
-									<?php
+							if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_email_verification', true ) && apply_filters( 'wcfm_is_allow_vendor_verification', true ) ) {
+								$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
+								$membership_type_settings = array();
+								if( isset( $wcfm_membership_options['membership_type_settings'] ) ) $membership_type_settings = $wcfm_membership_options['membership_type_settings'];
+								$email_verification = isset( $membership_type_settings['email_verification'] ) ? 'yes' : '';
+								if( $email_verification || apply_filters( 'wcfm_is_allow_force_email_verification', false ) ) {
+									if( $email_verified ) {
+										?>
+										<div class="wcfm_email_verified">
+											<span class="wcfmfa fa-envelope wcfm_email_verified_icon">
+												<span class="wcfm_email_verified_text"><?php _e( 'Email already verified', 'wc-frontend-manager' ); ?></span>
+												<input type="hidden" name="email_verified" value="true" />
+											</span>
+										</div>
+										<div class="wcfm_clearfix"></div>
+										<?php
+									} else {
+										?>
+										<div class="wcfm_email_verified">
+											<input type="number" name="wcfm_email_verified_input" data-required="<?php echo apply_filters( 'wcfm_is_required_email_verification', '1' ); ?>" data-required_message="<?php _e( 'Email Verification Code: ', 'wc-frontend-manager' ) . _e( 'This field is required.', 'wc-frontend-manager' ); ?>" class="wcfm-text wcfm_email_verified_input" placeholder="<?php _e( 'Verification Code', 'wc-frontend-manager' ); ?>" value="" />
+											<input type="button" name="wcfm_email_verified_button" class="wcfm-text wcfm_submit_button wcfm_email_verified_button" value="<?php _e( 'Get Code', 'wc-frontend-manager' ); ?>" />
+										</div>
+										<div class="wcfm_clearfix"></div>
+										<?php
+									}
 								}
 							}
 							
@@ -237,7 +243,7 @@ if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_email_verification', true 
 							if( apply_filters( 'wcfm_is_allow_update_password', true ) ) {
 								$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_profile_fields_password', array(
 																																																	"password" => array('label' => __('Password', 'wc-frontend-manager') , 'type' => 'password', 'class' => 'wcfm-text wcfm_ele', 'label_class' => 'wcfm_title wcfm_ele', 'value' => '', 'placeholder' => __( 'Set New Password – Leave blank to retain current password', 'wc-frontend-manager' ) ),
-																																																	"passowrd_strength" => array( 'type' => 'html', 'value' => '<div id="password-strength-status"></div>' )
+																																																	"password_strength" => array( 'type' => 'html', 'value' => '<div id="password-strength-status"></div>' )
 																																																	), $user_id ) );
 							}
 							
@@ -352,7 +358,7 @@ if( wcfm_is_vendor() && apply_filters( 'wcfm_is_allow_email_verification', true 
 			  
 				<input type="submit" name="save-data" value="<?php _e( 'Save', 'wc-frontend-manager' ); ?>" id="wcfmprofile_save_button" class="wcfm_submit_button" />
 			</div>
-			
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_profile' ); ?>" />
 		</form>
 		<script type="text/javascript">
 			var selected_bstate = '<?php echo $bstate; ?>';

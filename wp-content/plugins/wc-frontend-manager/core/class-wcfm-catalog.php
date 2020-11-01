@@ -51,7 +51,7 @@ class WCFM_Catalog {
 		
 		$general_fields = array_slice($general_fields, 0, 1, true) +
 																	array(
-																				"is_catalog" => array( 'desc' => __( 'Catalog', 'wc-frontend-manager' ) , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_half_ele_checkbox simple variable booking' . ' ' . $wcfm_wpml_edit_disable_element, 'desc_class' => 'wcfm_title wcfm_ele virtual_ele_title checkbox_title simple variable booking' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => 'yes', 'dfvalue' => $is_catalog),
+																				"is_catalog" => array( 'desc' => __( 'Catalog', 'wc-frontend-manager' ) , 'type' => 'checkbox', 'class' => 'wcfm-checkbox wcfm_ele wcfm_half_ele_checkbox simple variable booking non-pw-gift-card' . ' ' . $wcfm_wpml_edit_disable_element, 'desc_class' => 'wcfm_title wcfm_ele virtual_ele_title checkbox_title simple variable booking non-pw-gift-card' . ' ' . $wcfm_wpml_edit_disable_element, 'value' => 'yes', 'dfvalue' => $is_catalog),
 																				) +
 																	array_slice($general_fields, 1, count($general_fields) - 1, true) ;
 		return $general_fields;
@@ -117,7 +117,7 @@ class WCFM_Catalog {
 		global $product, $WCFM;
 		
 		$product_id = 0;
-		if ( is_object( $product ) ) { 
+		if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) { 
 			$product_id   		= $product->get_id(); 
 		}
 		
@@ -146,7 +146,7 @@ class WCFM_Catalog {
 		global $product, $WCFM;
 		
 		$product_id = 0;
-		if ( is_object( $product ) ) { 
+		if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) { 
 			$product_id   		= $product->get_id(); 
 		}
 		
@@ -174,7 +174,7 @@ class WCFM_Catalog {
 	function wcfm_catalog_mode_pricing() {
 		global $product, $WCFM;
 		
-		if ( is_object( $product ) ) { 
+		if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) { 
 			$product_id   		= $product->get_id(); 
 		} else if ( is_product() ) {
 			$product_id   		= $post->ID;
@@ -203,7 +203,7 @@ class WCFM_Catalog {
 	function wcfm_catalog_mode_add_to_cart() {
 		global $product, $WCFM, $post;
 		
-		if ( is_object( $product ) ) { 
+		if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) { 
 			$product_id   		= $product->get_id(); 
 		} else if ( is_product() ) {
 			$product_id   		= $post->ID;
@@ -230,13 +230,15 @@ class WCFM_Catalog {
 	function wcfm_catalog_mode_is_purchasable( $is_purchasable, $product ) {
 		global $WCFM, $WCFMmp;
 		
-		$product_id = $product->get_id();
-		if( $product_id ) {
-			$is_catalog = ( get_post_meta( $product_id, '_catalog', true) == 'yes' ) ? 'yes' : '';
-			if( $is_catalog == 'yes' ) {
-				$disable_add_to_cart = ( get_post_meta( $product_id, 'disable_add_to_cart', true) ) ? get_post_meta( $product_id, 'disable_add_to_cart', true) : 'no';
-				if( $disable_add_to_cart == 'yes' ) {
-					$is_purchasable = false;
+		if( method_exists( $product, 'get_id' ) ) {
+			$product_id = $product->get_id();
+			if( $product_id ) {
+				$is_catalog = ( get_post_meta( $product_id, '_catalog', true) == 'yes' ) ? 'yes' : '';
+				if( $is_catalog == 'yes' ) {
+					$disable_add_to_cart = ( get_post_meta( $product_id, 'disable_add_to_cart', true) ) ? get_post_meta( $product_id, 'disable_add_to_cart', true) : 'no';
+					if( $disable_add_to_cart == 'yes' ) {
+						$is_purchasable = false;
+					}
 				}
 			}
 		}
@@ -246,14 +248,14 @@ class WCFM_Catalog {
 	
 	function wcfm_catalog_mode_check_loop_add_to_cart_url( $add_to_cart_url, $product ) {
 		
-		if ( is_object( $product ) ) { 
+		if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) { 
 			$product_id   		= $product->get_id(); 
 			if( $product_id ) {
 				$is_catalog = ( get_post_meta( $product_id, '_catalog', true) == 'yes' ) ? 'yes' : '';
 				if( $is_catalog == 'yes' ) {
 					$disable_add_to_cart = ( get_post_meta( $product_id, 'disable_add_to_cart', true) ) ? get_post_meta( $product_id, 'disable_add_to_cart', true) : 'no';
 					if( $disable_add_to_cart == 'yes' ) {
-						$add_to_cart_url = '';
+						$add_to_cart_url = get_permalink( $product_id );
 					}
 				}
 			}

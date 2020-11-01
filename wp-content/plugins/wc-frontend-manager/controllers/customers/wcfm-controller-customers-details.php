@@ -127,7 +127,11 @@ class WCFM_Customers_Details_Orders_Controller {
 				$items = apply_filters( 'wcfm_valid_line_items', $items, $the_order->get_id() );
 				$total_qty = 0;
 				foreach ($items as $key => $item) {
-					$product        = $the_order->get_product_from_item( $item );
+					if( version_compare( WC_VERSION, '4.4', '<' ) ) {
+						$product = $the_order->get_product_from_item( $item );
+					} else {
+						$product = $item->get_product();
+					}
 					$item_meta_html = strip_tags( wc_display_item_meta( $item, array(
 																																					'before'    => "\n- ",
 																																					'separator' => "\n- ",
@@ -173,8 +177,12 @@ class WCFM_Customers_Details_Orders_Controller {
 				}
 				
 				if( WCFM_Dependencies::wcfmu_plugin_active_check() && WCFM_Dependencies::wcfm_wc_pdf_invoices_packing_slips_plugin_active_check() ) {
-					$actions .= '<a class="wcfm_pdf_invoice wcfm-action-icon" href="#" data-orderid="' . $wcfm_orders_single->ID . '"><span class="wcfmfa fa-file-invoice text_tip" data-tip="' . esc_attr__( 'PDF Invoice', 'wc-frontend-manager' ) . '"></span></a>';
-					$actions .= '<a class="wcfm_pdf_packing_slip wcfm-action-icon" href="#" data-orderid="' . $wcfm_orders_single->ID . '"><span class="wcfmfa fa-file-powerpoint text_tip" data-tip="' . esc_attr__( 'PDF Packing Slip', 'wc-frontend-manager' ) . '"></span></a>';
+					if( apply_filters( 'wcfm_is_allow_pdf_invoice', true ) && apply_filters( 'wcfm_is_allow_view_commission', true ) ) {
+						$actions .= '<a class="wcfm_pdf_invoice wcfm-action-icon" href="#" data-orderid="' . $wcfm_orders_single->ID . '"><span class="wcfmfa fa-file-invoice text_tip" data-tip="' . esc_attr__( 'PDF Invoice', 'wc-frontend-manager' ) . '"></span></a>';
+					}
+					if( apply_filters( 'wcfm_is_allow_pdf_packing_slip', true ) ) {
+						$actions .= '<a class="wcfm_pdf_packing_slip wcfm-action-icon" href="#" data-orderid="' . $wcfm_orders_single->ID . '"><span class="wcfmfa fa-file-powerpoint text_tip" data-tip="' . esc_attr__( 'PDF Packing Slip', 'wc-frontend-manager' ) . '"></span></a>';
+					}
 				} else {
 					if( $is_wcfmu_inactive_notice_show = apply_filters( 'is_wcfmu_inactive_notice_show', true ) ) {
 						$actions .= '<a class="wcfm_pdf_invoice_dummy wcfm-action-icon" href="#" data-orderid="' . $wcfm_orders_single->ID . '"><span class="wcfmfa fa-file-invoice text_tip" data-tip="' . esc_attr__( 'PDF Invoice', 'wc-frontend-manager' ) . '"></span></a>';
@@ -520,7 +528,7 @@ class WCFM_Customers_Details_Appointments_Controller {
 				// Order
 				if ( $the_order ) {
 					if( apply_filters( 'wcfm_is_allow_order_details', true ) && $WCFM->wcfm_vendor_support->wcfm_is_order_for_vendor( $the_order->get_order_number() ) ) {
-						$wcfm_appointments_json_arr[$index][] = '<span class="appointment-orderno"><a href="' . get_wcfm_view_order_url( $the_order->get_order_number(), $order ) . '">#' . $the_order->get_order_number() . '</a></span><br />' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
+						$wcfm_appointments_json_arr[$index][] = '<span class="appointment-orderno"><a href="' . get_wcfm_view_order_url( $the_order->get_order_number(), $the_order ) . '">#' . $the_order->get_order_number() . '</a></span><br />' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
 					} else  {
 						$wcfm_appointments_json_arr[$index][] = '<span class="appointment-orderno">#' . $the_order->get_order_number() . '</span><br /> ' . esc_html( wc_get_order_status_name( $the_order->get_status() ) );
 					}

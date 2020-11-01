@@ -178,16 +178,26 @@ class WCFM_Customer {
 					$wcfm_screen_manager_data = $wcfm_screen_manager_data['admin'];
 				}
 				if( !$WCFM->is_marketplace || wcfm_is_vendor() ) {
-	    		$wcfm_screen_manager_data[2] = 'yes';
+	    		$wcfm_screen_manager_data[3] = 'yes';
 	    	}
-				if( !apply_filters( 'wcfm_allow_order_customer_details', true ) ) {
-					$wcfm_screen_manager_data[3] = 'yes';
+	    	if( !apply_filters( 'wcfm_allow_view_customer_email', true ) ) {
+					$wcfm_screen_manager_data[2] = 'yes';
+					$wcfm_screen_manager_data[4] = 'yes';
+				}
+				if( !apply_filters( 'wcfm_allow_view_customer_location', true ) ) {
+					$wcfm_screen_manager_data[4] = 'yes';
+				}
+				if( !apply_filters( 'wcfm_is_allow_customer_details_orders', true ) ) {
+					$wcfm_screen_manager_data[5] = 'yes';
+					$wcfm_screen_manager_data[8] = 'yes';
+					$wcfm_screen_manager_data[9] = 'yes';
 				}
 				$wcfm_screen_manager_data[6] = 'yes';
 				$wcfm_screen_manager_data[7] = 'yes';
 				if( apply_filters( 'wcfm_customers_additonal_data_hidden', true ) ) {
 					$wcfm_screen_manager_data[10] = 'yes';
 				}
+				$wcfm_screen_manager_data    = apply_filters( 'wcfm_screen_manager_data_columns', $wcfm_screen_manager_data, 'customers' );
 	    	wp_localize_script( 'wcfm_customers_js', 'wcfm_customers_screen_manage', $wcfm_screen_manager_data );
       break;
       

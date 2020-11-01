@@ -40,27 +40,72 @@ jQuery(document).ready(function($) {
 	}
 		
   // Store Map
+  $store_address = jQuery(".wcfm_store_address").val();
   $store_lat = jQuery(".wcfm_store_lat").val();
 	$store_lng = jQuery(".wcfm_store_lng").val();
-	$('.wcfmmp-store-map').css( 'height', $('.wcfmmp-store-map').outerWidth());
   function initialize() {
   	$('.wcfmmp-store-map').each(function() {
   		$store_map = $(this).attr('id');
-			var latlng = new google.maps.LatLng( $store_lat, $store_lng );
-			var map = new google.maps.Map(document.getElementById($store_map), {
-					center: latlng,
-					blur : true,
-					zoom: 15
-			});
-			var marker = new google.maps.Marker({
-					map: map,
-					position: latlng,
-					draggable: false,
-					anchorPoint: new google.maps.Point(0, -29)
-			});
-			marker.addListener('click', function() {
-				window.open( 'https://www.google.com/maps/@'+$store_lat+','+$store_lng+',16z?hl=en-US', '_blank');
-			});
+  		
+  		$('#'+$store_map).css( 'height', $('#'+$store_map).outerWidth());
+  		
+  		if( wcfm_maps.lib == 'google' ) {
+				var latlng = new google.maps.LatLng( $store_lat, $store_lng );
+				var map = new google.maps.Map(document.getElementById($store_map), {
+						center: latlng,
+						blur : true,
+						zoom: parseInt( wcfmmp_store_map_options.default_zoom )
+				});
+				var customIcon = {
+														url: wcfmmp_store_map_options.store_icon,
+														scaledSize: new google.maps.Size( wcfmmp_store_map_options.icon_width, wcfmmp_store_map_options.icon_height ), // scaled size
+														//origin: new google.maps.Point( 0, 0 ), // origin
+														//anchor: new google.maps.Point( 0, 0 ) // anchor
+													};
+				var marker = new google.maps.Marker({
+						map: map,
+						position: latlng,
+						animation: google.maps.Animation.DROP,
+						icon: customIcon,
+						draggable: false,
+						//anchorPoint: new google.maps.Point(0, -29)
+				});
+				marker.addListener('click', function() {
+					if( wcfm_params.is_mobile || wcfm_params.is_tablet ) {
+						window.open( 'https://maps.google.com/?q='+$store_address+',16z?hl=en-US', '_blank');
+					} else {
+						window.open( 'https://google.com/maps/place/'+$store_address+'/@'+$store_lat+','+$store_lng+',16z?hl=en-US', '_blank');
+					}
+				});
+			} else {
+				
+				var map = L.map( $store_map, {
+						center: [$store_lat, $store_lng],
+						minZoom: 2,
+						zoom: parseInt( wcfmmp_store_map_options.default_zoom ),
+						zoomAnimation: false
+				});
+				
+				L.tileLayer( 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+						subdomains: ['a','b','c']
+				}).addTo( map );
+				
+				L.marker([$store_lat, $store_lng]).addTo(map).on('click', function() {
+					window.open( 'https://www.openstreetmap.org/?mlat='+$store_lat+'&mlon='+$store_lng+'#map=14/'+$store_lat+'/'+$store_lng, '_blank');
+				});
+				
+				$('a[href="#tab-wcfm_location_tab"]').click(function() {
+					setTimeout(function() {
+						map.invalidateSize();
+					}, 500 );
+				});
+				
+				$('a[href="#tab-wcfm_product_store_tab"]').click(function() {
+					setTimeout(function() {
+						map.invalidateSize();
+					}, 500 );
+				});
+			}
 		});
 	}
 	if( $('.wcfmmp-store-map').length > 0 ) {
