@@ -7,7 +7,7 @@ Tested up to: 5.5
 WC requires at least: 3.0
 WC tested up to: 4.4.0
 Requires PHP: 5.6
-Stable tag: 3.4.4
+Stable tag: 3.4.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -254,6 +254,20 @@ NONE.
 
 
 == Changelog ==
+
+= 3.4.5 =
+*Updated - 08/11/2020
+
+* Feature - Facebook store sync with vendor store option added - [Documentation](https://docs.wclovers.com/facebook-for-marketplace/)
+* Enhance - WooCommerce 4.6+ compatibility check added
+* Enhance - Vendor store location setting current location detect option added
+* Enhance - Google Map type change filter added - wcfm_google_map_type
+* Fixed   - Variation "Commission on Tax" Admin mode calculation issue resolved
+* Fixed   - Full refund user receive multiple emails issue resolved
+* Fixed   - Vendor specific shipping package generation issue resolved
+* Fixed   - Vendor shipping setting auto-reset issue resolved
+* Fixed   - Product taxonomy Map showing all stores issue resolved
+* Fixed   - Product filter be Store not sync with location search issue resolved
 
 = 3.4.4 =
 *Updated - 28/08/2020
@@ -1481,21 +1495,14 @@ NONE.
 
 == Upgrade Notice ==
 
-= 3.4.4 =
-* Enhance - WooCommerce 4.4+ compatibility check added
-* Enhance - Country Based Restrictions for WooCommerce compatibility added
-* Enhance - Vendor shipping setting "Shippling Class" WPML compatibility added
-* Enhance - Checkout user location field current location locate option added
-* Enhance - Product custom fields "Multi Select" field type support added
-* Fixed   - Store list category filter not working issue resolved
-* Fixed   - On Mobile store list map icons are not clickable issue resolved
-* Fixed   - Vendors pending withdrawal amount showing wrong data issue resolved
-* Fixed   - Vendors able to withdraw refunded order items issue resolved
-* Fixed   - Disable Multi vendor checkout condition conflict with Min/Max quantity condition issue resolved
-* Fixed   - "Filter Products by Store" widget not working for vendor users issue resolved
-* Fixed   - Vendor shipping zone setting "Back to zone list" on click setting panel broken issue resolved
-* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
-* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved
-* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
-* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
-* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved
+= 3.4.5 =
+* Feature - Facebook store sync with vendor store option added - [Documentation](https://docs.wclovers.com/facebook-for-marketplace/)
+* Enhance - WooCommerce 4.6+ compatibility check added
+* Enhance - Vendor store location setting current location detect option added
+* Enhance - Google Map type change filter added - wcfm_google_map_type
+* Fixed   - Variation "Commission on Tax" Admin mode calculation issue resolved
+* Fixed   - Full refund user receive multiple emails issue resolved
+* Fixed   - Vendor specific shipping package generation issue resolved
+* Fixed   - Vendor shipping setting auto-reset issue resolved
+* Fixed   - Product taxonomy Map showing all stores issue resolved
+* Fixed   - Product filter be Store not sync with location search issue resolved

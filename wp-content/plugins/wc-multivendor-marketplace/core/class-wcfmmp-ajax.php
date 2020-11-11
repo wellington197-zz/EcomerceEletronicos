@@ -279,7 +279,7 @@ class WCFMmp_Ajax {
 				$store_info      = $store_user->get_shop_info();
 				
 				$store_name      = wcfm_get_vendor_store_name( $store_id );
-				$store_name      = apply_filters( 'wcfmmp_store_title', $store_name , $store_id );
+				$store_name      = apply_filters( 'wcfmmp_store_title', esc_attr($store_name), $store_id );
 				$store_url       = wcfmmp_get_store_url( $store_id );
 				$store_address   = $store_user->get_address_string(); 
 				$store_description = $store_user->get_shop_description();
@@ -808,7 +808,7 @@ class WCFMmp_Ajax {
 		
 		if( isset( $_POST['memberid'] ) ) {
 			$member_id = absint( $_POST['memberid'] );
-			$vendor_store = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( $member_id );
+			$vendor_store = wcfm_get_vendor_store( $member_id );
 			
 			update_user_meta( $member_id, '_wcfm_store_offline', 'yes' );
 			
@@ -831,7 +831,7 @@ class WCFMmp_Ajax {
 		
 		if( isset( $_POST['memberid'] ) ) {
 			$member_id = absint( $_POST['memberid'] );
-			$vendor_store = $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_by_vendor( $member_id );
+			$vendor_store = wcfm_get_vendor_store( $member_id );
 			
 			delete_user_meta( $member_id, '_wcfm_store_offline' );
 			

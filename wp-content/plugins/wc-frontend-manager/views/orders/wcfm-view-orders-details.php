@@ -567,7 +567,7 @@ do_action( 'before_wcfm_orders_details', $order_id );
 										<div class="view">
 											<?php
 												if ( $item->get_total() ) {
-													echo wc_price( $item->get_subtotal(), array( 'currency' => $order->get_currency() ) );
+													echo wc_price( $item->get_total(), array( 'currency' => $order->get_currency() ) );
 												}
 								
 												if ( $item->get_subtotal() !== $item->get_total() ) {

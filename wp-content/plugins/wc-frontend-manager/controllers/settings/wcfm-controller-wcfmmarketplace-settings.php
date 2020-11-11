@@ -230,6 +230,9 @@ class WCFM_Settings_Marketplace_Controller {
 			}
 		}
 		
+		do_action( 'wcfm_vendor_settings_before_update', $user_id, $wcfm_settings_form );
+		do_action( 'wcfm_wcfmmp_settings_before_update', $user_id, $wcfm_settings_form );
+		
 		// Merge the changes with existing settings
 		$wcfm_settings_form = array_merge( $vendor_data, $wcfm_settings_form );
 		

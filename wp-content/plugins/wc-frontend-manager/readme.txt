@@ -7,7 +7,7 @@ Tested up to: 5.5
 WC requires at least: 3.0
 WC tested up to: 4.4.0
 Requires PHP: 5.6
-Stable tag: 6.5.4
+Stable tag: 6.5.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -220,6 +220,18 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WCFM 
 25. WCFM Dashboard - Mobile view
 
 == Changelog ==
+
+= 6.5.5 =
+*Updated - 08/11/2020*
+
+* Feature - Facebook store sync with vendor store option added - [Documentation](https://docs.wclovers.com/facebook-for-marketplace/)
+* Enhance - WooCommerce 4.6+ compatibility check added
+* Enhance - WCFM login popup credential check improved
+* Enhance - Vendor store location setting current location detect option added
+* Enhance - Add product "Verification Product Limit" reached message display improved
+* Fixed   - Variation stock status not properly sync with main product stock ststus issue resolved 
+* Fixed   - Vendor shipping setting auto-reset issue resolved
+* Fixed   - Product "Menu Order" not properly saving issue resolved
 
 = 6.5.4 =
 *Updated - 28/08/2020*
@@ -2443,18 +2455,12 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WCFM 
 
 == Upgrade Notice ==
 
-= 6.5.4 =
-* Enhance - WooCommerce 4.4+ compatibility check added
-* Enhance - Country Based Restrictions for WooCommerce compatibility added
-* Enhance - Product custom fields "Multi Select" field type support added
-* Enhance - Booking list data export option added
-* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
-* Fixed   - Store Followers capability not working issue resolved
-* Fixed   - WooCommerce Appointments calendar display issue resolved
-* Fixed   - ShipStation order sync Tax, Shipping cost not working as per vendor issue resolved
-* Fixed   - ShipStation order sync order note and status not properly updating issue resolved
-* Fixed   - "Category wise attributes" previously selected attributes not reset on category change issue resolved
-* Fixed   - WooCommerce - PDF Vouchers "Generate Code" not working from "Popup Add Product" issue resolved 
-* Fixed   - During add product WooCommerce Product Add-ons and WooCommerce Tab Manager conflict issue resolved
-* Fixed   - Vendor coupon "Exclude Products" not saving issue resolved
-* Fixed   - Notice/Announcement notification not triggering issue resolved
+= 6.5.5 =
+* Feature - Facebook store sync with vendor store option added - [Documentation](https://docs.wclovers.com/facebook-for-marketplace/)
+* Enhance - WooCommerce 4.6+ compatibility check added
+* Enhance - WCFM login popup credential check improved
+* Enhance - Vendor store location setting current location detect option added
+* Enhance - Add product "Verification Product Limit" reached message display improved
+* Fixed   - Variation stock status not properly sync with main product stock ststus issue resolved 
+* Fixed   - Vendor shipping setting auto-reset issue resolved
+* Fixed   - Product "Menu Order" not properly saving issue resolved

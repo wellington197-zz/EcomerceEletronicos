@@ -1245,7 +1245,7 @@ class WCFM_Vendor_Support {
 			if(  empty( $shop_name ) && $vendor_user ) {
 				$shop_name     = $vendor_user->display_name;
 			}
-			if( $shop_name ) { $vendor_store = $shop_name; }
+			if( $shop_name ) { $vendor_store = esc_attr($shop_name); }
 		}
 		
 		return $vendor_store;
@@ -1302,7 +1302,7 @@ class WCFM_Vendor_Support {
 				$shop_name     = $vendor_user->display_name;
 			}
 			$shop_link     = wcfmmp_get_store_url( $vendor_id );
-			if( $shop_name ) { $vendor_store = '<a class="wcfm_dashboard_item_title" ' . $store_open_by . ' href="' . apply_filters( 'wcfmmp_vendor_shop_permalink', $shop_link, $vendor_id ) . '">' . $shop_name . '</a>'; }
+			if( $shop_name ) { $vendor_store = '<a class="wcfm_dashboard_item_title" ' . $store_open_by . ' href="' . apply_filters( 'wcfmmp_vendor_shop_permalink', $shop_link, $vendor_id ) . '">' . esc_attr( $shop_name ) . '</a>'; }
 			else { $vendor_store = '<a class="wcfm_dashboard_item_title" ' . $store_open_by . ' href="' . apply_filters( 'wcfmmp_vendor_shop_permalink', $shop_link, $vendor_id ) . '">' . __('Shop', 'wc-frontend-manager') . '</a>'; }
 		}
 		

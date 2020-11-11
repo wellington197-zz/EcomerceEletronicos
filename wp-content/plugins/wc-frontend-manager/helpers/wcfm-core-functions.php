@@ -631,11 +631,12 @@ if(!function_exists('is_wcfm_analytics')) {
 }
 
 if(!function_exists('get_wcfm_products_url')) {
-	function get_wcfm_products_url( $product_status = '' ) {
+	function get_wcfm_products_url( $product_status = '', $product_vendor = '' ) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$wcfm_products_url = wcfm_get_endpoint_url( 'wcfm-products', '', $wcfm_page );
 		if($product_status) $wcfm_products_url = add_query_arg( 'product_status', $product_status, $wcfm_products_url );
+		if($product_vendor) $wcfm_products_url = add_query_arg( 'product_vendor', $product_vendor, $wcfm_products_url );
 		return apply_filters( 'wcfm_products_url', $wcfm_products_url, $product_status );
 	}
 }
@@ -697,11 +698,12 @@ if(!function_exists('get_wcfm_coupons_manage_url')) {
 }
 
 if(!function_exists('get_wcfm_orders_url')) {
-	function get_wcfm_orders_url( $order_status = '') {
+	function get_wcfm_orders_url( $order_status = '', $order_vendor = '' ) {
 		global $WCFM;
 		$wcfm_page = get_wcfm_page();
 		$wcfm_orders_url = wcfm_get_endpoint_url( 'wcfm-orders', '', $wcfm_page );
 		if( $order_status ) $wcfm_orders_url = add_query_arg( 'order_status', $order_status, $wcfm_orders_url );
+		if( $order_vendor ) $wcfm_orders_url = add_query_arg( 'order_vendor', $order_vendor, $wcfm_orders_url );
 		return apply_filters( 'wcfm_orders_url',  $wcfm_orders_url, $order_status );
 	}
 }
@@ -1120,7 +1122,7 @@ if(!function_exists('get_wcfm_products_manager_messages')) {
 		
 		$messages = apply_filters( 'wcfm_validation_messages_product_manager', array(
 																																								'no_title' => __('Please insert Product Title before submit.', 'wc-frontend-manager'),
-																																								'no_excerpt' => __('Please insert Product Excerpt before submit.', 'wc-frontend-manager'),
+																																								'no_excerpt' => __('Please insert Product Short Description before submit.', 'wc-frontend-manager'),
 																																								'no_description' => __('Please insert Product Description before submit.', 'wc-frontend-manager'),
 																																								'sku_unique' => __('Product SKU must be unique.', 'wc-frontend-manager'),
 																																								'variation_sku_unique' => __('Variation SKU must be unique.', 'wc-frontend-manager'),
@@ -2100,16 +2102,24 @@ function wcfm_filter_content_email_phone( $content ) {
 	$patterns = array();
 	$patterns[0] = '/([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)/';
 	$patterns[1] = '/(?:(?:\+?([1-9]|[0-9][0-9]|[0-9][0-9][0-9])\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([0-9][1-9]|[0-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?/';
+	//$patterns[2] = '/(http|https|ftp|ftps)\:\/\/[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?/';
 
 	$replacements = array();
 	$replacements[0] = '';
 	$replacements[1] = '';
+	//$replacements[2] = '';
 
 	// should use just one call of preg_replace for perfomance issues
 	$content = preg_replace( $patterns, $replacements, $content );	
 	
 	return $content;
 }
+
+add_filter( 'wcfm_editor_content_before_save', function( $content ) {
+	$content = str_replace( '<script>', '', $content );
+	$content = str_replace( '</script>', '', $content );
+	return $content;
+}, 750 );
 
 /**
  * WCFM Hide Field

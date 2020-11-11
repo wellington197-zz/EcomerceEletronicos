@@ -652,7 +652,7 @@ jQuery(document).ready(function($) {
 			var mapOptions = {
 					zoom: $map_zoom,
 					center: new google.maps.LatLng(wcfmmp_store_list_options.default_lat,wcfmmp_store_list_options.default_lng,13),
-					mapTypeId: google.maps.MapTypeId.ROADMAP,
+					mapTypeId: wcfm_maps.map_type,
 					styles: myStyles
 			}
     

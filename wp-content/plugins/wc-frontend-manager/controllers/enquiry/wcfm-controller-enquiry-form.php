@@ -63,17 +63,20 @@ class WCFM_Enquiry_Form_Controller {
 	  	$reply = '';
 	  	
 	  	$author_id = 0;
-	  	$product_id = $wcfm_enquiry_tab_form_data['product_id'];
-	  	if( $product_id ) {
-				$product_post = get_post( $product_id );
-				$author_id = $product_post->post_author;
+	  	$product_id = 0;
+	  	if( isset( $wcfm_enquiry_tab_form_data['product_id'] ) && !empty( $wcfm_enquiry_tab_form_data['product_id'] ) ) {
+				$product_id = absint( $wcfm_enquiry_tab_form_data['product_id'] );
+				if( $product_id ) {
+					$product_post = get_post( $product_id );
+					$author_id = $product_post->post_author;
+				}
 			}
 	  	
 	  	$vendor_id = 0;
 	  	if( isset( $wcfm_enquiry_tab_form_data['vendor_id'] ) && !empty( $wcfm_enquiry_tab_form_data['vendor_id'] ) ) {
 	  		$vendor_id = absint( $wcfm_enquiry_tab_form_data['vendor_id'] );
 	  		$author_id = $vendor_id;
-	  	} elseif( wcfm_is_vendor( $author_id ) ) {
+	  	} elseif( $author_id && wcfm_is_vendor( $author_id ) ) {
 	  		$vendor_id = $author_id;
 	  	}
 	  	
@@ -199,7 +202,7 @@ class WCFM_Enquiry_Form_Controller {
 				// Semd email to vendor
 				if( wcfm_is_marketplace() ) {
 					if( $vendor_id ) {
-						$is_allow_enquiry = $WCFM->wcfm_vendor_support->wcfm_vendor_has_capability( $vendor_id, 'enquiry' );
+						$is_allow_enquiry = wcfm_vendor_has_capability( $vendor_id, 'enquiry' );
 						if( $is_allow_enquiry && apply_filters( 'wcfm_is_allow_enquiry_vendor_notification', true ) ) {
 							$vendor_email = wcfm_get_vendor_store_email_by_vendor( $vendor_id );
 							if( $vendor_email && apply_filters( 'wcfm_is_allow_notification_email', true, 'enquiry', $vendor_id ) ) {

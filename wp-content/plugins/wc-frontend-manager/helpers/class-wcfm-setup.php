@@ -1144,6 +1144,7 @@ class WCFM_Dashboard_Setup {
 		$options['module_options']['membership'] = 'yes';
 		$options['module_options']['buddypress'] = 'yes';
 		$options['module_options']['shipstation'] = 'yes';
+		$options['module_options']['facebook_marketplace'] = 'yes';
 		
 		update_option( 'wcfm_options', $options );
 		

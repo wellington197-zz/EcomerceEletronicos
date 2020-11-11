@@ -167,9 +167,9 @@ do_action( 'before_wcfm_enquiry_manage' );
 								<span class="wcfmfa fa-user"></span>&nbsp;
 								<span class="inquiry_by_customer">
 								<?php if( $inquiry_customer_id && apply_filters( 'wcfm_is_allow_view_customer', true ) ) { ?>
-									<?php echo '<a target="_blank" href="' . get_wcfm_customers_details_url($inquiry_customer_id) . '" class="wcfm_inquiry_by_customer inquiry_by_customer">' . $inquiry_customer_name . '</a>'; ?>
+									<?php echo '<a target="_blank" href="' . get_wcfm_customers_details_url($inquiry_customer_id) . '" class="wcfm_inquiry_by_customer inquiry_by_customer">' . apply_filters( 'wcfm_enquiry_customer_name_display', $inquiry_customer_name, $inquiry_customer_id, $inquiry_id ) . '</a>'; ?>
 								<?php } else { ?>
-									<?php echo $inquiry_customer_name; ?>
+									<?php echo apply_filters( 'wcfm_enquiry_customer_name_display', $inquiry_customer_name, $inquiry_customer_id, $inquiry_id ); ?>
 								<?php } ?>
 								<?php if( apply_filters( 'wcfm_allow_view_customer_email', true ) ) { ?>
 									 <br /><?php echo $inquiry_customer_email; ?>

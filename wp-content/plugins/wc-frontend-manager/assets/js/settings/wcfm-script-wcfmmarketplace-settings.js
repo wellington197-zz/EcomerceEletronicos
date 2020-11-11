@@ -181,6 +181,7 @@ jQuery(document).ready( function($) {
   function initialize() {
   	
   	if( wcfm_maps.lib == 'google' ) {
+  		$('#find_address').parent().append('<i class="wcfmmmp_locate_icon" style="background-image: url('+wcfm_marketplace_setting_map_options.locate_svg+')"></i>');
 			var latlng = new google.maps.LatLng( $store_lat, $store_lng );
 			var map = new google.maps.Map(document.getElementById("wcfm-marketplace-map"), {
 					center: latlng,
@@ -248,6 +249,32 @@ jQuery(document).ready( function($) {
 					}
 				});
 			});
+			
+			
+			if ( navigator.geolocation ) {
+				$('.wcfmmmp_locate_icon').on( 'click', function () {
+					navigator.geolocation.getCurrentPosition( function( position ) {
+						$current_location_fetched = true;
+						geocoder.geocode( {
+								location: {
+										lat: position.coords.latitude,
+										lng: position.coords.longitude
+								}
+						}, function ( results, status ) {
+								if ( 'OK' === status ) {
+									bindDataToForm( results[0].formatted_address, position.coords.latitude, position.coords.longitude, true );
+									var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+									marker.setPosition(latlng);
+									marker.setVisible(true);
+									
+									infowindow.setContent( results[0].formatted_address );
+									infowindow.open( map, marker );
+									showTooltip( infowindow, marker, results[0].formatted_address );
+								}
+						} )
+					});
+				});
+			}
 		} else {
 			$('#find_address').replaceWith( '<div id="leaflet_find_address"></div>' );
 			

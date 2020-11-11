@@ -231,7 +231,7 @@ class WCFMmp_Library {
 	  if( $api_key ) {
 	  	$scheme  = is_ssl() ? 'https' : 'http';
 	  	wp_enqueue_script( 'wcfm-store-google-maps', apply_filters( 'wcfm_google_map_api_url', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', $api_key ) );
-	  	wp_localize_script( 'wcfm-store-google-maps', 'wcfm_maps', array( 'lib' => 'google' ) );
+	  	wp_localize_script( 'wcfm-store-google-maps', 'wcfm_maps', array( 'lib' => 'google', 'map_type' => apply_filters( 'wcfm_google_map_type', 'roadmap' ) ) );
 	  	
 	  	if( apply_filters( 'wcfmmp_is_allow_map_pointer_cluster', true ) ) {
 	  		wp_enqueue_script( 'wcfm-store-google-maps-cluster', 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js', array('jquery' ), $WCFMmp->version, true );
@@ -247,7 +247,7 @@ class WCFMmp_Library {
 	  global $WCFM, $WCFMmp;
 	  wp_enqueue_script( 'wcfm-leaflet-map-js', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.js', array('jquery'), $WCFM->version, true );
 	  wp_enqueue_style( 'wcfm-leaflet-map-style', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.css', array(), $WCFM->version );
-	  wp_localize_script( 'wcfm-leaflet-map-js', 'wcfm_maps', array( 'lib' => 'leaflet' ) );
+	  wp_localize_script( 'wcfm-leaflet-map-js', 'wcfm_maps', array( 'lib' => 'leaflet', 'map_type' => apply_filters( 'wcfm_google_map_type', 'roadmap' ) ) );
 	}
 	
 	/**

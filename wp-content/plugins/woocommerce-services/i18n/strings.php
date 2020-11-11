@@ -32,6 +32,14 @@ __( "Request was made %s - check logs below or {{a}}edit service settings{{/a}}"
 __( "Edit service settings", "woocommerce-services" ), // dist/chunks/06762b0a6cdcf8f43760.min.js:1
 __( "Services", "woocommerce-services" ), // dist/chunks/06762b0a6cdcf8f43760.min.js:1
 __( "No services configured. {{a}}Add a shipping service{{/a}}", "woocommerce-services" ), // dist/chunks/06762b0a6cdcf8f43760.min.js:1
+__( "Create shipping label", "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+_n( "Track Package", "Track Packages", 1, "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+__( "Create new label", "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+_n( "Track Package", "Track Packages", 1, "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+__( "Create shipping label", "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+__( "Connection error: unable to create label at this time", "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+_n( "%(itemCount)d item was fulfilled on {{span}}%(createdDate)s{{/span}}", "%(itemCount)d items were fulfilled on {{span}}%(createdDate)s{{/span}}", 1, "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
+_n( "%(itemCount)d item is ready to be fulfilled", "%(itemCount)d items are ready to be fulfilled", 1, "woocommerce-services" ), // dist/chunks/312678b41024428f7c8f.min.js:1
 __( "Dismiss", "woocommerce-services" ), // dist/chunks/3c02a657726c737134a7.min.js:1
 __( "Saving\\u2026", "woocommerce-services" ), // dist/chunks/3c02a657726c737134a7.min.js:1
 __( "Save Settings", "woocommerce-services" ), // dist/chunks/3c02a657726c737134a7.min.js:1
@@ -268,14 +276,6 @@ __( "Expand Services", "woocommerce-services" ), // dist/chunks/a92ea9e0c29a40cf
 __( "Service", "woocommerce-services" ), // dist/chunks/a92ea9e0c29a40cfec3b.min.js:1
 __( "Price adjustment", "woocommerce-services" ), // dist/chunks/a92ea9e0c29a40cfec3b.min.js:1
 __( "Increase the rates calculated by the carrier to account for packaging and handling costs. You can also add a negative amount to save your customers money.", "woocommerce-services" ), // dist/chunks/a92ea9e0c29a40cfec3b.min.js:1
-__( "Create shipping label", "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-_n( "Track Package", "Track Packages", 1, "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-__( "Create new label", "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-_n( "Track Package", "Track Packages", 1, "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-__( "Create shipping label", "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-__( "Connection error: unable to create label at this time", "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-_n( "%(itemCount)d item was fulfilled on {{span}}%(createdDate)s{{/span}}", "%(itemCount)d items were fulfilled on {{span}}%(createdDate)s{{/span}}", 1, "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
-_n( "%(itemCount)d item is ready to be fulfilled", "%(itemCount)d items are ready to be fulfilled", 1, "woocommerce-services" ), // dist/chunks/aa289b8553dc979cfc0f.min.js:1
 __( "Dismiss", "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
 __( "Labels older than 30 days cannot be refunded.", "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
 __( "USPS letters are not eligible for refund.", "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
@@ -323,124 +323,124 @@ __( "Purchasing\\u2026", "woocommerce-services" ), // dist/chunks/b721812dda8276
 _n( "%(count)s event", "%(count)s events", 1, "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
 __( "Show notes from %(date)s", "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
 __( "No tracking information available at this time", "woocommerce-services" ), // dist/chunks/b721812dda827629a85d.min.js:1
-__( "Required", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Optional", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Dismiss", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Saving\\u2026", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Save Settings", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Untitled", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "You have unsaved changes.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "You have unsaved changes. Are you sure you want to leave this page?", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Your shipping packages have been saved.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Unable to save your shipping packages. Please try again.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-_n( "Add package", "Add packages", 1, "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Done", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Cancel", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "{{icon/}} Delete this package", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Invalid value.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This field is required.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Type of package", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Box", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Envelope", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Package name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Unique package name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This field must be unique", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Dimensions (L x W x H)", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Weight of empty package", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "0.0", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
+__( "Required", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Optional", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Dismiss", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Saving\\u2026", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Save Settings", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Untitled", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "You have unsaved changes.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "You have unsaved changes. Are you sure you want to leave this page?", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Your shipping packages have been saved.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Unable to save your shipping packages. Please try again.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+_n( "Add package", "Add packages", 1, "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Done", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Cancel", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "{{icon/}} Delete this package", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Invalid value.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This field is required.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Type of package", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Box", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Envelope", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Package name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Unique package name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This field must be unique", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Dimensions (L x W x H)", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Weight of empty package", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "0.0", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
 /* translators: Length placeholder for dimensions input */
-__( "L", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
+__( "L", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
 /* translators: Width placeholder for dimensions input */
-__( "W", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
+__( "W", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
 /* translators: Height placeholder for dimensions input */
-__( "H", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "All packages selected", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-_n( "%(selectedCount)d package selected", "%(selectedCount)d packages selected", 1, "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Expand Services", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Return to Order #%(orderId)s", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Your shipping settings have been saved.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Unable to save your shipping settings. Please try again.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "A payment method is required to print shipping labels.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Save changes", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Unable to get your settings. Please refresh the page to try again.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Shipping Labels", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Print shipping labels yourself and save a trip to the post office", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Only the site owner can manage shipping label payment methods. Please contact %(ownerName)s (%(ownerLogin)s) to manage payment methods.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Retry", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Only the site owner can change these settings. Please contact %(ownerName)s (%(ownerLogin)s) to change the shipping label settings.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Credit cards are retrieved from the following WordPress.com account: %(wpcomLogin)s <%(wpcomEmail)s>", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "We'll charge the credit card on your account (%(card)s) to pay for the labels you print", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "To purchase shipping labels, add a credit card.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Choose a different card", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "To purchase shipping labels, choose a credit card you have on file or add a new card.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Add another credit card", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "To purchase shipping labels, add a credit card.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Add a credit card", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Email Receipts", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Email the label purchase receipts to %(ownerName)s (%(ownerLogin)s) at %(ownerEmail)s", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Paper size", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Payment", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "American Express", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Discover", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "MasterCard", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "VISA", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "PayPal", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "%(card)s ****%(digits)s", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-_x( "Expires %(date)s", "date is of the form MM/YY", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
+__( "H", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "All packages selected", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+_n( "%(selectedCount)d package selected", "%(selectedCount)d packages selected", 1, "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Expand Services", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Return to Order #%(orderId)s", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Your shipping settings have been saved.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Unable to save your shipping settings. Please try again.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "A payment method is required to print shipping labels.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Save changes", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Unable to get your settings. Please refresh the page to try again.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Shipping Labels", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Print shipping labels yourself and save a trip to the post office", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Only the site owner can manage shipping label payment methods. Please contact %(ownerName)s (%(ownerLogin)s) to manage payment methods.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Retry", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Only the site owner can change these settings. Please contact %(ownerName)s (%(ownerLogin)s) to change the shipping label settings.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Credit cards are retrieved from the following WordPress.com account: %(wpcomLogin)s <%(wpcomEmail)s>", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "We'll charge the credit card on your account (%(card)s) to pay for the labels you print", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "To purchase shipping labels, add a credit card.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Choose a different card", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "To purchase shipping labels, choose a credit card you have on file or add a new card.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Add another credit card", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "To purchase shipping labels, add a credit card.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Add a credit card", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Email Receipts", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Email the label purchase receipts to %(ownerName)s (%(ownerLogin)s) at %(ownerEmail)s", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Paper size", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Payment", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "American Express", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Discover", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "MasterCard", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "VISA", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "PayPal", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "%(card)s ****%(digits)s", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+_x( "Expires %(date)s", "date is of the form MM/YY", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
 /* translators: Name for WeChat Pay - https://pay.weixin.qq.com/ */
-__( "WeChat Pay", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Dimensions", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Edit", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Remove", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Packaging", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Add boxes, envelopes, and other packages you use most frequently", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Add package", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Credentials", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Carrier account", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Set up your own carrier account by adding your credentials here", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Untitled", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Disconnect", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Connect", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Cancel", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Disconnect", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Disconnect your UPS account", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This will remove the connection with UPS. All of your UPS account information will be deleted and you won\\u2019t see UPS rates when purchasing shipping labels.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Connect your UPS account", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Set up your own UPS carrier account to compare rates and print labels from multiple carriers in WooCommerce Shipping. Learn more about adding {{a}}carrier accounts{{/a}}.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "If you need a UPS account number, go to {{a}}UPS.com{{/a}} to create a new account.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "General information", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This is the account number and address from your UPS profile", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Account number", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Address", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Address 2 (optional)", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "City", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "State", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Select one\\u2026", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "State", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Country", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "ZIP/Postal code", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Phone", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Email", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Company information", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This is the company info you used to create your UPS account", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Company name", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Job title", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Company website", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS account information", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "I have been issued an invoice from UPS within the past 90 days", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS invoice number", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS invoice date", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS invoice amount", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS invoice currency", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "UPS invoice control id", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Connect", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Cancel", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Cancel", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Ok", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "Cancel connection", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
-__( "This action will delete any information entered on the form.", "woocommerce-services" ), // dist/chunks/c0c964e91d2a07c9cb97.min.js:1
+__( "WeChat Pay", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Dimensions", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Edit", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Remove", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Packaging", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Add boxes, envelopes, and other packages you use most frequently", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Add package", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Credentials", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Carrier account", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Set up your own carrier account by adding your credentials here", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Untitled", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Disconnect", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Connect", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Cancel", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Disconnect", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Disconnect your UPS account", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This will remove the connection with UPS. All of your UPS account information will be deleted and you won\\u2019t see UPS rates when purchasing shipping labels.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Connect your UPS account", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Set up your own UPS carrier account to compare rates and print labels from multiple carriers in WooCommerce Shipping. Learn more about adding {{a}}carrier accounts{{/a}}.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "If you need a UPS account number, go to {{a}}UPS.com{{/a}} to create a new account.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "General information", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This is the account number and address from your UPS profile", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Account number", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Address", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Address 2 (optional)", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "City", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "State", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Select one\\u2026", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "State", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Country", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "ZIP/Postal code", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Phone", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Email", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Company information", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This is the company info you used to create your UPS account", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Company name", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Job title", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Company website", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS account information", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "I have been issued an invoice from UPS within the past 90 days", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS invoice number", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS invoice date", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS invoice amount", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS invoice currency", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "UPS invoice control id", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Connect", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Cancel", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Cancel", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Ok", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "Cancel connection", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
+__( "This action will delete any information entered on the form.", "woocommerce-services" ), // dist/chunks/cbfb54d3c5694e98762d.min.js:1
 );
 /* THIS IS THE END OF THE GENERATED FILE */

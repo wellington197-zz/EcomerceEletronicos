@@ -141,7 +141,7 @@ class WCFM_Enquiry_Controller {
 						$customer_details .= "<br />" . $wcfm_enquirys_single->customer_email;
 					}
 				} 
-				$wcfm_enquirys_json_arr[$index][] =  apply_filters( 'wcfm_enquiry_customer_name_display', $customer_details, $wcfm_enquirys_single->customer_id, $wcfm_enquirys_single );
+				$wcfm_enquirys_json_arr[$index][] =  apply_filters( 'wcfm_enquiry_customer_name_display', $customer_details, $wcfm_enquirys_single->customer_id, $wcfm_enquirys_single->ID );
 				
 				
 				// Vendor

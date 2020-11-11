@@ -4,6 +4,8 @@ $product_taxonomy = {};
 $product_vendor = '';
 
 jQuery(document).ready(function($) {
+		
+	$product_vendor = GetURLParameter( 'product_vendor' );
 	
 	$wcfm_products_table = $('#wcfm-products').DataTable( {
 		"processing": true,

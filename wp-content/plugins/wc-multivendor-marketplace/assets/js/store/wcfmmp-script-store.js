@@ -54,6 +54,7 @@ jQuery(document).ready(function($) {
 				var map = new google.maps.Map(document.getElementById($store_map), {
 						center: latlng,
 						blur : true,
+						mapTypeId: wcfm_maps.map_type,
 						zoom: parseInt( wcfmmp_store_map_options.default_zoom )
 				});
 				var customIcon = {

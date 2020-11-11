@@ -37,7 +37,7 @@ if( $store_id ) {
 					echo $WCFM->wcfm_vendor_support->wcfm_get_vendor_store_name_by_vendor( absint($store_id) );
 				}
 			} else {
-				_e( 'Admin Product', 'wc-multivendor-marketplace' );
+				echo apply_filters( 'wcfmmp_more_offers_admin_product_soldby_label', get_bloginfo( 'name' ), $offer_product_id );
 			}
 			?>
 		</div>

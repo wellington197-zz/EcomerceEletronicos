@@ -217,7 +217,7 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 		<?php if( apply_filters( 'wcfm_is_pref_stats_box', true ) ) { ?>
 			<div class="wcfm_dashboard_stats">
 				<div class="wcfm_dashboard_stats_block">
-				  <a href="#" onclick="return false;">
+				  <a href="<?php echo $stat_box_link; ?>">
 						<span class="wcfmfa fa-currency"><?php echo get_woocommerce_currency_symbol() ; ?></span>
 						<div>
 							<strong>
@@ -232,7 +232,7 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 				</div>
 				
 				<div class="wcfm_dashboard_stats_block">
-				  <a href="#" onclick="return false;">
+				  <a href="<?php echo $stat_box_link; ?>">
 						<span class="wcfmfa fa-money fa-money-bill-alt"></span>
 						<div>
 							<strong>
@@ -250,7 +250,7 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 				</div>
 				
 				<div class="wcfm_dashboard_stats_block">
-					<a href="#" onclick="return false;">
+					<a href="<?php echo get_wcfm_products_url( '', $vendor_id ); ?>">
 						<span class="wcfmfa fa-cube"></span>
 						<div>
 							<?php 
@@ -265,7 +265,7 @@ if( $WCFM->is_marketplace && ( $WCFM->is_marketplace == 'wcfmmarketplace' ) && a
 				</div>
 				
 				<div class="wcfm_dashboard_stats_block">
-				  <a href="#" onclick="return false;">
+				  <a href="<?php echo get_wcfm_orders_url( '', $vendor_id ); ?>">
 						<span class="wcfmfa fa-cart-plus"></span>
 						<div>
 							<?php 

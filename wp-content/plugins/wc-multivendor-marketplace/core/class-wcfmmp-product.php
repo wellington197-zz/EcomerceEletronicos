@@ -513,7 +513,7 @@ class WCFMmp_Product {
     
     $vendor_shipping_details = get_user_meta( $vendor_id, '_wcfmmp_shipping', true );
     if( !empty($vendor_shipping_details) ) {
-      $enabled = isset( $vendor_shipping_details['_wcfmmp_user_shipping_enable'] ) ? 'yes' : '';
+      $enabled = isset( $vendor_shipping_details['_wcfmmp_user_shipping_enable'] ) ? $vendor_shipping_details['_wcfmmp_user_shipping_enable'] : '';
       $type = !empty( $vendor_shipping_details['_wcfmmp_user_shipping_type'] ) ? $vendor_shipping_details['_wcfmmp_user_shipping_type'] : '';
       if ( ( !empty($enabled) && $enabled == 'yes' ) && ( !empty($type) ) && 'by_country' === $type ) {
         $wcv_shipping_fileds = apply_filters( 'wcfmmp_product_manager_shipping_fileds', array( 

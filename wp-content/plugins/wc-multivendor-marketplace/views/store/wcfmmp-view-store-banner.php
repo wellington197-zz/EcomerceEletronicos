@@ -137,7 +137,7 @@ $store_banner_mheight = isset( $WCFMmp->wcfmmp_marketplace_options['store_banner
 						<div class="video_text">
 							<?php do_action( 'wcfmmp_store_before_bannar_text', $store_user->get_id() ); ?>
 							
-							<h1><?php echo apply_filters( 'wcfmmp_store_title', $store_info['store_name'], $store_user->get_id() ); ?></h1>
+							<h1><?php echo apply_filters( 'wcfmmp_store_title', esc_html( $store_info['store_name'] ), $store_user->get_id() ); ?></h1>
 							
 							<?php do_action( 'wcfmmp_store_after_bannar_text', $store_user->get_id() ); ?>
 						</div>

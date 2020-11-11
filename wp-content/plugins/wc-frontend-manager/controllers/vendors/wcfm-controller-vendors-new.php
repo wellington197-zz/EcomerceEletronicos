@@ -236,6 +236,7 @@ class WCFM_Vendors_New_Controller {
 																			 '<br /><br/>' . 
 																			 __( 'Thank You', 'wc-frontend-manager' ) .
 																			 '<br/><br/>';
+							$notification_mail_body = apply_filters( 'wcfm_notification_mail_content', $new_account_mail_body, 'vendor_new_account_created', $wcfm_vendor_form_data, $vendor_id );												 
 																			 
 							$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $new_account_mail_subject );
 							$subject = apply_filters( 'wcfm_email_subject_wrapper', $subject );

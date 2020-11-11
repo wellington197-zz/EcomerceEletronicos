@@ -52,7 +52,7 @@ $store_address_info_class = '';
 				<div class="address rgt">
 				  <?php if( ( $WCFMmp->wcfmmp_vendor->get_vendor_name_position( $store_user->get_id() ) == 'on_header' ) || apply_filters( 'wcfm_is_allow_store_name_on_header', false ) ) { ?>
 				  	<h1 class="wcfm_store_title">
-				  	  <?php echo apply_filters( 'wcfmmp_store_title', $store_info['store_name'], $store_user->get_id() ); ?>
+				  	  <?php echo apply_filters( 'wcfmmp_store_title', esc_html( $store_info['store_name'] ), $store_user->get_id() ); ?>
 				  	  <?php if( apply_filters( 'wcfm_is_allow_badges_with_store_name', false ) ) { ?>
 								<div class="wcfmmp_store_mobile_badges wcfmmp_store_mobile_badges_with_store_name">
 									<?php do_action( 'wcfmmp_store_mobile_badges', $store_user->get_id() ); ?>
@@ -74,9 +74,9 @@ $store_address_info_class = '';
 						  		$map_search_link = 'https://maps.google.com/?q=' . rawurlencode( $address ) . '&z=16';
 						  	}
 						  	?>
-						    <a href="<?php echo $map_search_link; ?>" target="_blank"><span><?php echo $address; ?></span></a>
+						    <a href="<?php echo $map_search_link; ?>" target="_blank"><span><?php echo esc_attr($address); ?></span></a>
 						  <?php } else { ?>
-								<?php echo $address; ?>
+								<?php echo esc_attr($address); ?>
 							<?php } ?>
 						</p>
 					<?php } ?>

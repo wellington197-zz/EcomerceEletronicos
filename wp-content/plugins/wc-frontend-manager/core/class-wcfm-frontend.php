@@ -498,7 +498,7 @@ class WCFM_Frontend {
 					}
 		  	}
 		  } elseif( $is_marketplace == 'wcfmmarketplace' ) {
-				if( wcfm_is_store_page() ) {
+				if( function_exists( 'wcfm_is_store_page' ) && wcfm_is_store_page() ) {
 					$wc_shop = false;
 					$custom_store_url = get_option( 'wcfm_store_url', 'store' );
 					$store_name = get_query_var( $custom_store_url );

@@ -19,15 +19,15 @@ class WCFM_Dashboard_Setup {
 	private $steps = array();
 
 	public function __construct() {
-		//add_action( 'admin_menu', array( $this, 'wcfm_admin_menus' ) );
-		//add_action( 'admin_init', array( $this, 'wcfm_dashboard_setup' ) );
+		add_action( 'admin_menu', array( $this, 'wcfm_admin_menus' ) );
+		add_action( 'admin_init', array( $this, 'wcfm_dashboard_setup' ) );
 	}
 
 	/**
 	 * Add admin menus/screens.
 	 */
 	public function wcfm_admin_menus() {
-		//add_dashboard_page( '', '', 'manage_options', 'wcfm-setup', '' );
+		add_dashboard_page( '', '', 'manage_options', 'wcfm-setup', '' );
 	}
 
 	/**

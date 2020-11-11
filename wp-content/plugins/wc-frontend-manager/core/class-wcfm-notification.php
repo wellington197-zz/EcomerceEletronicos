@@ -179,6 +179,7 @@ class WCFM_Notification {
 						} else {
 							continue;
 						}
+						$wcfm_messages = apply_filters( 'wcfm_new_order_vendor_notification_message', $wcfm_messages, $order_id, $message_to );
 						$this->wcfm_send_direct_message( $author_id, $message_to, $author_is_admin, $author_is_vendor, $wcfm_messages, 'order', apply_filters( 'wcfm_is_allow_order_notification_email', false ) );
 						$order_vendors[$message_to] = $message_to;
 						

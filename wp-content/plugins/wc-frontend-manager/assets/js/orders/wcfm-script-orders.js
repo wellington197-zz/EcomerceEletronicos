@@ -9,6 +9,8 @@ var orderTableRefrsherTime = '';
 
 jQuery(document).ready(function($) {
 		
+	$order_vendor = GetURLParameter( 'order_vendor' );
+		
 	// Dummy Mark Complete Dummy
 	$( document.body ).on( 'updated_wcfm-orders', function() {
 		$('.wcfm_order_mark_complete_dummy').each(function() {
@@ -94,7 +96,7 @@ jQuery(document).ready(function($) {
 				d.filter_date_to    = $filter_date_to,  
 				d.order_product     = $order_product,  
 				d.commission_status = $commission_status,
-				d.order_vendor       = $order_vendor,
+				d.order_vendor      = $order_vendor,
 				d.delivery_boy      = $delivery_boy
 			},
 			"complete" : function () {

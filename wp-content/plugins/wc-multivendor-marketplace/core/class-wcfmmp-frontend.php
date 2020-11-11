@@ -304,26 +304,28 @@ class WCFMmp_Frontend {
 	 */
 	function wcfmmp_checkout_user_location_fields( $fields ) {
 		global $WCFM, $WCFMmp;
-		if( ( true === WC()->cart->needs_shipping() ) && apply_filters( 'wcfmmp_is_allow_checkout_user_location', true ) ) {
-			$fields['billing']['wcfmmp_user_location'] = array(
-					'label'     => __( 'Delivery Location', 'wc-multivendor-marketplace' ),
-					'placeholder'   => _x( 'Insert your address ..', 'placeholder', 'wc-multivendor-marketplace' ),
-					'required'  => true,
-					'class'     => array('form-row-wide'),
-					'clear'     => true,
-					'priority'  => 999,
-					'value'     => WC()->session->get( '_wcfmmp_user_location' )
-			 );
-			$fields['billing']['wcfmmp_user_location_lat'] = array(
-					'required'  => false,
-					'class'     => array('wcfm_custom_hide'),
-					'value'     => WC()->session->get( '_wcfmmp_user_location_lat' )
-			 );
-			$fields['billing']['wcfmmp_user_location_lng'] = array(
-					'required'  => false,
-					'class'     => array('wcfm_custom_hide'),
-					'value'     => WC()->session->get( '_wcfmmp_user_location_lng' )
-			 );
+		if( ! WC()->is_rest_api_request() ) {
+			if( ( true === WC()->cart->needs_shipping() ) && apply_filters( 'wcfmmp_is_allow_checkout_user_location', true ) ) {
+				$fields['billing']['wcfmmp_user_location'] = array(
+						'label'     => __( 'Delivery Location', 'wc-multivendor-marketplace' ),
+						'placeholder'   => _x( 'Insert your address ..', 'placeholder', 'wc-multivendor-marketplace' ),
+						'required'  => true,
+						'class'     => array('form-row-wide'),
+						'clear'     => true,
+						'priority'  => 999,
+						'value'     => WC()->session->get( '_wcfmmp_user_location' )
+				 );
+				$fields['billing']['wcfmmp_user_location_lat'] = array(
+						'required'  => false,
+						'class'     => array('wcfm_custom_hide'),
+						'value'     => WC()->session->get( '_wcfmmp_user_location_lat' )
+				 );
+				$fields['billing']['wcfmmp_user_location_lng'] = array(
+						'required'  => false,
+						'class'     => array('wcfm_custom_hide'),
+						'value'     => WC()->session->get( '_wcfmmp_user_location_lng' )
+				 );
+			}
 		}
 
      return $fields;
@@ -691,7 +693,7 @@ class WCFMmp_Frontend {
 		$radius_lng = isset( $_GET['radius_lng'] ) ? wc_clean( $_GET['radius_lng'] ) : '';
 		
 		$available_vendors = array();
-		if( !empty( $radius_lat ) && !empty( $radius_lng ) && !empty( $radius_range ) ) {
+		if( ( !empty( $radius_lat ) && !empty( $radius_lng ) && !empty( $radius_range ) ) || is_product_taxonomy() ) {
 			$wcfmmp_radius_lat = $radius_lat;
 			$wcfmmp_radius_lng = $radius_lng;
 			$wcfmmp_radius_range = $radius_range;
@@ -701,14 +703,46 @@ class WCFMmp_Frontend {
 				'count_total'  => false,
 				'fields'       => array( 'ID', 'display_name' ),
 			 ); 
+			
+			// For Taxonomy Page
+			if( is_product_taxonomy() ) {
+				$term = get_term_by( 'slug', get_query_var( 'term' ), get_query_var( 'taxonomy' ) ); 
+				$term_id = $term->term_id;
+				$wcfm_allow_vendors_list = array();
+				$category_vendors = $wpdb->get_results( "SELECT vendor_id FROM {$wpdb->prefix}wcfm_marketplace_store_taxonomies WHERE term = " . absint($term_id) );
+				if( !empty( $category_vendors ) ) {
+					foreach( $category_vendors as $category_vendor ) {
+						$wcfm_allow_vendors_list[] = $category_vendor->vendor_id;
+					}
+				}
+				if( empty( $wcfm_allow_vendors_list ) ) {
+					$wcfm_allow_vendors_list = array( 0 => -1 );
+				}
+				$user_args['include'] = array_filter($wcfm_allow_vendors_list);
+			}
+			
 			$all_users = get_users( $user_args );
 			
 			if( !empty( $all_users ) ) {
 				foreach( $all_users as $all_user ) {
 					$available_vendors[$all_user->ID] = $all_user->ID;
 				}
+				if( isset( $_REQUEST['filter_vendor'] ) && !empty( $_REQUEST['filter_vendor'] ) ) {
+					$filter_vendor = absint( $_REQUEST['filter_vendor'] );
+					if( in_array( $filter_vendor, $available_vendors ) ) {
+						$available_vendors = array();
+						$available_vendors[$filter_vendor] = $filter_vendor;
+					}
+				}
 			} else {
 				$available_vendors = array(-1);
+			}
+		} else {
+			if( isset( $_REQUEST['filter_vendor'] ) && !empty( $_REQUEST['filter_vendor'] ) ) {
+				$filter_vendor = absint( $_REQUEST['filter_vendor'] );
+				$available_vendors[$filter_vendor] = $filter_vendor;
+			} else {
+				
 			}
 		}
 		

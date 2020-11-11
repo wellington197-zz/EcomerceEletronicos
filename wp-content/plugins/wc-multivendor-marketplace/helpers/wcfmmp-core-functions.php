@@ -934,12 +934,12 @@ if(!function_exists('wcfmmp_get_shipping_processing_times')) {
 
 if(!function_exists('wcfmmp_get_shipping_methods')) {
   function wcfmmp_get_shipping_methods( ) {
-    return apply_filters( 'vendor_shipping_methods', array(
+    return apply_filters( 'wcfmmp_vendor_shipping_methods', apply_filters( 'vendor_shipping_methods', array(
 																														''  => __('-- Select a Method --', 'wc-multivendor-marketplace'),
 																														'flat_rate' => __('Flat Rate', 'wc-multivendor-marketplace'),
 																														'local_pickup' => __('Local Pickup', 'wc-multivendor-marketplace'),
 																														'free_shipping' => __('Free Shipping', 'wc-multivendor-marketplace')
-																													) );
+																													) ) );
   }
 }
 
@@ -953,7 +953,7 @@ if(!function_exists('wcfmmp_is_shipping_enabled')) {
     
     $vendor_shipping_details = get_user_meta( $vendor_id, '_wcfmmp_shipping', true );
     if( !empty($vendor_shipping_details) ){
-      $enabled = isset( $vendor_shipping_details['_wcfmmp_user_shipping_enable'] ) ? 'yes' : '';
+      $enabled = isset( $vendor_shipping_details['_wcfmmp_user_shipping_enable'] ) ? $vendor_shipping_details['_wcfmmp_user_shipping_enable'] : '';
       $type = !empty( $vendor_shipping_details['_wcfmmp_user_shipping_type'] ) ? $vendor_shipping_details['_wcfmmp_user_shipping_type'] : '';
       if ( ( !empty($enabled) && $enabled == 'yes' ) && ( !empty($type) ) && '' != $type ) {
          return apply_filters( 'wcfmmp_is_shipping_enabled', true, $vendor_id );

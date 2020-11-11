@@ -144,8 +144,10 @@ $request_mode = apply_filters( 'wcfm_refund_request_default_mode', 'partial' );
 											foreach ( $order_taxes as $tax_item ) {
 												$tax_item_id       = $tax_item['rate_id'];
 												$tax_item_total    = isset( $tax_data['total'][ $tax_item_id ] ) ? $tax_data['total'][ $tax_item_id ] : 0;
+												if( !is_numeric( $tax_item_total ) ) $tax_item_total = 0;
 												$tax_item_subtotal = isset( $tax_data['subtotal'][ $tax_item_id ] ) ? $tax_data['subtotal'][ $tax_item_id ] : 0;
 												$refunded = $order->get_tax_refunded_for_item( $item_id, $tax_item_id );
+												if( !is_numeric( $refunded ) ) $refunded = 0;
 												$tax_cost = ( $tax_item_total - $refunded );
 												?>
 												<td class="line_tax no_ipad no_mob" style="text-align:center;">

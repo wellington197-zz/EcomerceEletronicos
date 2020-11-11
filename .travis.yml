@@ -1,10 +1,7 @@
 # Linguagem Utilizada para Desenvolver a Aplicação
 language: php
 
-php:
-  - 5.2
-
- # Defini que o processo de Deploy será na Plataforma Heroku. É necessário informar o nome da APP criada no Heroku
+# Defini que o processo de Deploy será na Plataforma Heroku. É necessário informar o nome da APP criada no Heroku
 deploy:
   provider: heroku
   api-key: 

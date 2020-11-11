@@ -54,6 +54,16 @@ jQuery(document).ready(function($) {
 		}
 	} );
 	
+	$('.bulk_action_checkbox_all').click(function() {
+		if( $(this).is(':checked') ) {
+			$('.bulk_action_checkbox_all').attr( 'checked', true );
+			$('.select_withdrawal_requests').attr( 'checked', true );
+		}	else {
+			$('.bulk_action_checkbox_all').attr( 'checked', false );
+			$('.select_withdrawal_requests').attr( 'checked', false );
+		}
+	});
+	
 	// Request Withdrawals Approve
 	$('#wcfm_reverse_withdrawal_requests_approve_button').click(function(event) {
 	  event.preventDefault();

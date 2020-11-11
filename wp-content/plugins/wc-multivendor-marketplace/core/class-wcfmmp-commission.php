@@ -52,7 +52,7 @@ class WCFMmp_Commission {
 		add_filter('wcfmmmp_tax_commission_rule', array(&$this, 'wcfmmp_shipping_tax_commission_rule_fixed_handler' ) );
 		
 		// Commission on Tax Admin MOde Handler
-		add_filter( 'wcfmmp_commission_deducted_tax', array(&$this, 'wcfmmp_commission_deducted_tax_admin_mode_handler' ), 100, 6 );
+		add_filter( 'wcfmmp_commission_deducted_tax', array(&$this, 'wcfmmp_commission_deducted_tax_admin_mode_handler' ), 100, 7 );
 		
 		// On Order Item Refund
 		add_action( 'woocommerce_order_refunded', array(&$this, 'wcfmmp_commission_order_item_refund' ), 30, 2 );
@@ -247,8 +247,8 @@ class WCFMmp_Commission {
 						// Transaction Charge Calculation
 						if( isset( $commission_rule['transaction_charge_type'] ) && ( $commission_rule['transaction_charge_type'] != 'no' ) ) {
 							$vendor_order_amount = $this->wcfmmp_calculate_vendor_order_commission( $vendor_id, $order_id, $order, false );
-							$vendor_order_total_commission = (float)$vendor_order_amount['commission_amount'];
-							$vendor_order_total_item       = absint( $vendor_order_amount['item_count'] );
+							$vendor_order_total_commission = apply_filters( 'wcfmmp_transaction_charge_calculate_on_amount', (float)$vendor_order_amount['commission_amount'], $vendor_id, $product_id, $order_id, $gross_sales_total, $total_commission, $commission_rule );
+							$vendor_order_total_item       = apply_filters( 'wcfmmp_transaction_charge_calculate_on_item_count', absint( $vendor_order_amount['item_count'] ), $vendor_id, $product_id, $order_id, $gross_sales_total, $total_commission, $commission_rule );
 							$total_transaction_charge = 0;
 							if( ( $commission_rule['transaction_charge_type'] == 'percent' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
 								$total_transaction_charge  += $vendor_order_total_commission * ( (float)$commission_rule['transaction_charge_percent'] / 100 );
@@ -275,7 +275,7 @@ class WCFMmp_Commission {
 						// Commission Tax Calculation
 						if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 							$commission_tax = $total_commission * ( (float)$commission_rule['tax_percent'] / 100 );
-							$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule );
+							$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule );
 							$total_commission -= (float) $commission_tax;
 						}
 						
@@ -557,15 +557,16 @@ class WCFMmp_Commission {
 			$order_item_id = $item->get_id();
 			$line_item = new WC_Order_Item_Product($item);
 			$product_id = $line_item->get_product_id();
+			$variation_id = $line_item->get_variation_id();
 			if ($product_id) {
 				$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
 				if( $pvendor_id && ( $pvendor_id == $vendor_id ) ) {
 					if( $WCFMmp->wcfmmp_vendor->is_vendor_deduct_discount( $vendor_id, $order_id ) ) {
-						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $line_item->get_variation_id(), $vendor_id, $line_item->get_total(), $line_item->get_quantity(), $order_id );
-						$commission_amount += $this->wcfmmp_get_order_item_commission( $order_id, $vendor_id, $product_id, $line_item->get_variation_id(), $line_item->get_total(), $line_item->get_quantity(), $commission_rule );
+						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $variation_id, $vendor_id, $line_item->get_total(), $line_item->get_quantity(), $order_id );
+						$commission_amount += $this->wcfmmp_get_order_item_commission( $order_id, $vendor_id, $product_id, $variation_id, $line_item->get_total(), $line_item->get_quantity(), $commission_rule );
 					} else {
-						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $line_item->get_variation_id(), $vendor_id, $line_item->get_subtotal(), $line_item->get_quantity(), $order_id );
-						$commission_amount += $this->wcfmmp_get_order_item_commission( $order_id, $vendor_id, $product_id, $line_item->get_variation_id(), $line_item->get_subtotal(), $line_item->get_quantity(), $commission_rule );
+						$commission_rule   = $WCFMmp->wcfmmp_product->wcfmmp_get_product_commission_rule( $product_id, $variation_id, $vendor_id, $line_item->get_subtotal(), $line_item->get_quantity(), $order_id );
+						$commission_amount += $this->wcfmmp_get_order_item_commission( $order_id, $vendor_id, $product_id, $variation_id, $line_item->get_subtotal(), $line_item->get_quantity(), $commission_rule );
 					}
 					
 					if( $WCFMmp->wcfmmp_vendor->is_vendor_get_tax( $vendor_id ) ) {
@@ -622,10 +623,10 @@ class WCFMmp_Commission {
 			}
 		}
 		
-		// Commission Tax Calculation
+		// Commission Tax Calculation - Have something wring here!!!!
 		if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 			$commission_tax = $commission_amount * ( (float)$commission_rule['tax_percent'] / 100 );
-			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $order_id, $commission_amount, $commission_rule );
+			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $commission_amount, $commission_rule );
 			$commission_amount -= (float) $commission_tax;
 		}
 		
@@ -878,7 +879,7 @@ class WCFMmp_Commission {
 						$processed_vendors[$vendor_id] = $vendor_id;
 						if( $vendor_id ) {
 							if( apply_filters( 'wcfm_is_allow_order_status_update_vendor_notification', true, $vendor_id, $order_id, $status_to ) ) {
-								$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order_id . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $status_to ) );
+								$wcfm_messages = sprintf( __( '<b>%s</b> order status updated to <b>%s</b>', 'wc-multivendor-marketplace' ), '#<a target="_blank" class="wcfm_dashboard_item_title" href="' . get_wcfm_view_order_url($order_id) . '">' . $order->get_order_number() . '</a>', $WCFMmp->wcfmmp_vendor->wcfmmp_vendor_order_status_name( $status_to ) );
 								$WCFM->wcfm_notification->wcfm_send_direct_message( -1, $vendor_id, 1, 0, $wcfm_messages, 'status-update' );
 							}
 						}
@@ -930,19 +931,22 @@ class WCFMmp_Commission {
 	/**
 	 * Tax on Commission Admin Mode Handler
 	 */
-	function wcfmmp_commission_deducted_tax_admin_mode_handler( $commission_tax, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule ) {
+	function wcfmmp_commission_deducted_tax_admin_mode_handler( $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		
 		if( apply_filters( 'wcfm_is_admin_fee_mode', false ) ) {
 			if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 				$order = wc_get_order( $order_id );
 				$vendor_wise_gross_sales = 0;
+				$quantity  = 0;
 				
 				$items = $order->get_items('line_item');
 				foreach ($items as $order_item_id => $item) {
-					$line_item = new WC_Order_Item_Product($item);
-					$pproduct_id = $line_item->get_product_id();
-					if ($pproduct_id && ( $product_id == $pproduct_id )) {
+					$line_item     = new WC_Order_Item_Product($item);
+					$pproduct_id   = $line_item->get_product_id();
+					$pvariation_id = $line_item->get_variation_id();
+					$quantity      = $line_item->get_quantity();
+					if( ( $pvariation_id && $variation_id && ( $variation_id == $pvariation_id ) ) || ( !$pvariation_id && $pproduct_id && ( $product_id == $pproduct_id ) ) ) {
 						$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
 						if( $pvendor_id && ( $pvendor_id == $vendor_id ) ) {
 							$line_item_total = $line_item->get_total() + $line_item->get_total_tax();
@@ -955,9 +959,11 @@ class WCFMmp_Commission {
 				$shipping_items = $order->get_items('shipping');
 				foreach ($shipping_items as $shipping_item_id => $shipping_item) {
 					$order_item_shipping = new WC_Order_Item_Shipping($shipping_item_id);
-					$shipping_vendor_id = $order_item_shipping->get_meta('vendor_id', true);
+					$shipping_vendor_id  = $order_item_shipping->get_meta('vendor_id', true);
+					$package_qty = $order_item_shipping->get_meta('package_qty', true);
 					if( ( $shipping_vendor_id > 0 ) && ( $shipping_vendor_id == $vendor_id ) ) {
 						$shipping_item_total = $order_item_shipping->get_total() + $order_item_shipping->get_total_tax();
+						$shipping_item_total = ($shipping_item_total/$package_qty) * $quantity ;
 						
 						$vendor_wise_gross_sales += $shipping_item_total;
 					}

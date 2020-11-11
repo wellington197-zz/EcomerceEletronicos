@@ -650,7 +650,7 @@ class WCFMmp_Refund {
 										// Commission Tax Calculation
 										if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 											$commission_tax = $total_commission * ( (float)$commission_rule['tax_percent'] / 100 );
-											$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $commission_info->product_id, $commission_info->order_id, $total_commission, $commission_rule );
+											$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $commission_info->product_id, $commission_info->variation_id, $commission_info->order_id, $total_commission, $commission_rule );
 											$total_commission -= (float) $commission_tax;
 											
 											$WCFMmp->wcfmmp_commission->wcfmmp_delete_commission_meta( $commission_id, 'commission_tax' );
@@ -712,14 +712,22 @@ class WCFMmp_Refund {
 						}
 						
 						// Order Not Added
-						$wcfm_messages = sprintf( __( 'Refund Request approved for Order <b>%s</b>.', 'wc-multivendor-marketplace' ), '#' . $order->get_order_number() );
+						$wcfm_refund_request_notified = get_post_meta( $order_id, '_wcfm_refund_request_notified', true );
+						if( $is_partially_refunded ) {
+							$wcfm_messages = sprintf( __( 'Partial Refund Request approved for Order <b>%s</b>.', 'wc-multivendor-marketplace' ), '#' . $order->get_order_number() );
+						} else {
+							$wcfm_messages = sprintf( __( 'Refund Request approved for Order <b>%s</b>.', 'wc-multivendor-marketplace' ), '#' . $order->get_order_number() );
+							update_post_meta( $order_id, '_wcfm_refund_request_notified', 1 );
+						}
 						if( $refund_note ) {
 							$wcfm_messages .= "<br /><b>" . __( 'Note', 'wc-multivendor-marketplace' ) . "</b>: " . $refund_note;
 						}
 						
-						$comment_id = $order->add_order_note( $wcfm_messages, apply_filters( 'wcfm_is_allow_refund_update_note_for_customer', '1' ) );
-						if( $vendor_id ) {
-							add_comment_meta( $comment_id, '_vendor_id', $vendor_id );
+						if( $is_partially_refunded || !$wcfm_refund_request_notified ) {
+							$comment_id = $order->add_order_note( $wcfm_messages, apply_filters( 'wcfm_is_allow_refund_update_note_for_customer', '1' ) );
+							if( $vendor_id ) {
+								add_comment_meta( $comment_id, '_vendor_id', $vendor_id );
+							}
 						}
 						
 						// Update Order Meta

@@ -476,7 +476,7 @@ class WCFM_Library {
 						
 						$store_icon = apply_filters( 'wcfmmp_map_store_icon', $WCFMmp->plugin_url . 'assets/images/wcfmmp_map_icon.png', 0, '' );
 						
-						wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
+						wp_localize_script( 'wcfm_marketplace_settings_js', 'wcfm_marketplace_setting_map_options', array( 'search_location' => __( 'Insert your address ..', 'wc-multivendor-marketplace' ), 'locate_svg' => $WCFMmp->plugin_url. 'assets/images/locate.svg', 'is_geolocate' => apply_filters( 'wcfmmp_is_allow_store_list_by_user_location', true ), 'default_lat' => $default_lat, 'default_lng' => $default_lng, 'default_zoom' => absint( $default_zoom ), 'store_icon' => $store_icon, 'icon_width' => apply_filters( 'wcfmmp_map_icon_width', 40 ), 'icon_height' => apply_filters( 'wcfmmp_map_icon_height', 57 ), 'is_rtl' => is_rtl() ) );
             
 						if( apply_filters( 'wcfmmp_city_select_dropdown_enabled', false ) ) {
               global $wc_city_select;
@@ -1437,7 +1437,7 @@ class WCFM_Library {
 	  if( $api_key ) {
 	  	$scheme  = is_ssl() ? 'https' : 'http';
 	  	wp_enqueue_script( 'wcfm-google-maps', apply_filters( 'wcfm_google_map_api_url', $scheme . '://maps.googleapis.com/maps/api/js?key=' . $api_key . '&libraries=places', $api_key ) );
-	  	wp_localize_script( 'wcfm-google-maps', 'wcfm_maps', array( 'lib' => 'google' ) );
+	  	wp_localize_script( 'wcfm-google-maps', 'wcfm_maps', array( 'lib' => 'google', 'map_type' => apply_filters( 'wcfm_google_map_type', 'roadmap' ) ) );
 	  }
 	}
 	
@@ -1448,7 +1448,7 @@ class WCFM_Library {
 	  global $WCFM;
 	  wp_enqueue_script( 'wcfm-leaflet-map-js', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.js', array('jquery'), $WCFM->version, true );
 	  wp_enqueue_style( 'wcfm-leaflet-map-style', $WCFM->plugin_url . 'includes/libs/leaflet/leaflet.css', array(), $WCFM->version );
-	  wp_localize_script( 'wcfm-leaflet-map-js', 'wcfm_maps', array( 'lib' => 'leaflet' ) );
+	  wp_localize_script( 'wcfm-leaflet-map-js', 'wcfm_maps', array( 'lib' => 'leaflet', 'map_type' => apply_filters( 'wcfm_google_map_type', 'roadmap' ) ) );
 	}
 	
 	/**

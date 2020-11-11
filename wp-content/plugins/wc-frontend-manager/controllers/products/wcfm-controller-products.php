@@ -326,9 +326,11 @@ class WCFM_Products_Controller {
 										$taxonomies .= "<br /><strong>" . __( $product_taxonomy->label, 'wc-frontend-manager' ) . '</strong>: ';
 										$is_first = true;
 										foreach($taxonomy_values as $pkey => $ptaxonomy) {
-											if( !$is_first ) $taxonomies .= ', ';
-											$is_first = false;
-											$taxonomies .= '<a style="color: #dd4b39;" href="' . get_term_link( $ptaxonomy->term_id ) . '" target="_blank">' . $ptaxonomy->name . '</a>';
+											if( !is_wp_error( $ptaxonomy ) ) {
+												if( !$is_first ) $taxonomies .= ', ';
+												$is_first = false;
+												$taxonomies .= '<a style="color: #dd4b39;" href="' . get_term_link( $ptaxonomy->term_id ) . '" target="_blank">' . $ptaxonomy->name . '</a>';
+											}
 										}
 									}
 								}

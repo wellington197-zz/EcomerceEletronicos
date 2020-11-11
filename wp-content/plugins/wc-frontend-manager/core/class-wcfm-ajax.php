@@ -1237,6 +1237,12 @@ class WCFM_Ajax {
 			die;
 		}
 		
+		$creds = array(
+									'user_login'    => trim( wp_unslash( $wcfm_login_popup_form_data['wcfm_login_popup_username'] ) ), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+									'user_password' => $wcfm_login_popup_form_data['wcfm_login_popup_password'], // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+									'remember'      => true, // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+								);
+		
 		if( is_email( $wcfm_login_popup_form_data['wcfm_login_popup_username'] ) ) {
 			
 			if( !email_exists( $wcfm_login_popup_form_data['wcfm_login_popup_username']) ) {
@@ -1246,8 +1252,15 @@ class WCFM_Ajax {
 			
 			$current_user = get_user_by( 'email', $wcfm_login_popup_form_data['wcfm_login_popup_username'] );
 			if( $current_user && is_a( $current_user, 'WP_User' ) ) {
-				wp_set_auth_cookie( $current_user->ID, true );
-				echo '{"status": true, "message": "' . __( 'Login successfully ...', 'wc-frontend-manager' ) . '"}';
+				//wp_set_auth_cookie( $current_user->ID, true );
+				// Perform the login.
+				$user = wp_signon( apply_filters( 'woocommerce_login_credentials', $creds ), is_ssl() );
+
+				if ( is_wp_error( $user ) ) {
+					echo '{"status": false, "message": "' . __( 'Please try again!', 'wc-frontend-manager' ) . $user->get_error_message() . '"}';
+				} else {
+					echo '{"status": true, "message": "' . __( 'Login successfully ...', 'wc-frontend-manager' ) . '"}';
+				}
 			} else {
 				echo '{"status": false, "message": "' . __( 'Please try again!', 'wc-frontend-manager' ) . '"}';
 			}
@@ -1260,8 +1273,15 @@ class WCFM_Ajax {
 			
 			$current_user = get_user_by( 'login', $wcfm_login_popup_form_data['wcfm_login_popup_username'] );
 			if( $current_user && is_a( $current_user, 'WP_User' ) ) {
-				wp_set_auth_cookie( $current_user->ID, true );
-				echo '{"status": true, "message": "' . __( 'Login successfully ...', 'wc-frontend-manager' ) . '"}';
+				//wp_set_auth_cookie( $current_user->ID, true );
+				// Perform the login.
+				$user = wp_signon( apply_filters( 'woocommerce_login_credentials', $creds ), is_ssl() );
+
+				if ( is_wp_error( $user ) ) {
+					echo '{"status": false, "message": "' . __( 'Please try again!', 'wc-frontend-manager' ) . '"}';
+				} else {
+					echo '{"status": true, "message": "' . __( 'Login successfully ...', 'wc-frontend-manager' ) . '"}';
+				}
 			} else {
 				echo '{"status": false, "message": "' . __( 'Please try again!', 'wc-frontend-manager' ) . '"}';
 			}

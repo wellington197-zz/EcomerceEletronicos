@@ -178,7 +178,8 @@ class WCFM_Customers_Manage_Controller {
 																			 __( 'Password', 'wc-frontend-manager' ) . ': {password}' .
 																			 '<br /><br/>Thank You' .
 																			 '<br/><br/>';
-																			 
+							$notification_mail_body = apply_filters( 'wcfm_notification_mail_content', $new_account_mail_body, 'customer_new_account_created', $wcfm_customer_form_data, $customer_id );
+							
 							$subject = str_replace( '{site_name}', get_bloginfo( 'name' ), $new_account_mail_subject );
 							$subject = apply_filters( 'wcfm_email_subject_wrapper', $subject );
 							$message = str_replace( '{site_url}', get_bloginfo( 'url' ), $new_account_mail_body );

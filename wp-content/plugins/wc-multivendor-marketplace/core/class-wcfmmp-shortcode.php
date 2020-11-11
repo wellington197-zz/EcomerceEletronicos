@@ -766,15 +766,15 @@ class WCFMmp_Shortcode {
 				break;
 				
 			case 'store_address':
-				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_address_string();
+				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . apply_filters( 'wcfmmp_additional_store_info', $store_user->get_address_string(), $data_info, $store_id ) . '</span>';
 				break;
 				
 		  case 'store_email':
-				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_email() . '</span>';
+				$content .= '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . apply_filters( 'wcfmmp_additional_store_info', apply_filters( 'wcfmmp_mailto_email', $store_user->get_email(), $store_id ), $data_info, $store_id ) . '</span>';
 				break;
 			
 			case 'store_phone':
-				$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . $store_user->get_phone() . '</span>';
+				$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . apply_filters( 'wcfmmp_additional_store_info', $store_user->get_phone(), $data_info, $store_id ) . '</span>';
 				break;
 				
 			case 'store_gravatar':
@@ -839,7 +839,7 @@ class WCFMmp_Shortcode {
 			case 'register_on':
 				$data_value = get_user_meta( $store_id, 'wcfm_register_on', true );
 				if( $data_value ) {
-					$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . date( wc_date_format(), $data_value ) . '</span>';
+					$content .=  '<span style="display:inline-block" class="wcfmmp_store_info_content wcfmmp_store_info_content_' . $data_info . '">' . apply_filters( 'wcfmmp_additional_store_info', date( wc_date_format(), $data_value ), $data_info, $store_id ) . '</span>';
 				}
 				break;
 				

@@ -2784,12 +2784,15 @@ class WCFMmp_Vendor {
 		if( $category ) {
 			$search_categories = explode( ",", $category );
 			if( !empty( $search_categories ) ) {
+				$wcfm_allow_vendors_list = array();
 				foreach( $search_categories as $search_category ) {
 					$category_vendors = $wpdb->get_results( "SELECT vendor_id FROM {$wpdb->prefix}wcfm_marketplace_store_taxonomies WHERE term = " . absint($search_category) );
 					if( !empty( $category_vendors ) ) {
 						foreach( $category_vendors as $category_vendor ) {
 							if( !in_array( $category_vendor->vendor_id, $exclude_vendor_list ) ) {
-								$wcfm_allow_vendors_list[] = $category_vendor->vendor_id;
+								if( !is_array( $allow_vendors_list ) || empty( $allow_vendors_list ) || ( !empty( $allow_vendors_list ) && in_array( $category_vendor->vendor_id, $allow_vendors_list ) ) ) {
+									$wcfm_allow_vendors_list[] = $category_vendor->vendor_id;
+								}
 							}
 						}
 					}
@@ -2979,7 +2982,7 @@ class WCFMmp_Vendor {
 		$all_users = get_users( $args );
 		if( !empty( $all_users ) ) {
 			foreach( $all_users as $all_user ) {
-				$vendor_arr[$all_user->ID] = $all_user->display_name;
+				$vendor_arr[$all_user->ID] = esc_attr($all_user->display_name);
 			}
 		}
 		
@@ -3172,10 +3175,10 @@ class WCFMmp_Vendor {
 			$sql .= " AND `lang` = '{$lang}'";
 		}
 		
+		$sql .= " GROUP BY term, parent ORDER BY parent";
+		
 		$sql = apply_filters( 'wcfm_vendor_store_taxonomy_query', $sql, $vendor_id, $taxonomy_type );
 		
-		$sql .= " GROUP BY term, parent ORDER BY parent";
-  	
   	$taxonomies = $wpdb->get_results($sql);
   	
   	$vendor_taxonomies = array();
