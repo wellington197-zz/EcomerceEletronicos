@@ -338,7 +338,8 @@ jQuery( document ).ready( function( $ ) {
 				wcfm_articles_manage_form : $('#wcfm_articles_manage_form').serialize(),
 				excerpt     : excerpt,
 				description : description,
-				status : 'draft'
+				status : 'draft',
+				wcfm_ajax_nonce      : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {
@@ -390,7 +391,8 @@ jQuery( document ).ready( function( $ ) {
 				wcfm_articles_manage_form : $('#wcfm_articles_manage_form').serialize(),
 				excerpt     : excerpt,
 				description : description,
-				status : 'submit'
+				status : 'submit',
+				wcfm_ajax_nonce      : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {

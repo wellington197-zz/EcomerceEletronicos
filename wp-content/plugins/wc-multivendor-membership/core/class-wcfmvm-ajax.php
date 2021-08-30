@@ -67,7 +67,7 @@ class WCFMvm_Ajax {
   	
   	$controller = '';
   	if( isset( $_POST['controller'] ) ) {
-  		$controller = $_POST['controller'];
+  		$controller = wc_clean($_POST['controller']);
   		
   		switch( $controller ) {
 	  	
@@ -155,13 +155,13 @@ class WCFMvm_Ajax {
 						if( $method == 'by_url' ) {
 							wp_safe_redirect( wc_get_checkout_url() );
 						} else {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . wc_get_checkout_url() . '"}';
+							echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( wc_get_checkout_url() ) . '"}';
 						}
 					} else {
 						if( $method == 'by_url' ) {
 							wp_safe_redirect( add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) );
 						} else {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) . '"}';
+							echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) ) . '"}';
 						}
 					}
 					die;
@@ -171,7 +171,7 @@ class WCFMvm_Ajax {
 			if( $method == 'by_url' ) {
 				wp_safe_redirect( add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) );
 			} else {
-				echo '{"status": true, "redirect": "' . add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) . '"}';
+				echo '{"status": true, "redirect": "' . esc_url( add_query_arg( 'vmstep', 'registration', get_wcfm_membership_url() ) ) . '"}';
 			}
 		}
 		
@@ -364,7 +364,7 @@ class WCFMvm_Ajax {
 		global $WCFM, $WCFMvm, $_POST, $wpdb;
 		
 		$wcfm_vendor_approval_response_form_data = array();
-	  parse_str($_POST['wcfm_vendor_approval_response_form'], $wcfm_vendor_approval_response_form_data);
+	  parse_str($_POST['wcfm_vendor_approval_response_form'], $wcfm_vendor_approval_response_form_data); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		
 		if( isset( $wcfm_vendor_approval_response_form_data['wcfm_vendor_approval_message_id'] ) && isset($wcfm_vendor_approval_response_form_data['wcfm_vendor_approval_member_id']) ) {
 			$message_id = absint( $wcfm_vendor_approval_response_form_data['wcfm_vendor_approval_message_id'] );
@@ -457,11 +457,11 @@ class WCFMvm_Ajax {
 				$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_messages WHERE ID = {$message_id}" );
 				
 				
-				echo '{"status": true, "message": "' . __( 'Vendor Approval ststus successfully updated.', 'wc-multivendor-membership' ) . '"}';
+				echo '{"status": true, "message": "' . esc_html( __( 'Vendor Approval ststus successfully updated.', 'wc-multivendor-membership' ) ) . '"}';
 				die;
 			}
 		}
-		echo '{"status": false, "message": "' . __( 'Vendor Approval ststus update failed.', 'wc-multivendor-membership' ) . '"}';
+		echo '{"status": false, "message": "' . esc_html( __( 'Vendor Approval ststus update failed.', 'wc-multivendor-membership' ) ) . '"}';
 		die;
 	}
 	
@@ -479,10 +479,10 @@ class WCFMvm_Ajax {
 			$WCFMvm->wcfmvm_vendor_membership_cancel( $member_id, $wcfm_membership_id );
 			$WCFMvm->store_subscription_data( $member_id, $paymode, '', 'subscr_cancel', 'Cancelled', __(  'Manual Cancellation', 'wc-multivendor-membership' ) );
 				
-			echo '{"status": true, "message": "' . __( 'Your membership successfully cancelled.', 'wc-multivendor-membership' ) . '", "redirect": "' . get_wcfm_profile_url() . '"}';
+			echo '{"status": true, "message": "' . esc_html( __( 'Your membership successfully cancelled.', 'wc-multivendor-membership' ) ) . '", "redirect": "' . esc_url( get_wcfm_profile_url() ) . '"}';
 			die;
 		}
-		echo '{"status": false, "message": "' . __( 'Your membership can not be cancelled right now, please contact your store admin.', 'wc-multivendor-membership' ) . '"}';
+		echo '{"status": false, "message": "' . esc_html( __( 'Your membership can not be cancelled right now, please contact your store admin.', 'wc-multivendor-membership' ) ) . '"}';
 		die;
 	}
 	
@@ -506,10 +506,10 @@ class WCFMvm_Ajax {
 			}
 			
 				
-			echo '{"status": true, "message": "' . __( 'Vendor membership successfully changed.', 'wc-multivendor-membership' ) . '"}';
+			echo '{"status": true, "message": "' . esc_html( __( 'Vendor membership successfully changed.', 'wc-multivendor-membership' ) ) . '"}';
 			die;
 		}
-		echo '{"status": false, "message": "' . __( 'Vendor membership can not be changed right now, please try after sometime.', 'wc-multivendor-membership' ) . '"}';
+		echo '{"status": false, "message": "' . esc_html( __( 'Vendor membership can not be changed right now, please try after sometime.', 'wc-multivendor-membership' ) ) . '"}';
 		die;
 	}
 	
@@ -519,7 +519,7 @@ class WCFMvm_Ajax {
   public function delete_wcfm_membership() {
   	global $WCFM, $WCFMvm;
   	
-  	$membershipid = $_POST['membershipid'];
+  	$membershipid = absint($_POST['membershipid']);
 		
 		if( $membershipid ) {
 			if( wp_delete_post( $membershipid ) ) {
@@ -536,7 +536,7 @@ class WCFMvm_Ajax {
   function wcfmvm_change_next_renewal_html() {
   	global $WCFM, $WCFMvm;
   	
-  	$schedule = $_POST['schedule'];
+  	$schedule = wc_clean($_POST['schedule']);
   	$member   = absint($_POST['member']);
 		
 		?>
@@ -562,7 +562,7 @@ class WCFMvm_Ajax {
   function wcfmvm_change_next_renewal_update() {
   	global $WCFM, $WCFMvm;
   	
-  	$next_renewal = $_POST['next_renewal'];
+  	$next_renewal = wc_clean($_POST['next_renewal']);
   	$member_id    = absint($_POST['member']);
   	
   	if( $next_renewal ) {
@@ -574,7 +574,7 @@ class WCFMvm_Ajax {
   		$next_renewal_display = __( 'Never Expire', 'wc-multivendor-membership' );
   	}
   	
-  	echo '{ "status": true, "message": "' . __( 'Next renewal successfully updated.', 'wc-multivendor-membership' ) . '", "next_renewal_display": "' . $next_renewal_display . '" }';
+  	echo '{ "status": true, "message": "' . esc_html( __( 'Next renewal successfully updated.', 'wc-multivendor-membership' ) ) . '", "next_renewal_display": "' . esc_html( $next_renewal_display ) . '" }';
   	die;
   }
   
@@ -585,11 +585,11 @@ class WCFMvm_Ajax {
   	global $WCFM, $WCFMvm, $_SESSION;
   	
   	if ( empty( $_POST['user_email'] ) || ! is_email( $_POST['user_email'] ) ) {
-			echo '{"status": false, "message": "' . __( 'Please provide a valid email address.', 'woocommerce' ) . '"}';
+			echo '{"status": false, "message": "' . esc_html( __( 'Please provide a valid email address.', 'woocommerce' ) ) . '"}';
 			die;
 		}
   	
-  	$user_email = $_POST['user_email'];
+  	$user_email = sanitize_email($_POST['user_email']);
 		
 		if( $user_email ) {
 			if( WC()->session && WC()->session->get( 'wcfm_membership_email_verification_code' ) ) {
@@ -632,9 +632,9 @@ class WCFMvm_Ajax {
 				$wcfm_email->trigger( array( 'verification_code' => $verification_code, 'user_email' => $user_email ) );
 			}
 			
-			echo '{"status": true, "message": "' . sprintf( __( 'Verification code sent to your email: %s.', 'wc-multivendor-membership' ), $user_email ) . '"}';
+			echo '{"status": true, "message": "' . esc_html( sprintf( __( 'Verification code sent to your email: %s.', 'wc-multivendor-membership' ), $user_email ) ) . '"}';
 		} else {
-			echo '{"status": false, "message": "' . __( 'Email verification not working right now, please try after sometime.', 'wc-multivendor-membership' ) . '"}';
+			echo '{"status": false, "message": "' . esc_html( __( 'Email verification not working right now, please try after sometime.', 'wc-multivendor-membership' ) ) . '"}';
 		}
 		die;
   }
@@ -651,11 +651,11 @@ class WCFMvm_Ajax {
   	}
   	
   	if (  ! isset( $_POST['user_phone'] ) || empty( $_POST['user_phone'] ) ) {
-			echo '{"status": false, "message": "' . __( 'Please provide a valid phone number.', 'woocommerce' ) . '"}';
+			echo '{"status": false, "message": "' . esc_html( __( 'Please provide a valid phone number.', 'woocommerce' ) ) . '"}';
 			die;
 		}
   	
-  	$user_phone = $_POST['user_phone'];
+  	$user_phone = wc_clean($_POST['user_phone']);
 		
 		if( $user_phone ) {
 			if( WC()->session && wC()->session->get( 'wcfm_membership_sms_verification_code' ) ) {
@@ -697,11 +697,11 @@ class WCFMvm_Ajax {
 						} else {
 							if( is_array( $response['description'] ) && array_key_exists( 'desc', $response['description'] ) ) {
 								wcfm_log( "OPT:: " . $sms_data['number'] . ": " . __($response['description']['desc'], 'smsalert' ) );
-								echo '{"status": false, "message": "' . __($response['description']['desc'], 'smsalert' ) . '"}';
+								echo '{"status": false, "message": "' . esc_html( __($response['description']['desc'], 'smsalert' ) ) . '"}';
 								die;
 							} else {
 								wcfm_log( "OPT:: " . $sms_data['number'] . ": " . __($response['description'], 'smsalert' ) );
-								echo '{"status": false, "message": "' . __($response['description'], 'smsalert' ) . '"}';
+								echo '{"status": false, "message": "' . esc_html( __($response['description'], 'smsalert' ) ) . '"}';
 								die;
 							}
 						}
@@ -748,13 +748,13 @@ class WCFMvm_Ajax {
 				do_action( 'wcfm_after_otp_verification_code_send', $user_phone, $sms_messages );
 			}
 			
-			echo '{"status": true, "message": "' . sprintf( __( 'Verification code sent to your phone: %s.', 'wc-multivendor-membership' ), $user_phone ) . '"}';
+			echo '{"status": true, "message": "' . esc_html( sprintf( __( 'Verification code sent to your phone: %s.', 'wc-multivendor-membership' ), $user_phone ) ) . '"}';
 		} else {
 			$has_error = true;
 		}
 		
 		if( $has_error ) {
-			echo '{"status": false, "message": "' . __( 'Phone verification not working right now, please try after sometime.', 'wc-multivendor-membership' ) . '"}';
+			echo '{"status": false, "message": "' . esc_html( __( 'Phone verification not working right now, please try after sometime.', 'wc-multivendor-membership' ) ) . '"}';
 		}
 		die;
   }
@@ -772,27 +772,27 @@ class WCFMvm_Ajax {
   		$store_slug = apply_filters( 'wcfm_generated_store_slug', $store_slug );
   		 
 			if( !is_user_logged_in() && ( username_exists( $store_slug ) || get_user_by( 'slug', $store_slug )  || !apply_filters( 'wcfm_validate_store_slug', true, $store_slug ) ) ) {
-				echo '{"status": false, "message": "' . __( 'Shop Name not available.', 'wc-multivendor-membership' ) . '"}';
+				echo '{"status": false, "message": "' . esc_html( __( 'Shop Name not available.', 'wc-multivendor-membership' ) ) . '"}';
 			} elseif( is_user_logged_in() ) {
 				$member_id = apply_filters( 'wcfm_current_vendor_id', get_current_user_id() );
 				$the_user = get_user_by( 'id', $member_id );
 				$user_login = sanitize_title( $the_user->user_login );
 				$previous_store_slug     = $the_user->user_nicename;
 				if( ( ( $previous_store_slug != $store_slug ) && ( $user_login != $store_slug ) && username_exists( $store_slug ) ) || !apply_filters( 'wcfm_validate_store_slug', true, $store_slug ) ) {
-					echo '{"status": false, "message": "' . __( 'Shop Name not available.', 'wc-multivendor-membership' ) . '"}';
+					echo '{"status": false, "message": "' . esc_html( __( 'Shop Name not available.', 'wc-multivendor-membership' ) ) . '"}';
 				} else {
 					$store_slug_user = get_user_by( 'slug', $store_slug );
 					if ( !$store_slug_user || ( $store_slug_user && ( $store_slug_user->ID == $member_id ) )  ) {
 						echo '{"status": true, "store_slug": "' . $store_slug . '"}';
 					} else {
-						echo '{"status": false, "message": "' . __( 'Shop Name not available.', 'wc-multivendor-membership' ) . '"}';
+						echo '{"status": false, "message": "' . esc_html( __( 'Shop Name not available.', 'wc-multivendor-membership' ) ) . '"}';
 					}
 				}
 			} else {
-				echo '{"status": true, "store_slug": "' . $store_slug . '"}';
+				echo '{"status": true, "store_slug": "' . esc_html( $store_slug ) . '"}';
 			}
   	} else {
-  		echo '{"status": false, "message": "' . __( 'Shop Name not available.', 'wc-multivendor-membership' ) . '"}';
+  		echo '{"status": false, "message": "' . esc_html( __( 'Shop Name not available.', 'wc-multivendor-membership' ) ) . '"}';
   	}
   	
   	die;

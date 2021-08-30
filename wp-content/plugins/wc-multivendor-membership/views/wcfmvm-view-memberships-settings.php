@@ -820,6 +820,7 @@ do_action( 'before_wcfm_membership_settings_manage' );
 			  
 				<input type="submit" name="membership_setting-manager-data" value="<?php _e( 'Submit', 'wc-frontend-manager' ); ?>" id="wcfm_membership_setting_submit_button" class="wcfm_submit_button" />
 			</div>
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_membership_settings' ); ?>" />
 			<?php
 			do_action( 'after_wcfm_membership_settings' );
 			?>

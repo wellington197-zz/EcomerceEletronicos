@@ -21,7 +21,7 @@ class WCFMvm_Memberships_Payment_Controller {
 		global $WCFM, $WCFMvm, $wpdb, $wcfm_membership_payment_form_data;
 		
 		$wcfm_membership_payment_form_data = array();
-	  parse_str($_POST['wcfm_membership_payment_form'], $wcfm_membership_payment_form_data);
+	  parse_str($_POST['wcfm_membership_payment_form'], $wcfm_membership_payment_form_data); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	  
 	  $wcfm_membership_payment_messages = get_wcfmvm_membership_payment_messages();
 	  $has_error = false;
@@ -31,7 +31,7 @@ class WCFMvm_Memberships_Payment_Controller {
 			$member_user = new WP_User(absint($member_id));
 			$wcfm_membership = get_user_meta( $member_id, 'temp_wcfm_membership', true );
 			$shop_name = get_user_meta( $member_id, 'store_name', true );
-			$paymode = $_POST['paymode'];
+			$paymode = wc_clean($_POST['paymode']);
 			
 			if( $wcfm_membership ) {
 				update_user_meta( $member_id, 'wcfm_membership_paymode', $paymode );
@@ -49,7 +49,7 @@ class WCFMvm_Memberships_Payment_Controller {
 					WC()->session->__unset( 'wcfm_membership' );
 				}
 			
-				if(!$has_error) { echo '{"status": true, "message": "' . $wcfm_membership_payment_messages['subscription_success'] . '", "redirect": "' . apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_membership_url() ) ) . '"}'; }
+				if(!$has_error) { echo '{"status": true, "message": "' . esc_html( $wcfm_membership_payment_messages['subscription_success'] ) . '", "redirect": "' . esc_url( apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_membership_url() ) ) ) . '"}'; }
 				else { echo '{"status": false, "message": "' . $wcfm_membership_payment_messages['subscription_failed'] . '"}'; }
 			} else {
 				echo '{"status": false, "message": "' . $wcfm_membership_payment_messages['no_memberid'] . '"}';

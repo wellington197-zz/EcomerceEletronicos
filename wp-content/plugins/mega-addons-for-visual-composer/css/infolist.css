@@ -91,10 +91,10 @@
   float: left !important;
 }
 .hide {
-  display: none !important;
+  /*display: none !important;*/
 }
 .show {
-  display: block !important;
+  /*display: block !important;*/
 }
 .invisible {
   visibility: hidden;

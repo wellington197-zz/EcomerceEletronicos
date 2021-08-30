@@ -4,11 +4,11 @@ if (!defined('ABSPATH'))
     exit;
 
 /**
- * @class 		WCMp Transaction Class
+ * @class       WCMp Transaction Class
  *
- * @version		2.2.0
- * @package		WCMp
- * @author 		WC Marketplace
+ * @version     2.2.0
+ * @package     WCMp
+ * @author      WC Marketplace
  */
 class WCMp_Transaction {
 
@@ -40,7 +40,7 @@ class WCMp_Transaction {
             'new_item' => sprintf(__('New %s', 'dc-woocommerce-multi-vendor'), __('Transaction', 'dc-woocommerce-multi-vendor')),
             'all_items' => sprintf(__('All %s', 'dc-woocommerce-multi-vendor'), __('Transaction', 'dc-woocommerce-multi-vendor')),
             'view_item' => sprintf(__('View %s', 'dc-woocommerce-multi-vendor'), __('Transaction', 'dc-woocommerce-multi-vendor')),
-            'search_items' => sprintf(__('Search %a', 'dc-woocommerce-multi-vendor'), __('Transactions', 'dc-woocommerce-multi-vendor')),
+            'search_items' => sprintf(__('Search %s', 'dc-woocommerce-multi-vendor'), __('Transactions', 'dc-woocommerce-multi-vendor')),
             'not_found' => sprintf(__('No %s found', 'dc-woocommerce-multi-vendor'), __('Transactions', 'dc-woocommerce-multi-vendor')),
             'not_found_in_trash' => sprintf(__('No %s found In trash', 'dc-woocommerce-multi-vendor'), __('Transactions', 'dc-woocommerce-multi-vendor')),
             'parent_item_colon' => '',
@@ -77,29 +77,29 @@ class WCMp_Transaction {
      */
     private function register_post_status() {
         register_post_status('wcmp_processing', array(
-            'label' => _x('Processing', $this->post_type),
+            'label' => _x('Processing', $this->post_type, 'dc-woocommerce-multi-vendor'),
             'public' => true,
             'exclude_from_search' => false,
             'show_in_admin_all_list' => true,
             'show_in_admin_status_list' => true,
-            'label_count' => _n_noop('Processing <span class="count">(%s)</span>', 'Processing <span class="count">(%s)</span>'),
+            'label_count' => _n_noop('Processing <span class="count">(%s)</span>', 'Processing <span class="count">(%s)</span>', 'dc-woocommerce-multi-vendor'),
         ));
 
         register_post_status('wcmp_completed', array(
-            'label' => _x('Completed', $this->post_type),
+            'label' => _x('Completed', $this->post_type, 'dc-woocommerce-multi-vendor'),
             'public' => true,
             'exclude_from_search' => false,
             'show_in_admin_all_list' => true,
             'show_in_admin_status_list' => true,
-            'label_count' => _n_noop('Completed <span class="count">(%s)</span>', 'Completed <span class="count">(%s)</span>'),
+            'label_count' => _n_noop('Completed <span class="count">(%s)</span>', 'Completed <span class="count">(%s)</span>', 'dc-woocommerce-multi-vendor'),
         ));
         register_post_status('wcmp_canceled', array(
-            'label' => _x('Canceled', $this->post_type),
+            'label' => _x('Canceled', $this->post_type, 'dc-woocommerce-multi-vendor'),
             'public' => true,
             'exclude_from_search' => false,
             'show_in_admin_all_list' => true,
             'show_in_admin_status_list' => true,
-            'label_count' => _n_noop('Canceled <span class="count">(%s)</span>', 'Canceled <span class="count">(%s)</span>'),
+            'label_count' => _n_noop('Canceled <span class="count">(%s)</span>', 'Canceled <span class="count">(%s)</span>', 'dc-woocommerce-multi-vendor'),
         ));
     }
 
@@ -319,11 +319,11 @@ class WCMp_Transaction {
                 }
                 $transaction_details[$transaction->ID]['post_status'] = $transaction->post_status;
                 $transaction_details[$transaction->ID]['vendor_id'] = $transaction->post_author;
-                $transaction_details[$transaction->ID]['commission'] = get_post_meta($transaction->ID, 'amount', true) + get_post_meta($transaction->ID, 'transfer_charge', true);
+                $transaction_details[$transaction->ID]['commission'] = floatval(get_post_meta($transaction->ID, 'amount', true)) + floatval(get_post_meta($transaction->ID, 'transfer_charge', true));
                 $transaction_details[$transaction->ID]['amount'] = get_post_meta($transaction->ID, 'amount', true);
                 $transaction_details[$transaction->ID]['transfer_charge'] = get_post_meta($transaction->ID, 'transfer_charge', true);
                 $transaction_details[$transaction->ID]['commission_details'] = get_post_meta($transaction->ID, 'commission_detail', true);
-                $transaction_details[$transaction->ID]['total_amount'] = get_post_meta($transaction->ID, 'amount', true) - get_post_meta($transaction->ID, 'transfer_charge', true) - get_post_meta($transaction->ID, 'gateway_charge', true);
+                $transaction_details[$transaction->ID]['total_amount'] = floatval(get_post_meta($transaction->ID, 'amount', true)) - floatval(get_post_meta($transaction->ID, 'transfer_charge', true)) - floatval(get_post_meta($transaction->ID, 'gateway_charge', true));
                 $transaction_details[$transaction->ID]['id'] = $transaction->ID;
                 $mode = get_post_meta($transaction->ID, 'transaction_mode', true);
                 if ($mode == 'paypal_masspay') {

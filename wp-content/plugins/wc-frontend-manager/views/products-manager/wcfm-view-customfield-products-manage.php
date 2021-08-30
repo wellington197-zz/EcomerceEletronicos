@@ -115,7 +115,7 @@ if( $wcfm_product_custom_fields && is_array( $wcfm_product_custom_fields ) && !e
 							break;
 							
 							case 'datepicker':
-								$WCFM->wcfm_fields->wcfm_generate_form_field(  apply_filters( 'wcfm_pm_custom_field', array( $field_id => array( 'label' => __( $wcfm_product_custom_block_field['label'], 'wc-frontend-manager') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => 'YYYY-MM-DD', 'class' => 'wcfm-text wcfm_ele wcfm_datepicker simple variable external grouped booking', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __( $wcfm_product_custom_block_field['help_text'], 'wc-frontend-manager') ) ), $product_id, $wcfm_product_custom_block_field ) );
+								$WCFM->wcfm_fields->wcfm_generate_form_field(  apply_filters( 'wcfm_pm_custom_field', array( $field_id => array( 'label' => __( $wcfm_product_custom_block_field['label'], 'wc-frontend-manager') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => get_option( 'date_format' ), 'class' => 'wcfm-text wcfm_ele wcfm_datepicker simple variable external grouped booking', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __( $wcfm_product_custom_block_field['help_text'], 'wc-frontend-manager') ) ), $product_id, $wcfm_product_custom_block_field ) );
 							break;
 							
 							case 'timepicker':

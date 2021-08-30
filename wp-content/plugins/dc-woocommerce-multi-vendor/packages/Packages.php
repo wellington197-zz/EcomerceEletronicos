@@ -21,6 +21,8 @@ class Packages {
 	 */
 	protected static $packages = array(
 		'wcmp-buddypress/wcmp-buddypress.php'   => 'WCMp_BuddyPress',
+		'wcmp-elementor/wcmp-elementor.php'   => 'WCMp_Elementor',
+		'wcmp-tablerate/wcmp-tablerate.php'   => 'WCMp_Tablerate'
 		//'wcmp-blocks/wcmp-blocks.php'   => 'WCMp_Blocks',
 	);
 

@@ -36,8 +36,8 @@ if (!class_exists('WC_Email_Vendor_New_Product_Added')) :
             $this->title = __('New Vendor Product', 'dc-woocommerce-multi-vendor');
             $this->description = __('Notification emails are sent when a new product is submitted by a vendor.', 'dc-woocommerce-multi-vendor');
 
-            //$this->heading = __('New product submitted: {product_name}', 'dc-woocommerce-multi-vendor');
-            //$this->subject = __('[{blogname}] New product submitted by {vendor_name} - {product_name}', 'dc-woocommerce-multi-vendor');
+            $this->heading = __('New product submitted: {product_name}', 'dc-woocommerce-multi-vendor');
+            $this->subject = __('[{blogname}] New product submitted by {vendor_name} - {product_name}', 'dc-woocommerce-multi-vendor');
 
             $this->template_base = $WCMp->plugin_path . 'templates/';
             $this->template_html = 'emails/new-product.php';
@@ -75,18 +75,11 @@ if (!class_exists('WC_Email_Vendor_New_Product_Added')) :
             $this->find[] = '{vendor_name}';
             $this->vendor_name = $vendor->page_title;
             $this->replace[] = $this->vendor_name;
-
+            
             $this->post_id = $post->ID;
 
             $post_type = get_post_type($this->post_id);
             $this->post_type = $post_type;
-            if ($post_type == 'shop_coupon') {
-                $this->title = __('New Vendor Coupon', 'dc-woocommerce-multi-vendor');
-                $this->description = __('Notification emails are sent when a new coupon is submitted by a vendor.', 'dc-woocommerce-multi-vendor');
-
-                $this->heading = apply_filters('wcmp_admin_new_vendor_coupon_email_heading',__('New coupon submitted: {product_name}', 'dc-woocommerce-multi-vendor'));
-                $this->subject = apply_filters('wcmp_admin_new_vendor_coupon_email_subject',__('[{blogname}] New coupon submitted by {vendor_name} - {product_name}', 'dc-woocommerce-multi-vendor'));
-            }
 
             $this->send($this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments());
         }

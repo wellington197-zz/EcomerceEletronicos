@@ -142,7 +142,7 @@ do_action( 'before_wcfm_bookings_details' );
 					<?php if( apply_filters( 'wcfm_is_allow_booking_status_update', true ) ) { ?>
 						<div id="wcfm_booking_status_update_wrapper" class="wcfm_booking_status_update_wrapper">
 							<p class="form-field form-field-wide">
-								<span for="booked_product" class="wcfm-title wcfm_title"><strong><?php _e( 'Booking Status:', 'woocommerce-bookings' ); ?></strong></span>
+								<span for="booked_product" class="wcfm-title wcfm_title"><strong><?php _e( 'Booking status:', 'woocommerce-bookings' ); ?></strong></span>
 								<select id="wcfm_booking_status" name="booking_status">
 									<?php
 										foreach ( $statuses as $key => $value ) {

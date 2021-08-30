@@ -81,7 +81,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action    : 'delete_wcfm_article',
-			articleid : item.data('articleid')
+			articleid : item.data('articleid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',

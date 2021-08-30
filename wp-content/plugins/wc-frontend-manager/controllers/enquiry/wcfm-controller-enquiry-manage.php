@@ -46,7 +46,7 @@ class WCFM_Enquiry_Manage_Controller {
 			// Handle Attachment Uploads - 6.1.5
 			$attchments = wcfm_handle_file_upload();
 	  	
-	  	$inquiry_reply           = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['inquiry_reply'], ENT_QUOTES, 'UTF-8' ) ) );
+	  	$inquiry_reply           = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['inquiry_reply'], ENT_QUOTES, 'UTF-8' ) ) ) );
 	  	$inquiry_reply_by        = apply_filters( 'wcfm_message_author', get_current_user_id() );
 	  	$inquiry_id              = absint( $wcfm_enquiry_reply_form_data['inquiry_id'] );
 	  	$inquiry_product_id      = absint( $wcfm_enquiry_reply_form_data['inquiry_product_id'] );
@@ -209,9 +209,9 @@ class WCFM_Enquiry_Manage_Controller {
 	      return $enquiry_reply_id;
 	    }
 				
-			echo '{"status": true, "message": "' . $wcfm_enquiry_messages['enquiry_reply_saved'] . '", "redirect": "' . get_wcfm_enquiry_manage_url( $inquiry_id ) . '#inquiry_reply_' . $enquiry_reply_id . '"}';
+			echo '{"status": true, "message": "' . esc_html( $wcfm_enquiry_messages['enquiry_reply_saved'] ) . '", "redirect": "' . esc_url( get_wcfm_enquiry_manage_url( $inquiry_id ) ) . '#inquiry_reply_' . $enquiry_reply_id . '"}';
 		} else {
-			echo '{"status": false, "message": "' . $wcfm_enquiry_messages['no_reply'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_enquiry_messages['no_reply'] ) . '"}';
 		}
 		
 		die;
@@ -240,7 +240,7 @@ class WCFM_My_Account_Enquiry_Manage_Controller {
 	  	// Handle Attachment Uploads - 6.1.5
 			$attchments = wcfm_handle_file_upload();
 	  	
-	  	$inquiry_reply           = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['inquiry_reply'], ENT_QUOTES, 'UTF-8' ) ) );
+	  	$inquiry_reply           = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['inquiry_reply'], ENT_QUOTES, 'UTF-8' ) ) ) );
 	  	$inquiry_reply_by        = apply_filters( 'wcfm_message_author', get_current_user_id() );
 	  	$inquiry_id              = absint( $wcfm_enquiry_reply_form_data['inquiry_id'] );
 	  	$inquiry_product_id      = absint( $wcfm_enquiry_reply_form_data['inquiry_product_id'] );
@@ -378,9 +378,9 @@ class WCFM_My_Account_Enquiry_Manage_Controller {
 			if ( $myaccount_page_id ) {
 				$myaccount_page_url = trailingslashit( get_permalink( $myaccount_page_id ) );
 			}
-			echo '{"status": true, "message": "' . $wcfm_enquiry_messages['enquiry_reply_saved'] . '", "redirect": "' . $myaccount_page_url .$wcfm_myaccount_view_inquiry_endpoint.'/' . $inquiry_id . '#inquiry_reply_' . $enquiry_reply_id . '"}';
+			echo '{"status": true, "message": "' . esc_html( $wcfm_enquiry_messages['enquiry_reply_saved'] ) . '", "redirect": "' . esc_url( $myaccount_page_url .$wcfm_myaccount_view_inquiry_endpoint.'/' . $inquiry_id . '#inquiry_reply_' . $enquiry_reply_id ) . '"}';
 		} else {
-			echo '{"status": false, "message": "' . $wcfm_enquiry_messages['no_reply'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_enquiry_messages['no_reply'] ) . '"}';
 		}
 		
 		die;

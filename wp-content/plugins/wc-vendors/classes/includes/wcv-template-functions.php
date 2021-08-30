@@ -71,7 +71,8 @@ if ( ! function_exists( 'wcv_get_vendor_item_totals' ) ) {
 	 * @param WC_Order $order Order object.
 	 * @param array    $args  Arguments.
 	 *
-	 * @since 2.0.0
+	 * @since   2.0.0
+	 * @version 2.2.3
 	 * @return string
 	 */
 	function wcv_get_vendor_item_totals( $order, $items, $vendor_id, $email, $totals_display = 'both' ) {
@@ -83,6 +84,20 @@ if ( ! function_exists( 'wcv_get_vendor_item_totals' ) ) {
 		$shipping            = 0;
 		$total               = 0;
 		$total_rows          = array();
+		$discount 			 = 0;
+		$coupons 			 = $order->get_items( 'coupon' );
+		
+		if ( ! empty( $coupons ) ) {
+			foreach ( $coupons as $coupon ) {
+				$coupon_obj    = new WC_Coupon( $coupon['name'] );
+				$coupon_id     = $coupon_obj->get_id();
+				$object        = get_post( $coupon_id );
+				$author        = $object ? $object->post_author : 1;
+				if ( $author == $vendor_id ) {
+					$discount = $order->get_total_discount();
+				}
+			}
+		}
 
 		$vendor_commissions = WCV_Vendors::get_vendor_dues_from_order( $order );
 
@@ -155,8 +170,10 @@ if ( ! function_exists( 'wcv_get_vendor_item_totals' ) ) {
 
 		// Product totals
 		if ( 'both' === $totals_display || 'product' === $totals_display ) {
-			$product_total = $product_subtotal + $shipping + $tax;
-
+			$product_total = $product_subtotal + $shipping + $tax - $discount;
+			if ( 0 > $product_total ) {
+				$product_total = 0;
+			} 
 			$total_rows['product_total'] = array(
 				'label' => __( 'Product total:', 'wc-vendors' ),
 				'value' => wc_price( $product_total, array( 'currency' => $order->get_currency() ) ),
@@ -202,7 +219,8 @@ if ( ! function_exists( 'wcv_get_sold_by_link' )  ){
 			? sprintf( '<a href="%s" %s>%s</a>', WCV_Vendors::get_vendor_shop_page( $vendor_id ), $class, WCV_Vendors::get_vendor_sold_by( $vendor_id ) )
 			: get_bloginfo( 'name' );
 
-		return apply_filters( 'wcv_sold_by_link', $sold_by, $vendor_id );
+		$sold_by = apply_filters_deprecated( 'wcv_sold_by_link', array( $sold_by, $vendor_id ), '2.3.0', 'wcvendors_sold_by_link' );
+		return apply_filters( 'wcvendors_sold_by_link', $sold_by, $vendor_id );
 
 	}
 }

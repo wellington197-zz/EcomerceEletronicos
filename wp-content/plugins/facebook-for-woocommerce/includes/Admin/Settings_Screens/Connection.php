@@ -13,8 +13,7 @@ namespace SkyVerge\WooCommerce\Facebook\Admin\Settings_Screens;
 defined( 'ABSPATH' ) or exit;
 
 use SkyVerge\WooCommerce\Facebook\Admin;
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4\SV_WC_API_Exception;
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4\SV_WC_Helper;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 /**
  * The Connection settings screen object.
@@ -35,9 +34,9 @@ class Connection extends Admin\Abstract_Settings_Screen {
 		$this->label = __( 'Connection', 'facebook-for-woocommerce' );
 		$this->title = __( 'Connection', 'facebook-for-woocommerce' );
 
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 
-		add_action( 'admin_notices', [ $this, 'add_notices' ] );
+		add_action( 'admin_notices', array( $this, 'add_notices' ) );
 	}
 
 
@@ -56,14 +55,21 @@ class Connection extends Admin\Abstract_Settings_Screen {
 			$message = sprintf(
 				/* translators: Placeholders: %1$s - <strong> tag, %2$s - </strong> tag, %3$s - <a> tag, %4$s - </a> tag, %5$s - <a> tag, %6$s - </a> tag */
 				__( '%1$sHeads up!%2$s It looks like there was a problem with reconnecting your site to Facebook. Please %3$sclick here%4$s to try again, or %5$sget in touch with our support team%6$s for assistance.', 'facebook-for-woocommerce' ),
-				'<strong>', '</strong>',
-				'<a href="' . esc_url( facebook_for_woocommerce()->get_connection_handler()->get_connect_url() ) . '">', '</a>',
-				'<a href="' . esc_url( facebook_for_woocommerce()->get_support_url() ) . '" target="_blank">', '</a>'
+				'<strong>',
+				'</strong>',
+				'<a href="' . esc_url( facebook_for_woocommerce()->get_connection_handler()->get_connect_url() ) . '">',
+				'</a>',
+				'<a href="' . esc_url( facebook_for_woocommerce()->get_support_url() ) . '" target="_blank">',
+				'</a>'
 			);
 
-			facebook_for_woocommerce()->get_admin_notice_handler()->add_admin_notice( $message, 'wc_facebook_connection_failed', [
-				'notice_class' => 'error',
-			] );
+			facebook_for_woocommerce()->get_admin_notice_handler()->add_admin_notice(
+				$message,
+				'wc_facebook_connection_failed',
+				array(
+					'notice_class' => 'error',
+				)
+			);
 
 			delete_transient( 'wc_facebook_connection_failed' );
 		}
@@ -79,13 +85,11 @@ class Connection extends Admin\Abstract_Settings_Screen {
 	 */
 	public function enqueue_assets() {
 
-		$tab = SV_WC_Helper::get_requested_value( 'tab' );
-
-		if ( Admin\Settings::PAGE_ID !== SV_WC_Helper::get_requested_value( 'page' ) || ( $tab && $this->get_id() !== SV_WC_Helper::get_requested_value( 'tab' ) ) ) {
+		if ( ! $this->is_current_screen_page() ) {
 			return;
 		}
 
-		wp_enqueue_style( 'wc-facebook-admin-connection-settings', facebook_for_woocommerce()->get_plugin_url() . '/assets/css/admin/facebook-for-woocommerce-connection.css', [], \WC_Facebookcommerce::VERSION );
+		wp_enqueue_style( 'wc-facebook-admin-connection-settings', facebook_for_woocommerce()->get_plugin_url() . '/assets/css/admin/facebook-for-woocommerce-connection.css', array(), \WC_Facebookcommerce::VERSION );
 	}
 
 
@@ -121,29 +125,37 @@ class Connection extends Admin\Abstract_Settings_Screen {
 		 * TODO: add pixel & ad account API retrieval when we gain the ads_management permission
 		 * TODO: add the page name and link when we gain the manage_pages permission
 		 */
-		$static_items = [
-			'page' => [
+		$static_items = array(
+			'page'                          => array(
 				'label' => __( 'Page', 'facebook-for-woocommerce' ),
 				'value' => facebook_for_woocommerce()->get_integration()->get_facebook_page_id(),
-			],
-			'pixel' => [
+			),
+			'pixel'                         => array(
 				'label' => __( 'Pixel', 'facebook-for-woocommerce' ),
 				'value' => facebook_for_woocommerce()->get_integration()->get_facebook_pixel_id(),
-			],
-			'catalog' => [
+			),
+			'catalog'                       => array(
 				'label' => __( 'Catalog', 'facebook-for-woocommerce' ),
 				'value' => facebook_for_woocommerce()->get_integration()->get_product_catalog_id(),
 				'url'   => 'https://facebook.com/products',
-			],
-			'business-manager' => [
+			),
+			'business-manager'              => array(
 				'label' => __( 'Business Manager account', 'facebook-for-woocommerce' ),
 				'value' => facebook_for_woocommerce()->get_connection_handler()->get_business_manager_id(),
-			],
-			'ad-account' => [
+			),
+			'ad-account'                    => array(
 				'label' => __( 'Ad Manager account', 'facebook-for-woocommerce' ),
 				'value' => facebook_for_woocommerce()->get_connection_handler()->get_ad_account_id(),
-			],
-		];
+			),
+			'instagram-business-id'         => array(
+				'label' => __( 'Instagram Business ID', 'facebook-for-woocommerce' ),
+				'value' => facebook_for_woocommerce()->get_connection_handler()->get_instagram_business_id(),
+			),
+			'commerce-merchant-settings-id' => array(
+				'label' => __( 'Commerce Merchant Settings ID', 'facebook-for-woocommerce' ),
+				'value' => facebook_for_woocommerce()->get_connection_handler()->get_commerce_merchant_settings_id(),
+			),
+		);
 
 		// if the catalog ID is set, update the URL and try to get its name for display
 		if ( $catalog_id = $static_items['catalog']['value'] ) {
@@ -157,26 +169,8 @@ class Connection extends Admin\Abstract_Settings_Screen {
 				if ( $name = $response->get_name() ) {
 					$static_items['catalog']['value'] = $name;
 				}
-
-			} catch ( SV_WC_API_Exception $exception ) {}
-		}
-
-		// if the business manager ID is set, try and get its name for display
-		if ( $static_items['business-manager']['value'] ) {
-
-			try {
-
-				$response = facebook_for_woocommerce()->get_api()->get_business_manager( $static_items['business-manager']['value'] );
-
-				if ( $name = $response->get_name() ) {
-					$static_items['business-manager']['value'] = $name;
-				}
-
-				if ( $url = $response->get_url() ) {
-					$static_items['business-manager']['url'] = $url;
-				}
-
-			} catch ( SV_WC_API_Exception $exception ) {}
+			} catch ( Framework\SV_WC_API_Exception $exception ) {
+			}
 		}
 
 		?>
@@ -184,13 +178,17 @@ class Connection extends Admin\Abstract_Settings_Screen {
 		<table class="form-table">
 			<tbody>
 
-				<?php foreach ( $static_items as $id => $item ) :
+				<?php
+				foreach ( $static_items as $id => $item ) :
 
-					$item = wp_parse_args( $item, [
-						'label' => '',
-						'value' => '',
-						'url'   => '',
-					] );
+					$item = wp_parse_args(
+						$item,
+						array(
+							'label' => '',
+							'value' => '',
+							'url'   => '',
+						)
+					);
 
 					?>
 
@@ -225,7 +223,7 @@ class Connection extends Admin\Abstract_Settings_Screen {
 
 							<?php else : ?>
 
-								<?php echo '-' ?>
+								<?php echo '-'; ?>
 
 							<?php endif; ?>
 
@@ -259,38 +257,11 @@ class Connection extends Admin\Abstract_Settings_Screen {
 		}
 
 		$subtitle = __( 'Use this WooCommerce and Facebook integration to:', 'facebook-for-woocommerce' );
-
-		$benefits = [
-			__( 'Create an ad in a few steps', 'facebook-for-woocommerce'),
-			__( 'Use built-in best practices for online sales', 'facebook-for-woocommerce'),
-			__( 'Get reporting on sales and revenue', 'facebook-for-woocommerce'),
-		];
-
-		if ( $is_connected ) {
-
-			$actions = [
-				'create-ad' => [
-					'label' => __( 'Create Ad', 'facebook-for-woocommerce' ),
-					'type'  => 'primary',
-					'url'   => 'https://www.facebook.com/ad_center/create/ad/?entry_point=facebook_ads_extension&page_id=' . facebook_for_woocommerce()->get_integration()->get_facebook_page_id(),
-				],
-				'manage' => [
-					'label' => __( 'Manage Connection', 'facebook-for-woocommerce' ),
-					'type'  => 'secondary',
-					'url'   => facebook_for_woocommerce()->get_connection_handler()->get_manage_url(),
-				],
-			];
-
-		} else {
-
-			$actions = [
-				'get-started' => [
-					'label' => __( 'Get Started', 'facebook-for-woocommerce' ),
-					'type'  => 'primary',
-					'url'   => facebook_for_woocommerce()->get_connection_handler()->get_connect_url(),
-				],
-			];
-		}
+		$benefits = array(
+			__( 'Create an ad in a few steps', 'facebook-for-woocommerce' ),
+			__( 'Use built-in best practices for online sales', 'facebook-for-woocommerce' ),
+			__( 'Get reporting on sales and revenue', 'facebook-for-woocommerce' ),
+		);
 
 		?>
 
@@ -309,22 +280,20 @@ class Connection extends Admin\Abstract_Settings_Screen {
 
 			<div class="actions">
 
-				<?php foreach ( $actions as $action_id => $action ) : ?>
-
-					<a
-						href="<?php echo esc_url( $action['url'] ); ?>"
-						class="button button-<?php echo esc_attr( $action['type'] ); ?>"
-						<?php echo ( 'get-started' !== $action_id ) ? 'target="_blank"' : ''; ?>
-					>
-						<?php echo esc_html( $action['label'] ); ?>
-					</a>
-
-				<?php endforeach; ?>
-
 				<?php if ( $is_connected ) : ?>
 
+					<a href="<?php echo esc_url( facebook_for_woocommerce()->get_connection_handler()->get_manage_url() ); ?>" class="button button-primary">
+						<?php esc_html_e( 'Manage Connection', 'facebook-for-woocommerce' ); ?>
+					</a>
+
 					<a href="<?php echo esc_url( facebook_for_woocommerce()->get_connection_handler()->get_disconnect_url() ); ?>" class="uninstall">
-						<?php esc_html_e( 'Uninstall', 'facebook-for-woocommerce' ); ?>
+						<?php esc_html_e( 'Disconnect', 'facebook-for-woocommerce' ); ?>
+					</a>
+
+				<?php else : ?>
+
+					<a href="<?php echo esc_url( facebook_for_woocommerce()->get_connection_handler()->get_connect_url() ); ?>" class="button button-primary">
+						<?php esc_html_e( 'Get Started', 'facebook-for-woocommerce' ); ?>
 					</a>
 
 				<?php endif; ?>
@@ -346,25 +315,25 @@ class Connection extends Admin\Abstract_Settings_Screen {
 	 */
 	public function get_settings() {
 
-		return [
+		return array(
 
-			[
+			array(
 				'title' => __( 'Debug', 'facebook-for-woocommerce' ),
 				'type'  => 'title',
-			],
+			),
 
-			[
+			array(
 				'id'       => \WC_Facebookcommerce_Integration::SETTING_ENABLE_DEBUG_MODE,
 				'title'    => __( 'Enable debug mode', 'facebook-for-woocommerce' ),
 				'type'     => 'checkbox',
 				'desc'     => __( 'Log plugin events for debugging', 'facebook-for-woocommerce' ),
 				'desc_tip' => __( 'Only enable this if you are experiencing problems with the plugin.', 'facebook-for-woocommerce' ),
 				'default'  => 'no',
-			],
+			),
 
-			[ 'type' => 'sectionend' ],
+			array( 'type' => 'sectionend' ),
 
-		];
+		);
 	}
 
 

@@ -335,13 +335,9 @@ class WCMp_Vendor_Hooks {
         $frontend_script_path = $WCMp->plugin_url . 'assets/frontend/js/';
         $frontend_script_path = str_replace( array( 'http:', 'https:' ), '', $frontend_script_path );
         $suffix = defined( 'WCMP_SCRIPT_DEBUG' ) && WCMP_SCRIPT_DEBUG ? '' : '.min';
-        //wp_enqueue_style('font-vendor_announcements', '//fonts.googleapis.com/css?family=Lato:400,100,100italic,300,300italic,400italic,700,700italic,900,900italic', array(), $WCMp->version);
-        //wp_enqueue_style('ui_vendor_announcements', '//code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css', array(), $WCMp->version);
         wp_enqueue_script( 'jquery-ui-accordion' );
         wp_enqueue_script( 'wcmp_new_vandor_announcements_js', $frontend_script_path . 'wcmp_vendor_announcements' . $suffix . '.js', array( 'jquery' ), $WCMp->version, true );
         $WCMp->localize_script( 'wcmp_new_vandor_announcements_js' );
-        //wp_enqueue_script('jquery');
-        //wp_enqueue_script('wcmp_new_vandor_announcements_js_lib_ui', '//code.jquery.com/ui/1.10.4/jquery-ui.js', array('jquery'), $WCMp->version, true);
         $vendor = get_wcmp_vendor( get_current_vendor_id() );
         $WCMp->template->get_template( 'vendor-dashboard/vendor-announcements.php', array( 'vendor_announcements' => $vendor->get_announcements() ) );
     }
@@ -404,7 +400,7 @@ class WCMp_Vendor_Hooks {
         $WCMp->library->load_select2_lib();
         $wcmp_payment_settings_name = get_option( 'wcmp_payment_settings_name' );
         $_vendor_give_shipping = get_user_meta( get_current_vendor_id(), '_vendor_give_shipping', true );
-        if ( isset( $wcmp_payment_settings_name['give_shipping'] ) && empty( $_vendor_give_shipping ) ) {
+        if ( get_wcmp_vendor_settings( 'is_vendor_shipping_on', 'general' ) && 'Enable' === get_wcmp_vendor_settings( 'is_vendor_shipping_on', 'general' ) && empty( $_vendor_give_shipping ) ) {
             if (wp_script_is('wcmp-vendor-shipping', 'registered') &&
                 !wp_script_is('wcmp-vendor-shipping', 'enqueued')) {
                 wp_enqueue_script('wcmp-vendor-shipping');
@@ -600,16 +596,16 @@ class WCMp_Vendor_Hooks {
                     'wc-enhanced-select',
                     'wc_enhanced_select_params',
                     array(
-                            'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'woocommerce' ),
-                            'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'woocommerce' ),
-                            'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'woocommerce' ),
-                            'i18n_input_too_short_n'    => _x( 'Please enter %qty% or more characters', 'enhanced select', 'woocommerce' ),
-                            'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'woocommerce' ),
-                            'i18n_input_too_long_n'     => _x( 'Please delete %qty% characters', 'enhanced select', 'woocommerce' ),
-                            'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'woocommerce' ),
-                            'i18n_selection_too_long_n' => _x( 'You can only select %qty% items', 'enhanced select', 'woocommerce' ),
-                            'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'woocommerce' ),
-                            'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'woocommerce' ),
+                            'i18n_no_matches'           => _x( 'No matches found', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_ajax_error'           => _x( 'Loading failed', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_input_too_short_1'    => _x( 'Please enter 1 or more characters', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_input_too_short_n'    => _x( 'Please enter %qty% or more characters', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_input_too_long_1'     => _x( 'Please delete 1 character', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_input_too_long_n'     => _x( 'Please delete %qty% characters', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_selection_too_long_1' => _x( 'You can only select 1 item', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_selection_too_long_n' => _x( 'You can only select %qty% items', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_load_more'            => _x( 'Loading more results&hellip;', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
+                            'i18n_searching'            => _x( 'Searching&hellip;', 'enhanced select', 'dc-woocommerce-multi-vendor' ),
                             'ajax_url'                  => admin_url( 'admin-ajax.php' ),
                             'search_products_nonce'     => wp_create_nonce( 'search-products' ),
                             'search_customers_nonce'    => wp_create_nonce( 'search-customers' ),
@@ -626,7 +622,7 @@ class WCMp_Vendor_Hooks {
                     'wcmp_order_details_js',
                     'wcmp_order_details_js_script_data',
                     array(
-                        'i18n_do_refund'                => __( 'Are you sure you wish to process this refund? This action cannot be undone.', 'woocommerce' ),
+                        'i18n_do_refund'                => __( 'Are you sure you wish to process this refund? This action cannot be undone.', 'dc-woocommerce-multi-vendor' ),
                         'post_id'                       => isset( $vendor_order ) ? $vendor_order : '',
                         'order_item_nonce'              => wp_create_nonce( 'wcmp-order-item' ),
                         'grant_access_nonce'            => wp_create_nonce( 'grant-access' ),
@@ -639,8 +635,8 @@ class WCMp_Vendor_Hooks {
                         'currency_format_thousand_sep'  => esc_attr( wc_get_price_thousand_separator() ),
                         'currency_format'               => esc_attr( str_replace( array( '%1$s', '%2$s' ), array( '%s', '%v' ), get_woocommerce_price_format() ) ), // For accounting JS.
                         'rounding_precision'            => wc_get_rounding_precision(),
-                        'i18n_download_permission_fail' => __( 'Could not grant access - the user may already have permission for this file or billing email is not set. Ensure the billing email is set, and the order has been saved.', 'woocommerce' ),
-                        'i18n_permission_revoke'        => __( 'Are you sure you want to revoke access to this download?', 'woocommerce' ),
+                        'i18n_download_permission_fail' => __( 'Could not grant access - the user may already have permission for this file or billing email is not set. Ensure the billing email is set, and the order has been saved.', 'dc-woocommerce-multi-vendor' ),
+                        'i18n_permission_revoke'        => __( 'Are you sure you want to revoke access to this download?', 'dc-woocommerce-multi-vendor' ),
                         'i18n_do_cancel'                => __( 'Are you sure you want to cancel this order? This action cannot be undone.', 'dc-woocommerce-multi-vendor' ),
                     )
             );
@@ -669,9 +665,9 @@ class WCMp_Vendor_Hooks {
             
             // bulk actions
             $bulk_actions = apply_filters( 'wcmp_bulk_actions_vendor_order_list', array(
-                'mark_processing'   => __( 'Change status to processing', 'woocommerce' ),
-                'mark_on-hold'      => __( 'Change status to on-hold', 'woocommerce' ),
-                'mark_completed'   => __( 'Change status to completed', 'woocommerce' ),
+                'mark_processing'   => __( 'Change status to processing', 'dc-woocommerce-multi-vendor' ),
+                'mark_on-hold'      => __( 'Change status to on-hold', 'dc-woocommerce-multi-vendor' ),
+                'mark_completed'   => __( 'Change status to completed', 'dc-woocommerce-multi-vendor' ),
             ), $vendor );
                 
             $WCMp->template->get_template( 'vendor-dashboard/vendor-orders.php', array( 
@@ -780,11 +776,12 @@ class WCMp_Vendor_Hooks {
         global $WCMp;
         $vendor = get_wcmp_vendor( get_current_vendor_id() );
         if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
+            $post_data = isset($_POST) ? wp_unslash($_POST) : false;
             switch ( $WCMp->endpoints->get_current_endpoint() ) {
                 case 'storefront':
                 case 'vendor-policies':
                 case 'vendor-billing':
-                    $error = $WCMp->vendor_dashboard->save_store_settings( $vendor->id, $_POST );
+                    $error = $WCMp->vendor_dashboard->save_store_settings( $vendor->id, $post_data );
                     if ( empty( $error ) ) {
                         wc_add_notice( __( 'All Options Saved', 'dc-woocommerce-multi-vendor' ), 'success' );
                     } else {
@@ -792,13 +789,13 @@ class WCMp_Vendor_Hooks {
                     }
                     break;
                 case 'vendor-shipping':
-                    $WCMp->vendor_dashboard->save_vendor_shipping( $vendor->id, $_POST );
+                    $WCMp->vendor_dashboard->save_vendor_shipping( $vendor->id, $post_data );
                     break;
                 case 'profile':
-                    $WCMp->vendor_dashboard->save_vendor_profile( $vendor->id, $_POST );
+                    $WCMp->vendor_dashboard->save_vendor_profile( $vendor->id, $post_data );
                     break;
                 case 'vendor-orders':
-                    $WCMp->vendor_dashboard->save_handler_vendor_orders( $_POST );
+                    $WCMp->vendor_dashboard->save_handler_vendor_orders( $post_data );
                     break;
                 default :
                     break;
@@ -996,6 +993,11 @@ class WCMp_Vendor_Hooks {
 						'note_by' => $user->ID,
 						'note' => __( 'Re applied to become a vendor', 'dc-woocommerce-multi-vendor' ));
 				update_user_meta( $user->ID, 'wcmp_vendor_rejection_notes', serialize( $wcmp_vendor_rejection_notes ) );
+                // send mail to admin when rejected vendor reapply
+                if (apply_filters( 'wcmp_send_mail_to_admin_when_vendor_reapply', true )) {
+                    $email_admin = WC()->mailer()->emails['WC_Email_Admin_New_Vendor_Account'];
+                    $email_admin->trigger($user->ID);
+                }
                 /**
                 * Action hook to modify vendor re submit application after note save.
                 *

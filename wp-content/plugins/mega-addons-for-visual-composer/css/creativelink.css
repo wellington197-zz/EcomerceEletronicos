@@ -1,7 +1,7 @@
-.mega-creative-btn a {
+.creative_link_wrapper a {
 	position: relative;
 	display: inline-block;
-	margin: 15px 25px;
+	margin: 0;
 	outline: none;
 	color: #000;
 	text-decoration: none;
@@ -11,14 +11,20 @@
 	text-shadow: 0 0 1px rgba(255,255,255,0.3);
 	font-size: 1.35em;
 	text-align: center;
+	border-bottom: 0px solid #fff;
 }
 
-.mega-creative-btn a:hover,
-.mega-creative-btn a:focus {
+.creative_link_wrapper a:hover,
+.creative_link_wrapper a:focus {
 	outline: none;
 }
 
 /* Effect 1: Brackets */
+
+.cl-effect-1 a {
+	/*border-bottom: 0px solid #fff;*/
+}
+
 .cl-effect-1 a::before,
 .cl-effect-1 a::after {
 	display: inline-block;
@@ -189,7 +195,7 @@
 	position: absolute;
 	top: 100%;
 	content: attr(data-hover);
-	font-weight: 700;
+	/*font-weight: 700;*/
 	-webkit-transform: translate3d(0,0,0);
 	-moz-transform: translate3d(0,0,0);
 	transform: translate3d(0,0,0);

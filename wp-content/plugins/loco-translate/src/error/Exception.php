@@ -29,6 +29,12 @@ class Loco_error_Exception extends Exception implements JsonSerializable {
     private $_line;
 
     /**
+     * Whether log file writing is enabled
+     * @var bool
+     */
+    private $_log = true;
+
+    /**
      * {@inheritdoc}
      */
     public function __construct( $message = '', $code = 0, $previous = null ) {
@@ -65,7 +71,7 @@ class Loco_error_Exception extends Exception implements JsonSerializable {
      */
     public function getRealLine(){
         if( $this->_line ){
-            return $this->getLine();
+            return $this->_line;
         }
         return $this->getRootException()->getLine();
     }
@@ -103,7 +109,7 @@ class Loco_error_Exception extends Exception implements JsonSerializable {
         $path = $file->getRelativePath( loco_plugin_root() );
         $text = sprintf('[Loco.%s] "%s" in %s:%u', $this->getType(), $this->getMessage(), $path, $this->getRealLine() );
         // separate error log in CWD for tests
-        if( 'cli' === PHP_SAPI && defined('LOCO_TEST') && LOCO_TEST ){
+        if( defined('LOCO_TEST') && LOCO_TEST ){
             error_log( '['.date('c').'] '.$text."\n", 3, 'debug.log' );
         }
         // Else write to default PHP log, but note that WordPress may have set this to wp-content/debug.log.
@@ -138,6 +144,15 @@ class Loco_error_Exception extends Exception implements JsonSerializable {
      */
     public function getLevel(){
         return self::LEVEL_ERROR;
+    }
+
+
+    /**
+     * Call wp cli logging function
+     * @return void
+     */
+    public function logCli(){
+        WP_CLI::error( $this->getMessage(), false );
     }
 
 
@@ -196,6 +211,32 @@ class Loco_error_Exception extends Exception implements JsonSerializable {
             return $e;
         }
         return new Loco_error_Exception( $e->getMessage(), $e->getCode(), $e );
-    }    
+    }
+
+
+    /**
+     * Test if this error should be automatically logged
+     * @return bool
+     */
+    public function loggable(){
+        if( $this->_log ){
+            // Log messages of minimum priority and up, depending on debug mode
+            // note that non-debug level is in line with error_reporting set by WordPress (notices ignored)
+            $priority = loco_debugging() ? Loco_error_Exception::LEVEL_DEBUG : Loco_error_Exception::LEVEL_WARNING;
+            return $this->getLevel() <= $priority;
+        }
+        return false;
+    }
+    
+    
+    /**
+     * Suppress logging for this error. e.g if you want to warn in UI but don't want to pollute log files.
+     * @return self
+     */
+    public function noLog(){
+        $this->_log = false;
+        return $this;
+    }
+    
     
 }

@@ -14,6 +14,7 @@ class WPBakeryShortCode_accordion_son extends WPBakeryShortCode {
 			'title_padding'		=>		'10',
 			'size'				=>		'16',
 			'clr'				=>		'',
+			'acc_id'			=>		'',
 			'borderwidth'		=>		'0px 0px 0px 0px',
 			'borderwidth2'		=>		'0px 0px 0px 0px',
 			'borderclr'			=>		'',
@@ -26,7 +27,7 @@ class WPBakeryShortCode_accordion_son extends WPBakeryShortCode {
 		ob_start();
 		global $maw_accordion_margin;
 		?>
-		<h3 class="ac-style" style="text-align: <?php echo $title_align; ?>; margin-top: <?php echo $maw_accordion_margin; ?>px; border-width: <?php echo $borderwidth; ?>; border-style: solid; border-color: <?php echo $borderclr; ?>; border-radius: <?php echo $titleradius; ?>px; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?> <?php echo $gradientbg; ?>; font-size: <?php echo $size; ?>px; padding-top: <?php echo $title_padding; ?>px; padding-bottom: <?php echo $title_padding; ?>px;">
+		<h3 class="ac-style" id="<?php echo $acc_id; ?>" style="text-align: <?php echo $title_align; ?>; margin-top: <?php echo $maw_accordion_margin; ?>px; border-width: <?php echo $borderwidth; ?>; border-style: solid; border-color: <?php echo $borderclr; ?>; border-radius: <?php echo $titleradius; ?>px; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?> <?php echo $gradientbg; ?>; font-size: <?php echo $size; ?>px; padding-top: <?php echo $title_padding; ?>px; padding-bottom: <?php echo $title_padding; ?>px;">
 			<?php echo $title; ?>
 		</h3>
 		<div class="mega-panel" style="margin-bottom: <?php echo $maw_accordion_margin; ?>px;background: <?php echo $bodybg; ?>; border-width: <?php echo $borderwidth2; ?>; border-style: solid; border-color: <?php echo $borderclr2; ?>;">
@@ -54,6 +55,7 @@ vc_map( array(
             "type" 			=> 	"textfield",
 			"heading" 		=> 	__( 'Title', 'accordion' ),
 			"param_name" 	=> 	"title",
+			'admin_label' 	=> 	true,
 			"description" 	=> 	__( 'display title', 'accordion' ),
 			"group" 		=> 	'Title',
         ),
@@ -108,6 +110,14 @@ vc_map( array(
 			"description" 	=> 	__( 'put three different colors inside for gradient effects or leave blank <a href="https://www.w3schools.com/csS/css3_gradients.asp">Further</a>', 'accordion' ),
 			"value"			=>	"linear-gradient(141deg, #0fb8ad 0%, #9C27B0 51%, #FFEB3B 75%)",
 			"group" 		=> 	'Title',
+        ),
+
+        array(
+            "type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Extra ID', 'int_banner' ),
+			"param_name" 	=> 	"acc_id",
+			"description" 	=> 	__( 'Add extra ID name that will be applied to the accordion tabs, and you can use this ID for your customizations.', 'int_banner' ),
+			"group" 		=> 	"Title",
         ),
 
         // Detail Section

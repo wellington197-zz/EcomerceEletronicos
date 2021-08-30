@@ -67,7 +67,15 @@ table.wcfm-order-total-table th{border-right:0px;}
 table.wcfm-order-total-table td{border-left:0px;}
 </style>
 
-<p><?php printf(__('A new order was received from %s. Order details is as follows:', 'wc-multivendor-marketplace'), $order->get_billing_first_name() . ' ' . $order->get_billing_last_name()); ?></p>
+<p>
+  <?php 
+  if( wcfm_vendor_has_capability( $vendor_id, 'view_customers' ) && wcfm_vendor_has_capability( $vendor_id, 'view_name' ) ) {
+  	printf(__('A new order was received from %s. Order details is as follows:', 'wc-multivendor-marketplace'), $order->get_billing_first_name() . ' ' . $order->get_billing_last_name());
+  } else {
+  	_e('A new order was received. Order details is as follows:', 'wc-multivendor-marketplace');
+  }
+  ?>
+ </p>
 
 <h2 class="woocommerce-order-details__title" style="color: #00798b;">
   <?php if( wcfm_vendor_has_capability( $vendor_id, 'view_orders' ) && wcfm_vendor_has_capability( $vendor_id, 'view_order_details' ) ) { ?>

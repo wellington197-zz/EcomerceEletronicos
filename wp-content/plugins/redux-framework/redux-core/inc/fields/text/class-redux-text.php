@@ -39,7 +39,7 @@ if ( ! class_exists( 'Redux_Text', false ) ) {
 		public function render() {
 
 			$this->field['attributes']            = wp_parse_args(
-				isset( $this->field['attributes'] ) ? $this->field['attributes'] : array(),
+				$this->field['attributes'] ?? array(),
 				array(
 					'qtip_title'   => '',
 					'qtip_text'    => '',
@@ -78,7 +78,7 @@ if ( ! class_exists( 'Redux_Text', false ) ) {
 				if ( empty( $this->field['args'] ) ) {
 					$this->field['args'] = array();
 				}
-				if ( is_array( $this->field['options'] ) && ! is_array( min( $this->field['options'] ) ) ) {
+				if ( isset( $this->field['options'] ) && is_array( $this->field['options'] ) && ! is_array( min( $this->field['options'] ) ) ) {
 					$this->field['options']               = $this->parent->wordpress_data->get( $this->field['data'], $this->field['args'], $this->value );
 					$this->field['attributes']['class'][] = 'hasOptions';
 				}
@@ -128,7 +128,12 @@ if ( ! class_exists( 'Redux_Text', false ) ) {
 		 */
 		public function enqueue() {
 			if ( $this->parent->args['dev_mode'] ) {
-				wp_enqueue_style( 'redux-field-text-css', Redux_Core::$url . 'inc/fields/text/redux-text.css', array(), $this->timestamp, 'all' );
+				wp_enqueue_style(
+					'redux-field-text-css',
+					Redux_Core::$url . 'inc/fields/text/redux-text.css',
+					array(),
+					$this->timestamp
+				);
 			}
 		}
 

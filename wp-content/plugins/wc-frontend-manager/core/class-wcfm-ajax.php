@@ -155,6 +155,11 @@ class WCFM_Ajax {
            $product_manage_object = new WCFM_Products_Manage_Controller();
            return $product_manage_object->processing();
           } else {
+          	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+							echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+							wp_die();
+						}
+          	
             new WCFM_Products_Manage_Controller();
           }
 					
@@ -166,6 +171,11 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-coupons-manage':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'coupons/wcfm-controller-coupons-manage.php' );
 					new WCFM_Coupons_Manage_Controller();
 				break;
@@ -223,11 +233,21 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-profile':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+						
 					include_once( $this->controllers_path . 'profile/wcfm-controller-profile.php' );
 					new WCFM_Profile_Controller();
 				break;
 					
 				case 'wcfm-settings':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					if( $WCFM->is_marketplace && wcfm_is_vendor() ) {
 						include_once( $this->controllers_path . 'settings/wcfm-controller-' . $WCFM->is_marketplace . '-settings.php' );
 						if( $WCFM->is_marketplace == 'wcvendors' ) new WCFM_Settings_WCVendors_Controller();
@@ -242,6 +262,11 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-capability':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'capability/wcfm-controller-capability.php' );
 					new WCFM_Capability_Controller();
 				break;
@@ -252,6 +277,11 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-knowledgebase-manage':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'knowledgebase/wcfm-controller-knowledgebase-manage.php' );
 					new wcfm_Knowledgebase_Manage_Controller();
 				break;
@@ -262,11 +292,21 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-notice-manage':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'notice/wcfm-controller-notice-manage.php' );
 					new wcfm_Notice_Manage_Controller();
 				break;
 				
 				case 'wcfm-notice-reply':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'notice/wcfm-controller-notice-reply.php' );
 					new WCFM_Notice_Reply_Controller();
 				break;
@@ -297,6 +337,11 @@ class WCFM_Ajax {
 				break;
 				
 				case 'wcfm-vendors-new':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $this->controllers_path . 'vendors/wcfm-controller-vendors-new.php' );
 					new WCFM_Vendors_New_Controller();
 				break;
@@ -455,6 +500,11 @@ class WCFM_Ajax {
   public function delete_wcfm_product() {
   	global $WCFM, $WCFMu;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	$product_id = absint($_POST['proid']);
 		
 		if( $product_id ) {
@@ -490,6 +540,11 @@ class WCFM_Ajax {
   function wcfm_product_approve() {
   	global $WCFM;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	if( isset( $_POST['proid'] ) && !empty( $_POST['proid'] ) ) {
   		$product_id = absint( $_POST['proid'] );
   		do_action( 'wcfm_before_product_approve', $product_id );
@@ -512,6 +567,11 @@ class WCFM_Ajax {
    */
   function wcfm_product_reject() {
   	global $WCFM;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	if( isset( $_POST['proid'] ) && !empty( $_POST['proid'] ) ) {
   		$product_id = absint( $_POST['proid'] );
@@ -536,6 +596,11 @@ class WCFM_Ajax {
    */
   function wcfm_product_archive() {
   	global $WCFM;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	if( isset( $_POST['proid'] ) && !empty( $_POST['proid'] ) ) {
   		$product_id = absint( $_POST['proid'] );
@@ -581,6 +646,11 @@ class WCFM_Ajax {
   public function wcfm_order_mark_complete() {
   	global $WCFM;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+  		wp_die();
+  	}
+  	
   	$order_id = absint( $_POST['orderid'] );
   	
 		do_action( 'before_wcfm_order_status_update', $order_id, 'wc-completed' );
@@ -616,6 +686,11 @@ class WCFM_Ajax {
    */
   public function wcfm_modify_order_status() {
   	global $WCFM;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+  		wp_die();
+  	}
   	
   	$order_id = absint( $_POST['order_id'] );
   	$order_status = wc_clean( $_POST['order_status'] );
@@ -662,6 +737,11 @@ class WCFM_Ajax {
   public function archive_wcfm_knowledgebase() {
   	global $WCFM, $WCFMu;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	$knowledgebaseid = absint( $_POST['knowledgebaseid'] );
 		
 		if($knowledgebaseid) {
@@ -678,6 +758,11 @@ class WCFM_Ajax {
    */
   public function publish_wcfm_knowledgebase() {
   	global $WCFM, $WCFMu;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	$knowledgebaseid = absint( $_POST['knowledgebaseid'] );
 		
@@ -696,6 +781,11 @@ class WCFM_Ajax {
   public function delete_wcfm_knowledgebase() {
   	global $WCFM, $WCFMu;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	$knowledgebaseid = absint( $_POST['knowledgebaseid'] );
 		
 		if($knowledgebaseid) {
@@ -712,6 +802,11 @@ class WCFM_Ajax {
    */
   public function archive_wcfm_notice() {
   	global $WCFM, $WCFMu;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	$noticeid = absint( $_POST['noticeid'] );
 		
@@ -730,6 +825,11 @@ class WCFM_Ajax {
   public function publish_wcfm_notice() {
   	global $WCFM, $WCFMu;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	$noticeid = absint( $_POST['noticeid'] );
 		
 		if($noticeid) {
@@ -746,6 +846,11 @@ class WCFM_Ajax {
    */
   public function delete_wcfm_notice() {
   	global $WCFM, $WCFMu;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	$noticeid = absint( $_POST['noticeid'] );
 		
@@ -790,7 +895,7 @@ class WCFM_Ajax {
   	
   	if( isset( $_POST['vendor_manager_change'] ) && !empty( $_POST['vendor_manager_change'] ) ) {
   		$vendor_id = absint( $_POST['vendor_manager_change'] );
-  		echo '{"status": true, "redirect": "' . get_wcfm_vendors_manage_url($vendor_id) . '"}';
+  		echo '{"status": true, "redirect": "' . esc_url( get_wcfm_vendors_manage_url($vendor_id) ) . '"}';
   	}
   	
   	die;
@@ -804,7 +909,7 @@ class WCFM_Ajax {
   	
   	if( isset( $_POST['vendor_manager_change'] ) && !empty( $_POST['vendor_manager_change'] ) ) {
   		$vendor_id = absint( $_POST['vendor_manager_change'] );
-  		echo '{"status": true, "redirect": "' . get_wcfm_reports_url( '', 'wcfm-reports-sales-by-vendor', $vendor_id) . '"}';
+  		echo '{"status": true, "redirect": "' . esc_url( get_wcfm_reports_url( '', 'wcfm-reports-sales-by-vendor', $vendor_id) ) . '"}';
   	}
   	
   	die;
@@ -1096,6 +1201,11 @@ class WCFM_Ajax {
 	function wcfm_vendor_disable() {
 		global $WCFM, $_POST, $wpdb;
 		
+		if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+		
 		if( isset( $_POST['memberid'] ) ) {
 			$member_id = absint( $_POST['memberid'] );
 			$member_user = new WP_User( $member_id );
@@ -1135,6 +1245,11 @@ class WCFM_Ajax {
 	 */
 	function wcfm_vendor_enable() {
 		global $WCFM, $_POST, $wpdb;
+		
+		if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
 		
 		if( isset( $_POST['memberid'] ) ) {
 			$member_id = absint( $_POST['memberid'] );

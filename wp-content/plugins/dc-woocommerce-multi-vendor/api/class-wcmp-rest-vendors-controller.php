@@ -204,6 +204,8 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
         if (!empty($user_query->results)) {
             foreach ( $user_query->results as $vendor_id) {
             	$vendor = get_wcmp_vendor($vendor_id);
+            	$is_block = get_user_meta($vendor->id, '_vendor_turn_off', true);
+                if($is_block) continue;
 				$vendor_data    = $this->prepare_item_for_response( $vendor, $request );
 				$object[] = $this->prepare_response_for_collection( $vendor_data );
 			}
@@ -379,14 +381,14 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 		}
 
 		$userdata = array(
-			'user_login' => $request['login'],
-			'user_email' => $request['email'],
-			'user_url' => $request['url'],
-			'user_pass' => $request['password'],
-			'user_nicename' => $request['nice_name'],
-			'display_name' => $request['display_name'],
-			'first_name' => $request['first_name'],
-			'last_name' => $request['last_name'],
+			'user_login' => isset($request['login']) ? sanitize_user($request['login']) : '',
+			'user_email' => isset($request['email']) ? sanitize_email($request['email']) : '',
+			'user_url' => isset($request['url']) ? wc_clean($request['url']) : '',
+			'user_pass' => isset($request['password']) ? wc_clean($request['password']) : '',
+			'user_nicename' => isset($request['nice_name']) ? wc_clean($request['nice_name']) : '',
+			'display_name' => isset($request['display_name']) ? wc_clean($request['display_name']) : '',
+			'first_name' => isset($request['first_name']) ? wc_clean($request['first_name']) : '',
+			'last_name' => isset($request['last_name']) ? wc_clean($request['last_name']) : '',
 			'role' => $this->post_type
 		);
 		
@@ -445,10 +447,9 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 			'_vendor_state' => isset($request['address']['state']) ? wc_clean( wp_unslash( $request['address']['state'] ) ) : '',
 			'_vendor_country' => isset($request['address']['country']) ? wc_clean( wp_unslash( $request['address']['country'] ) ) : '',
 			'_vendor_postcode' => isset($request['address']['postcode']) ? wc_clean( wp_unslash( $request['address']['postcode'] ) ) : '',
-			'_vendor_phone' => isset($request['address']['phone']) ? absint( $request['address']['phone'] ) : '',
+			'_vendor_phone' => isset($request['address']['phone']) ? absint( $request['address']['phone'] ) : 0,
 			'_vendor_fb_profile' => isset($request['social']['facebook']) ? esc_url( $request['social']['facebook'] ) : '',
 			'_vendor_twitter_profile' => isset($request['social']['twitter']) ? esc_url( $request['social']['twitter'] ) : '',
-			'_vendor_google_plus_profile' => isset($request['social']['google_plus']) ? esc_url( $request['social']['google_plus'] ) : '',
 			'_vendor_linkdin_profile' => isset($request['social']['linkdin']) ? esc_url( $request['social']['linkdin'] ) : '',
 			'_vendor_youtube' => isset($request['social']['youtube']) ? esc_url( $request['social']['youtube'] ) : '',
 			'_vendor_instagram' => isset($request['social']['instagram']) ? esc_url( $request['social']['instagram'] ) : '',
@@ -623,14 +624,14 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 		}
 
 		$userdata = array(
-			'ID' => isset( $request['id'] ) ? $request['id'] : '',
-			'user_email' => isset( $request['email'] ) ? $request['email'] : '',
-			'user_url' => isset( $request['url'] ) ? $request['url'] : '',
-			'user_pass' => isset( $request['password'] ) ? $request['password'] : '',
-			'user_nicename' => isset( $request['nice_name'] ) ? $request['nice_name']: '',
-			'display_name' => isset( $request['display_name'] ) ? $request['display_name'] : '',
-			'first_name' => isset( $request['first_name'] ) ? $request['first_name'] : '',
-			'last_name' => isset( $request['last_name'] ) ? $request['last_name'] : '',
+			'ID' => isset( $request['id'] ) ? absint($request['id']) : 0,
+			'user_email' => isset( $request['email'] ) ? sanitize_email($request['email']) : '',
+			'user_url' => isset( $request['url'] ) ? wc_clean($request['url']) : '',
+			'user_pass' => isset( $request['password'] ) ? wc_clean($request['password']) : '',
+			'user_nicename' => isset( $request['nice_name'] ) ? wc_clean($request['nice_name']) : '',
+			'display_name' => isset( $request['display_name'] ) ? wc_clean($request['display_name']) : '',
+			'first_name' => isset( $request['first_name'] ) ? wc_clean($request['first_name']) : '',
+			'last_name' => isset( $request['last_name'] ) ? wc_clean($request['last_name']) : '',
 			'role' => $this->post_type
 		);
 
@@ -685,7 +686,7 @@ class WCMp_REST_API_Vendors_Controller extends WC_REST_Controller {
 		$deleted = wp_delete_user( $request['id'] ) ;
 		
 		if ( ! $deleted ) {
-			return new WP_Error( 'wcmp_rest_cannot_delete', __( 'The vendor cannot be deleted.' ), array( 'status' => 500 ) );
+			return new WP_Error( 'wcmp_rest_cannot_delete', __( 'The vendor cannot be deleted.', 'dc-woocommerce-multi-vendor' ), array( 'status' => 500 ) );
         }
  
 		$request->set_param( 'context', 'view' );

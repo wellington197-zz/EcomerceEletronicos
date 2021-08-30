@@ -2,8 +2,8 @@
 Contributors: facebook, automattic, woothemes
 Tags: facebook, shop, catalog, advertise, pixel, product
 Requires at least: 4.4
-Tested up to: 5.5.3
-Stable tag: 2.1.4
+Tested up to: 5.7
+Stable tag: 2.6.1
 Requires PHP: 5.6 or greater
 MySQL: 5.6 or greater
 License: GPLv2 or later
@@ -39,7 +39,86 @@ When opening a bug on GitHub, please give us as many details as possible.
 
 == Changelog ==
 
-= 2020.11.04 - version 2.1.4
+= 2.6.1 - 2021-06-28 =
+ * Dev: Add `facebook_for_woocommerce_allow_full_batch_api_sync` filter to allow opt-out full batch API sync, to avoid possible performance issues on large sites
+
+= 2.6.0 - 2021-06-10 =
+ * Fix – Add cron heartbeat and use to offload feed generation from init / admin_init (performance) #1953
+ * Fix – Clean up background sync options (performance) #1962
+ * Dev – Add tracker props to understand usage of feed-based sync and other FB business config options #1972
+ * Dev – Configure release tooling to auto-update version numbers in code #1982
+ * Dev – Refactor code responsible for validating whether a product should be synced to FB into one place #19333
+
+= 2.5.1 - 2021-05-28 =
+ * Fix - Reinstate reset and delete functions in Facebook metabox on Edit product admin screen
+
+= 2.5.0 - 2021-05-19 =
+ * New - Option to allow larger sites to opt-out of feed generation (product sync) job
+ * New - Log connection errors to allow easier troubleshooting
+ * Fix - Reduce default feed generation (product sync) interval to once per day to reduce overhead
+ * Fix - Trigger feed (product sync) job from to `admin_init` to reduce impact on front-end requests
+ * Fix - Ensure variable product attribute values containing comma (`,`) sync correctly
+ * Fix - Use existing / current tab for connection `Get Started` button
+ * Dev - Require PHP version 7.0 or newer
+ * Dev - Adopt Composer autoloader to avoid manually `require`ing PHP class files
+ * Dev - Adopt WooRelease release tool for deploying releases
+ * Dev - Use wp-scripts to build assets
+ * Dev - Add `phpcs` tooling to help standardise PHP code style
+ * Dev - Add JobRegistry engine for managing periodic background batch jobs
+
+= 2021.04.29 - version 2.4.1 =
+ * Fix - PHP<7.1 incompatible code for Google Taxonomy Setting in products.
+
+= 2021.04.23 - version 2.4.0 =
+ * Tweak - Add an initial performance debug mode to measure resource usage in some areas
+ * Tweak - Add 3 usage tracking properties: "is-connected", "product-sync-enabled", "messenger-enabled"
+ * Fix - High memory usage when starting full catalog sync
+ * Fix - High memory usage of Google Product Category data
+ * Fix - Fatal error for product categories with missing attributes
+ * Fix - Connection data is now correctly cleared when using the "Disconnect" button
+ * Fix – Error modals when setting default exclude categories in Product sync now work correctly
+
+= 2021.03.31 - version 2.3.5 =
+ * Fix - critical issue for pre 5.0.0 WC sites
+
+= 2021.03.30 - version 2.3.4 =
+ * Feature - Add connection state to WooCommerce Usage Tracking.
+ * Feature - Register WooCommerce Navigation items.
+ * Fix - Disable product sync on 2.3.3 update ( temporary fix ).
+ * Fix - Add default placeholder for products with no image set.
+ * Fix - Undefined array key error for products without 'Product image' set.
+ * Dev - PHP Deprecated: Non-static method should not be called statically.
+
+= 2021.03.22 - version 2.3.3 =
+ * Fix - WooCommerce variation attribute sync not matching Enhanced Catalog attributes.
+ * Fix - Enable display names to be used for variant attribute values.
+ * Fix - Performance, do not auto-load Google Categories option.
+ * Fix - Logs being recorded even with debug option disabled.
+
+= 2021.03.02 - version 2.3.2 =
+ * Tweak - Bump Facebook Marketing API version to 9.0
+
+= 2021.02.23 - version 2.3.1 =
+ * Fix - Fix errors when product set is empty
+ * Fix - Ensure that events have an action_source
+
+= 2021.02.16 - version 2.3.0 =
+ * Feature - Add ability to create and assign products to Facebook product sets
+ * Feature - Add support for Facebook App store flow
+ * Tweak - Ask merchants to delete products when changing from sync to not sync state
+ * Tweak - Remove business_management permission from login scopes
+ * Tweak - Store parameters for Commerce merchant settings ID and Instagram business ID
+ * Fix - Fix Products::get_google_product_category_id_from_highest_category() to handle WP_Error
+ * Fix - Fix random HELLO appearing in the category settings
+ * Fix - Make sure that list of strings params are now converted to actual arrays. Fixes an issue with the use of the additional_features parameter
+
+= 2020.11.19 - version 2.2.0 =
+ * Feature - Add an Advertise tab in the Facebook settings page to manage Facebook ads from within WooCommerce
+ * Tweak - Move the Facebook settings page into the Marketing menu item (WooCommerce 4.0+)
+ * Fix - Move the filter `facebook_for_woocommerce_integration_pixel_enabled` initialization to avoid possible uncaught JavaScript errors in front end
+ * Fix - Update field name and format for additional_variant_attribute to resolve Facebook catalog sync for variable products.
+
+= 2020.11.04 - version 2.1.4 =
  * Fix - Ensure product variant attributes are correctly handled when checking for enhanced attribute values.
 
 = 2020.10.29 - version 2.1.3 =

@@ -15,6 +15,7 @@ class WPBakeryShortCode_tm_carousel_father extends WPBakeryShortCodesContainer {
 			'dot'				=>		'true',
 			'autoplay'			=>		'true',
 			'speed'				=>		'2500',
+			'animation_speed'	=>		'500',
 			'spaces'			=>		'0',
 			'slide_visible'		=>		'1',
 			'slide_visible_mbl'	=>		'1',
@@ -34,7 +35,7 @@ class WPBakeryShortCode_tm_carousel_father extends WPBakeryShortCodesContainer {
 		wp_enqueue_script( 'slick-js', plugins_url( '../js/slick.js' , __FILE__ ), array('jquery'));
 		wp_enqueue_script( 'custom-js', plugins_url( '../js/custom-tm.js' , __FILE__ ), array('jquery'));
 		ob_start(); ?>
-		<section class="tm-slider slider <?php echo $class; ?> <?php echo $theme; ?>" id="tdt-slider-<?php echo $some_id ?>" data-mobiles="<?php echo $slide_visible_mbl ?>" data-tabs="<?php echo $tabs ?>" data-slick='{"arrows": <?php echo $arrows; ?>, "autoplaySpeed": <?php echo $speed; ?>, "dots": <?php echo $dot; ?>, "autoplay": true, "slidesToShow": <?php echo $slide_visible; ?>, "slidesToScroll": <?php echo $slide_scroll; ?>, "fade": <?php echo $effect; ?>}'>
+		<section class="tm-slider slider <?php echo $class; ?> <?php echo $theme; ?>" id="tdt-slider-<?php echo $some_id ?>" data-mobiles="<?php echo $slide_visible_mbl ?>" data-tabs="<?php echo $tabs ?>" data-slick='{"arrows": <?php echo $arrows; ?>, "autoplaySpeed": <?php echo $speed; ?>, "speed": <?php echo $animation_speed; ?>, "dots": <?php echo $dot; ?>, "autoplay": true, "slidesToShow": <?php echo $slide_visible; ?>, "slidesToScroll": <?php echo $slide_scroll; ?>, "fade": <?php echo $effect; ?>}'>
 		    <?php echo $content; ?>
 		</section>
 
@@ -105,28 +106,7 @@ vc_map( array(
 					"Fade" 			=> 		"true",
 				)
 		),
-		array(
-			"type" 			=> 	"dropdown",
-			"heading" 		=> 	__( 'Arrows', 'slider' ),
-			"param_name" 	=> 	"arrows",
-			"description"	=>	__('Show/Hide on left & right', 'slider'),
-			"group" 		=> 'Settings',
-				"value" 		=> 	array(
-					"Show" 			=> 		"true",
-					"Hide" 			=> 		"false",
-				)
-		),
-		array(
-			"type" 			=> 	"dropdown",
-			"heading" 		=> 	__( 'Dots', 'slider' ),
-			"param_name" 	=> 	"dot",
-			"description"	=>	__('Show/Hide show at bottom', 'slider'),
-			"group" 		=> 'Settings',
-				"value" 		=> 	array(
-					"Show" 			=> 		"true",
-					"Hide" 			=> 		"false",
-				)
-		),
+		
 		array(
 			"type" 			=> 	"dropdown",
 			"heading" 		=> 	__( 'Autoplay', 'slider' ),
@@ -153,10 +133,22 @@ vc_map( array(
 			"type" 			=> 	"vc_number",
 			"heading" 		=> 	__( 'Slider Speed', 'slider' ),
 			"param_name" 	=> 	"speed",
-			"description"	=>	__('write in ms eg, 2000 [1s = 1000]', 'slider'),
+			"edit_field_class" => "vc_col-sm-6",
+			"description"	=>	__('Required: write in ms eg, 2000 [1s = 1000]', 'slider'),
 			"value"			=>	"2500",
 			"group" 		=> 'Settings',
 		),
+
+		array(
+			"type" 			=> 	"vc_number",
+			"heading" 		=> 	__( 'Animation Speed', 'slider' ),
+			"param_name" 	=> 	"animation_speed",
+			"edit_field_class" => "vc_col-sm-6",
+			"description"	=>	__('Required: Slide/Fade animation speed in ms', 'slider'),
+			"value"			=>	"500",
+			"group" 		=> 'Settings',
+		),
+
 		array(
 			"type" 			=> 	"vc_number",
 			"heading" 		=> 	__( 'Spaces between two items [px]', 'slider' ),
@@ -222,6 +214,18 @@ vc_map( array(
 
 		// Arrow Section Setting
 
+        array(
+			"type" 			=> 	"dropdown",
+			"heading" 		=> 	__( 'Arrows', 'slider' ),
+			"param_name" 	=> 	"arrows",
+			"description"	=>	__('Show/Hide on left & right', 'slider'),
+			"group" 		=> 'Navigation',
+				"value" 		=> 	array(
+					"Show" 			=> 		"true",
+					"Hide" 			=> 		"false",
+				)
+		),
+		
 		array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Arrow Color', 'slider' ),
@@ -234,7 +238,7 @@ vc_map( array(
 			"type" 			=> 	"colorpicker",
 			"heading" 		=> 	__( 'Arrow background', 'slider' ),
 			"param_name" 	=> 	"arrowbg",
-			"dependency" 	=> array('element' => "arrow", 'value' => 'true'),
+			"dependency" 	=> array('element' => "arrows", 'value' => 'true'),
 			"group" 		=> 'Navigation',
 		),
 		array(
@@ -253,7 +257,7 @@ vc_map( array(
 			"param_name" 	=> 	"arrowposition",
 			"description"	=>	"change the position of arrows on slider, with minus sign arrows move away from slider",
 			"value"			=>	"",
-			"dependency" 	=> array('element' => "arrow", 'value' => 'true'),
+			"dependency" 	=> array('element' => "arrows", 'value' => 'true'),
 			"group" 		=> 'Navigation',
 		),
 
@@ -265,6 +269,18 @@ vc_map( array(
 			"class"			=>	"ult_param_heading",
 			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Dot Settings</span>', 'ihover' ),
 			"group" 		=> 'Navigation',
+		),
+
+		array(
+			"type" 			=> 	"dropdown",
+			"heading" 		=> 	__( 'Dots', 'slider' ),
+			"param_name" 	=> 	"dot",
+			"description"	=>	__('Show/Hide show at bottom', 'slider'),
+			"group" 		=> 'Navigation',
+				"value" 		=> 	array(
+					"Show" 			=> 		"true",
+					"Hide" 			=> 		"false",
+				)
 		),
 		
 		array(
@@ -289,6 +305,7 @@ vc_map( array(
 		array(
 			"type" 			=> 	"vc_number",
 			"heading" 		=> 	__( 'Dot Size [px]', 'slider' ),
+			"dependency" => array('element' => "style", 'value' => 'dot'),
 			"param_name" 	=> 	"dotsize",
 			"value"			=>	"30",
 			"group" 		=> 'Navigation',
@@ -306,6 +323,7 @@ vc_map( array(
 			"type" 			=> 	"textfield",
 			"heading" 		=> 	__( 'Position [Pro Option]', 'slider' ),
 			"param_name" 	=> 	"dotposition",
+			"dependency" => array('element' => "dot", 'value' => 'true'),
 			"description"	=>	"change the position of Dots on slider, with minus sign dots move away from slider",
 			"value"			=>	"",
 			"group" 		=> 'Navigation',

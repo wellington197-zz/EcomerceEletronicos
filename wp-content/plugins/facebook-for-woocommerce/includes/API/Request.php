@@ -12,7 +12,7 @@ namespace SkyVerge\WooCommerce\Facebook\API;
 
 defined( 'ABSPATH' ) or exit;
 
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 /**
  * Base API request object.
@@ -32,7 +32,7 @@ class Request extends Framework\SV_WC_API_JSON_Request {
 	protected $retry_count = 0;
 
 	/** @var int[] the response codes that should trigger a retry */
-	protected $retry_codes = [];
+	protected $retry_codes = array();
 
 
 	/**

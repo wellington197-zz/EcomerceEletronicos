@@ -278,7 +278,7 @@ class WCFM_Notification {
 			
 			echo '{ "status": true, "notice": ' . $unread_notice . ', "message": ' .$unread_message . ', "enquiry": ' .$unread_enquiry . ' }';
 		} else {
-			echo '{ "status": false, "redirect": "' . get_permalink( wc_get_page_id( 'myaccount' ) ) . '" }';
+			echo '{ "status": false, "redirect": "' . esc_url( get_permalink( wc_get_page_id( 'myaccount' ) ) ) . '" }';
 		}
 		die;
   }

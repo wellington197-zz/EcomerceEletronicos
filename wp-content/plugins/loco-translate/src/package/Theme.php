@@ -38,6 +38,15 @@ class Loco_package_Theme extends Loco_package_Bundle {
 
 
     /**
+     * {@inheritDoc}
+     */
+    public function getDirectoryUrl() {
+        $slug = $this->getHandle();
+        return trailingslashit(get_theme_root_uri($slug)).$slug.'/';
+    }
+
+
+    /**
      * {@inheritdoc}
      */
     public function getHeaderInfo(){
@@ -68,6 +77,23 @@ class Loco_package_Theme extends Loco_package_Bundle {
      */
     public function getParent(){
         return $this->parent;
+    }
+
+
+    /**
+     * @return Loco_package_Theme[]
+     */
+    public static function getAll(){
+        $themes = array();
+        foreach( wp_get_themes(array('errors'=>null)) as $theme ){
+            try {
+                $themes[] = self::createFromTheme($theme);
+            }
+            catch( Exception $e ){
+                // @codeCoverageIgnore
+            }
+        }
+        return $themes;
     }
 
 

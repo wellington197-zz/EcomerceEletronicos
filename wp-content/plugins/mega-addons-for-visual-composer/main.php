@@ -106,7 +106,7 @@ class VC_MEGA
 		<h3 style="font-weight: 100;">Enable/Disable Element</h3>
 		<div class="mega-addons-version">
 			<div class="dashicons-before dashicons-shield"></div>
-			<p>Version 4.2.0</p>
+			<p>Version 4.2.7</p>
 		</div>
 		<?php include 'includes/settings.php'; ?>
 	</div>

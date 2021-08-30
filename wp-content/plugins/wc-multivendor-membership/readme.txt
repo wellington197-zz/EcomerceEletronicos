@@ -3,11 +3,11 @@ Contributors: wclovers
 Tags: woocommerce membership, subscription, members, multivendor marketplace, multi vendor 
 Donate link: https://www.paypal.me/wclovers/25usd
 Requires at least: 4.4
-Tested up to: 5.5
+Tested up to: 5.7
 WC requires at least: 3.0
-WC tested up to: 4.4.0
+WC tested up to: 5.5.0
 Requires PHP: 5.6
-Stable tag: 2.9.4
+Stable tag: 2.9.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,36 @@ NONE.
 17. Membership Details - Cancel & Upgrade
 
 == Changelog ==
+
+= 2.9.9 =
+*Updated - 21/07/2021*
+
+* Enhance - WooCommerce 5.5+ compatibility check added
+* Enhance - Many security check improved
+
+= 2.9.8 =
+*Updated - 13/06/2021*
+
+* Enhance - WooCommerce 5.4+ compatibility check added
+* Enhance - Membership setting form security check improved
+
+= 2.9.7 =
+*Updated - 24/04/2021*
+
+* Enhance - WooCommerce 5.2+ compatibility check added
+* Fixed   - Vendor registration "date" type custom fields date-format issue resolved
+
+= 2.9.6 =
+*Updated - 28/03/2021*
+
+* Enhance - WordPress 5.7+ compatibility check added
+* Enhance - WooCommerce 5.1+ compatibility check added
+
+= 2.9.5 =
+*Updated - 06/01/2021*
+
+* Enhance - WordPress 5.6+ compatibility check added
+* Enhance - WooCommerce 4.8+ compatibility check added
 
 = 2.9.4 =
 *Updated - 28/08/2020*
@@ -712,8 +742,6 @@ NONE.
 
 == Upgrade Notice ==
 
-= 2.9.4 =
-* Enhance - WooCommerce 4.4+ compatibility check added
-* Tweak   - Registration form uploaded files saved as WP attachment 
-* Tweak   - Dashboard pages setting drop-downs changed to choosen for better performance
-* Fixed   - Dashboard membership table wrong vendor count display issue resolved 
+= 2.9.9 =
+* Enhance - WooCommerce 5.5+ compatibility check added
+* Enhance - Many security check improved

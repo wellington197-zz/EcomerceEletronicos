@@ -219,9 +219,9 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 	
 	function usort_reorder( $a, $b ) {
 		// If no sort, default to title
-		$orderby = ( !empty( $_GET['orderby'] ) ) ? $_GET['orderby'] : 'name';
+		$orderby = ( !empty( $_GET['orderby'] ) ) ? wc_clean($_GET['orderby']) : 'name';
 		// If no order, default to asc
-		$order = ( ! empty($_GET['order'] ) ) ? $_GET['order'] : 'asc';
+		$order = ( ! empty($_GET['order'] ) ) ? wc_clean($_GET['order']) : 'asc';
 		// Determine sort order
 		$result = strcmp( $a[$orderby], $b[$orderby] );
 		// Send final sort direction to usort
@@ -230,7 +230,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 	
 	public function process_bulk_action() {
 		if ( 'delete' === $this->current_action() ) {
-		 	$delete_url = self_admin_url('users.php?action=delete&users[]=' . implode( '&users[]=', $_GET['ID'] ));
+		 	$delete_url = self_admin_url('users.php?action=delete&users[]=' . implode( '&users[]=', absint($_GET['ID']) ));
     		$delete_url = str_replace( '&amp;', '&', wp_nonce_url( $delete_url, 'bulk-users' ) );
 			wp_safe_redirect ($delete_url);
 			exit();
@@ -282,7 +282,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 		}
 		
 		$views = array();
-		$current = ( !empty( $_GET['role'] ) ? $_GET['role'] : 'all');
+		$current = ( !empty( $_GET['role'] ) ? wc_clean($_GET['role']) : 'all');
 		
 		//All link
 		$class = ($current == 'all' ? ' class="current"' :'');
@@ -375,13 +375,22 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
                                                             update_user_meta($user_id, '_' . $key, $state_name);
                                                             update_user_meta($user_id, '_' . $key . '_code', $state_code);
                                                         } else if(substr($key, 0, strlen("vendor_")) === "vendor_") {
-								update_user_meta($user_id, "_" . $key, wc_clean( wp_unslash( $value ) ) );
+								update_user_meta($user_id, "_" . $key, wp_unslash( $value ) );
 							}
 						} else {
 							if(substr($key, 0, strlen("vendor_")) === "vendor_") {
 								delete_user_meta($user_id, "_" . $key);
 							}
 						}
+					}
+					if ( isset( $_POST['vendor_shipping_policy'] ) ) {
+					    update_user_meta( $user_id, 'vendor_shipping_policy', stripslashes( html_entity_decode( $_POST['vendor_shipping_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
+					}
+					if ( isset( $_POST['vendor_refund_policy'] ) ) {
+					    update_user_meta( $user_id, 'vendor_refund_policy', stripslashes( html_entity_decode( $_POST['vendor_refund_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
+					}
+					if ( isset( $_POST['vendor_cancellation_policy'] ) ) {
+					    update_user_meta( $user_id, 'vendor_cancellation_policy', stripslashes( html_entity_decode( $_POST['vendor_cancellation_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
 					}
 				}
 				do_action('wcmp_vendor_details_update', $_POST, $vendor);
@@ -435,7 +444,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 				} else {
 					$display_name_option = array();
 				}
-				$vendor_profile_image = get_user_meta($_GET['ID'], '_vendor_profile_image', true);
+				$vendor_profile_image = get_user_meta(absint($_GET['ID']), '_vendor_profile_image', true);
         	
 				$personal_tab_options =  array(
 							"user_login" => array('label' => __('Username (required)', 'dc-woocommerce-multi-vendor'), 'type' => 'text', 'id' => 'user_login', 'label_for' => 'user_login', 'name' => 'user_login', 'desc' => __('Usernames cannot be changed.', 'dc-woocommerce-multi-vendor'), 'value' => isset($user->user_login)? $user->user_login : '', 'attributes' => array('readonly' => true)),
@@ -450,9 +459,9 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 						);
 				$store_tab_options = array();
 								
-				if( is_user_wcmp_vendor($_GET['ID']) ) {
+				if( is_user_wcmp_vendor(absint($_GET['ID'])) ) {
 					$is_approved_vendor = true;
-					$vendor_obj = get_wcmp_vendor($_GET['ID']);
+					$vendor_obj = get_wcmp_vendor(absint($_GET['ID']));
 					
 					$current_offset = get_user_meta($vendor_obj->id, 'gmt_offset', true);
 					$tzstring = get_user_meta($vendor_obj->id, 'timezone_string', true);
@@ -490,10 +499,14 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 								"vendor_fb_profile" => array('label' => __('Facebook', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_fb_profile', 'label_for' => 'vendor_fb_profile', 'name' => 'vendor_fb_profile', 'value' => $vendor_obj->fb_profile),
 								"vendor_twitter_profile" => array('label' => __('Twitter', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_twitter_profile', 'label_for' => 'vendor_twitter_profile', 'name' => 'vendor_twitter_profile', 'value' => $vendor_obj->twitter_profile),
 								"vendor_linkdin_profile" => array('label' => __('LinkedIn', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_linkdin_profile', 'label_for' => 'vendor_linkdin_profile', 'name' => 'vendor_linkdin_profile', 'value' => $vendor_obj->linkdin_profile),
-								"vendor_google_plus_profile" => array('label' => __('Google Plus', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_google_plus_profile', 'label_for' => 'vendor_google_plus_profile', 'name' => 'vendor_google_plus_profile', 'value' => $vendor_obj->google_plus_profile),
 								"vendor_youtube" => array('label' => __('YouTube', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_youtube', 'label_for' => 'vendor_youtube', 'name' => 'vendor_youtube', 'value' => $vendor_obj->youtube),
 								"vendor_instagram" => array('label' => __('Instagram', 'dc-woocommerce-multi-vendor'), 'type' => 'url', 'id' => 'vendor_instagram', 'label_for' => 'vendor_instagram', 'name' => 'vendor_instagram', 'value' => $vendor_obj->instagram),
 							);
+					$policy_tab_options = array(
+			                "vendor_shipping_policy" => array('label' => __('Shipping Policy', 'dc-woocommerce-multi-vendor'), 'type' => 'wpeditor', 'id' => 'vendor_shipping_policy', 'label_for' => 'vendor_shipping_policy', 'name' => 'vendor_shipping_policy', 'cols' => 50, 'rows' => 6, 'value' => $vendor_obj->shipping_policy), // Textarea
+			                "vendor_refund_policy" => array('label' => __('Refund Policy', 'dc-woocommerce-multi-vendor'), 'type' => 'wpeditor', 'id' => 'vendor_refund_policy', 'label_for' => 'vendor_refund_policy', 'name' => 'vendor_refund_policy', 'cols' => 50, 'rows' => 6, 'value' => $vendor_obj->refund_policy), // Textarea
+			                "vendor_cancellation_policy" => array('label' => __('Cancellation/Return/Exchange Policy', 'dc-woocommerce-multi-vendor'), 'type' => 'wpeditor', 'id' => 'vendor_cancellation_policy', 'label_for' => 'vendor_cancellation_policy', 'name' => 'vendor_cancellation_policy', 'cols' => 50, 'rows' => 6, 'value' => $vendor_obj->cancellation_policy), // Textarea
+			            );
 					
 					$payment_admin_settings = get_option('wcmp_payment_settings_name');
 					$payment_mode = array('payment_mode' => __('Payment Mode', 'dc-woocommerce-multi-vendor'));
@@ -605,7 +618,18 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 					<li> 
 						<a href="#vendor-shipping"><span class="dashicons dashicons-id-alt"></span> <?php echo __('Vendor Shipping', 'dc-woocommerce-multi-vendor'); ?></a>
 					</li>
-					<?php } 
+					<?php if ( get_wcmp_vendor_settings('store_follow_enabled', 'general') && get_wcmp_vendor_settings('store_follow_enabled', 'general') == 'Enable' ) { ?>
+						<li> 
+							<a href="#vendor-follow"><span class="dashicons dashicons-id-alt"></span> <?php echo __('Vendor Followers', 'dc-woocommerce-multi-vendor'); ?></a>
+						</li>
+					<?php } ?>
+						<?php if($is_approved_vendor && get_wcmp_vendor_settings( 'is_policy_on', 'general' ) == 'Enable' ) {?>
+							<li> 
+								<a href="#vendor-policy"><span class="dashicons dashicons-lock"></span> <?php esc_html_e('Vendor Policy', 'dc-woocommerce-multi-vendor'); ?></a>
+							</li>
+						<?php
+						}
+					} 
 					do_action('wcmp_vendor_preview_tabs_post', $is_approved_vendor);
 					?>
 				</ul>
@@ -638,7 +662,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 							if($is_approved_vendor) echo '<h2>' . __('Vendor Application Archive', 'dc-woocommerce-multi-vendor') . '</h2>';
 							else echo '<h2>' . __('Vendor Application Data', 'dc-woocommerce-multi-vendor') . '</h2>';
 							
-							$vendor_application_data = get_user_meta($_GET['ID'], 'wcmp_vendor_fields', true);
+							$vendor_application_data = get_user_meta(absint($_GET['ID']), 'wcmp_vendor_fields', true);
 							if (!empty($vendor_application_data) && is_array($vendor_application_data)) {
 								foreach ($vendor_application_data as $key => $value) {
                                                                     if ($value['type'] == 'recaptcha') continue;
@@ -682,7 +706,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 								echo '<div class="wcmp-no-form-data">' . __('No Vendor Application archive data!!', 'dc-woocommerce-multi-vendor') . '</div>';
 							}
 							
-							$wcmp_vendor_rejection_notes = unserialize( get_user_meta( $_GET['ID'], 'wcmp_vendor_rejection_notes', true ) );
+							$wcmp_vendor_rejection_notes = unserialize( get_user_meta( absint($_GET['ID']), 'wcmp_vendor_rejection_notes', true ) );
 							
 							if(is_array($wcmp_vendor_rejection_notes) && count($wcmp_vendor_rejection_notes) > 0) {
 								echo '<h2>' . __('Notes', 'dc-woocommerce-multi-vendor') . '</h2>';
@@ -696,6 +720,11 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 						?>
 					</div>
 					<div id="vendor-shipping">
+						<?php wcmp_vendor_different_type_shipping_options(absint($_GET['ID'])); ?>
+						<div id="wcmp-vendor-shipping-by-distance-section">
+							<?php wcmp_vendor_distance_by_shipping_settings(absint($_GET['ID'])); ?>
+						</div>
+						<div id="wcmp-vendor-shipping-by-zone-section">
 						<table class="wcmp-shipping-zones wc-shipping-zones widefat">
 							<thead>
 								<tr>
@@ -726,7 +755,6 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 															$vendor_shipping_methods_titles[] = "<li class='wcmp-shipping-zone-method wc-shipping-zone-method $class_name'>" . $shipping_method['title'] . "</li>";
 														}
 														endif;
-														//$vendor_shipping_methods_titles = array_column($vendor_shipping_methods, 'title');
 														$vendor_shipping_methods_titles = implode('', $vendor_shipping_methods_titles);
 
 														if (empty($vendor_shipping_methods)) {
@@ -755,12 +783,65 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 								<?php }	?>
 							</tbody>
 						</table>
+						</div>
 						<!-- For Gettting new data -->
 						<table class="form-table wcmp-shipping-zone-settings wc-shipping-zone-settings">
 						</table>
 					</div>
-					
+					<?php if ( get_wcmp_vendor_settings('store_follow_enabled', 'general') && get_wcmp_vendor_settings('store_follow_enabled', 'general') == 'Enable' ) { ?>
+					<div id="vendor-follow">
+						<?php 
+						$followers_list_table_headers = apply_filters('wcmp_datatable_order_list_table_headers', array(
+							'customer_name'      => array('label' => __( 'Customer Name', 'dc-woocommerce-multi-vendor' )),
+							'time'    => array('label' => __( 'Date', 'dc-woocommerce-multi-vendor' )),
+						));
+						?>
+						<table class="widefat">
+							<thead>
+								<tr>
+									<?php 
+									if($followers_list_table_headers) :
+										foreach ($followers_list_table_headers as $key => $header) {
+											?><th><?php if(isset($header['label'])) echo $header['label']; ?></th>         
+											<?php
+										}
+									endif;
+									?>
+								</tr>
+							</thead>
+							<tbody>
+							<?php
+							$vendor_id = ( $user->ID ) ? absint($user->ID) : 0;
+					        $wcmp_vendor_followed_by_customer = get_user_meta( $vendor_id, 'wcmp_vendor_followed_by_customer', true ) ? get_user_meta( $vendor_id, 'wcmp_vendor_followed_by_customer', true ) : array();
+					        if ($wcmp_vendor_followed_by_customer) {
+						        foreach ($wcmp_vendor_followed_by_customer as $key_folloed => $value_followed) {
+						            $user_details = get_user_by( 'ID', $value_followed['user_id'] );
+						            if ( !$user_details ) continue;
+									?>
+									<tr>
+										<td>
+											<?php echo esc_html($user_details->data->display_name); ?>
+										</td>
+										<td><?php echo esc_html(human_time_diff(strtotime($value_followed['timestamp']))); ?></td>
+									</tr>
+								<?php } ?>
+							<?php } else { ?>
+								<tr>
+									<td><?php esc_html_e('No followers found', 'dc-woocommerce-multi-vendor'); ?></td>
+								</tr>
+							<?php } ?>
+							</tbody>
+						</table>
+					</div>
 					<?php }
+					}
+					if ($is_approved_vendor && get_wcmp_vendor_settings( 'is_policy_on', 'general' ) == 'Enable' ) { ?>
+						<div id="vendor-policy">
+							<h2><?php esc_html_e('Policy Settings', 'dc-woocommerce-multi-vendor'); ?></h2>
+							<?php $WCMp->wcmp_wp_fields->dc_generate_form_field(apply_filters("settings_{$this->tab}_policy_tab_options", $policy_tab_options, $vendor_obj));?>
+						</div>
+						<?php
+					}
 					do_action('wcmp_vendor_preview_tabs_form_post', $is_approved_vendor);
 					?>
 					<div class="clear"></div>
@@ -809,7 +890,7 @@ class WCMp_Settings_WCMp_Vendors extends WP_List_Table {
 			<div id="nds-wp-list-table-demo">			
 				<div id="nds-post-body">		
 					<form action="" method="get">
-					<input type="hidden" name="page" value="<?php echo $_REQUEST['page'] ?>" />					
+					<input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page']) ?>" />					
 					<?php
 						$this->prepare_items();
 						$this->views();

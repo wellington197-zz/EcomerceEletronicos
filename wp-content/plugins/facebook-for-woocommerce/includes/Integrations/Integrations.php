@@ -12,7 +12,7 @@ namespace SkyVerge\WooCommerce\Facebook\Integrations;
 
 defined( 'ABSPATH' ) or exit;
 
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 /**
  * The integrations handler.
@@ -51,10 +51,10 @@ class Integrations {
 	 */
 	private function load_integrations() {
 
-		$registered_integrations = [
+		$registered_integrations = array(
 			'WC_Facebook_WPML_Injector' => '/includes/fbwpml.php',
 			Bookings::class             => '/includes/Integrations/Bookings.php',
-		];
+		);
 
 		foreach ( $registered_integrations as $class_name => $path ) {
 

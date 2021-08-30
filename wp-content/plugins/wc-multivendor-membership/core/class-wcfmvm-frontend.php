@@ -686,8 +686,8 @@ class WCFMvm_Frontend {
 									_e( 'Cancel my membership: ', 'wc-multivendor-membership' );
 									echo '<a href="#" style="float: none; padding: 10px !important;" data-memberid="'.$vendor_id.'" data-membershipid="'.$wcfm_membership_id.'" id="wcfm_membership_cancel_button" class="wcfm_membership_cancel_button wcfm_submit_button">' . __( 'Cancel', 'wc-multivendor-membership' ) . '</a>';
 									echo "<div class=\"wcfm_clearfix\"></div><br />";
-									echo '</div>';
 								}
+								echo '</div>';
 							}
 							?>
 						</div>
@@ -1049,6 +1049,9 @@ class WCFMvm_Frontend {
 		$billing_period_count = isset( $subscription['billing_period_count'] ) ? $subscription['billing_period_count'] : 1;
 		$re_attempt = isset( $subscription['re_attempt'] ) ? 'yes' : 'no';
 		
+		$payment_currency = strtoupper(get_woocommerce_currency());
+		$payment_currency = apply_filters( 'wcfm_membership_payment_currency', $payment_currency );
+		
 		if( !empty( $trial_period ) && empty( $trial_amt ) ) {
 			$trial_amt = 1;
 		}
@@ -1063,7 +1066,7 @@ class WCFMvm_Frontend {
 			<input type="hidden" name="charset" value="utf-8">
 			<input type="hidden" name="bn" value="TipsandTricks_SP">
 			<input type="hidden" name="business" value="<?php echo $paypal_email; ?>">
-			<input type="hidden" name="currency_code" value="<?php echo get_woocommerce_currency(); ?>">
+			<input type="hidden" name="currency_code" value="<?php echo $payment_currency; ?>">
 			<input type="hidden" name="item_number" value="<?php echo $membership_id; ?>">
 			<input type="hidden" name="item_name" value="<?php echo $title . ' - ' . $description; ?>">
 			
@@ -1142,6 +1145,7 @@ class WCFMvm_Frontend {
 		$period_options = array( 'D' => __( 'Day(s)', 'wc-multivendor-membership' ), 'M' => __( 'Month(s)', 'wc-multivendor-membership' ), 'Y' => __( 'Year(s)', 'wc-multivendor-membership' ) );
 		$re_attempt = isset( $subscription['re_attempt'] ) ? 'yes' : 'no';
 		$payment_currency = strtoupper(get_woocommerce_currency());
+		$payment_currency = apply_filters( 'wcfm_membership_payment_currency', $payment_currency );
 		
 		if( !empty( $trial_period ) ) {
 			$billing_amt = 0;

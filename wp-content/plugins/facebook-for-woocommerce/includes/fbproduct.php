@@ -9,7 +9,7 @@
  */
 
 use SkyVerge\WooCommerce\Facebook\Products;
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -39,6 +39,7 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 		const FB_PRODUCT_IMAGE       = 'fb_product_image';
 		const FB_VARIANT_IMAGE       = 'fb_image';
 		const FB_VISIBILITY          = 'fb_visibility';
+		const FB_REMOVE_FROM_SYNC    = 'fb_remove_from_sync';
 
 		const MIN_DATE_1 = '1970-01-29';
 		const MIN_DATE_2 = '1970-01-30';
@@ -197,9 +198,13 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			$image_urls = array_merge( $image_urls, $this->get_gallery_urls() );
 			$image_urls = array_filter( array_unique( $image_urls ) );
 
+			// Regenerate $image_url PHP array indexes after filtering.
+			// The array_filter does not touches indexes so if something gets removed we may end up with gaps.
+			// Later parts of the code expect something to exist under the 0 index.
+			$image_urls = array_values( $image_urls );
+
 			if ( empty( $image_urls ) ) {
-				// TODO: replace or remove this placeholder - placeholdit.imgix.net is no longer available {WV 2020-01-21}
-				$image_urls[] = sprintf( 'https://placeholdit.imgix.net/~text?txtsize=33&name=%s&w=530&h=530', rawurlencode( strip_tags( $this->woo_product->get_title() ) ) );
+				$image_urls[] = facebook_for_woocommerce()->get_plugin_url() . '/assets/images/woocommerce-placeholder.png';
 			}
 
 			return $image_urls;
@@ -214,7 +219,7 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 		 *
 		 * @since 2.0.2
 		 *
-		 * @param array $image_urls all image URLs for the product
+		 * @param array $image_urls all image URLs for the product.
 		 * @return array
 		 */
 		private function get_additional_image_urls( $image_urls ) {
@@ -425,7 +430,7 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			// Convert all slug_names in $option_values into the visible names that
 			// advertisers have set to be the display names for a given attribute value
 			$terms = get_the_terms( $this->id, $key );
-			return ! is_array( $terms ) ? [] : array_map(
+			return ! is_array( $terms ) ? array() : array_map(
 				function ( $slug_name ) use ( $terms ) {
 					foreach ( $terms as $term ) {
 						if ( $term->slug === $slug_name ) {
@@ -438,13 +443,6 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			);
 		}
 
-		public function get_variant_option_name( $label, $default_value ) {
-			// For the given label, get the Visible name rather than the slug
-			$meta           = get_post_meta( $this->id, $label, true );
-			$attribute_name = str_replace( 'attribute_', '', $label );
-			$term           = get_term_by( 'slug', $meta, $attribute_name );
-			return $term && $term->name ? $term->name : $default_value;
-		}
 
 		public function update_visibility( $is_product_page, $visible_box_checked ) {
 			$visibility = get_post_meta( $this->id, self::FB_VISIBILITY, true );
@@ -605,7 +603,7 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 				$product_data                            = $this->apply_enhanced_catalog_fields_from_attributes( $product_data, $google_product_category );
 			}
 
-			// add the Commerce values (only inventory for the momenbt)
+			// add the Commerce values (only inventory for the moment)
 			if ( Products::is_product_ready_for_commerce( $this->woo_product ) ) {
 				$product_data['inventory'] = (int) max( 0, $this->woo_product->get_stock_quantity() );
 			}
@@ -668,20 +666,57 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 			}
 			$enhanced_data = array();
 
-			$category       = $category_handler->get_category_with_attrs( $google_category_id );
-			$all_attributes = $category['attributes'];
+			$category_attrs = $category_handler->get_attributes_with_fallback_to_parent_category( $google_category_id );
+			$all_attributes = $this->get_matched_attributes_for_product( $this->woo_product, $category_attrs );
+
 			foreach ( $all_attributes as $attribute ) {
-				$value = Products::get_enhanced_catalog_attribute( $attribute['key'], $this->woo_product );
+				$value            = Products::get_enhanced_catalog_attribute( $attribute['key'], $this->woo_product );
+				$convert_to_array = (
+					isset( $attribute['can_have_multiple_values'] ) &&
+					true === $attribute['can_have_multiple_values'] &&
+					'string' === $attribute['type']
+				);
 
 				if ( ! empty( $value ) &&
 					$category_handler->is_valid_value_for_attribute( $google_category_id, $attribute['key'], $value )
 				) {
+					if ( $convert_to_array ) {
+						$value = array_map( 'trim', explode( ',', $value ) );
+					}
 					$enhanced_data[ $attribute['key'] ] = $value;
 				}
 			}
 
 			return array_merge( $product_data, $enhanced_data );
 		}
+
+
+		/**
+		 * Filters list of attributes to only those available for a given product
+		 *
+		 * @param \WC_Product $product WooCommerce Product
+		 * @param array       $all_attributes List of Enhanced Catalog attributes to match
+		 * @return array
+		 */
+		public function get_matched_attributes_for_product( $product, $all_attributes ) {
+			$matched_attributes = array();
+			$sanitized_keys     = array_map(
+				function( $key ) {
+						return \WC_Facebookcommerce_Utils::sanitize_variant_name( $key, false );
+				},
+				array_keys( $product->get_attributes() )
+			);
+
+			$matched_attributes = array_filter(
+				$all_attributes,
+				function( $attribute ) use ( $sanitized_keys ) {
+					return in_array( $attribute['key'], $sanitized_keys );
+				}
+			);
+
+			return $matched_attributes;
+		}
+
 
 		/**
 		 * Normalizes variant data for Facebook.
@@ -720,14 +755,12 @@ if ( ! class_exists( 'WC_Facebook_Product' ) ) :
 				$label = wc_attribute_label( $original_variant_name, $product );
 
 				// Clean up variant name (e.g. pa_color should be color)
-				// Replace "custom_data:foo" with just "foo" so we can use the key
-				// Product item API expects "custom_data" instead of "custom_data:foo"
-				$new_name = str_replace( 'custom_data:', '', \WC_Facebookcommerce_Utils::sanitize_variant_name( $original_variant_name ) );
+				$new_name = \WC_Facebookcommerce_Utils::sanitize_variant_name( $original_variant_name, false );
 
 				// Sometimes WC returns an array, sometimes it's an assoc array, depending
 				// on what type of taxonomy it's using.  array_values will guarantee we
 				// only get a flat array of values.
-				if ( $options = $this->get_variant_option_name( $label, $attributes[ $original_variant_name ] ) ) {
+				if ( $options = \WC_Facebookcommerce_Utils::get_variant_option_name( $this->id, $label, $attributes[ $original_variant_name ] ) ) {
 
 					if ( is_array( $options ) ) {
 

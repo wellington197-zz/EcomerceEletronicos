@@ -98,7 +98,7 @@ class Collection extends StripeObject implements \IteratorAggregate
             // If the URL contains a query param, parse it out into $params so they
             // don't interact weirdly with each other.
             $query = [];
-            parse_str($url['query'], $query);
+            parse_str($url['query'], $query); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $params = array_merge($params ?: [], $query);
         }
 

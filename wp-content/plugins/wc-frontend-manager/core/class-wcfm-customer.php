@@ -295,6 +295,11 @@ class WCFM_Customer {
 				break;
 				
 				case 'wcfm-customers-manage':
+					if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+						echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+						wp_die();
+					}
+					
 					include_once( $controllers_path . 'wcfm-controller-customers-manage.php' );
 					new WCFM_Customers_Manage_Controller();
 				break;
@@ -352,6 +357,11 @@ class WCFM_Customer {
   public function wcfm_delete_wcfm_customer() {
   	global $WCFM, $WCFMu;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	$customerid = absint( $_POST['customerid'] );
 		
 		if($customerid) {
@@ -378,7 +388,7 @@ class WCFM_Customer {
   	
   	if( isset( $_POST['customer_details_change'] ) && !empty( $_POST['customer_details_change'] ) ) {
   		$customer_id = absint( $_POST['customer_details_change'] );
-  		echo '{"status": true, "redirect": "' . get_wcfm_customers_details_url($customer_id) . '"}';
+  		echo '{"status": true, "redirect": "' . esc_url( get_wcfm_customers_details_url($customer_id) ) . '"}';
   	}
   	
   	die;

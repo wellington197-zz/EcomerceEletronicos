@@ -1,148 +1,246 @@
-=== Best WooCommerce Multivendor Marketplace Solution - WC Marketplace ===
+=== Multivendor Marketplace Solution for WooCommerce - WC Marketplace ===
 Contributors: wcmp, purnendu, itzmekhokan, rajsekharchatterjee11, sumitsingh89612
 Tags: multi vendor marketplace, woocommerce multivendor marketplace, multi seller store, product vendors, best marketplace plugin, multi seller, one product multi seller, woocommerce vendors, ebay, etsy, amazon, commission rate
 Donate link: https://wc-marketplace.com/donate
 Requires at least: 4.4
-Tested up to: 5.5.1
+Tested up to: 5.8
 Requires PHP: 5.6
-Stable tag: 3.5.11
+Stable tag: 3.7.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 ## WC Marketplace - brings you, your easiest and one stop solution to build a perfect online marketplace website.
 
 == Description ==
-### Best free #1 multivendor marketplace plugin for a perfect WooCommerce website.
-Ever dreamt of having a store like Amazon, eBay, etsy, AirBnB or Flipkart? Then WC Marketplace will turn your dreams into a reality.
-You will have an online eCommerce store setup, where multiple merchants, vendors, traders or sellers can sell goods or services to customers in no time. ☺
+Afraid of launching an **Online Marketplace**? Well, worry no more WC Marketplace provides you with the best **marketplace software**, you can get, to kickstart your own **virtual eCommerce marketplace**. This free WordPress plugin equips you with the best of features that help to create any marketplace of your choice. So, **create a website like Amazon, Etsy or Airbnb**  without any worries. 
 
-> No time to read? Jump to: Benefits overview.
-> - **[Customer Benefits](#customer-benefits)**
-> - **[Vendor Benefits](#vendor-benefits)**
-> - **[Admin Benefits](#admin-benefits)**
+[Try Our Demo](http://wcmpdemos.com/all-in-one-demo/my-account/) | [Support](https://wc-marketplace.com/support-forum/) | [Features](https://wc-marketplace.com/features/) | [Extensions](https://wc-marketplace.com/addons/) | Marketplaces 
 
-## Why choose WC Marketplace?
-There are numerous competitors on similar grounds, then why WCMp?
-Let's list down facts so that we can answer your question and simplify your choice.
-#### Fact #1: Highest 5 star rated marketplace plugin.
-WC Marketplace is a free marketplace solution with extremely powerful and top market level features. Think of any eCommerce based multivendor marketplace and you can recreate the same with WC Marketplace. You are getting all the best features for zero payment.
-#### Fact #2: An acclaimed 5 star rated support team.
-Facing a hard to explain issue? Or a simple plugin conflict? Maybe, an issue with WCMp you've already debugged? Or maybe, just an issue, you are not sure of? WC Marketplace support team will listen to you patiently and solve your problems in the blink of an eye. Come, try WC Marketplace and it's set of talented support engineers.
-#### Fact #3: Value for customers.
-At WCMp, we believe in family. Once, you've placed your trust in us, you are our family. If you are facing a trouble with your website, we’ll be up on our toes to provide all the help we can. Our customers have also become our contributors. Found a bug? Or shared a piece of code that can help with the development? Or a simple language fix? Maybe just an idea? Your smallest contribution counts. **[See here](https://wc-marketplace.com/external-contributors/).**
-#### Fact #4: Regular updates.
-WC Marketplace will never compromise with your security. It provides regular updates to prevent any sort of vulnerabilities and to stay updated with the latest multivendor marketplace trends. Found a feature on Amazon yesterday? It might just be there on the priority list in the next WCMp update.
-#### Fact #4: A vast knowledgebase and documentation.
-WC Marketplace provides a thorough guide on how to setup your multivendor marketplace. Read through each document carefully and carry out the necessary steps to have a fully functional and equipped eCommerce marketplace solution that is ready to take on the best in market competition.
-#### Fact #5: So much and for free.
-Lastly, you get all the goodness of WCMp and much more **simply for free.**
+### Try us because we provide:
+* **Free Software** that requires **no codes** to start with 
+* **Regular Updates** for security fixes and better user experience
+* A fabulous **Support Team**
 
-## So, the answer is simple - From why choose WC Marketplace to why not choose WC Marketplace?
-An eCommerce multivendor marketplace solution is all about simpler and better user (customer's, vendor's and admin's) experience. Interested? Read on to find out more.
-### <a id="customer-benefits"></a>What is the customer experience like?
-- _Customers can not only see all the products, categories listed on your store but they also get an exclusive list of vendors listed on your site, so that they know whom to choose from ( This is termed as the **Vendor List** )._
-- _Customers can also search for a vendor by their nearest location or by product categories or even alphabetically ( technically, it is called **Vendor Search** or **Vendor Filter** )._
-- _If the customer has a particular vendor in mind, they can view all the products belonging to the vendor on one single page ( termed as: **Vendor Shop page** )._
-- _For customers ease of shopping experience, if a single product is sold by multiple vendors, customers can **compare the rates** each vendor has to offer._
-- _Customers can also buy products from different vendors in a single order._
-- _A customer can directly question the vendor about a product before proceeding with the purchase ( termed as: **Product Questions and Answers section** )._
-- _If a customer finds a problem with a particular vendor or so they can **report an abuse** against the vendor._
-- _Last but not at all the least, an easy checkout process with **WooCommerce supported payment gateways**._
+### Why WCMP?
 
-> Insights from future WCMp for customers:
-> - **Customer's question and answer tab**
-> - **Live Order tracking**
-> - **Return and Refund Module**
-> - **Support Ticket Module**
+##### ✓ **Free Tools for Marketplace Beginners** - WC Marketplace presents you with a range of tools that can help you operate any kind of marketplace be it an all-in-one **Marketplace like Amazon,** or a niche marketplace like **Etsy.**
 
-### <a id="vendor-benefits"></a>With so much for customers, what's in store for the vendors?
-- _An entirely separate frontend dashboard, where they can manage their products, coupons, orders, commissions, customer questions and much more ( technically termed as: **The Vendor Dashboard** )_.
-- _Vendors get their dedicated store ( or vendor's shop ) and their equivalent store settings which they can manage themselves._
-- _Vendors get a **weekly and monthly sales report** in the vendor dashboard itself._
-- _For overseas marketplaces, vendors can also see their sales report based on locations, which country has ordered more of their products ( termed as: **Visitors Map** )._
-- _They can also set their **shop location using Google maps**, they can also add their **external shop URL**, **link their social profiles**, which will be visible to the customers. In short, vendors can manage their profile completely from their dashboard._
+##### ✓  **Easy Startup Guide** -  WC Marketplace plugin provides you with an **[Easy Setup Wizard](https://wc-marketplace.com/knowledgebase/admin-multi-step-setup-wizard/)**, which will help you get started in no time 
 
-##### ✓ In terms of Product Management: 
-- _Vendors can **add or upload products** from their dashboard itself just as WooCommerce provides in the backend - which includes adding **virtual and downloadable products**, **setting tax or shipping classes**, **managing product tags**, **adding product attributes**, **manage the inventory of each product** and much more._
-- _Vendors can also sell products previously listed by other vendors as theirs i.e. a product will have more than one vendor attached to it (this is called the much in demand **Single Product Multiple Vendors** )._
-- _Vendors can also add their products **GTIN, ISBN or UAN number**._
-- _A **categorical tree** or **Browse Tree Guides (BTG)** for products just like Amazon is also included for ease of product management._
+##### ✓ **Simple Application Process** - Do away with all the complicated processes involved in creating a personalised registration form as WCMp provides you with a [**customisable registration form**](https://wc-marketplace.com/knowledgebase/setting-vendor-registration-wcmp/). With this registration form, you can add, remove or change the query details anyway you like. 
 
-##### ✓ Coupon Management:
-- _Vendors can **create, edit, delete fixed/percentage coupons** ( applicable only for their products ) similar to WooCommerce._
+##### ✓ **Personalised Dashboard** - With WCMp you get an uncomplicated [**user friendly dashboard**](https://wc-marketplace.com/knowledgebase/admin-multi-step-setup-wizard/) that can help your vendors manage and track all their tasks. Whatever you want to track and manage you can convert this dashboard into a **sales dashboard, report dashboard or a management dashboard**.
 
-##### ✓ Shipping and Tax Management:
-- _Vendors can **enable or disable a shipping zone**, as is necessary._
-- _**Add shipping methods** and **configure shipping rates**._
-- _WC Marketplace also lets vendors configure **table rate shipping**, **flat rate**, **local pickup** and **free shipping**._
+##### ✓ **[Adjustable Commission plans](https://wc-marketplace.com/knowledgebase/setting-up-commission-and-other-payments-for-wcmp/)** - Add more to your revenue, by adopting the flexible commission plans only WCMp can provide. The commission structure set by us is created in such a way that you can add various **commission rates**, charge any commission fee and calculate commissions based on multiple commission types. 
 
-##### ✓ For Order Management:
-- _Vendors can see and **manage all their orders** from the vendor dashboard itself._
-- _They can **export their orders into a CSV**, **change the order status** and add an **order note for reference**._
-- _Vendors can also **mark an order as shipped** and **issue refunds for customers**._
+##### ✓ **[Marketplace for everything](https://wc-marketplace.com/knowledgebase/wcmp-frontend-manager/)** - With more than a few products options to choose from WCMp lets you create a marketplace for **any type of product** you desire. So whether it is **Digital or downloadable products** like **e-books** and **movies** you can create a site like **Sellfy** or **E-Junkie.** Or even marketplaces like **Oyo**, **Craigslist, ShareAsale and Cratejoy** can easily be created with a few clicks.
 
-##### ✓ Coming to, Vendor's Commissions:
-- _Vendors can select their preferred mode of payment - supported payment methods are: **PayPal, Stripe and Direct Bank Transfer**._
-- _Vendors receive their commissions at equal periods of time according to the payment schedule set by the admin although vendor does have an option to withdraw all or some of his pending dues at any point of time ( technically, it is termed as  **Request Withdrawal Commission** )._
-- _Vendors also have an access to their very own **ledger book** where they can see all of their **transaction history** and it's details._
-> Insights from future WCMp for vendors:
-> - **WPML Integration**
-> - **Vendor's Question Answer tab**
-> - **Vendor Followers Module**
-> - **Vendor Notification Module**
-> - **Deactivate Vendor account Module**
+##### ✓ **Trustworthy [Vendor/ Seller ](https://wc-marketplace.com/knowledgebase/vendors-submenu/)Manager -** In a **multi-vendor** site keeping track of your vendors is very important. With WCMp this job becomes easier as we provide you with a **vendor list** that provides you with the names and information of any vendor irrespective of their **application status**. Furthermore, you can refine your list of vendors by using various **filters based on a vendor's location, Application status or name**.  Along with this, you have access to a customisable **vendor database** that allows you to monitor and manage a vendor’s personal store from your own dashboard.  
 
-### <a id="admin-benefits"></a>What would the admin's experience be with WC Marketplace?
-###### _Simply hassle-free with just initial setups._
-- _**Automatic setup wizard** for a perfect online store setup._
-- _Admin can easily **customise the vendor's registration form** with innumerable built in form elements._
-- _Adding, managing or rejecting a **vendor's application** are under admin's supervision._
-- _**Set announcements** and **upload knowledgebases** for vendors._
-- _Admin configures and controls the **single product multiple vendors** flow._
-- _The admin also decides on the **template applicable for the vendor's shop** from a list of various predefined templates._
-- _An admin can generate sales report for each vendor ( termed as: **Vendor wise sales report** )._
-- _An exclusive **to-do list** for the admin is included for easier operation and management of the store._
-- _Admin can **accept payments from customers using any payment gateway** that are supported by WooCommerce._
+##### ✓ **Product Manager** - This WooCommerce marketplace plugin helps your turn your simple store in a **product multi vendor market** by providing you with essential management tools. With the tools, provided vendors can freely **list products, export and import product details** and continue with the **bulk product uploads**. 
 
-##### ✓ Incase of Product Management:
-- _Admin **manages the product types** that a vendor can upload from their dashboard._
-- _**Automatic or manual approval** from the admin is necessary after a product is submitted by the vendor._
+##### ✓ **Multiple vendors that sell the same product** - While there are numerous advantages to an **online marketplace**, nothing beats the physical market. To bridge this gap between virtual and brick-and-mortar models WC Marketplace offers the [**Single Product Multiple Vendors**](https://wc-marketplace.com/knowledgebase/setting-assign-single-product-multiple-seller/) features. And what makes this feature amazing is that it lets customers know which product they and at what price from the **list of product** sellers given.
 
-##### ✓ Coupon Management:
-- _Similar to product management, **automatic or manual approval** from the admin is necessary after the coupon has been submitted by the vendor._
-- _When an admin creates a coupon, the **coupon will be available across the entire website irrespective of vendors**._
+##### ✓ **In-built Order Manager** - This multi-vendor WordPress tool helps you manage your orders with ease using key features like **Order lists, Order Details, and Order Status Manager**. Apart from these other tools like **the Split Order module, Order notes** and **Order Mails** are a definite gain that is sure to make managing orders a pleasing experience for you. [Read here to learn more about WCMp Order Manager.](https://wc-marketplace.com/knowledgebase/wcmp-split-order-module/)
 
-##### ✓ In terms of admin's control over vendor's capability:
-- _An admin can **block or even suspend a vendor**._
-- _**Hide or display vendor's contact details** and **choose a colour template** for the vendors dashboard apart from vendor's product management capabilities discussed above._
+##### ✓ **Refund manager** - WCMp presents you with a **refund management software** that enables you to set **refund options** that help customers avail a refund. These options can be set as per the **refund status** of a product thus allowing you to have as much control as possible.
 
-##### ✓ Shipping and Tax Management:
-- _**Adding and configuring shipping zones** are all under admin's workload._
-- _**Configuring tax classes and tax rates** are also one of admin's primary roles._
+##### ✓ **Create Coupons** - Increase your website traffic with an enhanced coupon management system provided by WCMp. With this coupon manager vendors can set **coupon codes, create discount codes and promo codes** and **renew** old coupon codes. [To know more about the WCMp coupon manager and how it is different from others read here.](https://wc-marketplace.com/knowledgebase/setting-up-coupons-for-wcmp/)
 
-##### ✓ Configuring vendor's commissions:
-- _Admin can choose from a variety of commission types: **Commission per product**, **Commission per vendor** and **Commission per category**._
-- _Admin can configure the **allowable payment methods** for a vendor to receive payments, **the commission payment schedule**, **withdrawal locking period** ( time period after which the vendor can request for a withdrawal of commission ), **set disbursement threshold** ( the minimum monetary amount of pending commission required over which the vendor will be allowed to request for a withdrawal ) and **payment gateway charge** (on setting this, the set amount will be deducted from the vendor's pending dues )._
-- _Similar to WooCommerce order page, WC Marketplace also provides a **commission page** separately. Here, the admin can manage commissions entirely and change it's status._
+##### ✓ **Multiple Payment Methods** - WC Marketplace offers an impressive range of payment options like **PayPal, MassPay, Direct Bank Transfer and Stripe.** Along with this WCMp can integrate any compatible **WooCommerce payment gateway** option of your choice. With all the **eCommerce payment gateways** offered by WCMp, the **payment process** becomes seamless. [To learn more about WCMp Payments follow this document.](https://wc-marketplace.com/knowledgebase/payment/)
 
-> Insights from future WCMp for admin:
-> - **Vendor verification via SMS and email**
-> - **Product Approval module**
-> - **To-Do List and Announcement Enhancement**
+##### ✓ [**Flexible Shipping** ](https://wc-marketplace.com/knowledgebase/wcmp-shipping/)- Make managing shipping more effective and efficient with the WC Marketplace plugin as we provide you with the option of **Vendor Shipping**. This option allows vendors to charge various **shipping rates** on the basis of weight, country or product category. Along with this vendors can also avail the **shipping tracking** option that lets them know the status of their delivery.
 
-> Take a step forward and try our [demo](http://wcmpdemos.com/WCMp/my-account/).
+##### ✓ **Trustworthy Customers Support** - WCMp knows how much you treasure your customers which is why we offer your customer support tools like **[Vendor Reviews](https://wc-marketplace.com/knowledgebase/wcmp-vendor-dashboard-widgets/#nav-8)**, [Product Question and Answers](https://wc-marketplace.com/knowledgebase/wcmp-vendor-dashboard-widgets/#nav-9), **[Customer Support](https://wc-marketplace.com/knowledgebase/wcmp-setup-guide/)** that will help you support your customers and create trust in them.
 
-> <strong>Advertisement -</strong>
->
-> Our most popular addons
->
-> - [Advanced Frontend Manager](https://wc-marketplace.com/product/wcmp-frontend-product-manager)
-> - [Vendor Membership](https://wc-marketplace.com/product/wcmp-vendor-membership/)
-> - [Add-ons Bundle](https://wc-marketplace.com/wcmp-bundle/)
+##### ✓ **Social Marketplace -** WCMp also provides support to help you create a marketplace like **Facebook marketplace**. Now you can utilise the power of social media to not only communicate but also sell products. As WC Marketplace is **BBPress or BuddyPress Compatible,** you will not only be able to track consumers and customers on your site but also your vendors and their associates**.** 
+
+##### ✓ **Easy Migration Support** - WCMp encourages its customers to sample everything before they invest into our plugin for a long term. Which is why users who wish to switch from **Dokan, WCFM or WC Vendors** can now happily convert into a WCMpian, without the fear of losing precious data. The easy migration tool will allow its users to transfer data gathered from using Dokan or any other WooCommerce compatible marketplace plugin to WCMp without breaking a sweat. 
+
+##### ✓ **Multiple Language Support** - With the latest addition of the **WPML integration** vendors can now organize their product data in various languages.
+
+##### ✓ **Elementor Compatibility** - Another easy to use feature added by WCMp by making itself Elementor compatible is the easy page builder feature. This feature let's vendors create shop pages by **easily dragging and dropping elements** they feel is necessary for their store.
+
+##### ✓ **WCMp Follow Store -** Another latest innovation from WCMp is the follow Store feature that let's customers be posted with store updates of their choice.
+
+##### ✓ **Additional Management Tools** - You can find other management tools with WC Marketplace like **[Announcements](https://wc-marketplace.com/knowledgebase/wcmp-setup-guide/#nav-12)**, [To-Do List](https://wc-marketplace.com/knowledgebase/setting-up-to-do-list-for-wcmp/), and **[Knowledgebase](https://wc-marketplace.com/knowledgebase/wcmp-setup-guide/#nav-13)**. These tools are unique to only the WC Marketplace plugin. 
+
+### Taste Victory with Advanced Features
+Competition requires competent products which is why we bring to you a list of **affordable, easy to use extension** that will keep you ahead of your competition along with increasing your websites’ functionality. 
+
+##### ✓ **Customizable Vendor Shop** - Vendors can create and customise any kind of **virtual store** like a **baseball shop, a shoe-repair shop, ski shop** and others to customers by using our store management dashboard. To help vendors customize their vendor shops, we provide them with tools like **Store Logo, Store Banner, Store location,** and **Social media links.**
+
+##### ✓ **Advanced Product Features -** WCMp shares one goal that is to provide its users with any kind of marketplace they desire. To fulfil this goal, WCMp presents a **premium add-on** like [**Advanced Frontend Manager**](https://wc-marketplace.com/addons/). With this add-on, vendors can upload any type of product like **bookings, rental, accommodation, auction, subscription,** and many more. They can also export-**import products**, **create product add-ons** and many more. [To know more about Advanced Frontend Manager read here. ](https://wc-marketplace.com/knowledgebase/wcmp-frontend-manager/)
+
+##### ✓ [**Customizable Membership Plan**](https://wc-marketplace.com/product/wcmp-vendor-membership/) - **Membership model** businesses have flourished quite well. You can now create membership packages like **Free membership**, **trial membership** or **paid membership** package using our WCMP Vendor membership. Here you can decide the **membership fee, adjust price rates** and create **membership benefits** and plans to your desire. 
+
+##### ✓ **Advanced Product Catalogue** - Create a **catalog** that allows customers to view your product, with [WooCommerce Product Catalogue Enquiry Pro](https://wc-marketplace.com/product/woocommerce-catalog-enquiry-pro/). But what makes this added feature even more unique is the **enquiry cart** option that lets customers **inquire about multiple products** all at the same time. To make this feature sound more useful you can create a **catalogue list** showcasing all your products along with the add-to-cart option.
+
+##### ✓ **Advanced Analytics-** Allow your vendors to grow further with advanced features like [WCMp Vendor SEO and Analytics](https://wc-marketplace.com/product/wcmp-vendor-seo-and-analytics/) that gives them the power of **Google Analytics** for actionable and accurate data. Along with this, our plugin is compatible with some of the **best SEO plugins** like **Yoast** and **Rank Math**, which is assured to increase your SERP Ranking. 
+
+##### ✓ **Pro Inventory Manager** - Business stability can sometimes depend on proper **inventory control**. WCMp provides you with **inventory software** that helps you keep track of your inventory, set a low stock limit and manage inventory entries when and how required. 
+
+##### ✓ **Vendor Hours and vacation -** WCMp’s dual-purpose Vendor Vacation extension is the correct fit for your business if you want to let your vendors take a break once in a while. This extension uses a v**acation calendar** that works as a v**acation tracker** that helps vendors keep track of their mini- vacations. Apart from these vendors can use shop hours widgets that notifies of a shop’s **opening and closing time**. 
+
+##### ✓ **Customize Invoice** - WCMp provides vendors with a personalized invoice management software that lets them send invoices to their customers. Using this add-on invoices can be automatically generated and sent to the respective user. In addition to this vendors can choose their desired **vendor template** to create their invoice. 
+
+##### ✓ **Vendor Staff Manager** - Unburden your vendors with perfect **staff management software** that helps them hire innumerable members of staff, manage staff responsibilities and track staff workers. 
+
+# Marketplaces You Can Set Up with WC Marketplace
+- **Local Online Marketplace  like ebay, Rakuten, AliExpress**
+- **Retail Marketplace  like Amazon, Flipkart**
+- **Niche Marketplace  like Myntra, Nykaa** 
+- **Booking marketplace like  Oyo, Airbnb, MakeMy Trip**
+- **Rental Marketplace  like Craigslist, Yo!Rent**
+- **Subscription Marketplace  like Cratejoy, OwlCrate**
+- **Marketplace like Esty**
+- **Marketplace like Amazon**
+- **Marketplace like Flipkart**
+
+Note: WC marketplace does not set an e-commerce platform, but it converts an e-commerce platform into a marketplace. 
+
+### WCMp List of Free and Advanced Features 
+- **Hassle-free Migration Support (New)**
+
+- **Elementor Compatibility (New)**
+
+- **WPML multi-language support (New)**
+
+- **WCMp Follow Store (New)**
+
+- **Easy Setup Guide**
+ - **Admin Setup Wizard**
+ - Vendor Setup Wizard 
+
+- Swift **Application** 
+ - **Customizable** Vendors **Registration Form**
+
+- **Managing Multiple Vendors on a Multi-Vendor Site** 
+ - **[Seller Verification](https://wc-marketplace.com/product/wcmp-seller-verification/) (Pro)**
+ - **Vendor List** 
+ - Vendor’s Information/ Archive
+
+- **Powerful Product Tools**
+ - Effortlessly **upload product** 
+ - Product GTINs
+ - **Bulk Product Upload**
+ - **[Product import-export ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+
+- **Multiple Product Type Support**
+ - Simple Product
+ - Downloadable Product
+ - Virtual  Product
+ - [Variable Product ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)
+ - [Grouped Product ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)
+ - **[Affiliate Product ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+ - **[Bookings ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+ - **[Rental ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+ - **[Accommodation ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+ - **[Subscription ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)**
+ - [Bundled ](https://wc-marketplace.com/product/wcmp-frontend-manager/)(Pro)
+
+- Stress-free Order Manager
+ - **Order Lists**
+ - Order Status list
+ - **Track Order**
+
+- **Manage Inventory** with WCMp Stock Alert
+ - **[Inventory list ](https://wc-marketplace.com/product/wcmp-vendor-stock-alert/)(Pro)**
+ - [Stock Alert](https://wc-marketplace.com/product/wcmp-vendor-stock-alert/) (Pro)
+
+- **Suitable Payment Gateway** 
+ - **PayPal** 
+ - **MassPay** 
+ - **Stripe and [Stripe Add-On](https://wc-marketplace.com/product/wcmp-stripe-marketplace/)** 
+ - **[Mangopay](https://wc-marketplace.com/product/wcmp-mangopay-marketplace/) (Pro)**
+
+- **Flexible Shipping** 
+ - Weight-Based Shipping
+ - Product Based Shipping
+ - Print Shipping Label
+ - **Shipping Tracking**
+
+- **Diverse Commission and Commission Types**
+ - **Product Commission**
+ - Category based Commission
+ - **Vendor Based Commission**
+ - Commission for everyone
+ - Percentage Commission
+ - **Fixed-Rate Commission**
+ - Fixed+Percentage commission per transaction
+ - Fixed+Percentage Commission Per Unit
+
+- **Multiple Reports** 
+ - **Sales**
+ - **Product**
+ - **Vendor**
+ - **Earnings**
+ - [Category](https://wc-marketplace.com/product/wcmp-vendor-frontend-reports/) (Pro)
+ - **[Tax](https://wc-marketplace.com/product/wcmp-vendor-frontend-reports/) (Pro)**
+ - **Downloads Report (Pro)**
+
+- [**Advanced Product Catalogue**](https://wc-marketplace.com/product/woocommerce-catalog-enquiry-pro/)
+ - **[Product Catalogue](https://wc-marketplace.com/product/woocommerce-catalog-enquiry-pro/) (Pro)**
+ - **[Product inquiry](https://wc-marketplace.com/product/woocommerce-catalog-enquiry-pro/) (Pro)**
+
+- **Personalized Invoice** 
+ - **[Auto-Generated Invoice ](https://wc-marketplace.com/product/wcmp-pdf-invoice/) (Pro)**
+ - **[PDF and Packaging Slip Download ](https://wc-marketplace.com/product/wcmp-pdf-invoice/) (Pro)**
+ - [Fully Customisable](https://wc-marketplace.com/product/wcmp-pdf-invoice/) (Pro)
+
+- **SEO and Google Analytics**
+ - **[Track Google Analytics data](https://wc-marketplace.com/product/wcmp-vendor-seo-and-analytics/) (Pro)**
+ - **[Yoast Compatible ](https://wc-marketplace.com/product/wcmp-vendor-seo-and-analytics/) (Pro)**
+ - **[Customizable Open-graph Messages](https://wc-marketplace.com/product/wcmp-vendor-seo-and-analytics/) (Pro)**
+
+- **Vendor Shop hours**
+ - **[Shop’s Business hours](https://wc-marketplace.com/product/wcmp-vendor-vacation/) (Pro)**
+ - **[Vendor Holiday Calendar](https://wc-marketplace.com/product/wcmp-vendor-vacation/) (Pro)**
+ - **[Vacation Messages](https://wc-marketplace.com/product/wcmp-vendor-vacation/) (Pro)**
+
+- **Individual Seller Dashboard**
+ - **Product Manager**
+ - **Order Manager**
+ - **Coupon Manager**
+ - **Reports Manager** 
+ - **Payment Manager** 
+
+- **Vendor Staff**
+ - **[Manage Staff ](https://wc-marketplace.com/product/wcmp-vendor-staff/) (Pro)**
+ - **[Assign Tasks](https://wc-marketplace.com/product/wcmp-vendor-staff/) (Pro)**
+ - **[Track Staff Members](https://wc-marketplace.com/product/wcmp-vendor-staff/) (Pro)**
+
+
+## Words of Trust
+
+[“Plugin works as promised and the customer service rocks."](https://wordpress.org/support/topic/plugin-works-as-promised-and-customer-service-rocks/) ~ [***Fredo Lopez***](https://wordpress.org/support/topic/plugin-works-as-promised-and-customer-service-rocks/)
+
+[“The plugin is really awesome. Almost all the important things are free to use! And the support within the forum is very great. ](https://wordpress.org/support/topic/awesome-plugin-great-support-62/)[**Anyway for free support.**](https://wordpress.org/support/topic/awesome-plugin-great-support-62/) [I think it’s out of the ordinary that for something](https://wordpress.org/support/topic/awesome-plugin-great-support-62/) [**you don’t pay anything**](https://wordpress.org/support/topic/awesome-plugin-great-support-62/) [to receive source code which you just can copy/paste and if there are issues you will get further help."](https://wordpress.org/support/topic/awesome-plugin-great-support-62/) ~ [***Itunes1995***](https://wordpress.org/support/topic/awesome-plugin-great-support-62/)
+
+[“100% recommendable! ](https://wordpress.org/support/topic/great-plugin-and-amazing-support-72/)[**Amazing plugin, it works perfectly as it is described and it is compatible 100% with woocommerce plugin.**](https://wordpress.org/support/topic/great-plugin-and-amazing-support-72/) [The Support is also great, always keen to help you with any issue you have and in a short time. So, I can only say thanks to all the WC Marketplace team and congratulations for your plugin.”](https://wordpress.org/support/topic/great-plugin-and-amazing-support-72/) ~ [***Axelte***](https://wordpress.org/support/topic/great-plugin-and-amazing-support-72/)
+
+To know more on what we learnt from our customer [***read this blog*** ](https://wc-marketplace.com/blog/what-we-learnt-from-our-customers/)
+
+### [Popular Blogs ](https://wc-marketplace.com/blog/)
+Confused about **how to get started**? Read our Blogs on**e-commerce best practices**, **Multivendor Shops, how to increase your website traffic** and many more. These blogs are powerful, inspirational and detailed enough to educate on anything marketplace. 
+
+### Stay Connected
+Stay connected with WCMp and reap benefits like - 
+
+**[Quick Setup QuickStart ](https://wc-marketplace.com/knowledgebase/admin-multi-step-setup-wizard/)** - Setting up a Marketplace has now become more comfortable with our easy to follow Setup Wizard. 
+
+**[A Support team that’s always got your back](https://wc-marketplace.com/support-forum/)** - WC Marketplace has a round-the-clock support team that is there to help you in case you run into any trouble. 
+
+**[A grade Knowledgebase](https://wc-marketplace.com/knowledgebase/)** - WC Marketplace has a well-written knowledge base that gives you a fair idea of our plugin 
+
+**[We Keep Our Ears Open](https://wc-marketplace.com/custom-development/)** - WC Marketplace is open to new ideas and suggestions as we look forward to the little tit-bits provided by you.
+
+**[Fixing Common Errors](http://github.com/wcmarketplace/dc-woocommerce-multi-vendor)** - With WCMp, you can expect to see constant improvement as we try to fix our mistakes as soon as it occurs. 
+
+**[Frequently Asked Questions](https://wc-marketplace.com/faq/)** - WCMp team is happy to answer any queries you have so expect to receive answers for most of your queries here.
 
 == Installation ==
 NOTE: WC Marketplace plugin is an extension of WooCommerce, so the WooCommerce plugin must be installed and activated in your WordPress site for this plugin to work properly.
-
 
 1. Download and install WC Marketplace plugin using the built-in WordPress plugin installer.
 If you download WC Marketplace plugin manually, make sure it is uploaded to `/wp-content/plugins/` and activate the plugin through the `Plugins` menu in WordPress. Or follow the steps below:
@@ -151,9 +249,6 @@ Plugins > Add new > Upload plugin > Upload dc-woocommerce-multi-vendor.zip > Ins
 3. Configure email notifications from WooCommerce / Settings.
 4. View Commissions under WCMp / Commissions.
 5. View reports WCMp / Reports.
-
-
-
 
 == Frequently Asked Questions ==
 = Does this plugin work with newest WP version and also older versions? =
@@ -166,8 +261,6 @@ Ans. This plugin is tested with PHP version 5.6.
 Ans. You can find the documentation of our REST API on the [WCMp REST API Docs](https://wc-marketplace.github.io/rest-api-docs/).
 = WC Marketplace is awesome! Can I contribute? =
 Ans. Obviously, you can! Join in on our [GitHub repository](https://github.com/dualcube/dc-woocommerce-multi-vendor/) :)
-
-
 
 == Screenshots ==
 1. Vendor Dashboard.
@@ -185,10 +278,258 @@ Ans. Obviously, you can! Join in on our [GitHub repository](https://github.com/d
 13. Vendor profile management form dashboard.
 14. Show Multiple Seller in Single Product.
 
-
-
-
 == Changelog ==
+
+= 3.7.8 - 2021-08-04 =
+* Added - Compatibility of WooCommerce 5.5.2.
+* Added - Added filter for third party logo modification #920.
+* Fix - Error from new order plain mail #922.
+* Fix - spelling mistake on the shipping page #921.
+* Fix - Parameter mismatch with the third party plugin #919.
+* Fix - Stock status code issue at vendor dashboard #918.
+* Fix - Suborder search issue #917.
+* Updated - Language file.
+
+= 3.7.7 - 2021-07-22 =
+* Added - Compatibility of WordPress 5.8.
+* Added - Compatibility of WooCommerce 5.5.1.
+* Added - Create a new section for vendor shipping #909.
+* Added - Update description #908.
+* Added - Suborder creation via backend #903.
+* Fix - Backend search not working #901.
+* Fix - Policy tab display at the shop when admin disable it.
+* Updated - Language file.
+
+= 3.7.6 - 2021-07-06 =
+* Added - Distance wise shipping #872.
+* Added - Checkout delivery location through google and mapbox map.
+* Added - Table rate shipping migration.
+* Added - Stripe description added #879.
+* Added - Commission search by id #888.
+* Added - Vendor can change order status as per settings #883.
+* Enhancement - Admin gets mail when vendor add coupon #891.
+* Added - Added a new class for the third party modification #887.
+* Fix - Query monitor found an issue #878.
+* Fix - Shop manager sub order view issue #877.
+* Fix - Product policy text styling changed #874.
+* Fix - Hook filter conflict with the third party plugin #880.
+* Fix - Coupon expiry date design break #895.
+* Fix - Coupon not reflecting in the shipping mail sent to the customers #893.
+* Fix - Ledger table error.
+* Fix - WCMp shipping error with PHP 8.0.6.
+* Dev - Added `wcmp_stripe_description_at_paid_time` filter.
+* Dev - Added `wcmp_is_allow_checkout_user_location` filter.
+* Dev - Added `wcmp_map_icon_width` filter.
+* Dev - Added `wcmp_map_icon_height` filter.
+* Dev - Added `wcmp_is_allow_store_shipping` filter.
+* Dev - Added `wcmp_is_apply_tax_on_shipping_rates` filter.
+* Dev - Added `wcmp_local_pickup_shipping_option_label` filter.
+* Dev - Added `wcmp_free_shipping_threshold_consider_tax` filter.
+* Dev - Added `wcmp_shipping_distance_calculate_amount` filter.
+* Dev - Added `wcmp_is_allow_hide_admin_shipping_for_vendor_shipping` filter.
+* Dev - Added `wcmp_is_allow_admin_shipping_if_no_vendor_shipping` filter.
+* Dev - Added `wcmp_settings_fields_shipping_rates_by_distance` filter.
+* Dev - Added `wcmp_vendor_shipping_option_to_vendor` filter.
+* Updated - Language file.
+
+= 3.7.5 - 2021-06-15 =
+* Added - Commission by product price #870.
+* Added - LinkedIn & Instagram support with elementor.
+* Added - Let admin decide whether the vendor can change the order status #777.
+* Added - Admin can set order status for withdrawal #777.
+* Added - Compatibility of WooCommerce 5.4.1.
+* Enhancement - Shipping module enhancement #865.
+* Fix - First product missing from elementor page #866.
+* Fix - Pagination not working in the payment history page #864.
+* Fix - Rejected vendor issue #860.
+* Fix - Update Razorpay link #862.
+* Fix - Checking issue #861.
+* Fix - Free shipping coupon missing #846.
+* Dev - Added `wcmp_elementor_vendor_product_page` filter.
+* Dev - Added `withdrawl_order_status` filter.
+* Dev - Added `wcmp_menu_manager_fields` filter.
+* Updated - Language file.
+
+= 3.7.4 - 2021-05-25 =
+* Added - Mapbox API integration #780.
+* Added - Tooltip description support on vendor registration from #787.
+* Added - Let admin decide whether a published product needs admin's approval for each edit #799.
+* Added - Compatibility of WordPress 5.7.2.
+* Enhancement - Weight display even if shipping disabled #850.
+* Enhancement - Store description support with elementor page #855.
+* Enhancement - Shop page name can be removed by filter #851.
+* Enhancement - Grunt version updated.
+* Fix - Sql error.
+* Dev - Added `wcmp_disabled_product_shipping_tab` filter.
+* Dev - Added `wcmp_mapbox_map_style_switcher` filter.
+* Dev - Added `wcmp_dashboard_location_widget_map_style` filter.
+* Dev - Added `wcmp_show_page_title` filter.
+* Updated - Language file.
+
+= 3.7.3 - 2021-05-11 =
+* Added - Razor pay payment gateway integration.
+* Added - Order search for refund request #822.
+* Added - Older version review link compatibility with filter #835.
+* Enhancement - Shipping settings enhancement #843.
+* Enhancement - Grunt version updated.
+* Fix - Admin end gateway charge section js issue #845.
+* Fix - Display output modification on the shop page #833.
+* Fix - Woocommerce order count display issue #831.
+* Fix - Mobile view issue at the shop page #829.
+* Fix - Increase the size of social icons on the shop page #827.
+* Fix - Vendor shop page endpoints are not working when vendor nickname and shop slug are different #826.
+* Fix - Error at checkout page #830.
+* Fix - Added filter for create commission with coupon #828.
+* Dev - Added `wcmp_admin_pay_commission_more_than_order_amount` filter.
+* Updated - Language file.
+
+= 3.7.2 - 2021-04-27 =
+* Added - Vendor mail when order status changed by admin #802.
+* Added - Sales report mail as per custom date selected by admin #782.
+* Added - WCMp Sidebar help #814.
+* Fix - Vendor quick view widget is not working #823.
+* Fix - Todo list number count issue #819.
+* Fix - Vendor 404 page not working #818.
+* Fix - Mobile view issue at shop page #816.
+* Fix - Customer Q&A not wokring on Russian Language #813.
+* Fix - Stock table is empty at dashboard product page #812.
+* Fix - To-do list page icon not working #807.
+* Fix - String issue at dashboard shipping page #778.
+* Fix - Error at admin section setup widget page.
+* Dev - Added `custom_date_order_stat_report_mail` filter.
+* Dev - Added `wcmp_enabled_vendor_monthly_report_mail` filter.
+* Dev - Added `custom_date_order_stat_report_mail` filter.
+* Updated - Language file.
+
+= 3.7.1 - 2021-04-09 =
+* Added - Vendor shop page old structure support along with new structure.
+* Added - Language French compatibility #794.
+* Added - Shop page tabs position can be changed by using priority.
+* Added - Store description support with Elementor #801.
+* Added - Compatibility of PHP 8.0.3.
+* Enhancement - Keep the vendor sidebar option enabled by default.
+* Enhancement - Create a follow user list at the admin backend.
+* Fix - Vendor list page icon issue.
+* Fix - Vendor not able to see store wizard setup after registering #795.
+* Fix - Edit/delete buttons of shipping modes are not working in the vendor dashboard #796.
+* Fix - Enable review tab in the vendor dashboard is not working properly #798.
+* Fix - Vendor review cannot be removed from WCMp settings #805.
+* Fix - Store description missing from store banner.
+* Fix - Shop page email hide filter not working.
+* Dev - Added `wcmp_load_default_vendor_store` filter.
+* Updated - Language file.
+
+= 3.7.0 - 2021-03-30 =
+* Added - WCMp Store Follow.
+* Added - Elementor support with WCMp vendor shop page.
+* Added - Migration support from other multivendors( Dokan, wcfm, wc vendors, woocommerce product vendor ).
+* Added - Brand new vendor list design.
+* Added - Compatibility of WordPress 5.7.
+* Fix - Bulk product action not working in vendor dashboard #775.
+* Fix - Shipping title is missing #763.
+* Fix - SQL syntax issue #760.
+* Fix - Purchase note of the product is not saving #757.
+* Fix - List all orders by vendor returns empty Array #750.
+* Fix - Vendors when try to edit downloadable products they are not able to see the downloadable files #749.
+* Fix - Vendor storefront, policy page, store description editor breaking in mobile view #746.
+* Fix - Order Status Bulk Change not working #742.
+* Fix - sale price date javascript issue #739.
+* Fix - Suborder remove from woocommerce orders rest API.
+* Fix - Text correction at vendor dashboard.
+* Fix - Vendor dashboard responsive issue.
+* Fix - Vendor Coupon Widget bug #771.
+* Fix - save shipping class value #740.
+* Dev - Added `wcmp_load_default_vendor_list` filter.
+* Dev - Added `wcmp_break_loop_offset` filter.
+* Dev - Added `wcmp_elementor_social_network_map` filter.
+* Dev - Added `wcmp_elementor_store_data_defaults` filter.
+* Dev - Added `wcmp_elementor_store_data` filter.
+* Dev - Added `wcmp_elementor_tags_store_info_value` filter.
+* Dev - Added `wcmp_elementor_tags_store_tab_items_value` filter.
+* Dev - Added `wcmp_before_vendor_list` action.
+* Dev - Added `wcmp_before_vendor_list_map_section` action.
+* Dev - Added `wcmp_vendor_list_map_section` action.
+* Dev - Added `wcmp_after_vendor_list_map_section` action.
+* Dev - Added `wcmp_before_vendor_list_vendors_section` action.
+* Dev - Added `wcmp_vendor_list_vendors_section` action.
+* Dev - Added `wcmp_after_vendor_list_vendors_section` action.
+* Dev - Added `wcmp_after_vendor_list` action.
+* Updated - Language file.
+
+= 3.6.0 - 2021-03-09 =
+* Added - WPML Compatibility #133.
+* Fix - SQL syntax issue #735.
+* Fix - Broken date picker issue fixed #720.
+* Fix - Report overview not showing any data #716.
+* Fix - The history section not working #714.
+* Fix - Product tab responsive issue #711.
+* Fix - Textdomain creation issue by grunt run.
+* Fix - Refund request translation issue fixed #708.
+* Fix - Dashboard responsive issue #706.
+* Fix - Policy display at admin backend issue #704.
+* Fix - SPMV product unclickable #698.
+* Fix - Sort by shipping not working #674.
+* Fix - The vendor getting an email when he replies to his customer review #666.
+* Fix - Styling Bugs dashboard as well as backend #677.
+* Fix - Reports Overview issue #688.
+* Fix - Customer Questions Direct Reply #705.
+* Updated - Language file.
+
+= 3.5.18 - 2021-02-12 =
+* Added - Admin mail for rejecting vendor reapply registration #650.
+* Added - Compatibility of Woocommerce 5.0.0.
+* Fix - Woocommerece report showing 2x times the total order #644.
+* Fix - Parsing Error with PHP 8.0 #645.
+* Fix - File Upload Error Message #646.
+* Fix - Clicking on the "return to business" link on stripe account lands to page with 0 #648.
+* Fix - Nonce checking issue.
+* Fix - Stripe Library updated.
+* Dev - Added `wcmp_send_mail_to_admin_when_vendor_reapply` filter.
+
+= 3.5.17 - 2021-01-29 =
+* Fix - Incorrect product count for Vendors on admin and vendor end #635.
+* Fix - Display all product variations in the coupon #634.
+* Fix - Count of purchased products in vendor dashboard report overview is incorrect. #631.
+* Fix - Weekly report emails are still sent to suspended vendors #629.
+* Fix - Woocommerece report not showing refund amount when WCMp is installed #625.
+* Fix - Fatal error from the commission in plugin activation time #639.
+
+= 3.5.16 - 2021-01-12 =
+* Fix - SPVM more offer CSS break #613
+* Fix - HTML code does not save at vendor description fields #615.
+* Fix - Remove unused Google plus from storefront #616
+* Fix - Vendor registration issue for WordPress server. #617
+* Fix - Location not covered zone showing zero #619
+* Fix - Two filters not working at the same time for the commission post type #623.
+* Fix - Variable products not showing to select the coupon in vendor dashboard #626.
+
+= 3.5.15 - 2020-12-16 =
+* Added - Compatibility of WordPress 5.6.
+* Fix - Conflict with WCMp advance shipping plugin.
+* Fix - Translation issue on edit product page. #605
+* Fix - Table rate shipping screen loading issue. #598
+* Fix - Commission status not updating in banking overview. #586
+* Fix - Error display at the time of withdrawing through PayPal.
+
+= 3.5.14 - 2020-11-26 =
+* Fix - WCMp Shipping not working. #592
+* Fix - Vendor registration checkbox bug. #589
+* Fix - HTML tags display error at frontend. #588
+* Fix - Commission withdraw error. #397
+
+= 3.5.13 - 2020-11-16 =
+* Fix - Commissions are not displayed at the admin end. #581
+* Fix - HTML break on single product page more offers section #580
+* Fix - Vendor review mail showing HTML tags. #579
+
+= 3.5.12 - 2020-11-11 =
+* Fix - Vendor could withdraw commission for pending/draft order #564
+* Fix - Vendor store description editor format is not working #566
+* Fix - Woocommerce per product shipping compatiblity with vendor shippings. #575
+* Fix - Vendor announcement email string support #570
+* Fix - Issue on vendor sales in the WCMp reports section(admin end) #568
+* Fix - Showing html tag on admin new vendor account email and vendor new account email
+* Updated - Language file.
 
 = 3.5.11 - 2020-10-28 =
 * Fix - Removed add new commission option. #557
@@ -966,5 +1307,5 @@ Ans. Obviously, you can! Join in on our [GitHub repository](https://github.com/d
 
 == Upgrade Notice ==
 
-= 3.5.0 =
-3.5+ is a major update. Make a full site backup and [review latest release](https://wc-marketplace.com/latest-release/) before upgrading your marketplace to avoid any undesirable situations.
+= 3.7.0 =
+3.7+ is a major update. Make a full site backup and [review latest release](https://wc-marketplace.com/latest-release/) before upgrading your marketplace to avoid any undesirable situations.

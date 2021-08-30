@@ -1633,7 +1633,7 @@ function wcfm_wp_date_format_to_js( $date_format ) {
 	switch( $date_format ) {
 		//Predefined WP date formats
 		case 'jS F Y':
-		  $date_format = 'd MM, YYYY';
+		  $date_format = 'd MM, yy';
 		break;
 		
 	  case 'F j, Y':
@@ -2095,7 +2095,7 @@ function wcfm_standard_date( $date_string ) {
 		$date_string = strtotime( $date_string );
 		$date_string = date( 'Y-m-d', $date_string );
 	}
-	return $date_string;
+	return apply_filters( 'wcfm_standard_date', $date_string );
 }
 
 function wcfm_filter_content_email_phone( $content ) {

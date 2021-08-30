@@ -469,7 +469,7 @@ class WCFMmp_Store_Setup {
 			</table>
 			<?php
 			if( apply_filters( 'wcfm_is_allow_store_description', true ) ) {
-				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_general', array(
+				$WCFM->wcfm_fields->wcfm_generate_form_field( apply_filters( 'wcfm_marketplace_settings_fields_brand', array(
 					"shop_description" => array('label' => __('Shop Description', 'wc-frontend-manager') , 'type' => 'wpeditor', 'class' => 'wcfm-textarea wcfm_ele wcfm_wpeditor', 'label_class' => 'wcfm_title', 'value' => $shop_description, 'hints' => __( 'This is displayed on your shop page.', 'wc-frontend-manager' ) ),
 					), $user_id ) );
 			}

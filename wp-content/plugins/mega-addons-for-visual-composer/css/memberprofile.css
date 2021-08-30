@@ -1,18 +1,14 @@
-* {
-	margin: 0;
-	padding: 0;
-}
 .type-wrap .typed-cursor {
     font-size: 16px;
 }
 .mega_team_case {
-    width: 100%;
+    max-width: 100%;
 }
 .mega_team_case i {
     font-size: 13px;
 }
 .mega_team_case .mega_team_wrap {
-	position: relative;
+    position: relative;
 }
 .mega_team_case .member-image img{
     width: 100%;
@@ -20,8 +16,8 @@
     box-shadow: 0px 0px 12px #aaa;
 }
 .mega_team_case .member-image img:hover{
-    -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
-    filter: grayscale(100%);
+    -webkit-filter: grayscale(30%); /* Chrome, Safari, Opera */
+    filter: grayscale(30%);
     -webkit-transition-duration: 0.2s; /* Safari */
     transition-duration: 0.2s;
 }
@@ -71,18 +67,17 @@
     font-size: 11px;
 }
 .mega_team_case .member-skills {
-	margin-top: 10px;
+    margin-top: 10px;
 }
 .mega_team_case .skill-label {
-	font-size: 11px;
-    
+    font-size: 11px;
     line-height: 16px;
     color: #444;
     margin-bottom: 2px;
     font-weight: 600;
 }
 .mega_team_case .skill-prog {
-	height: 2px;
+    height: 2px;
     margin-bottom: 6px;
     border-radius: 24px;
     -webkit-border-radius: 24px;
@@ -99,7 +94,7 @@
     -webkit-box-sizing: content-box;
 }
 .mega_team_case .member-info {
-	color: #333;
+    color: #333;
     font-size: 11px;
     line-height: 15px;
 }
@@ -109,12 +104,12 @@
     padding-bottom: 7px;
 }
 .mega_team_case .fill {
-	height: 100%;
+    height: 100%;
     -webkit-animation: 400ms;
     background-color: #00afd1;
 }
 .mega_team_case .member-social {
-	margin-top: 5px;
+    margin-top: 5px;
     text-align: center;
     width: 100%;
     margin-bottom: 15px;
@@ -132,24 +127,24 @@
 
 
 .mega_team_case_2 {
-    width: 100%;
+    max-width: 100%;
 }
 .mega_team_case_2 i {
     font-size: 13px;
 }
 .mega_team_case_2 .mega_team_head {
-	width: 45%;
-	float: left;
+    width: 45%;
+    float: left;
 }
 .mega_team_case_2 .mega_team_footer {
-	width: 50%;
-	float: right;
+    width: 50%;
+    float: right;
 }
 .Clearfix {
-	clear: both;
+    clear: both;
 }
 .mega_team_case_2 .mega_team_wrap {
-	position: relative;
+    position: relative;
 }
 .mega_team_case_2 .member-image img{
     width: 100%;
@@ -159,8 +154,8 @@
     transition-duration: 0.5s;
 }
 .mega_team_case_2 .member-image img:hover{
-    -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
-    filter: grayscale(100%);
+    -webkit-filter: grayscale(30%); /* Chrome, Safari, Opera */
+    filter: grayscale(30%);
     border-radius: 100px;
 }
 .mega_team_case_2 .member-name {
@@ -176,7 +171,7 @@
     -moz-border-radius: 2px;
     -o-border-radius: 2px;
     background-color: #444;
-    z-index: 9994;
+    /*z-index: 9994;*/
 }
 .mega_team_case_2 .member-name span {
     background-color: #27bebe;
@@ -211,10 +206,10 @@
 
 }
 .mega_team_case_2 .member-skills {
-	
+    
 }
 .mega_team_case_2 .skill-label {
-	font-size: 10px;
+    font-size: 10px;
     
     line-height: 14px;
     color: #444;
@@ -222,7 +217,7 @@
     font-weight: 600;
 }
 .mega_team_case_2 .skill-prog {
-	height: 2px;
+    height: 2px;
     margin-bottom: 2px;
     border-radius: 24px;
     -webkit-border-radius: 24px;
@@ -239,7 +234,7 @@
     -webkit-box-sizing: content-box;
 }
 .mega_team_case_2 .member-info {
-	color: #333;
+    color: #333;
     font-size: 11px;
     line-height: 14px;
 }
@@ -249,12 +244,12 @@
     padding-bottom: 7px;
 }
 .mega_team_case_2 .fill {
-	height: 100%;
+    height: 100%;
     -webkit-animation: 400ms;
     background-color: #00afd1;
 }
 .mega_team_case_2 .member-social {
-	margin-top: 5px;
+    margin-top: 5px;
     width: 100%;
     margin-bottom: 15px;
 }
@@ -266,14 +261,11 @@
 }
 
 
-
-
-/*********
-Style 3
-**********/
+/* Style 3
+=============================================*/
 
 .mega_team_case_3 {
-    width: 100%;
+    max-width: 100%;
 }
 .mega_team_case_3 i {
     font-size: 13px;
@@ -287,8 +279,8 @@ Style 3
     box-shadow: 0px 0px 12px #aaa;
 }
 .mega_team_case_3 .member-image img:hover{
-    -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
-    filter: grayscale(100%);
+    -webkit-filter: grayscale(30%); /* Chrome, Safari, Opera */
+    filter: grayscale(30%);
     -webkit-transition-duration: 0.2s; /* Safari */
     transition-duration: 0.2s;
 }
@@ -312,7 +304,6 @@ Style 3
     padding-left: 0px;
     padding-right: 0px;
     padding-top: 14px;
-    
     font-size: 13px;
     line-height: 21px;
     font-weight: 300;
@@ -386,31 +377,33 @@ Style 3
 }
 
 
-/*********
-Style 4
-**********/
+/* Style 4
+=================================================*/
 
 .mega_team_case_4 {
-    max-width: 300px;
-    width: 100%;
+    max-width: 100%;
     position: relative;
     overflow: hidden;
     box-shadow: 0px 0px 12px #aaa;
 }
+
 .mega_team_case_4 i {
     font-size: 14px;
 }
+.mega_team_case_4 .member-image a {
+    display: flex;
+}
 .mega_team_case_4 .member-image img{
     width: 100%;
-    border: 1px solid #fff;
+    border: 0px solid #fff;
     position: relative;
     -webkit-transition-duration: 0.5s; /* Safari */
     transition-duration: 0.5s;
-    margin-bottom: -6px;
+    margin-bottom: 0px;
 }
 .mega_team_case_4:hover .member-image img{
-    -webkit-filter: grayscale(100%); /* Chrome, Safari, Opera */
-    filter: grayscale(100%);
+    -webkit-filter: grayscale(30%); /* Chrome, Safari, Opera */
+    filter: grayscale(30%);
 }
 .mega_team_case_4 .mega_wrap {
     width: 100%;
@@ -423,7 +416,7 @@ Style 4
 }
 .mega_team_case_4:hover .mega_wrap {
     bottom: 0;  
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0,0,0,0.5);
 }
 .mega_team_case_4 .member-name {
     font-size: 18px;
@@ -456,4 +449,105 @@ Style 4
     padding: 2px 2px 2px 5px;
     margin-right: 4px;
     text-decoration: none;
+}
+
+/* Team Profile Style 8
+===================================================*/
+
+.mega_team_case_8 .maw_team_description {
+    padding: 1em 1.5em;
+}
+
+.mega_team_case_8 .maw_team_icons a + a {
+    margin-left: 0.8em;
+}
+
+.mega_team_case_8 .maw_team_icons a:last-child {
+    margin-right: 0px !important;
+}
+
+.mega_team_case_8 .maw_team_wrap {
+    box-shadow: rgba(0, 0, 0, 0.05) 0px 5px 10px 0px;
+}
+
+.mega_team_case_8 .maw_team_wrap {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: all 0.25s ease-in-out 0s;
+}
+
+.mega_team_case_8 .maw_team_photo_wrapper {
+    overflow: hidden;
+}
+
+.mega_team_case_8 .maw_team_photo > div {
+    opacity: 1;
+}
+
+.mega_team_case_8 .maw_team_wrap .maw_team_photo img {
+    opacity: 1;
+}
+
+.mega_team_case_8 .maw_team_wrap .maw_team_photo img {
+    width: 100%;
+    object-fit: cover;
+    height: 100%;
+}
+
+.mega_team_case_8 .maw_team_photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-shadow: none;
+    margin: 0px;
+    padding: 0px;
+    border-width: initial;
+    border-style: none;
+    border-color: initial;
+    border-image: initial;
+    border-radius: 0px;
+    transition: all 0.5s ease-out 0s;
+}
+
+
+.mega_team_case_8 .maw_team_name {
+    display: block;
+    margin-bottom: 0.2em;
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.mega_team_case_8 .maw_team_role {
+    display: block;
+    margin-bottom: 1em;
+    font-size: 0.9em;
+    opacity: 0.5;
+}
+
+.mega_team_case_8 .maw_team_icons a {
+    display: inline-block;
+    text-align: center;
+    line-height: 1;
+    text-decoration: none;
+}
+
+
+.mega_team_case_8 .maw_team_wrap .maw_team_photo {
+    width: 100%;
+    height: 100%;
+}
+
+.mega_team_case_8 .maw_team_icons {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1em;
+}
+
+.mega_team_case_8 .maw_team_icons .maw_team_icon {
+    padding: 5px;
+}
+
+.mega_team_case_8 .maw_team_icons a:first-child {
+    margin-left: 0px;
 }

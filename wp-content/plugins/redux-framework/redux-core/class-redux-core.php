@@ -183,7 +183,10 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 				'SERVER_SOFTWARE' => '',
 				'REMOTE_ADDR'     => Redux_Helpers::is_local_host() ? '127.0.0.1' : '',
 				'HTTP_USER_AGENT' => '',
+				'HTTP_HOST'       => '',
+				'REQUEST_URI'     => '',
 			);
+
 			// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase
 			if ( ! empty( $_SERVER['SERVER_SOFTWARE'] ) ) {
 				self::$server['SERVER_SOFTWARE'] = sanitize_text_field( wp_unslash( $_SERVER['SERVER_SOFTWARE'] ) );
@@ -194,6 +197,13 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 			if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
 				self::$server['HTTP_USER_AGENT'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
 			}
+			if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
+				self::$server['HTTP_HOST'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) );
+			}
+			if ( ! empty( $_SERVER['REQUEST_URI'] ) ) {
+				self::$server['REQUEST_URI'] = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+			}
+
 			// phpcs:enable
 
 			self::$dir = trailingslashit( wp_normalize_path( dirname( realpath( __FILE__ ) ) ) );
@@ -213,7 +223,7 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 
 				$client->slug       = 'redux-framework';
 				$client->textdomain = 'redux-framework';
-				$client->version    = \Redux_Core::$version;
+				$client->version    = self::$version;
 			}
 
 			$plugin_info = Redux_Functions_Ex::is_inside_plugin( __FILE__ );
@@ -302,9 +312,9 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 		 * Code to execute on framework __construct.
 		 *
 		 * @param object $parent Pointer to ReduxFramework object.
-		 * @param array  $args Global arguments array.
+		 * @param array  $args   Global arguments array.
 		 */
-		public static function core_construct( $parent, $args ) {
+		public static function core_construct( $parent, array $args ) {
 			self::$third_party_fixes = new Redux_ThirdParty_Fixes( $parent );
 
 			Redux_ThemeCheck::get_instance();
@@ -351,8 +361,8 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 		 *
 		 * @param string $class_name name of class.
 		 */
-		public function register_classes( $class_name ) {
-			$class_name_test = Redux_Core::strtolower( $class_name );
+		public function register_classes( string $class_name ) {
+			$class_name_test = self::strtolower( $class_name );
 
 			if ( strpos( $class_name_test, 'redux' ) === false ) {
 				return;
@@ -447,9 +457,10 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 		 *
 		 * @return bool
 		 */
-		public static function is_heartbeat() {
+		public static function is_heartbeat(): bool {
 			// Disregard WP AJAX 'heartbeat'call.  Why waste resources?
 			if ( isset( $_POST ) && isset( $_POST['_nonce'] ) && wp_verify_nonce( sanitize_key( wp_unslash( $_POST['_nonce'] ) ), 'heartbeat-nonce' ) ) {
+
 				if ( isset( $_POST['action'] ) && 'heartbeat' === sanitize_text_field( wp_unslash( $_POST['action'] ) ) ) {
 
 					// Hook, for purists.
@@ -475,7 +486,7 @@ if ( ! class_exists( 'Redux_Core', false ) ) {
 		 *
 		 * @return string
 		 */
-		public static function strtolower( $str ) {
+		public static function strtolower( string $str ): string {
 			if ( function_exists( 'mb_strtolower' ) && function_exists( 'mb_detect_encoding' ) ) {
 				return mb_strtolower( $str, mb_detect_encoding( $str ) );
 			} else {

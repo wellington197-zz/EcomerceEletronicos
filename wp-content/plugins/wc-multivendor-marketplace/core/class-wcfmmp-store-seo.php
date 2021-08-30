@@ -58,12 +58,14 @@ class WCFMmp_Store_SEO {
 			add_filter( 'wpseo_opengraph_title', array( $this, 'wcfmmp_replace_og_title' ) );
 			add_filter( 'wpseo_opengraph_desc', array( $this, 'wcfmmp_replace_og_desc' ) );
 			add_filter( 'wpseo_opengraph_image', array( $this, 'wcfmmp_replace_og_img' ) );
-			add_action( 'wpseo_opengraph', array( $this, 'wcfmmp_print_og_img' ), 250 );
+			add_action( 'wpseo_frontend_presenters', array( $this, 'wcfmmp_print_og_img' ), 20 );
+			//add_action( 'wpseo_opengraph', array( $this, 'wcfmmp_print_og_img' ), 250 );
 
 			add_filter( 'wpseo_twitter_title', array( $this, 'wcfmmp_replace_twitter_title' ) );
 			add_filter( 'wpseo_twitter_description', array( $this, 'wcfmmp_replace_twitter_desc' ) );
 			add_filter( 'wpseo_twitter_image', array( $this, 'wcfmmp_replace_twitter_img' ) );
-			add_action( 'wpseo_twitter', array( $this, 'wcfmmp_print_twitter_img' ), 250 );
+			add_action( 'wpseo_frontend_presenters', array( $this, 'wcfmmp_print_twitter_img' ), 20 );
+			//add_action( 'wpseo_twitter', array( $this, 'wcfmmp_print_twitter_img' ), 250 );
 		} elseif ( defined('RANK_MATH_FILE' ) ) {
 			add_filter( 'rank_math/frontend/title', array( $this, 'wcfmmp_replace_rank_math_seo_title' ), 16 );
 			add_filter( 'rank_math/frontend/description', array( $this, 'wcfmmp_replace_rank_math_seo_description' ) );

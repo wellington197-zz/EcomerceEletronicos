@@ -374,6 +374,11 @@ class WCFM_Enquiry {
   function delete_wcfm_enquiry() {
   	global $WCFM, $wpdb, $_POST;
   	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
+  	
   	if( isset( $_POST['enquiryid'] ) && !empty( $_POST['enquiryid'] ) ) {
   		$enquiryid = absint( $_POST['enquiryid'] );
   		$wpdb->query( "DELETE FROM {$wpdb->prefix}wcfm_enquiries WHERE ID = {$enquiryid}" );
@@ -390,6 +395,11 @@ class WCFM_Enquiry {
    */
   function delete_wcfm_enquiry_response() {
   	global $WCFM, $wpdb, $_POST;
+  	
+  	if ( ! check_ajax_referer( 'wcfm_ajax_nonce', 'wcfm_ajax_nonce', false ) ) {
+  		wp_send_json_error( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) );
+  		wp_die();
+  	}
   	
   	if( isset( $_POST['responseid'] ) && !empty( $_POST['responseid'] ) ) {
   		$responseid = absint( $_POST['responseid'] );

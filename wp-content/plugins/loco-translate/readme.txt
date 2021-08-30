@@ -3,8 +3,8 @@ Contributors: timwhitlock
 Tags: translation, translators, localization, localisation, l10n, i18n, Gettext, PO, MO, productivity, multilingual, internationalization
 Requires at least: 4.1
 Requires PHP: 5.2.4
-Tested up to: 5.5.1
-Stable tag: 2.4.4
+Tested up to: 5.7.1
+Stable tag: 2.5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -99,6 +99,51 @@ We don't collect your data or snoop on you. See the [plugin privacy notice](http
 
 
 == Changelog ==
+
+= 2.5.3 =
+* Adds option to merge JSON translations when syncing from PO
+* Adds screen for editing file headers and sync options
+* Fix for missing responseText in failed Ajax responses
+* Fix for HTML entities returned from `number_format_i18n`
+* Localized number formatting in JavaScript
+* Replaced usage of date_i18n with wp_date
+* Added configurable API endpoint for DeepL
+* Bumped WordPress version to 5.7.2
+
+= 2.5.2 =
+* Added implied formality and loco_locale_formality filter
+* Added cli fetch command (experimental)
+* Bumped WordPress version to 5.7
+
+= 2.5.1 =
+* Support for new Yandex translate API
+* Support for DeepL formality parameter
+* Removed literal "1" and "one" instances from singular strings
+* Buffering compiled JSON to support strings from multiple sources
+* Added `loco_compile_single_json` filter for specifying custom JSON
+* Added `loco_extracted_template` hook for adding custom strings
+* Sync no longer removes the editor's current text filter
+* Bumped WordPress version to 5.6.2
+
+= 2.5.0 =
+* PHP 8.0.0 compatibility
+* Bumped WordPress version to 5.6.0
+* Added JSON translation file generation
+* Added custom JSON loading to LoadHelper
+* Disabled emoji image replacement on our admin screens
+
+= 2.4.6 =
+* Fixed critical bug syncing PO directly to source code
+* Added plugin setting for allowing/disallowing missing POT
+* Fixed WP5.5 issue with multiple ID attributes on script tags
+
+= 2.4.5 =
+* Added WP-CLI sync and extract commands
+* Fixed {locale} placeholder bug introduced in 2.4.4
+* Improved handling of invalid character encodings
+* Sync (msgmerge) moved to back end 
+* New fuzzy matching with fuzziness setting
+* Bumped WordPress version to 5.5.3
 
 = 2.4.4 =
 * Added PO file upload feature
@@ -377,7 +422,7 @@ We don't collect your data or snoop on you. See the [plugin privacy notice](http
 
 == Upgrade Notice ==
 
-= 2.4.4 =
+= 2.5.3 =
 * Various improvements and bugfixes
 
 

@@ -60,7 +60,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'delete_wcfm_product',
-			proid : item.data('proid')
+			proid : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',

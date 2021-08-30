@@ -315,8 +315,10 @@ if (!function_exists('is_vendor_dashboard')) {
      */
     function is_vendor_dashboard() {
         $is_vendor_dashboard = false;
-        if (wcmp_vendor_dashboard_page_id()) {
-            $is_vendor_dashboard = is_page(wcmp_vendor_dashboard_page_id());
+        if ( function_exists('icl_object_id') ) {
+            return is_page( icl_object_id( wcmp_vendor_dashboard_page_id(), 'page', true ) );
+        } else {
+            return is_page(wcmp_vendor_dashboard_page_id());
         }
         return apply_filters('is_wcmp_vendor_dashboard', $is_vendor_dashboard);
     }
@@ -329,16 +331,42 @@ if (!function_exists('wcmp_vendor_dashboard_page_id')) {
      * Get vendor dashboard page id
      * @return int
      */
-    function wcmp_vendor_dashboard_page_id() {
+    function wcmp_vendor_dashboard_page_id($language_code = '', $url = false) {
         if (get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general')) {
-            if (function_exists('icl_object_id')) {
-                return icl_object_id((int) get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general'), 'page', false, ICL_LANGUAGE_CODE);
+            if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+                if( !$language_code ) {
+                    global $sitepress;
+                    $language_code = $sitepress->get_current_language();
+                }
+                if( $language_code ) {
+                    if( defined('DOING_AJAX') ) {
+                        do_action( 'wpml_switch_language', $language_code );
+                    }
+                    if ($url) {
+                        $wcmp_page =  get_permalink(icl_object_id( get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general'), 'page', true, $language_code ));
+                        $wcmp_page = apply_filters( 'wpml_permalink', $wcmp_page, $language_code );
+                    } else {
+                        $wcmp_page =  icl_object_id( get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general'), 'page', true, $language_code );
+                        $wcmp_page = apply_filters( 'wpml_permalink', $wcmp_page, $language_code );
+                    }
+                    return $wcmp_page;
+                } else {
+                    if ($url) {
+                        return  get_permalink(icl_object_id( get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general'), 'page', true ));
+                    } else {
+                        return  icl_object_id( get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general'), 'page', true );
+                    }
+                }
+            } else {
+                if ($url) {
+                    return get_permalink( (int) get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general') );
+                } else {
+                    return (int) get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general');
+                }
             }
-            return (int) get_wcmp_vendor_settings('wcmp_vendor', 'vendor', 'general');
         }
         return false;
     }
-
 }
 
 if (!function_exists('is_page_vendor_registration')) {
@@ -533,7 +561,7 @@ if (!function_exists('get_wcmp_vendor_orders')) {
         }
         if (!empty($args)) {
             foreach ($args as $key => $arg) {
-                if (!$wpdb->get_var("SHOW COLUMNS FROM `{$wpdb->prefix}wcmp_vendor_orders` LIKE '{$key}';")) {
+                if (!$wpdb->get_var( $wpdb->prepare( "SHOW COLUMNS FROM `{$wpdb->prefix}wcmp_vendor_orders` LIKE %s", $key  ))) {
                     unset($args[$key]);
                 }
             }
@@ -545,7 +573,7 @@ if (!function_exists('get_wcmp_vendor_orders')) {
             ));
             $query = apply_filters('get_wcmp_vendor_orders_query_where', $query);
         }
-        return $wpdb->get_results("SELECT * FROM {$wpdb->prefix}wcmp_vendor_orders {$query}");
+        return $wpdb->get_results( $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wcmp_vendor_orders %s", $query));
     }
 
 }
@@ -699,7 +727,7 @@ if (!function_exists('wcmp_check_if_another_vendor_plugin_exits')) {
         foreach ($vendor_arr as $plugin) {
             if (is_plugin_active($plugin)) {
                 deactivate_plugins('dc-woocommerce-multi-vendor/dc_product_vendor.php');
-                exit(__('Another Multivendor Plugin is allready Activated Please deactivate first to install this plugin', 'WCMp'));
+                exit(__('Another Multivendor Plugin is allready Activated Please deactivate first to install this plugin', 'dc-woocommerce-multi-vendor'));
             }
         }
     }
@@ -735,7 +763,7 @@ if (!function_exists('wcmp_paid_commission_status')) {
         global $wpdb;
         update_post_meta($commission_id, '_paid_status', 'paid', 'unpaid');
         update_post_meta($commission_id, '_paid_date', time());
-        $wpdb->query("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_status = 'paid', commission_paid_date = now() WHERE commission_id = {$commission_id}");
+        $wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_status = 'paid', commission_paid_date = now() WHERE commission_id = %d", $commission_id ) );
     }
 
 }
@@ -827,6 +855,7 @@ if (!function_exists('wcmp_get_vendor_dashboard_nav_item_css_class')) {
     function wcmp_get_vendor_dashboard_nav_item_css_class($endpoint, $force_active = false) {
         global $wp;
         $cssClass = array(
+            'nav-link',
             'wcmp-venrod-dashboard-nav-link',
             'wcmp-venrod-dashboard-nav-link--' . $endpoint
         );
@@ -844,10 +873,9 @@ if (!function_exists('wcmp_get_vendor_dashboard_nav_item_css_class')) {
 }
 
 if (!function_exists('wcmp_get_vendor_dashboard_endpoint_url')) {
-
-    function wcmp_get_vendor_dashboard_endpoint_url($endpoint, $value = '', $withvalue = false) {
+    function wcmp_get_vendor_dashboard_endpoint_url($endpoint, $value = '', $withvalue = false, $lang_code = '') {
         global $wp;
-        $permalink = get_permalink(wcmp_vendor_dashboard_page_id());
+        $permalink =  wcmp_vendor_dashboard_page_id($lang_code, true);
         if (empty($value)) {
             $value = isset($wp->query_vars[$endpoint]) && !empty($wp->query_vars[$endpoint]) && $withvalue ? $wp->query_vars[$endpoint] : '';
         }
@@ -861,19 +889,20 @@ if (!function_exists('wcmp_get_vendor_dashboard_endpoint_url')) {
             if ($endpoint == 'dashboard') {
                 $url = trailingslashit($permalink) . $query_string;
             } else {
+                $endpoint = defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ? apply_filters( 'wpml_translate_single_string', $endpoint, 'WCMp', $endpoint, $lang_code ) : $endpoint;
                 $url = trailingslashit($permalink) . $endpoint . '/' . $value . $query_string;
             }
         } else {
             if ($endpoint == 'dashboard') {
                 $url = $permalink;
             } else {
+                $endpoint = defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ? apply_filters( 'wpml_translate_single_string', $endpoint, 'WCMp', $endpoint, $lang_code ) : $endpoint;
                 $url = add_query_arg($endpoint, $value, $permalink);
             }
         }
 
         return apply_filters('wcmp_get_vendor_dashboard_endpoint_url', $url, $endpoint, $value, $permalink);
     }
-
 }
 
 if (!function_exists('is_wcmp_endpoint_url')) {
@@ -1287,9 +1316,6 @@ if (!function_exists('do_wcmp_data_migrate')) {
                         $wpdb->query("ALTER TABLE {$wpdb->prefix}wcmp_vendor_orders ADD `commission_paid_date` timestamp NULL;");
                     }
                 }
-//                if (!get_wcmp_vendor_settings('enable_vendor_tab', 'frontend')) {
-//                    update_wcmp_vendor_settings('enable_vendor_tab', 'Enable', 'frontend');
-//                }
             }
             if ($previous_plugin_version <= '2.7.3') {
                 if ($wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}wcmp_vendor_orders';")) {
@@ -1409,7 +1435,7 @@ if (!function_exists('do_wcmp_data_migrate')) {
                 require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
                 foreach ($create_tables_query as $table => $create_table_query) {
                     if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) {
-                        $wpdb->query($create_table_query);
+                        $wpdb->query(str_replace( 'rn', '', wc_clean(wp_unslash(esc_sql($create_table_query)))));
                     }
                 }
                 if (get_wcmp_vendor_settings('sold_by_catalog', 'frontend') && get_wcmp_vendor_settings('sold_by_catalog', 'frontend') == 'Enable') {
@@ -1429,7 +1455,7 @@ if (!function_exists('do_wcmp_data_migrate')) {
                 if ($wpdb->has_cap('collation')) {
                     $collate = $wpdb->get_charset_collate();
                 }
-                $create_table_query = "CREATE TABLE IF NOT EXISTS `" . $wpdb->prefix . "wcmp_cust_answers` (
+                $create_table_query = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}wcmp_cust_answers` (
 		`ans_ID` bigint(20) NOT NULL AUTO_INCREMENT,
 		`ques_ID` BIGINT UNSIGNED NOT NULL DEFAULT '0',
                 `ans_details` text NOT NULL,
@@ -1439,7 +1465,7 @@ if (!function_exists('do_wcmp_data_migrate')) {
 		PRIMARY KEY (`ans_ID`),
                 CONSTRAINT ques_id UNIQUE (ques_ID)
 		) $collate;";
-                $wpdb->query($create_table_query);
+                $wpdb->query($wpdb->prepare("%s", $create_table_query));
             }
             if (version_compare($previous_plugin_version, '3.0.5', '<=')) {
                 $max_index_length = 191;
@@ -1702,8 +1728,8 @@ if (!function_exists('do_wcmp_commission_data_migrate')) {
                 }
             }
             foreach ($update_data as $update) {
-                if ($wpdb->get_var("SELECT ID FROM `{$wpdb->prefix}wcmp_vendor_orders` WHERE order_id = '{$update['order_id']}' AND commission_id = '{$update['commission_id']}' AND vendor_id = '{$update['vendor_id']}' AND product_id = '{$update['product_id']}'")) {
-                    $wpdb->query("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET shipping_status = '{$update['shipping_status']}', commission_amount = '{$update['commission_amount']}', shipping = '{$update['shipping']}', tax = '{$update['tax']}', commission_status = '{$update['commission_status']}', quantity = '{$update['quantity']}', variation_id = '{$update['variation_id']}', shipping_tax_amount = '{$update['shipping_tax_amount']}', line_item_type = '{$update['line_item_type']}' WHERE order_id = '{$update['order_id']}' AND commission_id = '{$update['commission_id']}' AND vendor_id = '{$update['vendor_id']}' AND product_id = '{$update['product_id']}'");
+                if ($wpdb->get_var( $wpdb->prepare("SELECT ID FROM `{$wpdb->prefix}wcmp_vendor_orders` WHERE order_id = %d AND commission_id = %d AND vendor_id = %d AND product_id = %d", $update['order_id'], $update['commission_id'], $update['vendor_id'], $update['product_id'] ))) {
+                    $wpdb->query($wpdb->prepare("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET shipping_status = %d, commission_amount = %d, shipping = %d, tax = %d, commission_status = %d, quantity = %d, variation_id = %d, shipping_tax_amount = %d, line_item_type = %d WHERE order_id = %d AND commission_id = %d AND vendor_id = %d AND product_id = %d", $update['shipping_status'], $update['commission_amount'], $update['shipping'], $update['tax'], $update['commission_status'], $update['quantity'], $update['variation_id'], $update['shipping_tax_amount'], $update['line_item_type'], $update['order_id'], $update['commission_id'], $update['vendor_id'], $update['product_id'] ));
                 } else {
                     $wpdb->query(
                             $wpdb->prepare(
@@ -1826,6 +1852,12 @@ if (!function_exists('wcmp_count_to_do_list')) {
             'author__in' => $vendor_ids,
             'post_type' => 'shop_coupon',
             'post_status' => 'pending',
+            'meta_query' => array(
+                array(
+                    'key' => '_dismiss_to_do_list',
+                    'compare' => 'NOT EXISTS',
+                ),
+            )
         );
         $get_pending_coupons = new WP_Query($args);
         $to_do_list_count += count($get_pending_coupons->get_posts());
@@ -1836,6 +1868,12 @@ if (!function_exists('wcmp_count_to_do_list')) {
             'author__in' => $vendor_ids,
             'post_type' => 'product',
             'post_status' => 'pending',
+            'meta_query' => array(
+                array(
+                    'key' => '_dismiss_to_do_list',
+                    'compare' => 'NOT EXISTS',
+                ),
+            )
         );
         $get_pending_products = new WP_Query($args);
         $to_do_list_count += count($get_pending_products->get_posts());
@@ -1846,7 +1884,13 @@ if (!function_exists('wcmp_count_to_do_list')) {
             'post_status' => 'wcmp_processing',
             'meta_key' => 'transaction_mode',
             'meta_value' => 'direct_bank',
-            'posts_per_page' => -1
+            'posts_per_page' => -1,
+            'meta_query' => array(
+                array(
+                    'key' => '_dismiss_to_do_list',
+                    'compare' => 'NOT EXISTS',
+                ),
+            )
         );
         $transactions = get_posts($args);
         $to_do_list_count += count($transactions);
@@ -2328,7 +2372,7 @@ if (!function_exists('wcmp_get_visitor_stats')) {
         global $wpdb;
         if ($vendor_id) {
             $results = $wpdb->get_results(
-                    $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wcmp_visitors_stats WHERE {$query_where}vendor_id=%d {$query_filter}", $vendor_id)
+                $wpdb->prepare("SELECT * FROM {$wpdb->prefix}wcmp_visitors_stats WHERE " . wp_unslash(esc_sql($query_where)) . " vendor_id=%d ". wp_unslash(esc_sql($query_filter)) . " ", $vendor_id ) 
             );
             return $results;
         } else {
@@ -3090,7 +3134,7 @@ if (!function_exists('wcmp_spmv_products_map')) {
                 $wpdb->insert($table, $data);
                 if (!isset($data['product_map_id'])) {
                     $inserted_id = $wpdb->insert_id;
-                    $wpdb->update($table, array('product_map_id' => $inserted_id), array('product_id' => $data['product_id']));
+                    $wpdb->update(esc_sql($table), array('product_map_id' => $inserted_id), array('product_id' => $data['product_id']));
                     return $inserted_id;
                 } else {
                     return $data['product_map_id'];
@@ -3390,6 +3434,7 @@ if (!function_exists('wcmp_get_available_commission_types')) {
         $available_commission_types['percent'] = __('Percentage', 'dc-woocommerce-multi-vendor');
         $available_commission_types['fixed_with_percentage'] = __('%age + Fixed (per transaction)', 'dc-woocommerce-multi-vendor');
         $available_commission_types['fixed_with_percentage_qty'] = __('%age + Fixed (per unit)', 'dc-woocommerce-multi-vendor');
+        $available_commission_types['commission_by_product_price'] = __('Commission By Product Price', 'dc-woocommerce-multi-vendor');
 
         return apply_filters('wcmp_get_available_commission_types', $available_commission_types);
     }
@@ -3422,7 +3467,7 @@ if (!function_exists('wcmp_list_categories')) {
             'search' => '',
             'show_count' => false,
             'taxonomy' => 'product_cat',
-            'show_option_none' => __('No categories', ''),
+            'show_option_none' => __('No categories', 'dc-woocommerce-multi-vendor'),
             'style' => 'list',
             'selected' => '',
             'list_class' => '',
@@ -3738,7 +3783,7 @@ if ( ! function_exists( 'wcmp_default_product_types' ) ) {
 
     function wcmp_default_product_types() {
         return array(
-            'simple'   => __( 'Simple product', 'woocommerce' ),
+            'simple'   => __( 'Simple product', 'dc-woocommerce-multi-vendor' ),
         );
     }
 
@@ -4257,18 +4302,257 @@ if (!function_exists('get_wcmp_more_spmv_products')) {
 }
 
 /**
- * Get failed order commission ID
+ * Get failed and pending order commission ID
  *
  * @return commission ID
  */
 
-function wcmp_get_failed_order_commission() {
-    $failed_orders = wcmp_get_orders( array('post_status' => 'wc-failed'), 'ids', true );
+function wcmp_failed_pending_order_commission() {
+    // find failed and pending order
+    $failed_and_pending_orders = wcmp_get_orders( array('post_status' => array( 'wc-failed', 'wc-pending' )), 'ids', true );
     $commission_id = array();
-    if (!empty($failed_orders)) {
-        foreach ($failed_orders as $order_id) {
+    if (!empty($failed_and_pending_orders)) {
+        foreach ($failed_and_pending_orders as $order_id) {
             $commission_id[] = wcmp_get_order_commission_id($order_id);
         }
     }
     return $commission_id;
+}
+
+function wcmp_get_option( $key, $default_val = '', $lang_code = '' ) {
+    $option_val = get_option( $key, $default_val );
+    
+    // WPML Support
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+        global $sitepress;
+        if( !$lang_code ) {
+            $current_language = $sitepress->get_current_language();
+        } else {
+            $current_language = $lang_code;
+        }
+        $option_val = get_option( $key . '_' . $current_language, $option_val );
+    }
+    
+    return $option_val;
+}
+
+function wcmp_update_option( $key, $option_val ) {
+    // WPML Support
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+        global $sitepress;
+        $current_language = $sitepress->get_current_language();
+        update_option( $key . '_' . $current_language, $option_val );
+    } else {
+        update_option( $key, $option_val );
+    }
+}
+
+function wcmp_get_user_meta( $user_id, $key, $is_single = true ) {
+    $meta_val = get_user_meta( $user_id, $key, $is_single );
+    // WPML Support
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+        global $sitepress;
+        $current_language = $sitepress->get_current_language();
+        $option_val_wpml = get_user_meta( $user_id, $key . '_' . $current_language, $is_single );
+        if( $option_val_wpml ) $meta_val = $option_val_wpml;
+    }
+    
+    return $meta_val;
+}
+
+function wcmp_update_user_meta( $user_id, $key, $meta_val ) {
+    // WPML Support
+    if ( defined( 'ICL_SITEPRESS_VERSION' ) && ! ICL_PLUGIN_INACTIVE && class_exists( 'SitePress' ) ) {
+        global $sitepress;
+        $current_language = $sitepress->get_current_language();
+        update_user_meta( $user_id, $key . '_' . $current_language, $meta_val );
+    } else {
+        update_user_meta( $user_id, $key, $meta_val );
+    }
+}
+
+if (!function_exists('wcmp_is_store_page')) {
+    /**
+     * Check if it's a store page
+     *
+     * @return bool
+     */
+    function wcmp_is_store_page() {
+        global $WCMp;
+        $vendor = false;
+        if (get_queried_object()) {
+            $vendor_id = is_tax($WCMp->taxonomy->taxonomy_name) ? get_queried_object()->term_id : false;
+            $vendor = $vendor_id ? get_wcmp_vendor_by_term($vendor_id) : false;
+        } else {
+            $store_id = get_query_var('author');
+            if ($store_id) {
+                $vendor = get_wcmp_vendor($store_id);
+            }
+        }
+        if ($vendor) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('wcmp_find_shop_page_vendor')) {
+    /**
+     * find vendor id from vendor shop page
+     *
+     * @return store_id
+     */
+    function wcmp_find_shop_page_vendor() {
+        $store_id = false;
+        if (get_queried_object()) {
+            $vendor_id = get_queried_object()->term_id;
+            $store = get_wcmp_vendor_by_term($vendor_id);
+            $store_id = $store ? $store->id : false;;
+        } else {
+            $store_id = get_query_var('author');
+        }
+        return $store_id;
+    }
+}
+
+if (!function_exists('wcmp_get_attachment_url')) {
+    /**
+     * WCMp get attachment URL by ID
+     */
+    function wcmp_get_attachment_url( $attachment_id ) {
+        $attachment_url = '';
+        if( $attachment_id && is_numeric( $attachment_id ) ) {
+            $attachment_url = wp_get_attachment_url( $attachment_id );
+        } else {
+            $attachment_url = $attachment_id;
+        }
+        return $attachment_url;
+    }
+    
+}
+
+if (!function_exists('wcmp_mapbox_api_enabled')) {
+    function wcmp_mapbox_api_enabled() {
+        $get_choose_map = get_wcmp_vendor_settings('choose_map_api') ? get_wcmp_vendor_settings('choose_map_api') : '';
+        $mapbox_api_key = get_wcmp_vendor_settings('mapbox_api_key') ? get_wcmp_vendor_settings('mapbox_api_key') : '';
+        $mapbox_enabled = !empty($mapbox_api_key) && !empty($get_choose_map) && $get_choose_map == 'mapbox_api_set' ? $mapbox_api_key : false;
+        return $mapbox_enabled;
+    }
+}
+
+if (!function_exists('wcmp_mapbox_design_switcher')) {
+    function wcmp_mapbox_design_switcher() {
+        if (wcmp_mapbox_api_enabled()) {
+            $map_styles_option = apply_filters('wcmp_mapbox_map_style_switcher', 
+                array(
+                    'satellite' => array(
+                        'id' => 'satellite-v9',
+                        'name' => 'rtoggle',
+                        'value' => __('Satellite', 'dc-woocommerce-multi-vendor'),
+                        'checked' => 'yes'
+                    ),
+                    'light' => array(
+                        'id' => 'light-v10',
+                        'name' => 'rtoggle',
+                        'value' => __('Light', 'dc-woocommerce-multi-vendor'),
+                    ),
+                    'dark' => array(
+                        'id' => 'dark-v10',
+                        'name' => 'rtoggle',
+                        'value' => __('Dark', 'dc-woocommerce-multi-vendor'),
+                    ),
+                    'streets' => array(
+                        'id' => 'streets-v11',
+                        'name' => 'rtoggle',
+                        'value' => __('Streets', 'dc-woocommerce-multi-vendor'),
+                    ),
+                    'outdoors' => array(
+                        'id' => 'outdoors-v11',
+                        'name' => 'rtoggle',
+                        'value' => __('Outdoors', 'dc-woocommerce-multi-vendor'),
+                    ),
+                ) 
+            );
+            ?>
+            <div id="menu">
+                <?php foreach ($map_styles_option as $map_key => $map_value) { ?>
+                    <input id="<?php echo $map_value['id'] ?>" type="radio" name="<?php echo $map_value['name'] ?>" value="<?php echo $map_key ?>" <?php if( isset($map_value['checked']) && $map_value['checked']){ echo 'checked="checked"'; } ?> >
+                    <label for="<?php echo $map_value['id'] ?>"><?php echo esc_html($map_value['value']); ?></label>
+                <?php } ?>
+            </div>
+            <?php
+        }
+    }
+}
+if (!function_exists('wcmp_vendor_distance_by_shipping_settings')) {
+    function wcmp_vendor_distance_by_shipping_settings( $vendor_id = 0 ) {
+        global $WCMp;
+        $wcmp_shipping_by_distance = get_user_meta( $vendor_id, '_wcmp_shipping_by_distance', true ) ? get_user_meta( $vendor_id, '_wcmp_shipping_by_distance', true ) : array();
+        $WCMp->wcmp_wp_fields->dc_generate_form_field( apply_filters( 'wcmp_marketplace_settings_fields_shipping_distance', array(
+            "wcmp_byd_default_cost" => array('label' => __('Default Cost', 'dc-woocommerce-multi-vendor'), 'name' => 'wcmp_shipping_by_distance[_default_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'col-md-6 col-sm-9', 'label_class' => 'wcmp_title wcmp_ele wcmp_store_shipping_distance_fields', 'value' => isset($wcmp_shipping_by_distance['_default_cost']) ? $wcmp_shipping_by_distance['_default_cost'] : '' ),
+
+            "wcmp_byd_max_distance" => array('label' => __('Max Distance (km)', 'dc-woocommerce-multi-vendor'), 'name' => 'wcmp_shipping_by_distance[_max_distance]', 'placeholder' => __('No Limit', 'dc-woocommerce-multi-vendor'), 'type' => 'text', 'class' => 'col-md-6 col-sm-9', 'label_class' => 'wcmp_title wcmp_ele wcmp_store_shipping_distance_fields', 'value' => isset($wcmp_shipping_by_distance['_max_distance']) ? $wcmp_shipping_by_distance['_max_distance'] : '' ),
+            "wcmp_byd_enable_local_pickup" => array('label' => __('Enable Local Pickup', 'dc-woocommerce-multi-vendor'), 'name' => 'wcmp_shipping_by_distance[_enable_local_pickup]', 'type' => 'checkbox', 'class' => 'wcmp-checkbox wcmp_ele wcmp_store_shipping_distance_fields', 'label_class' => 'wcmp_title checkbox_title checkbox-title wcmp_ele wcmp_store_shipping_distance_fields', 'value' => 'yes', 'dfvalue' => isset($wcmp_shipping_by_distance['_enable_local_pickup']) ? 'yes' : '' ),
+
+            "wcmp_byd_local_pickup_cost" => array('label' => __('Local Pickup Cost', 'dc-woocommerce-multi-vendor'), 'name' => 'wcmp_shipping_by_distance[_local_pickup_cost]', 'placeholder' => '0.00', 'type' => 'text', 'class' => 'col-md-6 col-sm-9', 'label_class' => 'wcmp_title wcmp_ele wcmp_store_shipping_distance_fields', 'value' => isset($wcmp_shipping_by_distance['_local_pickup_cost']) ? $wcmp_shipping_by_distance['_local_pickup_cost'] : '' ),
+        ) ) );
+
+        $wcmp_shipping_by_distance_rates = get_user_meta( $vendor_id, '_wcmp_shipping_by_distance_rates', true ) ? get_user_meta( $vendor_id, '_wcmp_shipping_by_distance_rates', true ) : array();
+        $WCMp->wcmp_wp_fields->dc_generate_form_field(
+            apply_filters( 'wcmp_settings_fields_shipping_rates_by_distance', array( 
+                    "wcmp_shipping_by_distance_rates" => array(
+                        'label'       => __('Distance-Cost Rules', 'dc-woocommerce-multi-vendor'), 
+                        'type'        => 'multiinput',
+                        'class'       => 'form-group',
+                        'value'       => $wcmp_shipping_by_distance_rates,
+                        'options' => array(
+                            "wcmp_distance_rule" => array( 
+                                'label' => __('Distance Rule', 'dc-woocommerce-multi-vendor'), 
+                                'type' => 'select', 
+                                'class' => 'col-md-6 col-sm-9', 
+                                'label_class' => '', 
+                                'options' => array(
+                                    'up_to' => __('Distance up to', 'dc-woocommerce-multi-vendor'),
+                                    'more_than' => __('Distance more than', 'dc-woocommerce-multi-vendor')
+                                )
+                            ),
+                            "wcmp_distance_unit" => array( 
+                                'label' => __('Distance', 'dc-woocommerce-multi-vendor') . ' ( '. __('km', 'dc-woocommerce-multi-vendor') .' )', 
+                                'type' => 'number', 
+                                'class' => 'col-md-6 col-sm-9', 
+                                'label_class' => ''
+                            ),
+                            "wcmp_distance_price" => array( 
+                                'label' => __('Cost', 'dc-woocommerce-multi-vendor') . ' ('.get_woocommerce_currency_symbol().')', 
+                                'type' => 'number', 
+                                'placeholder' => '0.00 (' . __('Free Shipping', 'dc-woocommerce-multi-vendor') . ')',
+                                'class' => 'col-md-6 col-sm-9', 
+                                'label_class' => '' 
+                            ),
+                        )
+                    )
+                ) 
+            )
+        );
+    }
+}
+
+if (!function_exists('wcmp_vendor_different_type_shipping_options')) {
+    function wcmp_vendor_different_type_shipping_options( $vendor_id = 0) {
+        $vendor_shipping_options = get_user_meta($vendor_id, 'vendor_shipping_options', true) ? get_user_meta($vendor_id, 'vendor_shipping_options', true) : '';
+        $shipping_options = apply_filters('wcmp_vendor_shipping_option_to_vendor', array(
+            'distance_by_zone' => __('Shipping by Zone', 'dc-woocommerce-multi-vendor'),
+        ) );
+        if (get_wcmp_vendor_settings( 'enabled_distance_by_shipping_for_vendor', 'general' ) && 'Enable' === get_wcmp_vendor_settings( 'enabled_distance_by_shipping_for_vendor', 'general' )) {
+            $shipping_options['distance_by_shipping'] = __('Shipping by Distance', 'dc-woocommerce-multi-vendor');
+        }
+        ?>
+        <label for="shipping-options"><?php esc_html_e( 'Shipping Options', 'dc-woocommerce-multi-vendor' ); ?></label>
+        <select class="form-control inline-select" id="shipping-options" name="shippping-options">
+            <?php foreach ( $shipping_options as $value => $label ) : ?>
+                <option value="<?php echo esc_attr( $value ); ?>" <?php echo selected( $vendor_shipping_options, $value, false ); ?>><?php echo esc_html( $label ); ?></option>
+            <?php endforeach; ?>
+        </select>
+        <?php
+    }
 }

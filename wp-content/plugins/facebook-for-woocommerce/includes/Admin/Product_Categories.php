@@ -12,7 +12,7 @@ namespace SkyVerge\WooCommerce\Facebook\Admin;
 
 defined( 'ABSPATH' ) or exit;
 
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 /**
  * General handler for the product category admin functionality.
@@ -59,7 +59,7 @@ class Product_Categories {
 
 			wp_enqueue_script(
 				'wc-facebook-product-categories',
-				facebook_for_woocommerce()->get_plugin_url() . '/assets/js/admin/product-categories.min.js',
+				facebook_for_woocommerce()->get_asset_build_dir_url() . '/admin/product-categories.js',
 				array(
 					'jquery',
 					'wc-backbone-modal',
@@ -269,7 +269,7 @@ class Product_Categories {
 	 * @since 2.1.0
 	 *
 	 * @param \WP_Term $term current taxonomy term object.
-	 * @param string $category_id passed in category id
+	 * @param string   $category_id passed in category id
 	 */
 	public function render_edit_enhanced_catalog_attributes_field( \WP_Term $term, $category_id = null ) {
 		if ( empty( $category_id ) ) {
@@ -279,12 +279,16 @@ class Product_Categories {
 		$enhanced_attribute_fields = new Enhanced_Catalog_Attribute_Fields( Enhanced_Catalog_Attribute_Fields::PAGE_TYPE_EDIT_CATEGORY, $term );
 		$category_handler          = facebook_for_woocommerce()->get_facebook_category_handler();
 
-		if ( $category_handler->get_category_depth( $category_id ) < 2 ) {
+		if (
+			empty( $category_id ) ||
+			$category_handler->is_category( $category_id ) &&
+			$category_handler->is_root_category( $category_id )
+		) {
 			// show nothing
 			?>
 				<tr class='form-field'>
 				<td colspan="2">
-				<span>HELLO<?php echo $category_id; ?></span>
+				<span><?php echo $category_id; ?></span>
 				</td>
 				</tr>
 			<?php
@@ -319,7 +323,11 @@ class Product_Categories {
 		$enhanced_attribute_fields = new Enhanced_Catalog_Attribute_Fields( Enhanced_Catalog_Attribute_Fields::PAGE_TYPE_ADD_CATEGORY );
 		$category_handler          = facebook_for_woocommerce()->get_facebook_category_handler();
 
-		if ( $category_handler->get_category_depth( $category_id ) < 2 ) {
+		if (
+			empty( $category_id ) ||
+			$category_handler->is_category( $category_id ) &&
+			$category_handler->is_root_category( $category_id )
+		) {
 			// show nothing
 			return;
 		}

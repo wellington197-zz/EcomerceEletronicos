@@ -3,11 +3,11 @@ Contributors: wclovers
 Tags: woocommerce marketplace, multivendor marketplace, multi vendor, product vendors, wp user frontend, product vendor dashboard, ecommerce, vendor shop manager, woocommerce frontend shop manager, wcvendors, woocommerce frontend manager, wc frontend manager, woocommerce frontend shop manager, shop manager, ecommerce, e-commerce, woocommerce live manager
 Donate link: https://www.paypal.me/wclovers/25usd
 Requires at least: 4.4
-Tested up to: 5.5
+Tested up to: 5.8
 WC requires at least: 3.0
-WC tested up to: 4.4.0
+WC tested up to: 5.5.0
 Requires PHP: 5.6
-Stable tag: 6.5.5
+Stable tag: 6.5.10
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -220,6 +220,41 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WCFM 
 25. WCFM Dashboard - Mobile view
 
 == Changelog ==
+
+= 6.5.10 =
+*Updated - 24/07/2021*
+
+* Enhance - WordPress 5.8+ compatibility check added
+* Enhance - WooCommerce 5.5+ compatibility check added
+* Enhance - Many security check improved
+
+= 6.5.9 =
+*Updated - 13/06/2021*
+
+* Enhance - WooCommerce 5.4+ compatibility check added
+* Enhance - Dashboard setting form security check improved
+
+= 6.5.8 =
+*Updated - 24/04/2021*
+
+* Enhance - WooCommerce 5.2+ compatibility check added
+* Fixed   - wcfm-script-core.js "file" undefined issue resolved
+* Fixed   - Store setting dulicate slug error not showing issue resolved 
+* Fixed   - Product Custom attributes with "double quotes" variation not properly saving issue resolved
+* Fixed   - Downloadable product multiple file upload issue resolved 
+
+= 6.5.7 =
+*Updated - 28/03/2021*
+
+* Enhance - WordPress 5.7+ compatibility check added
+* Enhance - WooCommerce 5.1+ compatibility check added
+
+= 6.5.6 =
+*Updated - 06/01/2021*
+
+* Enhance - WordPress 5.6+ compatibility check added
+* Enhance - WooCommerce 4.8+ compatibility check added
+* Enhance - Facebook for WooCommerce 2.2+ compatibility added
 
 = 6.5.5 =
 *Updated - 08/11/2020*
@@ -2455,12 +2490,7 @@ Fully compatible with all major multi-vendor marketplace plugins - <strong>WCFM 
 
 == Upgrade Notice ==
 
-= 6.5.5 =
-* Feature - Facebook store sync with vendor store option added - [Documentation](https://docs.wclovers.com/facebook-for-marketplace/)
-* Enhance - WooCommerce 4.6+ compatibility check added
-* Enhance - WCFM login popup credential check improved
-* Enhance - Vendor store location setting current location detect option added
-* Enhance - Add product "Verification Product Limit" reached message display improved
-* Fixed   - Variation stock status not properly sync with main product stock ststus issue resolved 
-* Fixed   - Vendor shipping setting auto-reset issue resolved
-* Fixed   - Product "Menu Order" not properly saving issue resolved
+= 6.5.10 =
+* Enhance - WordPress 5.8+ compatibility check added
+* Enhance - WooCommerce 5.5+ compatibility check added
+* Enhance - Many security check improved

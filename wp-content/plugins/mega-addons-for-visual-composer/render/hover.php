@@ -19,7 +19,7 @@ class WPBakeryShortCode_mvc_ihe extends WPBakeryShortCode {
 			'border_width' => '10',
 			'border_style' => 'solid',
 			'border_color' => '#fff',
-			'hover_effect' => 'NoEffect',
+			'hover_effect' => 'ihe-fade square effect6 from_top_and_bottom',
 		), $atts ) );
 		$caption_url = vc_build_link($caption_url);
 		if ($image_id != '') {
@@ -192,7 +192,6 @@ vc_map( array(
 			"description" 	=> __( 'Choose hover effect <a href="http://gudh.github.io/ihover/dist/">See demo</a>', 'ihover' ),
 			"group" 		=> 'Hover Effects',
 			"value" 		=>  array(
-				'NoEffect'							=>		'NoEffect',
 				'Fade Effect'						=>		'ihe-fade square effect6 from_top_and_bottom',
 				'circle effect2 left to right'      =>      'circle effect2 left_to_right',
 				'circle effect2 right to left'      =>      'circle effect2 right_to_left',
@@ -206,9 +205,9 @@ vc_map( array(
 				'circle effect4 right to left'      =>      'circle effect4 right_to_left',
 				'circle effect4 top to bottom'      =>      'circle effect4 top_to_bottom',
 				'circle effect4 bottom to top'      =>      'circle effect4 bottom_to_top',
-				'circle effect5'      =>      'circle effect5',
-				'circle effect6 scale up'      =>      'circle effect6 scale_up',
-				'circle effect6 scale down'      =>      'circle effect6 scale_down',
+				'circle effect5'      				=>      'circle effect5',
+				'circle effect6 scale up'      		=>      'circle effect6 scale_up',
+				'circle effect6 scale down'      	=>      'circle effect6 scale_down',
 				'circle effect6 scale down up'      =>      'circle effect6 scale_down_up',
 				'circle effect7 left to right'      =>      'circle effect7 left_to_right',
 				'circle effect7 right to left'      =>      'circle effect7 right_to_left',
@@ -232,7 +231,7 @@ vc_map( array(
 				'circle effect12 right to left'      =>      'circle effect12 right_to_left',
 				'circle effect12 top to bottom'      =>      'circle effect12 top_to_bottom',
 				'circle effect12 bottom to top'      =>      'circle effect12 bottom_to_top',
-				'circle effect13 from left and right'      =>      'circle effect13 from_left_and_right',
+				'circle effect13 from left and right'    =>      'circle effect13 from_left_and_right',
 				'circle effect13 top to bottom'      =>      'circle effect13 top_to_bottom',
 				'circle effect13 bottom to top'      =>      'circle effect13 bottom_to_top',
 				'circle effect14 left to right'      =>      'circle effect14 left_to_right',

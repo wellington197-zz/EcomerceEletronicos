@@ -1,35 +1,35 @@
-#mega_info_bar {
+.mega_info_bar {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
     position: relative;
 }
-#mega_info_bar .mega_hvr_btn {
+.mega_info_bar .mega_hvr_btn {
     display: inline-block;
     margin: 10px 10px;
     text-decoration: none;
     transition: background .3s ease, color .3s ease;
 }
-#mega_info_bar .mega_wrap img {
+.mega_info_bar .mega_wrap img {
     display: block;
     margin: 0 auto;
 }
-#mega_info_bar a {
-	text-shadow: none;
+.mega_info_bar a {
+  text-shadow: none;
 }
 
-#mega_info_bar .mega_content {
+.mega_info_bar .mega_content {
     padding-bottom: 20px; 
     overflow: hidden; 
 }
-#mega_info_bar .mega_content .mega_hvr_btn:hover {
-	text-decoration: none;
+.mega_info_bar .mega_content .mega_hvr_btn:hover {
+  text-decoration: none;
 }
-#mega_info_bar .mega_content h2,
-#mega_info_bar .mega_content h1,
-#mega_info_bar .mega_content h3,
-#mega_info_bar .mega_content h4,
-#mega_info_bar .mega_content p {
+.mega_info_bar .mega_content h2,
+.mega_info_bar .mega_content h1,
+.mega_info_bar .mega_content h3,
+.mega_info_bar .mega_content h4,
+.mega_info_bar .mega_content p {
   margin: 5px 10px;
 }
 .clearfix {
@@ -40,38 +40,78 @@
 /* Style 2
 ================================================*/
 
-#mega_info_bar_2 {
+.mega_info_bar_2 {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
     position: relative;
 }
-#mega_info_bar_2 .mega_hvr_btn {
+.mega_info_bar_2 .mega_hvr_btn {
   margin-bottom: 15px;
   text-decoration: none;
   display: inline-block;
   transition: background .3s ease, color .3s ease;
 }
-#mega_info_bar_2 .mega_hvr_btn:hover {
-	text-decoration: none;
+.mega_info_bar_2 .mega_hvr_btn:hover {
+  text-decoration: none;
 }
-#mega_info_bar_2 .mega_wrap img {
+.mega_info_bar_2 .mega_wrap img {
     display: block;
     margin: 0 auto;
 }
-#mega_info_bar_2 a {
-	text-shadow: none;
+.mega_info_bar_2 a {
+  text-shadow: none;
 }
 
-#mega_info_bar_2 .mega_content {
+.mega_info_bar_2 .mega_content {
     overflow: hidden;
     padding-top: 10px;
     text-align: center;
 }
-#mega_info_bar_2 .mega_content h2, h1, h3, h4, p {
+.mega_info_bar_2 .mega_content h2, h1, h3, h4, p {
   margin: 5px 0px;
 }
 
+/* Style 2
+================================================*/
+
+.mega_info_bar_3 {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    position: relative;
+}
+.mega_info_bar_3 .mega_hvr_btn {
+    display: inline-block;
+    margin: 10px 10px;
+    text-decoration: none;
+    transition: background .3s ease, color .3s ease;
+}
+.mega_info_bar_3 .mega_wrap img {
+    display: block;
+    margin: 0 auto;
+}
+.mega_info_bar_3 a {
+  text-shadow: none;
+}
+
+.mega_info_bar_3 .mega_content {
+    padding-bottom: 20px; 
+    overflow: hidden; 
+}
+.mega_info_bar_3 .mega_content .mega_hvr_btn:hover {
+  text-decoration: none;
+}
+.mega_info_bar_3 .mega_content h2,
+.mega_info_bar_3 .mega_content h1,
+.mega_info_bar_3 .mega_content h3,
+.mega_info_bar_3 .mega_content h4,
+.mega_info_bar_3 .mega_content p {
+  margin: 5px 10px;
+}
+.clearfix {
+    clear: both;
+}
 
 /*Ribbon*/
 
@@ -118,23 +158,32 @@
   border-top: 3px solid #79A70A;
 }
 
+/* Media Query
+================================================*/
+
 @media only screen and (max-width: 768px) {
-  #mega_info_bar_2 .mega_wrap img {
+  .mega_info_bar_2 .mega_wrap img {
     height: auto !important;
   }
-  #mega_info_bar .mega_wrap img {
+  .mega_info_bar .mega_wrap img {
     height: auto !important;
+  }
+  .mega_info_bar_3, .mega_info_bar_3 .mega_wrap, .mega_info_bar_3 .mega_content {
+    display: block !important;
+    width: 100% !important;
+  }
+  .mega_info_bar_3 *{
+    text-align: center !important;
   }
 }
 
 @media only screen and (max-width: 480px) {
-  #mega_info_bar .mega_wrap, #mega_info_bar .mega_content {
+  .mega_info_bar .mega_wrap, .mega_info_bar .mega_content {
     float: inherit !important;
     width: 100% !important;
     text-align: center;
   }
-
-  #mega_info_bar img {
+  .mega_info_bar img {
     margin: 0 auto;
     display: block;
   }

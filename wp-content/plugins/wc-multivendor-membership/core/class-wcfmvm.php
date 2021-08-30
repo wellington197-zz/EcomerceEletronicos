@@ -1669,6 +1669,8 @@ class WCFMvm {
 				$shop_name = get_user_meta( $member_id, 'store_name', true );
 				$paymode = get_user_meta( $member_id, 'wcfm_membership_paymode', true );
 				
+				do_action( 'wcfmvm_before_membership_cancel', $member_id, $wcfm_membership_id );
+				
 				$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
 				
 				$membership_cancel_rules = array();
@@ -1722,7 +1724,9 @@ class WCFMvm {
 				$wc_subscription = get_user_meta( $member_id, 'wcfm_membership_subscription', true );
 				if( $wc_subscription ) {
 					$subscription = wcs_get_subscription( $wc_subscription );
-					$subscription->update_status( 'expired' );
+					if( $subscription ) {
+						$subscription->update_status( 'expired' );
+					}
 					delete_user_meta( $member_id, 'wcfm_membership_order' );
 					delete_user_meta( $member_id, 'wcfm_membership_subscription' );
 				}
@@ -1764,6 +1768,8 @@ class WCFMvm {
 				if( $cancel_member_product_status != 'same' ) {
 					$WCFM->wcfm_vendor_support->reset_vendor_product_status( $member_id, $cancel_member_product_status );
 				}
+				
+				do_action( 'wcfmvm_after_membership_cancel', $member_id, $wcfm_membership_id );
 			}
 		}
 	}
@@ -1779,6 +1785,8 @@ class WCFMvm {
 				$member_user = new WP_User( $member_id );
 				$shop_name = get_user_meta( $member_id, 'store_name', true );
 				$paymode = get_user_meta( $member_id, 'wcfm_membership_paymode', true );
+				
+				do_action( 'wcfmvm_before_membership_expire', $member_id, $wcfm_membership_id );
 				
 				$wcfm_membership_options = get_option( 'wcfm_membership_options', array() );
 				
@@ -1877,6 +1885,8 @@ class WCFMvm {
 				if( $expire_product_status != 'same' ) {
 					$WCFM->wcfm_vendor_support->reset_vendor_product_status( $member_id, $expire_product_status );
 				}
+				
+				do_action( 'wcfmvm_after_membership_expire', $member_id, $wcfm_membership_id );
 			}
 		}
 	}
@@ -1928,7 +1938,7 @@ class WCFMvm {
 					}
 	
 					$response = wp_remote_retrieve_body( $request );
-					parse_str( $response, $parsed_response );
+					parse_str( $response, $parsed_response ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	
 					if ( isset( $parsed_response['ACK'] ) && $parsed_response['ACK'] == 'Failure' ) {
 						wcfm_log( "PayPal Recurring Subscription Cancel Error:: " . $parsed_response['L_LONGMESSAGE0'] );

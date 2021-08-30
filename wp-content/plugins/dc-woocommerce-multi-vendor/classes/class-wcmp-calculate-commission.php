@@ -385,7 +385,7 @@ class WCMp_Calculate_Commission {
 
                     $item_commission = $this->get_item_commission($product_id, $variation_id, $item, $order_id, $item_id);
 
-                    $wpdb->query("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_id = " . $commission[0] . ", commission_amount = '" . $item_commission . "' WHERE order_id =" . $order_id . " AND order_item_id = " . $item_id . " AND product_id = " . $product_id);
+                    $wpdb->query($wpdb->prepare("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_id = %d, commission_amount = %d WHERE order_id =%d AND order_item_id = %d AND product_id = %d", $commission[0],  $item_commission, $order_id, $item_id, $product_id));
                 } else {
                     $vendor_id = wc_get_order_item_meta($item_id, '_vendor_id', true);
                     if ($product_id) {
@@ -417,7 +417,7 @@ class WCMp_Calculate_Commission {
      * @param  int $line_total Line total of product
      * @return void
      */
-    public function record_commission($product_id = 0, $order_id = 0, $variation_id = 0, $order, $vendor, $item_id = 0, $item) {
+    public function record_commission($product_id = 0, $order_id = 0, $variation_id = 0, $order = '', $vendor = '', $item_id = 0, $item = '') {
         if ($product_id > 0) {
             if ($vendor) {
                 $vendor_due = $vendor->wcmp_get_vendor_part_from_order($order, $vendor->term_id);
@@ -438,7 +438,7 @@ class WCMp_Calculate_Commission {
      * @param  int $amount     Commission total
      * @return void
      */
-    public function create_commission($vendor_id = 0, $product_id = 0, $amount = 0, $order_id = 0, $variation_id = 0, $item_id = 0, $item, $order) {
+    public function create_commission($vendor_id = 0, $product_id = 0, $amount = 0, $order_id = 0, $variation_id = 0, $item_id = 0, $item = '', $order = '') {
         global $wpdb;
         if ($vendor_id == 0) {
             return false;
@@ -471,7 +471,7 @@ class WCMp_Calculate_Commission {
         // Mark commission as unpaid
         update_post_meta($commission_id, '_paid_status', 'unpaid');
         $item_commission = $this->get_item_commission($product_id, $variation_id, $item, $order_id, $item_id);
-        $wpdb->query("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_id = " . $commission_id . ", commission_amount = '" . $item_commission . "' WHERE order_id =" . $order_id . " AND order_item_id = " . $item_id . " AND product_id = " . $product_id);
+        $wpdb->query($wpdb->prepare("UPDATE `{$wpdb->prefix}wcmp_vendor_orders` SET commission_id = %d, commission_amount = %d WHERE order_id =%d AND order_item_id = %d AND product_id = %d", $commission_id, $item_commission, $order_id, $item_id, $product_id));
         do_action('wcmp_vendor_commission_created', $commission_id);
         return $commission_id;
     }
@@ -491,6 +491,7 @@ class WCMp_Calculate_Commission {
         $order = wc_get_order($order_id);
         $amount = 0;
         $commission = array();
+        $commission_rule = array();
         $product_value_total = 0;
         if (isset($WCMp->vendor_caps->payment_cap['commission_include_coupon'])) {
             $line_total = $order->get_item_total($item, false, false) * $item['qty'];
@@ -520,6 +521,8 @@ class WCMp_Calculate_Commission {
                         $amount = (float) $line_total * ( (float) $commission['commission_val'] / 100 );
                     } else if ($WCMp->vendor_caps->payment_cap['commission_type'] == 'fixed') {
                         $amount = (float) $commission['commission_val'] * $item['qty'];
+                    } elseif ($WCMp->vendor_caps->payment_cap['commission_type'] == 'commission_by_product_price') {
+                        $amount = $this->wcmp_get_commission_as_per_product_price($product_id, $line_total, $item['qty'], $commission_rule);
                     }
                     if (isset($WCMp->vendor_caps->payment_cap['revenue_sharing_mode'])) {
                         if ($WCMp->vendor_caps->payment_cap['revenue_sharing_mode'] == 'admin') {
@@ -536,7 +539,7 @@ class WCMp_Calculate_Commission {
                     }
 
                     $product_value_total += $item->get_total();
-                    if ($amount > $product_value_total) {
+                    if ( apply_filters('wcmp_admin_pay_commission_more_than_order_amount', true) && $amount > $product_value_total) {
                         $amount = $product_value_total;
                     }
                     return apply_filters('vendor_commission_amount', $amount, $product_id, $variation_id, $item, $order_id, $item_id);
@@ -544,6 +547,41 @@ class WCMp_Calculate_Commission {
             }
         }
         return apply_filters('vendor_commission_amount', $amount, $product_id, $variation_id, $item, $order_id, $item_id);
+    }
+
+    public function wcmp_get_commission_as_per_product_price( $product_id = 0, $line_total = 0, $item_quantity = 0, $commission_rule = array() ) {
+        $wcmp_variation_commission_options = get_option( 'wcmp_variation_commission_options', array() );
+        $vendor_commission_by_products = is_array($wcmp_variation_commission_options) && isset( $wcmp_variation_commission_options['vendor_commission_by_products'] ) ? $wcmp_variation_commission_options['vendor_commission_by_products'] : array();
+        $amount = 0;
+        $matched_rule_price = 0;
+        if (!empty($vendor_commission_by_products)) {
+            foreach( $vendor_commission_by_products as $vendor_commission_product_rule ) {
+                $rule_price = $vendor_commission_product_rule['cost'];
+                $rule = $vendor_commission_product_rule['rule'];
+                
+                if( ( $rule == 'upto' ) && ( (float) $line_total <= (float)$rule_price ) && ( !$matched_rule_price || ( (float)$rule_price <= (float)$matched_rule_price ) ) ) {
+                    $matched_rule_price         = $rule_price;
+                    $commission_rule['mode']    = $vendor_commission_product_rule['type'];
+                    $commission_rule['commission_val'] = $vendor_commission_product_rule['commission'];
+                    $commission_rule['commission_fixed']   = isset( $vendor_commission_product_rule['commission_fixed'] ) ? $vendor_commission_product_rule['commission_fixed'] : $vendor_commission_product_rule['commission'];
+                } elseif( ( $rule == 'greater' ) && ( (float) $line_total > (float)$rule_price ) && ( !$matched_rule_price || ( (float)$rule_price >= (float)$matched_rule_price ) ) ) {
+                    $matched_rule_price         = $rule_price;
+                    $commission_rule['mode']    = $vendor_commission_product_rule['type'];
+                    $commission_rule['commission_val'] = $vendor_commission_product_rule['commission'];
+                    $commission_rule['commission_fixed']   = isset( $vendor_commission_product_rule['commission_fixed'] ) ? $vendor_commission_product_rule['commission_fixed'] : $vendor_commission_product_rule['commission'];
+                }
+            }
+        }
+        if (!empty($commission_rule)) {
+            if ($commission_rule['mode'] == 'percent_fixed') {
+                $amount = (float) $line_total * ( (float) $commission_rule['commission_val'] / 100 ) + (float) $commission_rule['commission_fixed'];
+            } else if ($commission_rule['mode'] == 'percent') {
+                $amount = (float) $line_total * ( (float) $commission_rule['commission_val'] / 100 );
+            } else if ($commission_rule['mode'] == 'fixed') {
+                $amount = (float) $commission_rule['commission_fixed'] * $item_quantity;
+            }
+        }
+        return $amount;
     }
 
     /**

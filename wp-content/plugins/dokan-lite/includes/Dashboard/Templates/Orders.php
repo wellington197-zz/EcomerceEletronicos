@@ -61,7 +61,7 @@ class Orders {
         $order_id = isset( $_GET['order_id'] ) ? intval( $_GET['order_id'] ) : 0;
 
         if ( $order_id ) {
-            $_nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ) : '';
+            $_nonce = isset( $_REQUEST['_wpnonce'] ) ? sanitize_key( $_REQUEST['_wpnonce'] ) : '';
 
             if ( wp_verify_nonce( $_nonce, 'dokan_view_order' ) && current_user_can( 'dokan_view_order' ) ) {
                 dokan_get_template_part( 'orders/details' );
@@ -95,11 +95,7 @@ class Orders {
 
         $post_data = wp_unslash( $_POST );
 
-        if ( ! isset( $post_data['dokan_vendor_order_export_nonce'] ) ) {
-            return;
-        }
-
-        if ( ! wp_verify_nonce( sanitize_text_field( $post_data['dokan_vendor_order_export_nonce'] ), 'dokan_vendor_order_export_action' ) ) {
+        if ( ! isset( $post_data['dokan_vendor_order_export_nonce'] ) || ! wp_verify_nonce( sanitize_key( $post_data['dokan_vendor_order_export_nonce'] ), 'dokan_vendor_order_export_action' ) ) {
             return;
         }
 
@@ -115,6 +111,8 @@ class Orders {
         }
 
         if ( isset( $post_data['dokan_order_export_filtered'] ) ) {
+            $get_data    = wp_unslash( $_GET );
+            $customer_id = isset( $get_data['customer_id'] ) ? $get_data['customer_id'] : null;
 
             $filename = 'Orders-' . time();
             header( 'Content-Type: application/csv; charset=' . get_option( 'blog_charset' ) );
@@ -123,10 +121,13 @@ class Orders {
             $order_date   = ( isset( $post_data['order_date'] ) ) ? sanitize_text_field( $post_data['order_date'] ) : null;
             $order_status = ( isset( $post_data['order_status'] ) ) ? sanitize_text_field( $post_data['order_status'] ) : 'all';
 
-            $user_orders  = dokan_get_seller_orders( dokan_get_current_user_id(), $order_status, $order_date, 10000000, 0 );
+            $user_orders  = dokan_get_seller_orders( dokan_get_current_user_id(), $order_status, $order_date, 10000000, 0, $customer_id );
             dokan_order_csv_export( $user_orders );
             exit();
         }
+        
+        // Allow dev to create custom CSV
+        do_action('dokan_after_handle_order_export', $post_data);
     }
 
 }

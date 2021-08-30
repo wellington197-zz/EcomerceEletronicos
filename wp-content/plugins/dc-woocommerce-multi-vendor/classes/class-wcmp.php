@@ -17,7 +17,6 @@ final class WCMp {
     public $plugin_path;
     public $version;
     public $token;
-    public $text_domain;
     public $library;
     public $shortcode;
     public $admin;
@@ -58,7 +57,6 @@ final class WCMp {
         $this->plugin_url = trailingslashit(plugins_url('', $plugin = $file));
         $this->plugin_path = trailingslashit(dirname($file));
         $this->token = WCMp_PLUGIN_TOKEN;
-        $this->text_domain = WCMp_TEXT_DOMAIN;
         $this->version = WCMp_PLUGIN_VERSION;
 
         // Intialize WCMp Widgets
@@ -96,6 +94,8 @@ final class WCMp {
         }else{
             $this->load_vendor_shipping();
         }
+        // Disable woocommerce admin from vendor backend
+        add_filter( 'woocommerce_admin_disabled', array( &$this, 'wcmp_remove_woocommerce_admin_from_vendor' ) );
     }
     
     public function exclude_order_comments($clauses) {
@@ -196,7 +196,9 @@ final class WCMp {
         $this->init_wcmp_rest_api();
         // Init Ledger
         $this->init_ledger();
-        
+        // rewrite endpoint for followers details
+        add_rewrite_endpoint( 'followers', EP_ALL );
+
         if (!wp_next_scheduled('migrate_spmv_multivendor_table') && !get_option('spmv_multivendor_table_migrated', false)) {
             wp_schedule_event(time(), 'every_5minute', 'migrate_spmv_multivendor_table');
         }
@@ -212,6 +214,9 @@ final class WCMp {
     // Initializing Packages
     function init_packages() {
         include_once ($this->plugin_path . "/packages/Packages.php" );
+        // Migration
+        include_once ($this->plugin_path . "/classes/migration/class-wcmp-migration.php" );
+        $this->multivendor_migration = new WCMp_Migrator();
     }
 
     /**
@@ -231,6 +236,7 @@ final class WCMp {
          * Core functionalities.
          */
         include_once ( $this->plugin_path . "/includes/wcmp-order-functions.php" );
+        include_once ( $this->plugin_path . "/includes/wcmp-hooks-functions.php" );
         // Query classes
         include_once ( $this->plugin_path . '/classes/query/class-wcmp-vendor-query.php' );
     }
@@ -242,8 +248,8 @@ final class WCMp {
      */
     function template_loader($template) {
         global $WCMp;
-        if (is_tax($WCMp->taxonomy->taxonomy_name)) {
-            $template = $this->template->locate_template('taxonomy-dc_vendor_shop.php');
+        if (wcmp_is_store_page()) {
+            $template = $this->template->store_locate_template('taxonomy-dc_vendor_shop.php');
         }
         return $template;
     }
@@ -420,6 +426,12 @@ final class WCMp {
         $this->shipping_gateway = new WCMp_Shipping_Gateway();
         WCMp_Shipping_Gateway::load_class( 'shipping-zone', 'helpers' );
     }
+
+    public function wcmp_remove_woocommerce_admin_from_vendor() {
+        if (is_user_wcmp_vendor(get_current_user_id())) {
+            return true;
+        }
+    }
     
     /**
      * WCMp Woo Helper
@@ -468,19 +480,19 @@ final class WCMp {
     function add_wcmp_corn_schedule($schedules) {
         $schedules['weekly'] = array(
             'interval' => 604800,
-            'display' => __('Every 7 Days', $this->text_domain)
+            'display' => __('Every 7 Days', 'dc-woocommerce-multi-vendor')
         );
         $schedules['monthly'] = array(
             'interval' => 2592000,
-            'display' => __('Every 1 Month', $this->text_domain)
+            'display' => __('Every 1 Month', 'dc-woocommerce-multi-vendor')
         );
         $schedules['fortnightly'] = array(
             'interval' => 1296000,
-            'display' => __('Every 15 Days', $this->text_domain)
+            'display' => __('Every 15 Days', 'dc-woocommerce-multi-vendor')
         );
         $schedules['every_5minute'] = array(
                 'interval' => 5*60, // in seconds
-                'display'  => __( 'Every 5 minute', $this->text_domain )
+                'display'  => __( 'Every 5 minute', 'dc-woocommerce-multi-vendor' )
         );
         
         return $schedules;
@@ -541,7 +553,7 @@ final class WCMp {
                 $params = array(
                     'coupon_meta' => array( 
                         'coupon_code' => array(
-                            'generate_button_text' => esc_html__( 'Generate coupon code', 'woocommerce' ),
+                            'generate_button_text' => esc_html__( 'Generate coupon code', 'dc-woocommerce-multi-vendor' ),
                             'characters'           => apply_filters( 'wcmp_coupon_code_generator_characters', 'ABCDEFGHJKMNPQRSTUVWXYZ23456789' ),
                             'char_length'          => apply_filters( 'wcmp_coupon_code_generator_character_length', 8 ),
                             'prefix'               => apply_filters( 'wcmp_coupon_code_generator_prefix', '' ),
@@ -608,7 +620,7 @@ final class WCMp {
             }
         }
     }
-    
+
     public function wcmp_stripe_phpversion_required_notice() {
         ?>
         <div id="message" class="error">

@@ -47,7 +47,7 @@ class WCFM_Settings_WCPVendors_Controller {
 		
 		// sanitize html editor content
 		if( apply_filters( 'wcfm_is_allow_store_description', true ) ) {
-			$wcfm_settings_form['profile'] = ! empty( $_POST['profile'] ) ? apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) ) : '';
+			$wcfm_settings_form['profile'] = ! empty( $_POST['profile'] ) ? sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) ) ) : '';
 		}
 		
 		// Set Product Featured Image

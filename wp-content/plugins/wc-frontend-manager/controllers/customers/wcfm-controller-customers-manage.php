@@ -213,15 +213,15 @@ class WCFM_Customers_Manage_Controller {
 						do_action( 'wcfm_customers_manage', $customer_id, $wcfm_customer_form_data );
 					}
 					
-					if(!$has_error) { echo '{"status": true, "message": "' . $wcfm_customer_messages['customer_saved'] . '", "redirect": "' . apply_filters( 'wcfm_customer_manage_redirect', get_wcfm_customers_manage_url($customer_id), $customer_id ) . '"}'; }
-					else { echo '{"status": false, "message": "' . $wcfm_customer_messages['customer_failed'] . '"}'; }
+					if(!$has_error) { echo '{"status": true, "message": "' . esc_html( $wcfm_customer_messages['customer_saved'] ) . '", "redirect": "' . esc_url( apply_filters( 'wcfm_customer_manage_redirect', get_wcfm_customers_manage_url($customer_id), $customer_id ) ) . '"}'; }
+					else { echo '{"status": false, "message": "' . esc_html( $wcfm_customer_messages['customer_failed'] ) . '"}'; }
 				}
 			} else {
-				echo '{"status": false, "message": "' . $wcfm_customer_messages['no_email'] . '"}';
+				echo '{"status": false, "message": "' . esc_html( $wcfm_customer_messages['no_email'] ) . '"}';
 			}
 	  	
 	  } else {
-			echo '{"status": false, "message": "' . $wcfm_customer_messages['no_username'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_customer_messages['no_username'] ) . '"}';
 		}
 		
 		die;

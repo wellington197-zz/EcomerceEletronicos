@@ -52,7 +52,7 @@ class WCFMmp_Commission {
 		add_filter('wcfmmmp_tax_commission_rule', array(&$this, 'wcfmmp_shipping_tax_commission_rule_fixed_handler' ) );
 		
 		// Commission on Tax Admin MOde Handler
-		add_filter( 'wcfmmp_commission_deducted_tax', array(&$this, 'wcfmmp_commission_deducted_tax_admin_mode_handler' ), 100, 7 );
+		add_filter( 'wcfmmp_commission_deducted_tax', array(&$this, 'wcfmmp_commission_deducted_tax_admin_mode_handler' ), 100, 9 );
 		
 		// On Order Item Refund
 		add_action( 'woocommerce_order_refunded', array(&$this, 'wcfmmp_commission_order_item_refund' ), 30, 2 );
@@ -258,7 +258,7 @@ class WCFMmp_Commission {
 							}
 							$total_transaction_charge = round( $total_transaction_charge, 2 );
 							$transaction_charge       = (float) $total_transaction_charge / $vendor_order_total_item;
-							$transaction_charge       = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule );
+							$transaction_charge       = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $total_commission, $commission_rule, $order_item_id );
 							
 							// $transaction_charge round check
 							if( !get_post_meta( $order_id, '_wcfmmp_vendor_transacton_charge_adjusted_'.$vendor_id, true ) ) {
@@ -275,7 +275,7 @@ class WCFMmp_Commission {
 						// Commission Tax Calculation
 						if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 							$commission_tax = $total_commission * ( (float)$commission_rule['tax_percent'] / 100 );
-							$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule );
+							$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule, $order_item_id, 0 );
 							$total_commission -= (float) $commission_tax;
 						}
 						
@@ -618,15 +618,15 @@ class WCFMmp_Commission {
 				if( ( $commission_rule['transaction_charge_type'] == 'fixed' ) || ( $commission_rule['transaction_charge_type'] == 'percent_fixed' ) ) {
 					$transaction_charge  += (float)$commission_rule['transaction_charge_fixed'];
 				}
-				$transaction_charge     = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $commission_amount, $commission_rule );
+				$transaction_charge     = apply_filters( 'wcfmmp_commission_deducted_transaction_charge', $transaction_charge, $vendor_id, $product_id, $order_id, $commission_amount, $commission_rule, $order_item_id );
 				$commission_amount     -= (float) $transaction_charge;
 			}
 		}
 		
-		// Commission Tax Calculation - Have something wring here!!!!
+		// Commission Tax Calculation - Have something wrong here!!!!
 		if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 			$commission_tax = $commission_amount * ( (float)$commission_rule['tax_percent'] / 100 );
-			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $commission_amount, $commission_rule );
+			$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $commission_amount, $commission_rule, $order_item_id, 0 );
 			$commission_amount -= (float) $commission_tax;
 		}
 		
@@ -931,7 +931,7 @@ class WCFMmp_Commission {
 	/**
 	 * Tax on Commission Admin Mode Handler
 	 */
-	function wcfmmp_commission_deducted_tax_admin_mode_handler( $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule ) {
+	function wcfmmp_commission_deducted_tax_admin_mode_handler( $commission_tax, $vendor_id, $product_id, $variation_id, $order_id, $total_commission, $commission_rule, $item_id, $item_total = 0 ) {
 		global $WCFM, $WCFMmp, $wpdb;
 		
 		if( apply_filters( 'wcfm_is_admin_fee_mode', false ) ) {
@@ -949,9 +949,12 @@ class WCFMmp_Commission {
 					if( ( $pvariation_id && $variation_id && ( $variation_id == $pvariation_id ) ) || ( !$pvariation_id && $pproduct_id && ( $product_id == $pproduct_id ) ) ) {
 						$pvendor_id = wcfm_get_vendor_id_by_post( $product_id );
 						if( $pvendor_id && ( $pvendor_id == $vendor_id ) ) {
-							$line_item_total = $line_item->get_total() + $line_item->get_total_tax();
-		
-							$vendor_wise_gross_sales += $line_item_total;
+							if( !$item_total ) {
+								$line_item_total = $line_item->get_total() + $line_item->get_total_tax();
+								$vendor_wise_gross_sales += $line_item_total;
+							} else {
+								$vendor_wise_gross_sales += $item_total;
+							}
 						}
 					}
 				}

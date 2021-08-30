@@ -326,7 +326,7 @@ $wcfmvm_registration_custom_fields = wcfm_get_option( 'wcfmvm_registration_custo
 								break;
 								
 								case 'datepicker':
-									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => 'YYYY-MM-DD', 'class' => 'wcfm-text wcfm_datepicker', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
+									$WCFM->wcfm_fields->wcfm_generate_form_field(  array( $field_id => array( 'label' => __($wcfmvm_registration_custom_field['label'], 'WCfM') , 'name' => $field_name, 'custom_attributes' => $custom_attributes, 'type' => 'text', 'placeholder' => get_option( 'date_format' ), 'class' => 'wcfm-text wcfm_datepicker', 'label_class' => 'wcfm_title', 'value' => $field_value, 'hints' => __($wcfmvm_registration_custom_field['help_text'], 'WCfM') ) ) );
 								break;
 								
 								case 'timepicker':

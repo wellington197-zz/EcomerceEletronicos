@@ -779,7 +779,7 @@ $store_lng = get_user_meta( $user_id, '_store_lng', true ) ? get_user_meta( $use
 			  
 				<input type="submit" name="save-data" value="<?php _e( 'Save', 'wc-frontend-manager' ); ?>" id="wcfm_settings_save_button" class="wcfm_submit_button" />
 			</div>
-			
+			<input type="hidden" name="wcfm_nonce" value="<?php echo wp_create_nonce( 'wcfm_settings' ); ?>" />
 		</form>
 		<?php
 		do_action( 'after_wcfm_wcmarketplace_settings' );

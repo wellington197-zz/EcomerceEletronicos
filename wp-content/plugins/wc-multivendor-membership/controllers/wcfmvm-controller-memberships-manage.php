@@ -21,7 +21,7 @@ class WCFMvm_Memberships_Manage_Controller {
 		global $WCFM, $wpdb, $wcfm_membership_manager_form_data;
 		
 		$wcfm_membership_manager_form_data = array();
-	  parse_str($_POST['wcfm_memberships_manage_form'], $wcfm_membership_manager_form_data);
+	  parse_str($_POST['wcfm_memberships_manage_form'], $wcfm_membership_manager_form_data); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	  
 	  $wcfm_membership_messages = get_wcfmvm_membership_manage_messages();
 	  $has_error = false;
@@ -297,12 +297,12 @@ class WCFMvm_Memberships_Manage_Controller {
 				
 				// Thank You page content
 				if( isset( $_POST['free_thankyou_content'] ) ) {
-					wcfm_update_post_meta( $new_membership_id, 'free_thankyou_content', stripslashes( html_entity_decode( $_POST['free_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ) );
+					wcfm_update_post_meta( $new_membership_id, 'free_thankyou_content', sanitize_option( 'free_thankyou_content', stripslashes( html_entity_decode( $_POST['free_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ), 'post' ) );
 				}
 				
 				// On Approval Thank You page content
 				if( isset( $_POST['subscription_thankyou_content'] ) ) {
-					wcfm_update_post_meta( $new_membership_id, 'subscription_thankyou_content', stripslashes( html_entity_decode( $_POST['subscription_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ) );
+					wcfm_update_post_meta( $new_membership_id, 'subscription_thankyou_content', sanitize_option( 'subscription_thankyou_content', stripslashes( html_entity_decode( $_POST['subscription_thankyou_content'], ENT_QUOTES, 'UTF-8' ) ), 'post' ) );
 				}
 				
 				// Welcome Email Subject
@@ -312,19 +312,19 @@ class WCFMvm_Memberships_Manage_Controller {
 				
 				// Welcome Email Content
 				if( isset( $_POST['subscription_welcome_email_content'] ) ) {
-					wcfm_update_post_meta( $new_membership_id, 'subscription_welcome_email_content', stripslashes( html_entity_decode( $_POST['subscription_welcome_email_content'], ENT_QUOTES, 'UTF-8' ) ) );
+					wcfm_update_post_meta( $new_membership_id, 'subscription_welcome_email_content', sanitize_option( 'subscription_welcome_email_content', stripslashes( html_entity_decode( $_POST['subscription_welcome_email_content'], ENT_QUOTES, 'UTF-8' ) ), 'post' ) );
 				}
 				
 				// Hook for additional processing
 				do_action( 'wcfm_memberships_manage_from_process', $new_membership_id, $wcfm_membership_manager_form_data );
 				
-				echo '{"status": true, "message": "' . $wcfm_membership_messages['membership_saved'] . '", "id": ' . $new_membership_id . '}';
+				echo '{"status": true, "message": "' . esc_html( $wcfm_membership_messages['membership_saved'] ) . '", "id": ' . $new_membership_id . '}';
 				die;
 			} else {
-				echo '{"status": false, "message": "' . $wcfm_membership_messages['membership_failed'] . '"}';
+				echo '{"status": false, "message": "' . esc_html( $wcfm_membership_messages['membership_failed'] ) . '"}';
 			}
 		} else {
-			echo '{"status": false, "message": "' . $wcfm_membership_messages['no_title'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_membership_messages['no_title'] ) . '"}';
 		}
 		
 		die;

@@ -23,12 +23,13 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 			'hoverclr'	=>		'',
 			'hoverbg'	=>		'',
 		), $atts ) );
+		$url = vc_build_link($url);
 		$content = wpb_js_remove_wpautop($content, true);
 		wp_enqueue_style( 'social-icons-css', plugins_url( '../css/socialicons.css' , __FILE__ ));
 		ob_start(); ?>
 		<?php if ($style == 'default') { ?>
 			<div id="mega-social-btn" style="margin: 0 <?php echo $margin; ?>px;">
-				<a href="<?php echo $url; ?>" target="<?php echo $target; ?>" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
+				<a href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
 					<i class="<?php echo $icon; ?>" aria-hidden="true"></i>
 				</a>
 			</div>
@@ -37,7 +38,7 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 		if ($style == 'effect1') { ?>
 			<!-- Mega Social Icons Style 1 -->
 		    <div class="mega-social-icons" style="margin: 0 <?php echo $margin; ?>px;">
-				<a href="<?php echo $url ?>" target="<?php echo $target; ?>" class="icon-button" style="font-size: <?php echo $size; ?>px; width: <?php echo $width ?>px; height: <?php echo $width; ?>px; line-height: <?php echo $width; ?>px; border-radius: <?php echo $radius; ?>; background-color: <?php echo $bgclr; ?>;">
+				<a href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>" class="icon-button" style="font-size: <?php echo $size; ?>px; width: <?php echo $width ?>px; height: <?php echo $width; ?>px; line-height: <?php echo $width; ?>px; border-radius: <?php echo $radius; ?>; background-color: <?php echo $bgclr; ?>;">
 					<i class="<?php echo $icon; ?>" aria-hidden="true" style="color: <?php echo $clr ?>; width: <?php echo $width ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onleavecolor="<?php echo $clr; ?>"></i>
 					<span style="border-radius: <?php echo $radius; ?>; background-color: <?php echo $hoverbg; ?>; width: <?php echo $width ?>px; height: <?php echo $height; ?>px;"></span>
 				</a>
@@ -46,7 +47,7 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 
 		if ($style == 'effect2') { ?>
 			<div class="mega-social-icons2" style="margin: 0 <?php echo $margin; ?>px;">
-				<a href="<?php echo $url ?>" target="<?php echo $target; ?>" class="icoRss" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
+				<a href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>" class="icoRss" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
 					<i class="<?php echo $icon; ?>" aria-hidden="true"></i>
 				</a>
 			</div>
@@ -55,7 +56,7 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 		if ($style == 'effect3') { ?>
 			<div id="mega-social-icons3" style="margin: 0 <?php echo $margin; ?>px;">
 				<div class="social-buttons">
-					<a class="social-button" href="<?php echo $url ?>" target="<?php echo $target; ?>" style="font-size: <?php echo $size; ?>px; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height-4; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
+					<a class="social-button" href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>" style="font-size: <?php echo $size; ?>px; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height-4; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
 						<span style="background: <?php echo $hoverbg; ?>"></span>
 						<i class="<?php echo $icon; ?>"></i>
 					</a>
@@ -64,8 +65,8 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 		<?php }
 
 		if ($style == 'effect4') { ?>
-			<a class="social-button" href="<?php echo $url ?>" target="<?php echo $target; ?>">			
-				<div id="dualbtn" style="border-radius: <?php echo $radius; ?>; width: <?php echo $width ?>; font-size: <?php echo $size ?>; background: <?php echo $bgclr; ?>; margin: 0 <?php echo $margin; ?>px;">
+			<a class="social-button" href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>">			
+				<div id="dualbtn" style="border-radius: <?php echo $radius; ?>; width: <?php echo $width ?>px; font-size: <?php echo $size ?>px; background: <?php echo $bgclr; ?>; margin: 0 <?php echo $margin; ?>px;">
 			    	<div class="btnicon" style="height: <?php echo $height-12; ?>px; line-height: <?php echo $height-12; ?>px;">
 			    		<i class="<?php echo $icon; ?>" style="color: <?php echo $clr; ?>;"></i>
 			    	</div>
@@ -79,7 +80,7 @@ class WPBakeryShortCode_social_vc_son extends WPBakeryShortCode {
 
 		if ($style == 'effect5') { ?>
 			<div id="mega-social-btn" class="text-shadow" style="margin: 0 <?php echo $margin; ?>px;">
-				<a href="<?php echo $url; ?>" target="<?php echo $target; ?>" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
+				<a href="<?php echo esc_url($url['url']); ?>" target="<?php echo $url['target']; ?>" title="<?php echo esc_html($url['title']); ?>" style="font-size: <?php echo $size; ?>px; border-radius: <?php echo $radius; ?>; color: <?php echo $clr; ?>; background: <?php echo $bgclr; ?>; width: <?php echo $width; ?>px; height: <?php echo $height; ?>px; line-height: <?php echo $height; ?>px;" data-onhovercolor="<?php echo $hoverclr; ?>" data-onhoverbg="<?php echo $hoverbg; ?>" data-onleavebg="<?php echo $bgclr; ?>" data-onleavecolor="<?php echo $clr; ?>">
 					<i class="<?php echo $icon; ?>" aria-hidden="true"></i>
 				</a>
 			</div>
@@ -144,7 +145,7 @@ vc_map( array(
 		),
 
 		array(
-			"type" 			=> 	"textfield",
+			"type" 			=> 	"vc_link",
 			"heading" 		=> 	__( 'Social URL', 'socialicon' ),
 			"param_name" 	=> 	"url",
 			"description" 	=> 	__( 'write social url', 'socialicon' ),

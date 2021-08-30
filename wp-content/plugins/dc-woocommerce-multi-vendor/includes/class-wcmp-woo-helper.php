@@ -94,7 +94,7 @@ final class WCMp_Woo_Helper {
                 if ( isset( $data['variable_stock'], $data['variable_stock'][$i] ) ) {
                     if ( isset( $data['variable_original_stock'], $data['variable_original_stock'][$i] ) && wc_stock_amount( $variation->get_stock_quantity( 'edit' ) ) !== wc_stock_amount( $data['variable_original_stock'][$i] ) ) {
                         /* translators: 1: product ID 2: quantity in stock */
-                        $errors[] = sprintf( __( 'The stock has not been updated because the value has changed since editing. Product %1$d has %2$d units in stock.', 'woocommerce' ), $variation->get_id(), $variation->get_stock_quantity( 'edit' ) );
+                        $errors[] = sprintf( __( 'The stock has not been updated because the value has changed since editing. Product %1$d has %2$d units in stock.', 'dc-woocommerce-multi-vendor' ), $variation->get_id(), $variation->get_stock_quantity( 'edit' ) );
                     } else {
                         $stock = wc_stock_amount( $data['variable_stock'][$i] );
                     }
@@ -127,7 +127,7 @@ final class WCMp_Woo_Helper {
                         'length'            => isset( $data['variable_length'][$i] ) ? wc_clean( $data['variable_length'][$i] ) : '',
                         'width'             => isset( $data['variable_width'][$i] ) ? wc_clean( $data['variable_width'][$i] ) : '',
                         'height'            => isset( $data['variable_height'][$i] ) ? wc_clean( $data['variable_height'][$i] ) : '',
-                        'shipping_class_id' => wc_clean( $data['variable_shipping_class'][$i] ),
+                        'shipping_class_id' => isset($data['variable_shipping_class'][$i]) ? wc_clean( $data['variable_shipping_class'][$i] ) : '',
                         'tax_class'         => isset( $data['variable_tax_class'][$i] ) ? wc_clean( $data['variable_tax_class'][$i] ) : null,
                     )
                 );
@@ -208,7 +208,7 @@ final class WCMp_Woo_Helper {
      * @param  int    $index
      * @return array
      */
-    public function prepare_set_attributes( $all_attributes, $key_prefix = 'attribute_', $data, $index = null ) {
+    public function prepare_set_attributes( $all_attributes, $key_prefix = 'attribute_', $data = '', $index = null ) {
         $attributes = array();
 
         if ( $all_attributes ) {

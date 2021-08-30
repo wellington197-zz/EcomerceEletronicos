@@ -98,7 +98,8 @@ jQuery(document).ready( function($) {
 				controller               : 'wcfm-knowledgebase-manage',
 				wcfm_knowledgebase_manage_form : $('#wcfm_knowledgebase_manage_form').serialize(),
 				content                  : content,
-				status                   : 'submit'
+				status                   : 'submit',
+				wcfm_ajax_nonce          : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {

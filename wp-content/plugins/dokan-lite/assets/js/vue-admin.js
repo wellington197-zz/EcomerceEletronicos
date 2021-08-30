@@ -73,7 +73,7 @@ if (false) {(function () {
     return {
       options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
         scales: {
           xAxes: [{
             type: 'time',
@@ -141,11 +141,11 @@ if (false) {(function () {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_UpgradeBanner_vue__ = __webpack_require__(47);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_75a73b30_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_UpgradeBanner_vue__ = __webpack_require__(115);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_75a73b30_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_UpgradeBanner_vue__ = __webpack_require__(117);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(114)
+  __webpack_require__(116)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -445,6 +445,10 @@ if (false) {(function () {
 //
 //
 //
+//
+//
+//
+//
 
 
 
@@ -491,8 +495,8 @@ if (false) {(function () {
     'vendorInfo.user_nicename': function vendorInfoUser_nicename(newValue) {
       if (typeof newValue !== 'undefined') {
         this.showStoreUrl = false;
-        this.otherStoreUrl = this.defaultUrl + newValue.trim().split(' ').join('-');
-        this.vendorInfo.user_nicename = newValue.split(' ').join('-'); // check if the typed url is available
+        this.otherStoreUrl = this.defaultUrl + newValue.trim().split(' ').join('-').toLowerCase().replace(/[^\w\s/-]/g, '').replace(/-+/g, '-');
+        this.vendorInfo.user_nicename = newValue.split(' ').join('-').toLowerCase().replace(/[^\w\s/-]/g, '').replace(/-+/g, '-'); // check if the typed url is available
 
         this.checkStoreName();
       }
@@ -506,7 +510,7 @@ if (false) {(function () {
   },
   computed: {
     storeUrl: function storeUrl() {
-      var storeUrl = this.vendorInfo.store_name.trim().split(' ').join('-');
+      var storeUrl = this.vendorInfo.store_name.trim().split(' ').join('-').toLowerCase().replace(/[^\w\s/-]/g, '').replace(/-+/g, '-');
       this.vendorInfo.user_nicename = storeUrl;
       this.otherStoreUrl = this.defaultUrl + storeUrl;
       return this.defaultUrl + storeUrl;
@@ -1878,7 +1882,7 @@ var render = function() {
               on: {
                 click: function($event) {
                   $event.preventDefault()
-                  return _vm.uploadImage($event)
+                  return _vm.uploadImage.apply(null, arguments)
                 }
               }
             },
@@ -1917,7 +1921,7 @@ var render = function() {
             on: {
               click: function($event) {
                 $event.preventDefault()
-                return _vm.generatePassword($event)
+                return _vm.generatePassword.apply(null, arguments)
               }
             }
           },
@@ -1933,7 +1937,7 @@ var render = function() {
             on: {
               click: function($event) {
                 $event.preventDefault()
-                return _vm.regenratePassword($event)
+                return _vm.regenratePassword.apply(null, arguments)
               }
             }
           },
@@ -1952,7 +1956,7 @@ var render = function() {
             on: {
               click: function($event) {
                 $event.preventDefault()
-                return _vm.cancelButton($event)
+                return _vm.cancelButton.apply(null, arguments)
               }
             }
           },
@@ -2063,7 +2067,7 @@ var render = function() {
         { staticClass: "dokan-form-group" },
         [
           _c("div", { staticClass: "column" }, [
-            _c("label", { attrs: { for: "store-email" } }, [
+            _c("label", { attrs: { for: "first-name" } }, [
               _vm._v(_vm._s(_vm.__("First Name", "dokan-lite")))
             ]),
             _vm._v(" "),
@@ -2079,6 +2083,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "email",
+                id: "first-name",
                 placeholder: _vm.__("First Name", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.first_name },
@@ -2094,7 +2099,7 @@ var render = function() {
           ]),
           _vm._v(" "),
           _c("div", { staticClass: "column" }, [
-            _c("label", { attrs: { for: "store-email" } }, [
+            _c("label", { attrs: { for: "last-name" } }, [
               _vm._v(_vm._s(_vm.__("Last Name", "dokan-lite")))
             ]),
             _vm._v(" "),
@@ -2110,6 +2115,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "email",
+                id: "last-name",
                 placeholder: _vm.__("Last Name", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.last_name },
@@ -2148,6 +2154,7 @@ var render = function() {
               },
               attrs: {
                 type: "text",
+                id: "store-name",
                 placeholder: _vm.getError("store_name")
                   ? _vm.__("Store Name is required", "dokan-lite")
                   : _vm.__("Store Name", "dokan-lite")
@@ -2166,7 +2173,7 @@ var render = function() {
           _vm._v(" "),
           !_vm.getId()
             ? _c("div", { staticClass: "column" }, [
-                _c("label", { attrs: { for: "store-url" } }, [
+                _c("label", { attrs: { for: "user-nicename" } }, [
                   _vm._v(_vm._s(_vm.__("Store URL", "dokan-lite")))
                 ]),
                 _vm._v(" "),
@@ -2182,6 +2189,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "user-nicename",
                     placeholder: _vm.__("Store Url", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.user_nicename },
@@ -2239,6 +2247,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "number",
+                id: "store-phone",
                 placeholder: _vm.__("123456789", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.phone },
@@ -2277,6 +2286,7 @@ var render = function() {
               },
               attrs: {
                 type: "email",
+                id: "store-email",
                 placeholder: _vm.getError("email")
                   ? _vm.__("Email is required", "dokan-lite")
                   : _vm.__("store@email.com", "dokan-lite")
@@ -2309,7 +2319,7 @@ var render = function() {
           !_vm.getId()
             ? [
                 _c("div", { staticClass: "column" }, [
-                  _c("label", { attrs: { for: "store-username" } }, [
+                  _c("label", { attrs: { for: "user-login" } }, [
                     _vm._v(_vm._s(_vm.__("Username", "dokan-lite")))
                   ]),
                   _c("span", { staticClass: "required-field" }, [_vm._v("*")]),
@@ -2330,6 +2340,7 @@ var render = function() {
                     },
                     attrs: {
                       type: "text",
+                      id: "user-login",
                       placeholder: _vm.getError("user_login")
                         ? _vm.__("Username is required", "dokan-lite")
                         : _vm.__("Username", "dokan-lite")
@@ -2405,7 +2416,11 @@ var render = function() {
                             }
                           ],
                           staticClass: "dokan-form-input",
-                          attrs: { type: "text", placeholder: "********" },
+                          attrs: {
+                            id: "store-password",
+                            type: "text",
+                            placeholder: "********"
+                          },
                           domProps: { value: _vm.vendorInfo.user_pass },
                           on: {
                             input: function($event) {
@@ -2465,8 +2480,12 @@ if (false) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_VendorAddressFields_vue__ = __webpack_require__(13);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_9504c01e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorAddressFields_vue__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_9504c01e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorAddressFields_vue__ = __webpack_require__(36);
 var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(35)
+}
 var normalizeComponent = __webpack_require__(0)
 /* script */
 
@@ -2476,7 +2495,7 @@ var normalizeComponent = __webpack_require__(0)
 /* template functional */
 var __vue_template_functional__ = false
 /* styles */
-var __vue_styles__ = null
+var __vue_styles__ = injectStyle
 /* scopeId */
 var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
@@ -2512,6 +2531,12 @@ if (false) {(function () {
 
 /***/ }),
 /* 35 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2546,6 +2571,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "text",
+                id: "street-1",
                 placeholder: _vm.__("Street 1", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.address.street_1 },
@@ -2581,6 +2607,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "text",
+                id: "street-2",
                 placeholder: _vm.__("Street 2", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.address.street_2 },
@@ -2616,6 +2643,7 @@ var render = function() {
               staticClass: "dokan-form-input",
               attrs: {
                 type: "text",
+                id: "city",
                 placeholder: _vm.__("City", "dokan-lite")
               },
               domProps: { value: _vm.vendorInfo.address.city },
@@ -2645,7 +2673,11 @@ var render = function() {
                 }
               ],
               staticClass: "dokan-form-input",
-              attrs: { type: "text", placeholder: _vm.__("Zip", "dokan-lite") },
+              attrs: {
+                type: "text",
+                id: "zip",
+                placeholder: _vm.__("Zip", "dokan-lite")
+              },
               domProps: { value: _vm.vendorInfo.address.zip },
               on: {
                 input: function($event) {
@@ -2660,7 +2692,7 @@ var render = function() {
           _vm._v(" "),
           _c(
             "div",
-            { staticClass: "column" },
+            { staticClass: "address-multiselect" },
             [
               _c("label", { attrs: { for: "country" } }, [
                 _vm._v(_vm._s(_vm.__("Country", "dokan-lite")))
@@ -2668,6 +2700,7 @@ var render = function() {
               _vm._v(" "),
               _c("Multiselect", {
                 attrs: {
+                  id: "country",
                   options: _vm.countries,
                   multiselect: false,
                   label: "name",
@@ -2690,7 +2723,7 @@ var render = function() {
           _vm._v(" "),
           _c(
             "div",
-            { staticClass: "column" },
+            { staticClass: "address-multiselect" },
             [
               _c("label", { attrs: { for: "state" } }, [
                 _vm._v(_vm._s(_vm.__("State", "dokan-lite")))
@@ -2709,6 +2742,7 @@ var render = function() {
                       ],
                       staticClass: "dokan-form-input",
                       attrs: {
+                        id: "state",
                         type: "text",
                         placeholder: _vm.__("State", "dokan-lite")
                       },
@@ -2730,6 +2764,7 @@ var render = function() {
                 : [
                     _c("Multiselect", {
                       attrs: {
+                        id: "state",
                         options: _vm.getStatesFromCountryCode(_vm.selectedCode),
                         multiselect: false,
                         showLabels: false,
@@ -2776,17 +2811,17 @@ if (false) {
 }
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_VendorPaymentFields_vue__ = __webpack_require__(14);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2ed34783_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorPaymentFields_vue__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_2ed34783_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorPaymentFields_vue__ = __webpack_require__(39);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(37)
+  __webpack_require__(38)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -2832,13 +2867,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2883,6 +2918,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "account-name",
                     placeholder: _vm.__("Account Name", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.ac_name },
@@ -2918,6 +2954,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "account-number",
                     placeholder: _vm.__("1233456789", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.ac_number },
@@ -2953,6 +2990,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "bank-name",
                     placeholder: _vm.__("Bank Name", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.bank_name },
@@ -2988,6 +3026,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "bank-address",
                     placeholder: _vm.__("Bank Address", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.bank_addr },
@@ -3023,6 +3062,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "routing-number",
                     placeholder: _vm.__("123456789", "dokan-lite")
                   },
                   domProps: {
@@ -3060,6 +3100,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "iban",
                     placeholder: _vm.__("123456789", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.iban },
@@ -3095,6 +3136,7 @@ var render = function() {
                   staticClass: "dokan-form-input",
                   attrs: {
                     type: "text",
+                    id: "swift",
                     placeholder: _vm.__("123456789", "dokan-lite")
                   },
                   domProps: { value: _vm.vendorInfo.payment.bank.swift },
@@ -3134,7 +3176,7 @@ var render = function() {
                   class: { column: _vm.getId(), "checkbox-group": !_vm.getId() }
                 },
                 [
-                  _c("label", { attrs: { for: "account-name" } }, [
+                  _c("label", { attrs: { for: "paypal-email" } }, [
                     _vm._v(_vm._s(_vm.__("PayPal Email", "dokan-lite")))
                   ]),
                   _vm._v(" "),
@@ -3150,6 +3192,7 @@ var render = function() {
                     staticClass: "dokan-form-input",
                     attrs: {
                       type: "email",
+                      id: "paypal-email",
                       placeholder: _vm.__("store@email.com", "dokan-lite")
                     },
                     domProps: { value: _vm.vendorInfo.payment.paypal.email },
@@ -3176,7 +3219,7 @@ var render = function() {
                         "div",
                         { staticClass: "column" },
                         [
-                          _c("label", [
+                          _c("label", { attrs: { for: "commission-type" } }, [
                             _vm._v(
                               _vm._s(
                                 _vm.__("Admin Commission Type", "dokan-lite")
@@ -3186,6 +3229,7 @@ var render = function() {
                           _vm._v(" "),
                           _c("Multiselect", {
                             attrs: {
+                              id: "commission-type",
                               options: _vm.commissionTypes,
                               "track-by": "name",
                               label: "label",
@@ -3420,7 +3464,6 @@ if (false) {
 }
 
 /***/ }),
-/* 39 */,
 /* 40 */,
 /* 41 */,
 /* 42 */,
@@ -3448,6 +3491,8 @@ if (false) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_admin_components_Chart_vue__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_components_UpgradeBanner_vue__ = __webpack_require__(7);
+//
+//
 //
 //
 //
@@ -3665,12 +3710,28 @@ var Currency = dokan_get_lib('Currency');
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: "UpgradeBanner",
   data: function data() {
     return {
+      show: true,
       upgradeURL: dokan.urls.upgradeToPro
     };
+  },
+  computed: {
+    showUpgrade: function showUpgrade() {
+      return !dokan.hasPro && dokan.proNag === "show";
+    }
+  },
+  methods: {
+    dismiss: function dismiss() {
+      this.show = false;
+      wp.ajax.post("dokan-upgrade-dissmiss");
+    }
   }
 });
 
@@ -3680,6 +3741,7 @@ var Currency = dokan_get_lib('Currency');
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_admin_components_UpgradeBanner_vue__ = __webpack_require__(7);
+//
 //
 //
 //
@@ -3993,19 +4055,27 @@ var Currency = dokan_get_lib('Currency');
           details = data[method].email || '';
         } else if ('bank' === method) {
           if (data.bank.hasOwnProperty('ac_name')) {
-            details = this.sprintf(this.__('Account Name: %s', 'dokan-lite'), data.bank.ac_name);
+            details = '<p>' + this.sprintf(this.__('Account Name: %s', 'dokan-lite'), data.bank.ac_name) + '</p>';
           }
 
           if (data.bank.hasOwnProperty('ac_number')) {
-            details += this.sprintf(this.__(', Account Number: %s', 'dokan-lite'), data.bank.ac_number);
+            details += '<p>' + this.sprintf(this.__('Account Number: %s', 'dokan-lite'), data.bank.ac_number) + '</p>';
           }
 
           if (data.bank.hasOwnProperty('bank_name')) {
-            details += this.sprintf(this.__(', Bank Name: %s', 'dokan-lite'), data.bank.bank_name);
+            details += '<p>' + this.sprintf(this.__('Bank Name: %s', 'dokan-lite'), data.bank.bank_name) + '</p>';
+          }
+
+          if (data.bank.hasOwnProperty('iban')) {
+            details += '<p>' + this.sprintf(this.__('IBAN: %s', 'dokan-lite'), data.bank.iban) + '</p>';
           }
 
           if (data.bank.hasOwnProperty('routing_number')) {
-            details += this.sprintf(this.__(', Routing Number: %s', 'dokan-lite'), data.bank.routing_number);
+            details += '<p>' + this.sprintf(this.__('Routing Number: %s', 'dokan-lite'), data.bank.routing_number) + '</p>';
+          }
+
+          if (data.bank.hasOwnProperty('swift')) {
+            details += '<p>' + this.sprintf(this.__('Swift Code: %s', 'dokan-lite'), data.bank.swift) + '</p>';
           }
         }
       }
@@ -4139,9 +4209,9 @@ var Currency = dokan_get_lib('Currency');
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_ProCta_vue__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_slick_carousel_slick_slick_css__ = __webpack_require__(124);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_slick_carousel_slick_slick_css__ = __webpack_require__(126);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_slick_carousel_slick_slick_css___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_slick_carousel_slick_slick_css__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_slick__ = __webpack_require__(127);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_slick__ = __webpack_require__(129);
 //
 //
 //
@@ -5024,11 +5094,11 @@ var Currency = dokan_get_lib('Currency');
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ProCta_vue__ = __webpack_require__(51);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1ccc06d3_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProCta_vue__ = __webpack_require__(123);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1ccc06d3_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProCta_vue__ = __webpack_require__(125);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(122)
+  __webpack_require__(124)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -5174,9 +5244,16 @@ var Loading = dokan_get_lib('Loading');
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_admin_components_Fields_vue__ = __webpack_require__(134);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_components_SettingsBanner_vue__ = __webpack_require__(164);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_admin_components_Fields_vue__ = __webpack_require__(136);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_components_SettingsBanner_vue__ = __webpack_require__(166);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_admin_components_UpgradeBanner_vue__ = __webpack_require__(7);
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -5275,7 +5352,10 @@ var Loading = dokan_get_lib('Loading');
       settingValues: {},
       requiredFields: [],
       errors: [],
-      hasPro: dokan.hasPro ? true : false
+      validationErrors: [],
+      hasPro: dokan.hasPro ? true : false,
+      searchText: '',
+      awaitingSearch: false
     };
   },
   computed: {
@@ -5393,11 +5473,10 @@ var Loading = dokan_get_lib('Loading');
             break;
           }
         }
+
+        self.validationErrors = [];
       }).fail(function (jqXHR) {
-        var messages = jqXHR.responseJSON.data.map(function (error) {
-          return error.message;
-        });
-        alert(messages.join(' '));
+        self.validationErrors = jqXHR.responseJSON.data.errors;
       }).always(function () {
         self.showLoading = false;
       });
@@ -5465,6 +5544,84 @@ var Loading = dokan_get_lib('Loading');
     },
     toggleLoadingState: function toggleLoadingState() {
       this.showLoading = !this.showLoading;
+    },
+    clearSearch: function clearSearch() {
+      this.searchText = '';
+      this.validateBlankSearch();
+    },
+    validateBlankSearch: function validateBlankSearch() {
+      var searchText = this.searchText.toLowerCase();
+
+      if ('' === searchText) {
+        this.settingSections = dokan.settings_sections;
+        this.settingFields = dokan.settings_fields;
+        return false;
+      }
+
+      return true;
+    },
+    searchInSettings: function searchInSettings(input) {
+      var _this2 = this;
+
+      if (!this.validateBlankSearch()) {
+        return;
+      }
+
+      if (!this.awaitingSearch) {
+        setTimeout(function () {
+          var searchText = _this2.$refs.searchInSettings.value.toLowerCase();
+
+          _this2.doSearch(searchText);
+
+          _this2.awaitingSearch = false;
+        }, 1000);
+      }
+
+      this.awaitingSearch = true;
+    },
+    doSearch: function doSearch(searchText) {
+      var _this3 = this;
+
+      var self = this;
+      var settingFields = {};
+      var filteredSettingSections = [];
+      var settingSections = [];
+      var dokan_setting_fields = dokan.settings_fields;
+      Object.keys(dokan_setting_fields).forEach(function (section, index) {
+        Object.keys(dokan_setting_fields[section]).forEach(function (field, i) {
+          if (dokan_setting_fields[section][field].type === "sub_section") {
+            return;
+          }
+
+          var label = dokan_setting_fields[section][field]['label'].toLowerCase();
+
+          if (label && label.includes(searchText)) {
+            if (!settingFields[section]) {
+              settingFields[section] = {};
+            }
+
+            settingFields[section][field] = dokan_setting_fields[section][field];
+
+            if (filteredSettingSections.indexOf(section) === -1) {
+              filteredSettingSections.push(section);
+            }
+          }
+        });
+      });
+      var currentTab = 0;
+      Object.keys(dokan.settings_sections).forEach(function (section, index) {
+        if (filteredSettingSections.indexOf(dokan.settings_sections[section].id) !== -1) {
+          if (!currentTab) {
+            _this3.changeTab(dokan.settings_sections[section]);
+
+            currentTab = 1;
+          }
+
+          settingSections.push(dokan.settings_sections[section]);
+        }
+      });
+      self.settingFields = settingFields;
+      self.settingSections = settingSections;
     }
   },
   created: function created() {
@@ -5485,9 +5642,9 @@ var Loading = dokan_get_lib('Loading');
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_defineProperty__ = __webpack_require__(136);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_defineProperty__ = __webpack_require__(138);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_defineProperty___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_defineProperty__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_runtime_helpers_slicedToArray__ = __webpack_require__(137);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_runtime_helpers_slicedToArray__ = __webpack_require__(139);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__babel_runtime_helpers_slicedToArray___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__babel_runtime_helpers_slicedToArray__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_admin_components_ColorPicker_vue__ = __webpack_require__(24);
 
@@ -5497,6 +5654,40 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_defineProperty___default()(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -5803,7 +5994,7 @@ var RefreshSettingOptions = dokan_get_lib('RefreshSettingOptions');
     Mapbox: Mapbox,
     RefreshSettingOptions: RefreshSettingOptions
   },
-  props: ['id', 'fieldData', 'sectionId', 'fieldValue', 'allSettingsValues', 'errors', 'toggleLoadingState'],
+  props: ['id', 'fieldData', 'sectionId', 'fieldValue', 'allSettingsValues', 'errors', 'toggleLoadingState', 'validationErrors'],
   data: function data() {
     return {
       repeatableItem: {},
@@ -5976,6 +6167,22 @@ var RefreshSettingOptions = dokan_get_lib('RefreshSettingOptions');
     },
     getError: function getError(label) {
       return label + ' ' + this.__('is required.', 'dokan-lite');
+    },
+    hasValidationError: function hasValidationError(key) {
+      if (this.validationErrors.filter(function (e) {
+        return e.name === key;
+      }).length > 0) {
+        return key;
+      }
+    },
+    getValidationErrorMessage: function getValidationErrorMessage(key) {
+      var errorMessage = '';
+      this.validationErrors.forEach(function (obj) {
+        if (obj.name === key) {
+          errorMessage = obj.error;
+        }
+      });
+      return errorMessage;
     }
   }
 });
@@ -6026,8 +6233,9 @@ var RefreshSettingOptions = dokan_get_lib('RefreshSettingOptions');
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__AddVendor_vue__ = __webpack_require__(170);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__AddVendor_vue__ = __webpack_require__(172);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_components_UpgradeBanner_vue__ = __webpack_require__(7);
+//
 //
 //
 //
@@ -6320,7 +6528,7 @@ var Search = dokan_get_lib('Search');
           text: message
         });
 
-        if (_this3.currentStatus !== 'all') {
+        if ('all' === _this3.currentStatus || 'pending' === _this3.currentStatus || 'approved' === _this3.currentStatus) {
           _this3.fetchVendors();
         }
       });
@@ -6392,7 +6600,7 @@ var Search = dokan_get_lib('Search');
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__VendorAccountFields_vue__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__VendorAddressFields_vue__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__VendorPaymentFields_vue__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__VendorPaymentFields_vue__ = __webpack_require__(37);
 //
 //
 //
@@ -6483,7 +6691,6 @@ var Loading = dokan_get_lib('Loading');
         gravatar_id: '',
         social: {
           fb: '',
-          gplus: '',
           youtube: '',
           twitter: '',
           linkedin: '',
@@ -6765,8 +6972,309 @@ var Loading = dokan_get_lib('Loading');
 });
 
 /***/ }),
-/* 67 */,
-/* 68 */,
+/* 67 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_ModuleUpgradePopup_vue__ = __webpack_require__(181);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: "ProModules",
+  components: {
+    ModuleUpgradePopup: __WEBPACK_IMPORTED_MODULE_0__components_ModuleUpgradePopup_vue__["a" /* default */]
+  },
+  data: function data() {
+    return {
+      modules: [{
+        name: this.__('WooCommerce Booking Integration', 'dokan-lite'),
+        description: this.__('Integrates WooCommerce Booking with Dokan.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/booking.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-bookings/',
+        modLink: 'https://wedevs.com/dokan/extensions/woocommerce-booking-integration/'
+      }, {
+        name: this.__('Color Scheme Customizer', 'dokan-lite'),
+        description: this.__('A Dokan plugin Add-on to Customize Colors of Dokan Dashboard', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/color-scheme-customizer.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/color-scheme/',
+        modLink: 'https://wedevs.com/dokan/modules/color-scheme-customizer/'
+      }, {
+        name: this.__('Elementor', 'dokan-lite'),
+        description: this.__('Elementor Page Builder widgets for Dokan', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/elementor.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/elementor-dokan/',
+        modLink: 'https://wedevs.com/dokan/modules/elementor/'
+      }, {
+        name: this.__('Vendor Product Importer and Exporter', 'dokan-lite'),
+        description: this.__('This is simple product import and export plugin for vendor', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/import-export.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-and-use-dokan-exportimport-add/',
+        modLink: 'https://wedevs.com/dokan/modules/export-import/'
+      }, {
+        name: this.__('Follow Store', 'dokan-lite'),
+        description: this.__('Send emails to customers when their favorite store updates.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/follow-store.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/follow-store/',
+        modLink: 'https://wedevs.com/dokan/modules/follow-store/'
+      }, {
+        name: this.__('Geolocation', 'dokan-lite'),
+        description: this.__('Search Products and Vendors by geolocation.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/geolocation.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-geolocation/',
+        modLink: 'https://wedevs.com/dokan/modules/geolocation/'
+      }, {
+        name: this.__('Live Chat', 'dokan-lite'),
+        description: this.__('Live Chat Between Vendor & Customer.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/live-chat.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-live-chat/',
+        modLink: 'https://wedevs.com/dokan/modules/live-chat/'
+      }, {
+        name: this.__('Live Search', 'dokan-lite'),
+        description: this.__('Live product search for WooCommerce store.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/ajax-live-search.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-configure-use-dokan-live-search/',
+        modLink: 'https://wedevs.com/dokan/modules/ajax-live-search/'
+      }, {
+        name: this.__('Wirecard', 'dokan-lite'),
+        description: this.__('Wirecard payment gateway for Dokan.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/wirecard-connect.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-moip-connect/',
+        modLink: 'https://wedevs.com/dokan/modules/moip/'
+      }, {
+        name: this.__('PayPal Adaptive Payment', 'dokan-lite'),
+        description: this.__('Allows to send split payments to vendor via PayPal Adaptive Payment gateway.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/paypal-adaptive.png"),
+        docLink: '#',
+        modLink: '#'
+      }, {
+        name: this.__('Product Addon', 'dokan-lite'),
+        description: this.__('WooCommerce Product Addon support.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/product-addon.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/product-addon/',
+        modLink: 'https://wedevs.com/dokan/modules/product-addons/'
+      }, {
+        name: this.__('Product Enquiry', 'dokan-lite'),
+        description: this.__('Enquiry for a specific product to a seller.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/product-enquiry.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-configure-use-dokan-product-enquiry/',
+        modLink: 'https://wedevs.com/dokan/modules/product-enquiry/'
+      }, {
+        name: this.__('Report Abuse', 'dokan-lite'),
+        description: this.__('Let customers report fraudulent or fake products.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/report-abuse.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-report-abuse/',
+        modLink: 'https://wedevs.com/docs/dokan/modules/dokan-report-abuse/'
+      }, {
+        name: this.__('Return and Warranty Request', 'dokan-lite'),
+        description: this.__('Manage return and warranty from vendor end.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/report-abuse.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/vendor-rma/',
+        modLink: 'https://wedevs.com/dokan/modules/rma/'
+      }, {
+        name: this.__('Seller Vacation', 'dokan-lite'),
+        description: this.__('Using this plugin seller can go to vacation by closing their stores.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/seller-vacation.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-vendor-vacation/',
+        modLink: 'https://wedevs.com/dokan/modules/vendor-vacation/'
+      }, {
+        name: this.__('ShipStation Integration', 'dokan-lite'),
+        description: this.__('Adds ShipStation label printing support to Dokan. Requires server DomDocument support.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/shipstation.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/shipstation-dokan-wedevs/',
+        modLink: 'https://wedevs.com/dokan/modules/shipstation/'
+      }, {
+        name: this.__('Auction Integration', 'dokan-lite'),
+        description: this.__('A plugin that combined WooCommerce simple auction and Dokan plugin.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/auction.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/woocommerce-auctions-frontend-multivendor-marketplace/',
+        modLink: 'https://wedevs.com/dokan/modules/dokan-simple-auctions/'
+      }, {
+        name: this.__('Single Product Multiple Vendor', 'dokan-lite'),
+        description: this.__('A module that offers multiple vendor to sell a single product.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/single-product-multivendor.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/single-product-multiple-vendor/',
+        modLink: 'https://wedevs.com/dokan/modules/single-product-multivendor/'
+      }, {
+        name: this.__('Store Reviews', 'dokan-lite'),
+        description: this.__('A plugin that allows customers to rate the sellers.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/vendor-review.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/vendor-review/',
+        modLink: 'https://wedevs.com/dokan/modules/dokan-vendor-review/'
+      }, {
+        name: this.__('Store Support', 'dokan-lite'),
+        description: this.__('Enable vendors to provide support to customers from store page.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/store-support.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-and-use-store-support/',
+        modLink: 'https://wedevs.com/dokan/modules/store-support/'
+      }, {
+        name: this.__('Stripe Connect', 'dokan-lite'),
+        description: this.__('Accept credit card payments and allow your sellers to get automatic split payment in Dokan via Stripe.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/stripe.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-and-configure-dokan-stripe-connect/',
+        modLink: 'https://wedevs.com/dokan/modules/store-support/'
+      }, {
+        name: this.__('Vendor Subscription', 'dokan-lite'),
+        description: this.__('Product subscription pack add-on for Dokan vendors.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/subscription.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/how-to-install-use-dokan-subscription/',
+        modLink: 'https://wedevs.com/dokan/modules/subscription/'
+      }, {
+        name: this.__('Vendor Analytics', 'dokan-lite'),
+        description: this.__('A plugin for store and product analytics for vendor.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/analytics.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-vendor-analytics/',
+        modLink: 'https://wedevs.com/docs/dokan/modules/dokan-vendor-analytics/'
+      }, {
+        name: this.__('Vendor Staff Manager', 'dokan-lite'),
+        description: this.__('A plugin for manage store via vendor staffs.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/vendor-staff.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-vendor-staff-manager/',
+        modLink: 'https://wedevs.com/dokan/modules/vendor-staff-manager/'
+      }, {
+        name: this.__('Vendor Subscription Product', 'dokan-lite'),
+        description: this.__('WooCommerce Subscription integration for Dokan', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/vendor-subscription-product.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-vendor-subscription-product/',
+        modLink: 'https://wedevs.com/dokan/modules/vendor-subscription-product/'
+      }, {
+        name: this.__('Vendor Verification', 'dokan-lite'),
+        description: this.__('Dokan add-on to verify sellers.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/vendor-verification.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-seller-verification-admin-settings/',
+        modLink: 'https://wedevs.com/dokan/modules/seller-verification/'
+      }, {
+        name: this.__('Wholesale', 'dokan-lite'),
+        description: this.__('Offer any customer to buy product as a wholesale price from any vendors.', 'dokan-lite'),
+        thumbnail: "".concat(dokan.urls.assetsUrl, "/images/modules/wholesale.png"),
+        docLink: 'https://wedevs.com/docs/dokan/modules/dokan-wholesale/',
+        modLink: 'https://wedevs.com/dokan/modules/wholesale/'
+      }],
+      showPopup: true
+    };
+  },
+  methods: {
+    togglePopup: function togglePopup(isShowing) {
+      this.showPopup = isShowing;
+    }
+  }
+});
+
+/***/ }),
+/* 68 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: "ModuleUpgradePopup",
+  props: {
+    showPopup: {
+      type: Boolean,
+      required: true,
+      default: true
+    }
+  },
+  data: function data() {
+    return {
+      upgradeURL: dokan.urls.upgradeToPro
+    };
+  },
+  methods: {
+    closePopup: function closePopup() {
+      this.$emit('toggle', false);
+    },
+    openPopup: function openPopup() {
+      this.$emit('toggle', true);
+    }
+  },
+  computed: {
+    headerImage: function headerImage() {
+      return "".concat(dokan.urls.assetsUrl, "/images/dokan-upgrade-popup-header.svg");
+    },
+    bonusImage: function bonusImage() {
+      return "".concat(dokan.urls.assetsUrl, "/images/dokan-upgrade-popup-bonus.svg");
+    }
+  }
+});
+
+/***/ }),
 /* 69 */,
 /* 70 */,
 /* 71 */,
@@ -6801,14 +7309,16 @@ var Loading = dokan_get_lib('Loading');
 /* 100 */,
 /* 101 */,
 /* 102 */,
-/* 103 */
+/* 103 */,
+/* 104 */,
+/* 105 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__App_vue__ = __webpack_require__(104);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__router__ = __webpack_require__(107);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_admin_menu_fix__ = __webpack_require__(177);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__App_vue__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__router__ = __webpack_require__(109);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_admin_menu_fix__ = __webpack_require__(185);
 
 
 
@@ -6823,23 +7333,38 @@ new Vue({
   },
   created: function created() {
     this.setLocaleData(dokan.i18n['dokan-lite']);
+
+    if (dokan.dokan_pro_i18n) {
+      this.setLocaleData(dokan.dokan_pro_i18n['dokan']);
+    }
+  },
+  methods: {
+    listTableTexts: function listTableTexts() {
+      return {
+        loading: this.__('Loading', 'dokan-lite'),
+        select_bulk_action: this.__('Select bulk action', 'dokan-lite'),
+        bulk_actions: this.__('Bulk Actions', 'dokan-lite'),
+        items: this.__('items', 'dokan-lite'),
+        apply: this.__('Apply', 'dokan-lite')
+      };
+    }
   }
 }); // fix the admin menu for the slug "vue-app"
 
 Object(__WEBPACK_IMPORTED_MODULE_2__utils_admin_menu_fix__["a" /* default */])('dokan');
 
 /***/ }),
-/* 104 */
+/* 106 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(45);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_3a030f38_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(106);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_3a030f38_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(108);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(105)
+  __webpack_require__(107)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -6885,13 +7410,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 105 */
+/* 107 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 106 */
+/* 108 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -6922,19 +7447,21 @@ if (false) {
 }
 
 /***/ }),
-/* 107 */
+/* 109 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_typeof__ = __webpack_require__(108);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_typeof__ = __webpack_require__(110);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_typeof___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_runtime_helpers_typeof__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_pages_Dashboard_vue__ = __webpack_require__(109);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_admin_pages_Withdraw_vue__ = __webpack_require__(117);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_admin_pages_Premium_vue__ = __webpack_require__(120);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_admin_pages_Help_vue__ = __webpack_require__(129);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_admin_pages_Settings_vue__ = __webpack_require__(132);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_admin_pages_Vendors_vue__ = __webpack_require__(168);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_admin_pages_VendorCapabilities_vue__ = __webpack_require__(174);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_admin_pages_Dashboard_vue__ = __webpack_require__(111);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_admin_pages_Withdraw_vue__ = __webpack_require__(119);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_admin_pages_Premium_vue__ = __webpack_require__(122);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_admin_pages_Help_vue__ = __webpack_require__(131);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_admin_pages_Settings_vue__ = __webpack_require__(134);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_admin_pages_Vendors_vue__ = __webpack_require__(170);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_admin_pages_VendorCapabilities_vue__ = __webpack_require__(176);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_admin_pages_ProModules_vue__ = __webpack_require__(179);
+
 
 
 
@@ -6952,7 +7479,8 @@ dokan_add_route(__WEBPACK_IMPORTED_MODULE_2_admin_pages_Withdraw_vue__["a" /* de
 dokan_add_route(__WEBPACK_IMPORTED_MODULE_3_admin_pages_Premium_vue__["a" /* default */]);
 dokan_add_route(__WEBPACK_IMPORTED_MODULE_4_admin_pages_Help_vue__["a" /* default */]);
 dokan_add_route(__WEBPACK_IMPORTED_MODULE_5_admin_pages_Settings_vue__["a" /* default */]);
-dokan_add_route(__WEBPACK_IMPORTED_MODULE_7_admin_pages_VendorCapabilities_vue__["a" /* default */]); // if dokan pro not installed or dokan pro is greater than 2.9.14 register the `vendors` route.
+dokan_add_route(__WEBPACK_IMPORTED_MODULE_7_admin_pages_VendorCapabilities_vue__["a" /* default */]);
+dokan_add_route(__WEBPACK_IMPORTED_MODULE_8_admin_pages_ProModules_vue__["a" /* default */]); // if dokan pro not installed or dokan pro is greater than 2.9.14 register the `vendors` route.
 
 if (!dokan.hasPro || VersionCompare(dokan.proVersion, '2.9.14', '>')) {
   dokan_add_route(__WEBPACK_IMPORTED_MODULE_6_admin_pages_Vendors_vue__["a" /* default */]);
@@ -6990,18 +7518,18 @@ parseRouteComponent(dokan.routes);
 }));
 
 /***/ }),
-/* 108 */,
-/* 109 */
+/* 110 */,
+/* 111 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Dashboard_vue__ = __webpack_require__(46);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_219ffca0_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Dashboard_vue__ = __webpack_require__(116);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_219ffca0_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Dashboard_vue__ = __webpack_require__(118);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(110)
+  __webpack_require__(112)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -7047,22 +7575,22 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 110 */
+/* 112 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 111 */,
-/* 112 */,
 /* 113 */,
-/* 114 */
+/* 114 */,
+/* 115 */,
+/* 116 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 115 */
+/* 117 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7070,31 +7598,34 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { attrs: { id: "dokan-upgrade-wrapper" } }, [
-    _c("div", { attrs: { id: "dokan-upgrade-popper" } }, [
-      _c("p", [
-        _vm._v(_vm._s(_vm.__("You're using", "dokan-lite")) + " "),
-        _c("span", [_vm._v(_vm._s(_vm.__("Dokan Lite", "dokan-lite")))]),
-        _vm._v(
-          ". " +
-            _vm._s(_vm.__("To unlock more features, consider", "dokan-lite"))
+  return _vm.show && _vm.showUpgrade
+    ? _c("div", { staticClass: "dokan-upgrade-bar" }, [
+        _vm._v("\n    You're using "),
+        _c("span", [_vm._v("Dokan Lite")]),
+        _vm._v(". To unlock more features, consider\n    "),
+        _c(
+          "a",
+          {
+            attrs: { target: "_blank", rel: "noopener", href: _vm.upgradeURL }
+          },
+          [_vm._v("\n        Upgrading to Pro")]
+        ),
+        _vm._v(".\n\n    "),
+        _c(
+          "div",
+          {
+            staticClass: "close-button",
+            attrs: { title: "Dismiss the notice" },
+            on: {
+              click: function($event) {
+                return _vm.dismiss()
+              }
+            }
+          },
+          [_vm._v("\n        ×\n    ")]
         )
-      ]),
-      _vm._v(" "),
-      _c(
-        "a",
-        {
-          staticClass: "button",
-          attrs: {
-            target: "_blank",
-            rel: "noopener noreferrer",
-            href: _vm.upgradeURL
-          }
-        },
-        [_vm._v(_vm._s(_vm.__("Upgrade to Pro", "dokan-lite")))]
-      )
-    ])
-  ])
+      ])
+    : _vm._e()
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -7108,7 +7639,7 @@ if (false) {
 }
 
 /***/ }),
-/* 116 */
+/* 118 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7116,15 +7647,15 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "dokan-dashboard" }, [
-    _c("h1", [_vm._v(_vm._s(_vm.__("Dashboard", "dokan-lite")))]),
-    _vm._v(" "),
-    _c(
-      "div",
-      { staticClass: "widgets-wrapper" },
-      [
-        !_vm.hasPro ? _c("UpgradeBanner") : _vm._e(),
-        _vm._v(" "),
+  return _c(
+    "div",
+    { staticClass: "dokan-dashboard" },
+    [
+      !_vm.hasPro ? _c("UpgradeBanner") : _vm._e(),
+      _vm._v(" "),
+      _c("h1", [_vm._v(_vm._s(_vm.__("Dashboard", "dokan-lite")))]),
+      _vm._v(" "),
+      _c("div", { staticClass: "widgets-wrapper" }, [
         _c(
           "div",
           { staticClass: "left-side" },
@@ -7265,12 +7796,9 @@ var render = function() {
                               [
                                 _c("strong", [
                                   _vm._v(
-                                    _vm._s(
-                                      _vm.sprintf(
-                                        _vm.__("%s Vendor", "dokan-lite"),
-                                        _vm.overview.vendors.this_month
-                                      )
-                                    )
+                                    _vm._s(_vm.overview.vendors.this_month) +
+                                      " " +
+                                      _vm._s(_vm.__("Vendor", "dokan-lite"))
                                   )
                                 ]),
                                 _vm._v(" "),
@@ -7324,12 +7852,9 @@ var render = function() {
                               [
                                 _c("strong", [
                                   _vm._v(
-                                    _vm._s(
-                                      _vm.sprintf(
-                                        _vm.__("%s Vendor", "dokan-lite"),
-                                        _vm.overview.vendors.inactive
-                                      )
-                                    )
+                                    _vm._s(_vm.overview.vendors.inactive) +
+                                      " " +
+                                      _vm._s(_vm.__("Vendor", "dokan-lite"))
                                   )
                                 ]),
                                 _vm._v(" "),
@@ -7354,12 +7879,9 @@ var render = function() {
                           _c("a", { attrs: { href: "#" } }, [
                             _c("strong", [
                               _vm._v(
-                                _vm._s(
-                                  _vm.sprintf(
-                                    _vm.__("%s Products", "dokan-lite"),
-                                    _vm.overview.products.this_month
-                                  )
-                                )
+                                _vm._s(_vm.overview.products.this_month) +
+                                  " " +
+                                  _vm._s(_vm.__("Products", "dokan-lite"))
                               )
                             ]),
                             _vm._v(" "),
@@ -7401,12 +7923,11 @@ var render = function() {
                               [
                                 _c("strong", [
                                   _vm._v(
-                                    _vm._s(
-                                      _vm.sprintf(
-                                        _vm.__("%s Withdrawals", "dokan-lite"),
-                                        _vm.overview.withdraw.pending
+                                    _vm._s(_vm.overview.withdraw.pending) +
+                                      " " +
+                                      _vm._s(
+                                        _vm.__("Withdrawals", "dokan-lite")
                                       )
-                                    )
                                   )
                                 ]),
                                 _vm._v(" "),
@@ -7589,18 +8110,17 @@ var render = function() {
               },
               [
                 _vm.report !== null
-                  ? _c("chart", { attrs: { data: _vm.report } })
+                  ? _c("div", [_c("chart", { attrs: { data: _vm.report } })], 1)
                   : _c("div", { staticClass: "loading" }, [_c("loading")], 1)
-              ],
-              1
+              ]
             )
           ],
           1
         )
-      ],
-      1
-    )
-  ])
+      ])
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -7614,17 +8134,17 @@ if (false) {
 }
 
 /***/ }),
-/* 117 */
+/* 119 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Withdraw_vue__ = __webpack_require__(48);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_62373ea4_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Withdraw_vue__ = __webpack_require__(119);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_62373ea4_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Withdraw_vue__ = __webpack_require__(121);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(118)
+  __webpack_require__(120)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -7670,13 +8190,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 118 */
+/* 120 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 119 */
+/* 121 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -7753,24 +8273,22 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Withdraw", query: { status: "pending" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Withdraw", query: { status: "pending" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "Pending <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.pending
-                      )
-                    )
-                  }
-                }),
+                  [
+                    _vm._v(_vm._s(_vm.__("Pending", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.pending))
+                    ])
+                  ]
+                ),
                 _vm._v(" | ")
               ],
               1
@@ -7779,24 +8297,22 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Withdraw", query: { status: "approved" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Withdraw", query: { status: "approved" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "Approved <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.approved
-                      )
-                    )
-                  }
-                }),
+                  [
+                    _vm._v(_vm._s(_vm.__("Approved", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.approved))
+                    ])
+                  ]
+                ),
                 _vm._v(" | ")
               ],
               1
@@ -7805,24 +8321,23 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Withdraw", query: { status: "cancelled" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Withdraw", query: { status: "cancelled" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "Cancelled <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.cancelled
-                      )
-                    )
-                  }
-                })
+                  [
+                    _vm._v(_vm._s(_vm.__("Cancelled", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.cancelled))
+                    ])
+                  ]
+                ),
+                _vm._v(" | ")
               ],
               1
             )
@@ -7841,7 +8356,8 @@ var render = function() {
               "total-pages": _vm.totalPages,
               "total-items": _vm.totalItems,
               "per-page": _vm.perPage,
-              "current-page": _vm.currentPage
+              "current-page": _vm.currentPage,
+              text: _vm.$root.listTableTexts()
             },
             on: {
               pagination: _vm.goToPage,
@@ -7915,16 +8431,17 @@ var render = function() {
                 key: "method_details",
                 fn: function(data) {
                   return [
-                    _vm._v(
-                      "\n                " +
-                        _vm._s(
+                    _c("div", {
+                      staticClass: "method_details_inner",
+                      domProps: {
+                        innerHTML: _vm._s(
                           _vm.getPaymentDetails(
                             data.row.method,
                             data.row.user.payment
                           )
-                        ) +
-                        "\n            "
-                    )
+                        )
+                      }
+                    })
                   ]
                 }
               },
@@ -8087,17 +8604,17 @@ if (false) {
 }
 
 /***/ }),
-/* 120 */
+/* 122 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Premium_vue__ = __webpack_require__(49);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_b38fd83a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Premium_vue__ = __webpack_require__(128);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_b38fd83a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Premium_vue__ = __webpack_require__(130);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(121)
+  __webpack_require__(123)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -8143,19 +8660,19 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 121 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 122 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
 /* 123 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 124 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 125 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8245,11 +8762,11 @@ if (false) {
 }
 
 /***/ }),
-/* 124 */,
-/* 125 */,
 /* 126 */,
 /* 127 */,
-/* 128 */
+/* 128 */,
+/* 129 */,
+/* 130 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8838,17 +9355,17 @@ if (false) {
 }
 
 /***/ }),
-/* 129 */
+/* 131 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Help_vue__ = __webpack_require__(52);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_c289d136_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Help_vue__ = __webpack_require__(131);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_c289d136_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Help_vue__ = __webpack_require__(133);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(130)
+  __webpack_require__(132)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -8894,13 +9411,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 130 */
+/* 132 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 131 */
+/* 133 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8971,17 +9488,17 @@ if (false) {
 }
 
 /***/ }),
-/* 132 */
+/* 134 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Settings_vue__ = __webpack_require__(53);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_e4dc4572_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Settings_vue__ = __webpack_require__(167);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_e4dc4572_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Settings_vue__ = __webpack_require__(169);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(133)
+  __webpack_require__(135)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -9027,23 +9544,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 133 */
+/* 135 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 134 */
+/* 136 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Fields_vue__ = __webpack_require__(54);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a96ce32e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Fields_vue__ = __webpack_require__(163);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a96ce32e_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Fields_vue__ = __webpack_require__(165);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(135)
+  __webpack_require__(137)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -9089,14 +9606,12 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 135 */
+/* 137 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 136 */,
-/* 137 */,
 /* 138 */,
 /* 139 */,
 /* 140 */,
@@ -9122,7 +9637,9 @@ if (false) {(function () {
 /* 160 */,
 /* 161 */,
 /* 162 */,
-/* 163 */
+/* 163 */,
+/* 164 */,
+/* 165 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9174,7 +9691,14 @@ var render = function() {
                           }
                         ],
                         staticClass: "regular-text",
-                        class: _vm.fieldData.class,
+                        class: [
+                          {
+                            "dokan-input-validation-error": _vm.hasValidationError(
+                              _vm.fieldData.name
+                            )
+                          },
+                          _vm.fieldData.class
+                        ],
                         attrs: {
                           id: _vm.sectionId + "[" + _vm.fieldData.name + "]",
                           name: _vm.sectionId + "[" + _vm.fieldData.name + "]",
@@ -9228,7 +9752,14 @@ var render = function() {
                           }
                         ],
                         staticClass: "regular-text",
-                        class: _vm.fieldData.class,
+                        class: [
+                          {
+                            "dokan-input-validation-error": _vm.hasValidationError(
+                              _vm.fieldData.name
+                            )
+                          },
+                          _vm.fieldData.class
+                        ],
                         attrs: {
                           id: _vm.sectionId + "[" + _vm.fieldData.name + "]",
                           name: _vm.sectionId + "[" + _vm.fieldData.name + "]",
@@ -9260,7 +9791,14 @@ var render = function() {
                           }
                         ],
                         staticClass: "regular-text",
-                        class: _vm.fieldData.class,
+                        class: [
+                          {
+                            "dokan-input-validation-error": _vm.hasValidationError(
+                              _vm.fieldData.name
+                            )
+                          },
+                          _vm.fieldData.class
+                        ],
                         attrs: {
                           id: _vm.sectionId + "[" + _vm.fieldData.name + "]",
                           name: _vm.sectionId + "[" + _vm.fieldData.name + "]",
@@ -9286,6 +9824,18 @@ var render = function() {
                         _vm._v(
                           "\n                " +
                             _vm._s(_vm.getError(_vm.fieldData.label)) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
                             "\n            "
                         )
                       ])
@@ -9324,6 +9874,14 @@ var render = function() {
                       }
                     ],
                     staticClass: "regular-text",
+                    class: [
+                      {
+                        "dokan-input-validation-error": _vm.hasValidationError(
+                          _vm.fieldData.name
+                        )
+                      },
+                      _vm.fieldData.class
+                    ],
                     attrs: {
                       type: "number",
                       min: _vm.fieldData.min,
@@ -9352,6 +9910,18 @@ var render = function() {
                         _vm._v(
                           "\n                " +
                             _vm._s(_vm.getError(_vm.fieldData.label)) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
                             "\n            "
                         )
                       ])
@@ -9426,6 +9996,18 @@ var render = function() {
                         _vm._v(
                           "\n                " +
                             _vm._s(_vm.getError(_vm.fieldData.label)) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
                             "\n            "
                         )
                       ])
@@ -9655,6 +10237,18 @@ var render = function() {
                       ])
                     : _vm._e(),
                   _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
                   _c("p", {
                     staticClass: "description",
                     domProps: { innerHTML: _vm._s(_vm.fieldData.desc) }
@@ -9757,7 +10351,19 @@ var render = function() {
                         )
                       ]
                     )
-                  ])
+                  ]),
+                  _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e()
                 ])
               ]
             : _vm._e(),
@@ -9902,7 +10508,19 @@ var render = function() {
                       })
                     ],
                     2
-                  )
+                  ),
+                  _vm._v(" "),
+                  _vm.hasValidationError(_vm.fieldData.name)
+                    ? _c("p", { staticClass: "dokan-error" }, [
+                        _vm._v(
+                          "\n              " +
+                            _vm._s(
+                              _vm.getValidationErrorMessage(_vm.fieldData.name)
+                            ) +
+                            "\n            "
+                        )
+                      ])
+                    : _vm._e()
                 ])
               ]
             : _vm._e(),
@@ -10026,7 +10644,7 @@ var render = function() {
                           [
                             _vm.fieldData.placeholder
                               ? _c("option", {
-                                  attrs: { value: "" },
+                                  attrs: { value: "", disabled: "" },
                                   domProps: {
                                     innerHTML: _vm._s(_vm.fieldData.placeholder)
                                   }
@@ -10064,6 +10682,20 @@ var render = function() {
                             "toggle-loading-state": _vm.toggleLoadingState
                           }
                         })
+                      : _vm._e(),
+                    _vm._v(" "),
+                    _vm.hasValidationError(_vm.fieldData.name)
+                      ? _c("p", { staticClass: "dokan-error" }, [
+                          _vm._v(
+                            "\n              " +
+                              _vm._s(
+                                _vm.getValidationErrorMessage(
+                                  _vm.fieldData.name
+                                )
+                              ) +
+                              "\n            "
+                          )
+                        ])
                       : _vm._e(),
                     _vm._v(" "),
                     _c("p", {
@@ -10237,6 +10869,48 @@ var render = function() {
               ]
             : _vm._e(),
           _vm._v(" "),
+          "warning" == _vm.fieldData.type
+            ? [
+                _c(
+                  "th",
+                  {
+                    staticClass: "dokan-setting-warning",
+                    attrs: { scope: "row", colspan: "2" }
+                  },
+                  [
+                    _c("div", { staticClass: "error" }, [
+                      _c(
+                        "p",
+                        {
+                          attrs: {
+                            for: _vm.sectionId + "[" + _vm.fieldData.name + "]"
+                          }
+                        },
+                        [
+                          _c(
+                            "span",
+                            { staticClass: "dokan-setting-warning-label" },
+                            [
+                              _c("span", {
+                                staticClass: "dashicons dashicons-warning"
+                              }),
+                              _vm._v(" " + _vm._s(_vm.fieldData.label))
+                            ]
+                          ),
+                          _vm._v(" "),
+                          _c(
+                            "span",
+                            { staticClass: "dokan-setting-warning-msg" },
+                            [_vm._v(_vm._s(_vm.fieldData.desc))]
+                          )
+                        ]
+                      )
+                    ])
+                  ]
+                )
+              ]
+            : _vm._e(),
+          _vm._v(" "),
           "radio" == _vm.fieldData.type
             ? [
                 _c("th", { attrs: { scope: "row" } }, [
@@ -10400,18 +11074,25 @@ var render = function() {
                                 _vm._s(optionVal.value) +
                                 " "
                             ),
+                            !optionVal.must_use
+                              ? _c("span", {
+                                  staticClass:
+                                    "dashicons dashicons-no-alt remove-item",
+                                  on: {
+                                    click: function($event) {
+                                      $event.preventDefault()
+                                      return _vm.removeItem(
+                                        optionKey,
+                                        _vm.fieldData.name
+                                      )
+                                    }
+                                  }
+                                })
+                              : _vm._e(),
+                            _vm._v(" "),
                             _c("span", {
-                              staticClass:
-                                "dashicons dashicons-no-alt remove-item",
-                              on: {
-                                click: function($event) {
-                                  $event.preventDefault()
-                                  return _vm.removeItem(
-                                    optionKey,
-                                    _vm.fieldData.name
-                                  )
-                                }
-                              }
+                              staticClass: "repeatable-item-description",
+                              domProps: { innerHTML: _vm._s(optionVal.desc) }
                             })
                           ])
                         : _vm._e()
@@ -10672,17 +11353,17 @@ if (false) {
 }
 
 /***/ }),
-/* 164 */
+/* 166 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_SettingsBanner_vue__ = __webpack_require__(63);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_b725e442_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_SettingsBanner_vue__ = __webpack_require__(166);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_b725e442_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_SettingsBanner_vue__ = __webpack_require__(168);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(165)
+  __webpack_require__(167)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -10728,13 +11409,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 165 */
+/* 167 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 166 */
+/* 168 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10822,7 +11503,7 @@ if (false) {
 }
 
 /***/ }),
-/* 167 */
+/* 169 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10879,9 +11560,49 @@ var render = function() {
         _vm._v(" "),
         _c("div", { staticClass: "dokan-settings-wrap" }, [
           _c(
-            "h2",
+            "div",
             { staticClass: "nav-tab-wrapper" },
             [
+              _c("div", { staticClass: "search-box" }, [
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.searchText,
+                      expression: "searchText"
+                    }
+                  ],
+                  ref: "searchInSettings",
+                  staticClass: "dokan-admin-search-settings",
+                  attrs: { type: "text", placeholder: "Search e.g. vendor" },
+                  domProps: { value: _vm.searchText },
+                  on: {
+                    input: [
+                      function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.searchText = $event.target.value
+                      },
+                      _vm.searchInSettings
+                    ]
+                  }
+                }),
+                _vm._v(" "),
+                "" !== _vm.searchText
+                  ? _c("span", {
+                      staticClass: "dashicons dashicons-no-alt",
+                      on: {
+                        click: function($event) {
+                          $event.preventDefault()
+                          return _vm.clearSearch.apply(null, arguments)
+                        }
+                      }
+                    })
+                  : _vm._e()
+              ]),
+              _vm._v(" "),
               _vm._l(_vm.settingSections, function(section) {
                 return [
                   _c(
@@ -10998,6 +11719,8 @@ var render = function() {
                                             "all-settings-values":
                                               _vm.settingValues,
                                             errors: _vm.errors,
+                                            validationErrors:
+                                              _vm.validationErrors,
                                             "toggle-loading-state":
                                               _vm.toggleLoadingState
                                           },
@@ -11063,17 +11786,17 @@ if (false) {
 }
 
 /***/ }),
-/* 168 */
+/* 170 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Vendors_vue__ = __webpack_require__(64);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_f81b8092_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Vendors_vue__ = __webpack_require__(173);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_f81b8092_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Vendors_vue__ = __webpack_require__(175);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(169)
+  __webpack_require__(171)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -11119,23 +11842,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 169 */
+/* 171 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 170 */
+/* 172 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_AddVendor_vue__ = __webpack_require__(65);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_75e0fcd5_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_AddVendor_vue__ = __webpack_require__(172);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_75e0fcd5_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_AddVendor_vue__ = __webpack_require__(174);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(171)
+  __webpack_require__(173)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -11181,13 +11904,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 171 */
+/* 173 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 172 */
+/* 174 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11327,7 +12050,7 @@ if (false) {
 }
 
 /***/ }),
-/* 173 */
+/* 175 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11371,24 +12094,22 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Vendors", query: { status: "all" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Vendors", query: { status: "all" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "All <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.all
-                      )
-                    )
-                  }
-                }),
+                  [
+                    _vm._v(_vm._s(_vm.__("All", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.all))
+                    ])
+                  ]
+                ),
                 _vm._v(" | ")
               ],
               1
@@ -11397,24 +12118,22 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Vendors", query: { status: "approved" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Vendors", query: { status: "approved" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "Approved <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.approved
-                      )
-                    )
-                  }
-                }),
+                  [
+                    _vm._v(_vm._s(_vm.__("Approved", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.approved))
+                    ])
+                  ]
+                ),
                 _vm._v(" | ")
               ],
               1
@@ -11423,31 +12142,30 @@ var render = function() {
             _c(
               "li",
               [
-                _c("router-link", {
-                  attrs: {
-                    to: { name: "Vendors", query: { status: "pending" } },
-                    "active-class": "current",
-                    exact: ""
+                _c(
+                  "router-link",
+                  {
+                    attrs: {
+                      to: { name: "Vendors", query: { status: "pending" } },
+                      "active-class": "current",
+                      exact: ""
+                    }
                   },
-                  domProps: {
-                    innerHTML: _vm._s(
-                      _vm.sprintf(
-                        _vm.__(
-                          "Pending <span class='count'>(%s)</span>",
-                          "dokan-lite"
-                        ),
-                        _vm.counts.pending
-                      )
-                    )
-                  }
-                })
+                  [
+                    _vm._v(_vm._s(_vm.__("Pending", "dokan-lite")) + " "),
+                    _c("span", { staticClass: "count" }, [
+                      _vm._v(_vm._s(_vm.counts.pending))
+                    ])
+                  ]
+                ),
+                _vm._v(" | ")
               ],
               1
             )
           ]),
           _vm._v(" "),
           _c("search", {
-            attrs: { title: "Search Vendors" },
+            attrs: { title: _vm.__("Search Vendors", "dokan-lite") },
             on: { searched: _vm.doSearch }
           }),
           _vm._v(" "),
@@ -11467,7 +12185,8 @@ var render = function() {
               "action-column": _vm.actionColumn,
               "not-found": "No vendors found.",
               "sort-by": _vm.sortBy,
-              "sort-order": _vm.sortOrder
+              "sort-order": _vm.sortOrder,
+              text: _vm.$root.listTableTexts()
             },
             on: {
               sort: _vm.sortCallback,
@@ -11662,17 +12381,17 @@ if (false) {
 }
 
 /***/ }),
-/* 174 */
+/* 176 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_VendorCapabilities_vue__ = __webpack_require__(66);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_276be9c2_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorCapabilities_vue__ = __webpack_require__(176);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_276be9c2_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_VendorCapabilities_vue__ = __webpack_require__(178);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(175)
+  __webpack_require__(177)
 }
 var normalizeComponent = __webpack_require__(0)
 /* script */
@@ -11718,13 +12437,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 175 */
+/* 177 */
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 176 */
+/* 178 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11849,7 +12568,407 @@ if (false) {
 }
 
 /***/ }),
-/* 177 */
+/* 179 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ProModules_vue__ = __webpack_require__(67);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_ca20ca84_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProModules_vue__ = __webpack_require__(184);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(180)
+}
+var normalizeComponent = __webpack_require__(0)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ProModules_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_ca20ca84_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ProModules_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "src/admin/pages/ProModules.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-ca20ca84", Component.options)
+  } else {
+    hotAPI.reload("data-v-ca20ca84", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 180 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 181 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ModuleUpgradePopup_vue__ = __webpack_require__(68);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5ae162ac_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ModuleUpgradePopup_vue__ = __webpack_require__(183);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(182)
+}
+var normalizeComponent = __webpack_require__(0)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_ModuleUpgradePopup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5ae162ac_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_ModuleUpgradePopup_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "src/admin/components/ModuleUpgradePopup.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-5ae162ac", Component.options)
+  } else {
+    hotAPI.reload("data-v-5ae162ac", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 182 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 183 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { attrs: { id: "dokan-upgrade-to-pro-wrapper" } }, [
+    _vm.showPopup
+      ? _c("div", { attrs: { id: "dokan-upgrade-popup" } }, [
+          _c("div", { staticClass: "modal-content" }, [
+            _c("span", { staticClass: "close", on: { click: _vm.closePopup } }),
+            _vm._v(" "),
+            _c("div", { staticClass: "header" }, [
+              _c("img", {
+                attrs: {
+                  src: _vm.headerImage,
+                  alt: _vm.__("Dokan Upgrade Popup", "dokan-lite")
+                }
+              }),
+              _vm._v(" "),
+              _c("h1", [
+                _vm._v(_vm._s(_vm.__("Unlock 20+ Modules", "dokan-lite")))
+              ]),
+              _vm._v(" "),
+              _c("p", { staticClass: "text-brand" }, [
+                _vm._v(_vm._s(_vm.__("with Dokan Premium Plans", "dokan-lite")))
+              ]),
+              _vm._v(" "),
+              _c("p", { staticClass: "text-disabled" }, [
+                _vm._v(
+                  "\n                    " +
+                    _vm._s(
+                      _vm.__(
+                        "We’re sorry, Dokan Modules are not available on Dokan Lite. Please upgrade to a PRO plan to unlock the modules of your choice.",
+                        "dokan-lite"
+                      )
+                    ) +
+                    "\n                "
+                )
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "body" }, [
+              _c(
+                "a",
+                {
+                  staticClass: "button",
+                  attrs: {
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    href: _vm.upgradeURL
+                  }
+                },
+                [_vm._v(_vm._s(_vm.__("Upgrade to Pro", "dokan-lite")))]
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "promo-card" }, [
+                _c("img", {
+                  attrs: {
+                    src: _vm.bonusImage,
+                    alt: _vm.__("Dokan Upgrade Promo", "dokan-lite")
+                  }
+                }),
+                _vm._v(" "),
+                _c("p", [
+                  _vm._v(
+                    _vm._s(
+                      _vm.__(
+                        "Bonus: Dokan Lite users get 30% off regular price. Click on the link above to obtain the coupon & apply it during checkout.",
+                        "dokan-lite"
+                      )
+                    )
+                  )
+                ])
+              ]),
+              _vm._v(" "),
+              _c("span", [
+                _c(
+                  "a",
+                  {
+                    attrs: {
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      href:
+                        "https://wedevs.com/docs/dokan/getting-started/installation-2/"
+                    }
+                  },
+                  [_vm._v(_vm._s(_vm.__("Already upgraded?", "dokan-lite")))]
+                )
+              ])
+            ])
+          ])
+        ])
+      : _vm._e()
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-5ae162ac", esExports)
+  }
+}
+
+/***/ }),
+/* 184 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "lite-modules" } },
+    [
+      _c("div", { staticClass: "dokan-modules-wrap" }, [
+        _c("h1", [_vm._v(_vm._s(_vm.__("Modules", "dokan")))]),
+        _vm._v(" "),
+        _c("div", { staticClass: "module-content" }, [
+          _c(
+            "div",
+            { staticClass: "wp-list-table widefat dokan-modules" },
+            [
+              _vm.modules.length > 0
+                ? _vm._l(_vm.modules, function(module) {
+                    return _c("div", { staticClass: "plugin-card" }, [
+                      _c("div", { staticClass: "plugin-card-top" }, [
+                        _c("div", { staticClass: "name column-name" }, [
+                          _c("h3", [
+                            _c(
+                              "a",
+                              {
+                                staticClass: "plugin-name",
+                                attrs: {
+                                  href: module.modLink,
+                                  target: "_blank"
+                                }
+                              },
+                              [_vm._v(_vm._s(module.name))]
+                            ),
+                            _vm._v(" "),
+                            _c(
+                              "a",
+                              {
+                                staticClass: "plugin-name",
+                                attrs: {
+                                  href: module.modLink,
+                                  target: "_blank"
+                                }
+                              },
+                              [
+                                _c("img", {
+                                  staticClass: "plugin-icon",
+                                  attrs: {
+                                    src: module.thumbnail,
+                                    alt: module.name
+                                  }
+                                })
+                              ]
+                            )
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "action-links" }, [
+                          _c("ul", { staticClass: "plugin-action-buttons" }, [
+                            _c(
+                              "li",
+                              {
+                                on: {
+                                  click: function($event) {
+                                    return _vm.togglePopup(true)
+                                  }
+                                }
+                              },
+                              [
+                                _c(
+                                  "svg",
+                                  {
+                                    attrs: {
+                                      xmlns: "http://www.w3.org/2000/svg",
+                                      width: "42",
+                                      height: "20"
+                                    }
+                                  },
+                                  [
+                                    _c("rect", {
+                                      attrs: {
+                                        width: "42",
+                                        height: "20",
+                                        rx: "10",
+                                        fill: "#c0c3c6"
+                                      }
+                                    }),
+                                    _c("circle", {
+                                      attrs: {
+                                        cx: "6",
+                                        cy: "6",
+                                        r: "6",
+                                        transform: "translate(6 4)",
+                                        fill: "#fff"
+                                      }
+                                    })
+                                  ]
+                                )
+                              ]
+                            )
+                          ])
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "desc column-description" }, [
+                          _c("p", {
+                            domProps: { innerHTML: _vm._s(module.description) }
+                          })
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "card-footer" }, [
+                          _c(
+                            "a",
+                            {
+                              attrs: { href: module.docLink, target: "_blank" }
+                            },
+                            [_vm._v(_vm._s(_vm.__("Documentation", "dokan")))]
+                          )
+                        ])
+                      ])
+                    ])
+                  })
+                : [
+                    _c(
+                      "div",
+                      {
+                        staticClass: "notice notice-info",
+                        attrs: { id: "message" }
+                      },
+                      [
+                        _c("p", [
+                          _c("strong", [
+                            _vm._v(_vm._s(_vm.__("No modules found.", "dokan")))
+                          ])
+                        ])
+                      ]
+                    )
+                  ]
+            ],
+            2
+          )
+        ])
+      ]),
+      _vm._v(" "),
+      _c("ModuleUpgradePopup", {
+        attrs: { "show-popup": _vm.showPopup },
+        on: { toggle: _vm.togglePopup }
+      })
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-ca20ca84", esExports)
+  }
+}
+
+/***/ }),
+/* 185 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11885,4 +13004,4 @@ function menuFix(slug) {
 /* harmony default export */ __webpack_exports__["a"] = (menuFix);
 
 /***/ })
-],[103]);
+],[105]);

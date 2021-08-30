@@ -42,7 +42,7 @@ class WCFM_Settings_WCMarketplace_Controller {
 		
 		// sanitize html editor content
 		if( apply_filters( 'wcfm_is_allow_store_description', true ) ) {
-			$wcfm_settings_form['shop_description'] = ! empty( $_POST['profile'] ) ? stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) : '';
+			$wcfm_settings_form['shop_description'] = ! empty( $_POST['profile'] ) ? sanitize_option( 'wcfm_editor_content', stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) ) : '';
 			update_user_meta( $user_id, '_vendor_description', apply_filters( 'wcfm_editor_content_before_save', $wcfm_settings_form['shop_description'] ) );
 		}
 		

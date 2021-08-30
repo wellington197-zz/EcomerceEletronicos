@@ -11,7 +11,7 @@ if ( ! defined( 'YITH_WCWL' ) ) {
 	exit;
 } // Exit if accessed directly
 
-if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
+if ( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 	/**
 	 * YITH WCWL Shortcodes
 	 *
@@ -211,6 +211,8 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 			);
 
 			/**
+			 * Extracted variables:
+			 *
 			 * @var $per_page int
 			 * @var $current_page int
 			 * @var $pagination string
@@ -240,12 +242,15 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 
 			// icons.
 			$icon = get_option( 'yith_wcwl_add_to_wishlist_icon' );
-			$custom_icon = get_option( 'yith_wcwl_add_to_wishlist_custom_icon' );
 
 			if ( 'custom' == $icon ) {
-				$heading_icon = '<img src="' . $custom_icon . '" width="32" />';
+				$custom_icon       = get_option( 'yith_wcwl_add_to_wishlist_custom_icon' );
+				$custom_icon_alt   = apply_filters( 'yith_wcwl_custom_icon_alt', '' );
+				$custom_icon_width = apply_filters( 'yith_wcwl_custom_width', '32' );
+
+				$heading_icon = '<img src="' . esc_url( $custom_icon ) . '" alt="' . esc_attr( $custom_icon_alt ) . '" width="' . esc_attr( $custom_icon_width ) . '" />';
 			} else {
-				$heading_icon = ! empty( $icon ) ? '<i class="fa ' . $icon . '"></i>' : '';
+				$heading_icon = ! empty( $icon ) ? '<i class="fa ' . esc_attr( $icon ) . '"></i>' : '';
 			}
 
 			// init params needed to load correct template.
@@ -490,9 +495,9 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 						$share_whatsapp_url = '';
 
 						if ( wp_is_mobile() ) {
-							$share_whatsapp_url = 'whatsapp://send?text=' . __( 'My wishlist on ', 'yith-woocommerce-wishlist' ) . ' – ' . urlencode( $share_link_url );
+							$share_whatsapp_url = 'whatsapp://send?text=' . $share_link_title . ' - ' . urlencode( $share_link_url );
 						} else {
-							$share_whatsapp_url = 'https://web.whatsapp.com/send?text=' . __( 'My wishlist on ', 'yith-woocommerce-wishlist' ) . ' – ' . urlencode( $share_link_url );
+							$share_whatsapp_url = 'https://web.whatsapp.com/send?text=' . $share_link_title . ' - ' . urlencode( $share_link_url );
 						}
 
 						$share_atts['share_whatsapp_url'] = $share_whatsapp_url;
@@ -537,14 +542,19 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 			// remove filters for add to cart buttons.
 			YITH_WCWL_Frontend()->restore_add_to_cart_button();
 
+			// enqueue scripts.
+			YITH_WCWL_Frontend()->enqueue_scripts();
+
 			return apply_filters( 'yith_wcwl_wishlisth_html', $template, array(), true );
 		}
 
 		/**
 		 * Return "Add to Wishlist" button.
 		 *
-		 * @param array $atts Array of parameters for the shortcode
-		 * @param string $content Shortcode content (usually empty)
+		 * @param array  $atts Array of parameters for the shortcode.
+		 * @param string $content Shortcode content (usually empty).
+		 *
+		 * @return string Template of the shortcode.
 		 *
 		 * @since 1.0.0
 		 */
@@ -568,6 +578,8 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 			$label_option = get_option( 'yith_wcwl_add_to_wishlist_text' );
 			$icon_option = get_option( 'yith_wcwl_add_to_wishlist_icon' );
 			$custom_icon = 'none' != $icon_option ? get_option( 'yith_wcwl_add_to_wishlist_custom_icon' ) : '';
+			$custom_icon_alt = apply_filters( 'yith_wcwl_custom_icon_alt', '' );
+			$custom_icon_width = apply_filters( 'yith_wcwl_custom_width', '32' );
 			$added_icon_option = get_option( 'yith_wcwl_added_to_wishlist_icon' );
 			$custom_added_icon = 'none' != $added_icon_option ? get_option( 'yith_wcwl_added_to_wishlist_custom_icon' ) : '';
 			$browse_wishlist = get_option( 'yith_wcwl_browse_wishlist_text' );
@@ -597,21 +609,21 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 			$template_part = $exists && 'add' != $added_to_wishlist_behaviour ? 'browse' : 'button';
 			$template_part = isset( $atts['added_to_wishlist'] ) ? ( $atts['added_to_wishlist'] ? 'added' : 'browse' ) : $template_part;
 
-			if ( $found_in_list && in_array( $template_part, array( 'browse', 'added' ) ) ) {
-				'remove' == $added_to_wishlist_behaviour && $template_part = 'remove';
+			if ( $found_in_list && in_array( $template_part, array( 'browse', 'added' ) ) && 'remove' === $added_to_wishlist_behaviour ) {
+				 $template_part = 'remove';
 			}
 
-			if ( 'remove' == $template_part ) {
+			if ( 'remove' === $template_part ) {
 				$classes = str_replace( array( 'single_add_to_wishlist', 'add_to_wishlist' ), '', $classes );
 				$label = apply_filters( 'yith_wcwl_remove_from_wishlist_label', __( 'Remove from list', 'yith-woocommerce-wishlist' ) );
 			}
 
 			// forcefully add icon when showing button over image, if no one is set.
-			if ( ! $is_single && 'before_image' == get_option( 'yith_wcwl_loop_position' ) ) {
+			if ( ! $is_single && 'before_image' === get_option( 'yith_wcwl_loop_position' ) ) {
 				$classes = str_replace( 'button', '', $classes );
 			}
 
-			$ajax_loading = get_option( 'yith_wcwl_ajax_enable', 'no' ) == 'yes';
+			$ajax_loading = 'yes' === get_option( 'yith_wcwl_ajax_enable', 'no' );
 
 			// get wishlist url.
 			$wishlist_url = YITH_WCWL()->get_wishlist_url();
@@ -674,10 +686,10 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 			}
 
 			if ( 'custom' == $atts['icon'] && $atts['exists'] && $custom_added_icon ) {
-				$icon_html = '<img class="yith-wcwl-icon" src="' . $custom_added_icon . '" width="32" />';
-				$heading_icon_html = ! empty( $custom_icon ) ? '<img class="yith-wcwl-icon" src="' . $custom_icon . '" width="32" />' : '';
+				$icon_html = '<img class="yith-wcwl-icon" src="' . esc_url( $custom_added_icon ) . '" alt="' . esc_attr( $custom_icon_alt ) . '" width="' . esc_attr( $custom_icon_width ) . '" />';
+				$heading_icon_html = ! empty( $custom_icon ) ? '<img class="yith-wcwl-icon" src="' . esc_url( $custom_icon ) . '" alt="' . esc_attr( $custom_icon_alt ) . '" width="' . esc_attr( $custom_icon_width ) . '" />' : '';
 			} elseif ( 'custom' == $atts['icon'] && $custom_icon ) {
-				$icon_html = '<img class="yith-wcwl-icon" src="' . $custom_icon . '" width="32" />';
+				$icon_html = '<img class="yith-wcwl-icon" src="' . esc_url( $custom_icon ) . '" alt="' . esc_attr( $custom_icon_alt ) . '" width="' . esc_attr( $custom_icon_width ) . '" />';
 				$heading_icon_html = $icon_html;
 			} elseif ( 'custom' != $atts['icon'] ) {
 				$icon_html = ! empty( $atts['icon'] ) ? '<i class="yith-wcwl-icon fa ' . $atts['icon'] . '"></i>' : '';
@@ -694,7 +706,10 @@ if( ! class_exists( 'YITH_WCWL_Shortcode' ) ) {
 
 			$template = yith_wcwl_get_template( 'add-to-wishlist.php', $atts, true );
 
-			return apply_filters( 'yith_wcwl_add_to_wishlisth_button_html', $template, $wishlist_url, $product_type, $exists );
+			// enqueue scripts.
+			YITH_WCWL_Frontend()->enqueue_scripts();
+
+			return apply_filters( 'yith_wcwl_add_to_wishlisth_button_html', $template, $wishlist_url, $product_type, $exists, $atts );
 		}
 
 	}

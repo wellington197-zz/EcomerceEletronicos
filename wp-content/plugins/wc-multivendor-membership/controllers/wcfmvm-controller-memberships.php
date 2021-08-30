@@ -20,8 +20,8 @@ class WCFMvm_Memberships_Controller {
 	public function processing() {
 		global $WCFM, $wpdb, $_POST, $WCFMvm;
 		
-		$length = $_POST['length'];
-		$offset = $_POST['start'];
+		$length = wc_clean($_POST['length']);
+		$offset = wc_clean($_POST['start']);
 		
 		$args = array(
 							'posts_per_page'   => $length,
@@ -41,7 +41,7 @@ class WCFMvm_Memberships_Controller {
 							'post_status'      => array('draft', 'pending', 'publish'),
 							'suppress_filters' => true 
 						);
-		if( isset( $_POST['search'] ) && !empty( $_POST['search']['value'] )) $args['s'] = $_POST['search']['value'];
+		if( isset( $_POST['search'] ) && !empty( $_POST['search']['value'] )) $args['s'] = wc_clean($_POST['search']['value']);
 		
 		$args = apply_filters( 'wcfm_vendor_memberships_args', $args );
 		
@@ -64,7 +64,7 @@ class WCFMvm_Memberships_Controller {
 		// Generate Memberships JSON
 		$wcfm_memberships_json = '';
 		$wcfm_memberships_json = '{
-															"draw": ' . $_POST['draw'] . ',
+															"draw": ' . wc_clean($_POST['draw']) . ',
 															"recordsTotal": ' . $group_count . ',
 															"recordsFiltered": ' . $filtered_group_count . ',
 															"data": ';

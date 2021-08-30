@@ -534,7 +534,7 @@ class WCFMmp_Gateway_Stripe_Split extends WC_Payment_Gateway {
 				
 				// Remaining Amount Pay to Admin
 				$remaining_sales_amount = $total_gross_sales - $vendor_gross_sales;
-				if( $remaining_sales_amount ) {
+				if( $remaining_sales_amount && ( absint($remaining_sales_amount) >= 1 ) ) {
 					try {
 						$charge_data = array(
 																"amount"         => $this->get_stripe_amount( $remaining_sales_amount ),
@@ -651,7 +651,7 @@ class WCFMmp_Gateway_Stripe_Split extends WC_Payment_Gateway {
 				
 				// Remaining Amount Pay to Admin
 				$remaining_sales_amount = $total_gross_sales - $vendor_gross_sales;
-				if( $remaining_sales_amount ) {
+				if( $remaining_sales_amount && ( absint($remaining_sales_amount) >= 1 ) ) {
 					try {
 						$charge_data = array(
 																"amount"         =>  $this->get_stripe_amount( $remaining_sales_amount ),

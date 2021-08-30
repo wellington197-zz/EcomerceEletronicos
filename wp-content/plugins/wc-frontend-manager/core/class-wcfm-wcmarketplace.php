@@ -910,7 +910,7 @@ class WCFM_WCMarketplace {
 		do_action( 'after_wcfm_product_duplicate', $duplicate->get_id(), $product );
 
 		// Redirect to the edit screen for the new draft page
-		echo '{"status": true, "redirect": "' . get_wcfm_edit_product_url( $duplicate->get_id() ) . '", "id": "' . $duplicate->get_id() . '"}';
+		echo '{"status": true, "redirect": "' . esc_url( get_wcfm_edit_product_url( $duplicate->get_id() ) ) . '", "id": "' . $duplicate->get_id() . '"}';
 		
 		die;
 	}

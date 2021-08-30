@@ -22,7 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<?php endif; ?>
 	<?php
 		wp_head();
-		echo '<style type="text/css" id="redux-template-overrides">' . esc_html( ReduxTemplates\Template_Overrides::get_overrides() ) . '</style>';
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo '<style type="text/css" id="redux-template-overrides">' . ReduxTemplates\Template_Overrides::get_overrides() . '</style>';
 	?>
 </head>
 <body <?php echo body_class(); ?>>
@@ -30,8 +31,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 <?php
 while ( have_posts() ) :
 	the_post();
+	the_content();
+
+	// If comments are open or we have at least one comment, load up the comment template.
+	if ( comments_open() || get_comments_number() ) :
+		comments_template();
+	endif;
 	?>
-	<?php the_content(); ?>
 <?php endwhile; ?>
 <?php wp_footer(); ?>
 </body>

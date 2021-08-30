@@ -108,15 +108,15 @@ class WCFM_Policy {
 		}
 		
 		if( isset( $_POST['shipping_policy'] ) ) {
-			$wcfm_policy_options['shipping_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_options['shipping_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 		}
 		
 		if( isset( $_POST['refund_policy'] ) ) {
-			$wcfm_policy_options['refund_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['refund_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_options['refund_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['refund_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 		}
 		
 		if( isset( $_POST['cancellation_policy'] ) ) {
-			$wcfm_policy_options['cancellation_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_options['cancellation_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 		}
 		
 		wcfm_update_option( 'wcfm_policy_options', $wcfm_policy_options );
@@ -225,21 +225,21 @@ class WCFM_Policy {
 		}
 		
 		if( isset( $_POST['shipping_policy'] ) ) {
-			$wcfm_policy_vendor_options['shipping_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_vendor_options['shipping_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 			if( $is_marketplace && ( $is_marketplace == 'dokan' ) ) {
 				update_user_meta( $vendor_id, '_dps_ship_policy', $wcfm_policy_vendor_options['shipping_policy'] );
 			}
 		}
 		
 		if( isset( $_POST['refund_policy'] ) ) {
-			$wcfm_policy_vendor_options['refund_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['refund_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_vendor_options['refund_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['refund_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 			if( $is_marketplace && ( $is_marketplace == 'dokan' ) ) {
 				update_user_meta( $vendor_id, '_dps_refund_policy', $wcfm_policy_vendor_options['refund_policy'] );
 			}
 		}
 		
 		if( isset( $_POST['cancellation_policy'] ) ) {
-			$wcfm_policy_vendor_options['cancellation_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_vendor_options['cancellation_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $_POST['cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 		}
 		
 		wcfm_update_user_meta( $vendor_id, 'wcfm_policy_vendor_options', $wcfm_policy_vendor_options );
@@ -372,19 +372,19 @@ class WCFM_Policy {
 		}
 		
 		if( isset( $wcfm_products_manage_form_data['wcfm_shipping_policy'] ) && !empty( $wcfm_products_manage_form_data['wcfm_shipping_policy'] ) ) {
-			$wcfm_policy_product_options['shipping_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_product_options['shipping_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_shipping_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 			if( $is_marketplace && ($is_marketplace == 'wcmarketplace') ) {
 				update_post_meta( $new_product_id, '_wcmp_shipping_policy', $wcfm_products_manage_form_data['wcfm_shipping_policy'] );
 			}
 		}
 		if( isset( $wcfm_products_manage_form_data['wcfm_refund_policy'] ) && !empty( $wcfm_products_manage_form_data['wcfm_refund_policy'] ) ) {
-			$wcfm_policy_product_options['refund_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_refund_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_product_options['refund_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_refund_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 			if( $is_marketplace && ($is_marketplace == 'wcmarketplace') ) {
 				update_post_meta( $new_product_id, '_wcmp_refund_policy', $wcfm_products_manage_form_data['wcfm_refund_policy'] );
 			}
 		}
 		if( isset( $wcfm_products_manage_form_data['wcfm_cancellation_policy'] ) && !empty( $wcfm_products_manage_form_data['wcfm_cancellation_policy'] ) ) {
-			$wcfm_policy_product_options['cancellation_policy'] = apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) );
+			$wcfm_policy_product_options['cancellation_policy'] = sanitize_option( 'wcfm_editor_content', apply_filters( 'wcfm_editor_content_before_save', stripslashes( html_entity_decode( $wcfm_products_manage_form_data['wcfm_cancellation_policy'], ENT_QUOTES, 'UTF-8' ) ) ) );
 			if( $is_marketplace && ($is_marketplace == 'wcmarketplace') ) {
 				update_post_meta( $new_product_id, '_wcmp_cancellation_policy', $wcfm_products_manage_form_data['wcfm_cancellation_policy'] );
 			}

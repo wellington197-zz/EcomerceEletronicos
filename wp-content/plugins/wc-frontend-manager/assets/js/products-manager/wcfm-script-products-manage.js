@@ -462,7 +462,13 @@ jQuery( document ).ready( function( $ ) {
         if(ele.hasClass('wcfm-wp-fields-uploader')) {
 					var uploadEle = ele;
 					ele_name = uploadEle.find('.multi_input_block_element').data('name');
-					uploadEle.find('img').attr('src', uploadEle.find('img').data('placeholder')).attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount + '_display').addClass('placeHolder');
+					mime_type = uploadEle.find('.remove_button').data('mime');
+					if(mime_type == 'image') {
+					  uploadEle.find('img').attr('src', uploadEle.find('img').data('placeholder')).attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount + '_display').addClass('placeHolder');
+					} else { 
+						uploadEle.find('a').attr('href', '#').attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount + '_display');
+						uploadEle.find('a span').hide();
+					}
 					uploadEle.find('.multi_input_block_element').attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount).attr('name', holder_name+'['+multi_input_blockCount+']['+ele_name+']');
 					uploadEle.find('.upload_button').attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount + '_button').show();
 					uploadEle.find('.remove_button').attr('id', holder_id + '_' + ele_name + '_' + multi_input_blockCount + '_remove_button').hide();
@@ -631,7 +637,13 @@ jQuery( document ).ready( function( $ ) {
 		  if(ele.hasClass('wcfm-wp-fields-uploader')) {
 				var uploadEle = ele;
 				ele_name = uploadEle.find('.multi_input_block_element').data('name');
-				uploadEle.find('img').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_display');
+				mime_type = uploadEle.find('.remove_button').data('mime');
+				if(mime_type == 'image') {
+				  uploadEle.find('img').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_display');
+				} else {
+					uploadEle.find('a').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_display');
+					uploadEle.find('a span').hide();
+				}
 				uploadEle.find('.multi_input_block_element').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count).attr('name', holder_name+'['+multi_input_blockCount+']['+multi_input_name+']['+nested_multi_input_block_count+']['+ele_name+']');
 				uploadEle.find('.upload_button').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_button').attr('name', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_button');
 				uploadEle.find('.remove_button').attr('id', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_remove_button').attr('name', holder_id+'_'+multi_input_name+'_'+multi_input_blockCount + '_' + ele_name + '_' + nested_multi_input_block_count + '_remove_button');
@@ -893,8 +905,10 @@ jQuery( document ).ready( function( $ ) {
 		$default_attributes_val = $default_attributes.val();
 		if($default_attributes_val.length > 0) {
 			$.each($.parseJSON($default_attributes_val), function(attr_key, attr_val) {
-				attr_val = attr_val.replace( '"', '&quot;' );
-				attr_val = attr_val.replace( "'", '&#039;' );
+				$regex = /"/g;
+				attr_val = attr_val.replace( $regex, '&quot;' );
+				$regex = /'/g;
+				attr_val = attr_val.replace( $regex, '&#039;' );
 				$('.default_attributes_holder').append('<input type="hidden" name="default_attribute_'+attr_key+'" data-name="default_attribute_'+attr_key+'" value="'+attr_val+'" />');
 			});
 		}
@@ -909,8 +923,10 @@ jQuery( document ).ready( function( $ ) {
 	  $attributes_val = $attributes.val();
 	  if($attributes_val.length > 0) {
 	  	$.each($.parseJSON($attributes_val), function(attr_key, attr_val) {
-	  		attr_val = attr_val.replace( '"', '&quot;' );
-	  		attr_val = attr_val.replace( "'", '&#039;' );
+	  		$regex = /"/g;
+	  		attr_val = attr_val.replace( $regex, '&quot;' );
+	  		$regex = /'/g;
+	  		attr_val = attr_val.replace( $regex, '&#039;' );
 	  		$multi_input_block.prepend('<input type="hidden" name="'+attr_key+'" data-name="'+attr_key+'" value="'+attr_val+'" />');
 	  	});
 	  }
@@ -1548,7 +1564,8 @@ jQuery( document ).ready( function( $ ) {
 				ticket_content : ticket_content,
 				ticket_email_html : ticket_email_html,
 				product_manage_from_popup : product_manage_from_popup,
-				variation_auto_generate : product_variation_auto_generate
+				variation_auto_generate : product_variation_auto_generate,
+				wcfm_ajax_nonce      : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {
@@ -1612,7 +1629,8 @@ jQuery( document ).ready( function( $ ) {
 				ticket_content : ticket_content,
 				ticket_email_html : ticket_email_html,
 				product_manage_from_popup : product_manage_from_popup,
-				variation_auto_generate : product_variation_auto_generate
+				variation_auto_generate : product_variation_auto_generate,
+				wcfm_ajax_nonce      : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {
@@ -1679,7 +1697,8 @@ jQuery( document ).ready( function( $ ) {
 					ticket_email_html : ticket_email_html,
 					product_manage_from_popup : product_manage_from_popup,
 					variation_auto_generate : product_variation_auto_generate,
-					reject_reason           : reject_reason
+					reject_reason           : reject_reason,
+					wcfm_ajax_nonce      : wcfm_params.wcfm_ajax_nonce
 				}	
 				$.post(wcfm_params.ajax_url, data, function(response) {
 					if(response) {

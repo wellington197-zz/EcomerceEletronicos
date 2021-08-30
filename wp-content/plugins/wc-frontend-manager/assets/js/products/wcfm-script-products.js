@@ -118,7 +118,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'wcfm_product_approve',
-			proid : item.data('proid')
+			proid : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',
@@ -154,6 +155,7 @@ jQuery(document).ready(function($) {
 		var data = {
 			action : 'wcfm_product_reject',
 			proid  : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce,
 			reason : rconfirm
 		}	
 		jQuery.ajax({
@@ -189,7 +191,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'wcfm_product_archive',
-			proid : item.data('proid')
+			proid : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',
@@ -224,7 +227,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'delete_wcfm_product',
-			proid : item.data('proid')
+			proid : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',

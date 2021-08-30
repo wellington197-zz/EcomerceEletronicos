@@ -30,22 +30,35 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			'btn_size' 		=>		'18',
 			'icon_size' 	=>		'18',
 			'icon_space' 	=>		'5',
-			'font_family' 	=>		'',
-			'font_weight' 	=>		'normal',
 			'transform' 	=>		'default',
 			'text_style' 	=>		'default',
 			'text_decoration' 	=>	'default',
 			'btn_shadow' 	=>	'none',
+			'use_theme_fonts'		=>		'',
+			'google_fonts'	=>		'default',
+			'classname' 	=>	'',
 		), $atts ) );
 		$some_id = rand(5, 500);
 		$btn_url = vc_build_link($btn_url);
 		wp_enqueue_style( 'advanced-button-css', plugins_url( '../css/advanced-buttons.css' , __FILE__ ));
 		$content = wpb_js_remove_wpautop($content, true);
+		$atts = vc_map_get_attributes( $this->getShortcode(), $atts );
+		$googleallfonts = "";
+		if($google_fonts != "default"){
+			$fontsData = $this->getFontsData( $atts, 'google_fonts' );
+			$googleFontsStyles = $this->googleFontsStyles( $fontsData );
+			$this->enqueueGoogleFonts( $fontsData );
+			if (empty($googleFontsStyles) == false){
+				$googleallfonts = esc_attr( implode( ';', $googleFontsStyles ) );
+			} else {
+				$googleallfonts = $googleFontsStyles;
+			}
+		}
 		ob_start(); ?>
 		
-		<div class="mega_uae_btn_<?php echo $some_id; ?>" style="justify-content: <?php echo $align; ?>; display: flex;">
+		<div class="mega_uae_btn_<?php echo $some_id; ?> <?php echo $classname; ?>" style="justify-content: <?php echo $align; ?>; display: flex;">
 			<?php if ($btn_animation == 'hvr-fade' || $btn_animation == 'button--saqui' || $btn_animation == 'button--sacnite') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;" data-text="<?php echo esc_attr($btn_text); ?>"> 
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;" data-text="<?php echo esc_attr($btn_text); ?>"> 
 					<?php if ($icon_position == 'left') { ?>
 						<i class="<?php echo $btn_icon; ?> icon__left"></i> 
 					<?php } ?>
@@ -58,7 +71,7 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			<?php } ?>
 
 			<?php if ($btn_animation == 'button--winona') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;" data-text=""> 
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;" data-text=""> 
 					<span>
 						<?php if ($icon_position == 'left') { ?>
 							<i class="<?php echo $btn_icon; ?> icon__left"> </i>
@@ -74,7 +87,7 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			<?php } ?>
 
 			<?php if ($btn_animation == 'button--rayen') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;" data-text=""> 
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>;background: <?php echo $btn_bg; ?> ; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;" data-text=""> 
 					<span style="background: <?php echo $btn_hvrbg; ?>; padding: <?php echo $padding_top; ?>px 0; color: <?php echo $btn_hvrclr; ?>;" class="advanced-btn-before"><?php echo $btn_text2; ?></span>
 					<span>
 						<?php if ($icon_position == 'left') { ?>
@@ -90,7 +103,7 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			<?php } ?>
 
 			<?php if ($btn_animation == 'button--wapasha' || $btn_animation == 'button--isi' || $btn_animation == 'button--moema' || $btn_animation == 'button--wayra' || $btn_animation == 'button--ujarak' || $btn_animation == 'button--aylen' || $btn_animation == 'button--nuka' || $btn_animation == 'button--shikoba' || $btn_animation == 'button--quidel') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; background: <?php echo $btn_bg; ?>; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;" data-text="">
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; background: <?php echo $btn_bg; ?>; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;" data-text="">
 					<?php if ($icon_position == 'left') { ?>
 						<i class="<?php echo $btn_icon; ?> button__icon icon__left"> </i>
 					<?php } ?>
@@ -103,7 +116,7 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			<?php } ?>
 
 			<?php if ($btn_animation == 'button--antiman' || $btn_animation == 'button--pipaluk') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;" data-text="">
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;" data-text="">
 					<?php if ($icon_position == 'left') { ?>
 						<i class="<?php echo $btn_icon; ?> button__icon icon__left"> </i>
 					<?php } ?>
@@ -116,7 +129,7 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 			<?php } ?>
 
 			<?php if ($btn_animation == 'button--float') { ?>
-				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; background: <?php echo $btn_bg; ?>; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px;">
+				<a href="<?php echo esc_url($btn_url['url']); ?>" target="<?php echo $btn_url['target']; ?>" title="<?php echo esc_html($btn_url['title']); ?>" class="maw_advanced_btn <?php echo $btn_animation; ?> <?php echo $btn_block; ?>" style="color: <?php echo $btn_clr; ?>; background: <?php echo $btn_bg; ?>; border: <?php echo $border_width; ?>px <?php echo $border_style; ?> <?php echo $btn_border; ?>; border-radius: <?php echo $btn_radius; ?>px; font-size: <?php echo $btn_size; ?>px; padding: <?php echo $padding_top; ?>px <?php echo $padding_left; ?>px; <?php echo $googleallfonts; ?>;">
 					<?php echo $btn_text; ?>
 					<i class="<?php echo $btn_icon; ?>" style="font-size: <?php echo $icon_size ?>px;"></i>
 				</a>
@@ -124,12 +137,9 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 		</div>
 		<style>
 			.mega_uae_btn_<?php echo $some_id; ?> .maw_advanced_btn{
-				font-family: <?php echo $font_family ?> !important;
-				font-weight: <?php echo $font_weight ?> !important;
 				text-transform: <?php echo $transform ?> !important;
 				font-style: <?php echo $text_style ?> !important;
 				text-decoration: <?php echo $text_decoration ?> !important;
-				/*box-<?php echo $btn_shadow ?>: 5px 5px 16px rgba(68,68,68,0.3) !important;*/
 				box-<?php echo $btn_shadow ?>: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
 			}
 			<?php if ($icon_position == 'left') { ?>
@@ -325,6 +335,45 @@ class WPBakeryShortCode_mvc_advanced_button extends WPBakeryShortCode {
 		<?php
 		return ob_get_clean();
 	}
+
+	protected function getFontsData( $atts, $paramName ) {
+		$googleFontsParam = new Vc_Google_Fonts();
+		$field = WPBMap::getParam( $this->shortcode, $paramName );
+		$fieldSettings = isset( $field['settings'], $field['settings']['fields'] ) ? $field['settings']['fields'] : array();
+		$fontsData = strlen( $atts[ $paramName ] ) > 0 ? $googleFontsParam->_vc_google_fonts_parse_attributes( $fieldSettings, $atts[ $paramName ] ) : '';
+
+		return $fontsData;
+	}
+
+	protected function googleFontsStyles( $fontsData ) {
+		// Inline styles
+		$fontFamily = explode( ':', $fontsData['values']['font_family'] );
+		$styles[] = 'font-family:' . $fontFamily[0];
+		$fontStyles = explode( ':', $fontsData['values']['font_style'] );
+		if(count($fontStyles)>1){
+			$styles[] = 'font-weight:' . $fontStyles[1];
+			$styles[] = 'font-style:' . $fontStyles[2];
+			return $styles;
+		} else {
+			return "";
+		}
+
+	}
+
+	protected function enqueueGoogleFonts( $fontsData ) {
+		// Get extra subsets for settings (latin/cyrillic/etc)
+		$settings = get_option( 'wpb_js_google_fonts_subsets' );
+		if ( is_array( $settings ) && ! empty( $settings ) ) {
+			$subsets = '&subset=' . implode( ',', $settings );
+		} else {
+			$subsets = '';
+		}
+
+		// We also need to enqueue font from googleapis
+		if ( isset( $fontsData['values']['font_family'] ) ) {
+			wp_enqueue_style( 'vc_google_fonts_' . vc_build_safe_css_class( $fontsData['values']['font_family'] ), '//fonts.googleapis.com/css?family=' . $fontsData['values']['font_family'] . $subsets );
+		}
+	}
 }
 
 
@@ -450,6 +499,14 @@ vc_map( array(
 			"description" 	=> __( 'Write button url as link', 'button' ),
 			"group" 		=> 'General',
 		),
+
+		array(
+            "type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Extra class name', 'megaaddons' ),
+			"param_name" 	=> 	"classname",
+			"description" 	=> 	"Style particular content element differently - add a class name and refer to it in custom CSS.",
+			"group" 		=> 	'General',
+        ),
 
 		array(
 			"type" 			=> "vc_links",
@@ -586,34 +643,6 @@ vc_map( array(
 		),
 
 		array(
-			"type" 			=> "textfield",
-			"heading" 		=> __( 'Font Family Name', 'button' ),
-			"param_name" 	=> "font_family",
-			"group" 		=> 'Settings',
-		),
-
-		array(
-			"type" 			=> "dropdown",
-			"heading" 		=> __( 'Font Weight', 'button' ),
-			"param_name" 	=> "font_weight",
-			"group" 		=> 'Settings',
-			"value"			=>	array(
-				"100"		=>		"100",
-				"200"		=>		"200",
-				"300"		=>		"300",
-				"400"		=>		"400",
-				"500"		=>		"500",
-				"600"		=>		"600",
-				"700"		=>		"700",
-				"800"		=>		"800",
-				"900"		=>		"900",
-				"Default"	=>		"default",
-				"Normal"	=>		"normal",
-				"Bold"		=>		"bold",
-			)
-		),
-
-		array(
 			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Transform', 'button' ),
 			"param_name" 	=> "transform",
@@ -663,6 +692,43 @@ vc_map( array(
 				"None"			=>		"none",
 				"Shadow"		=>		"shadow",
 			)
+		),
+
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_urlss",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Google Fonts Option</span>', 'ihover' ),
+			"group" 		=> 'Settings',
+		),
+
+		array(
+			"type" 			=> 	"checkbox",
+			"heading" 		=> 	__( 'Use theme default font family?', 'creativelink' ),
+			"param_name" 	=> 	"use_theme_fonts",
+			"description" 	=> 	__( 'Use font family from the theme.', 'creativelink' ),
+			"group" 		=> 	'Settings',
+			"value" 		=> array(
+					"Yes"		=> "yes",
+			)
+		),
+
+		array(
+			'type' => 'google_fonts',
+			'param_name' => 'google_fonts',
+			'value' => 'default',
+			'settings' => array(
+				'fields' => array(
+					'font_family_description' => __( 'Select font family.', 'js_composer' ),
+					'font_style_description' => __( 'Select font styling.', 'js_composer' ),
+				),
+			),
+			"group" 		=> 	'Settings',
+			'weight' => 0,
+			'dependency' => array(
+				'element' => 'use_theme_fonts',
+				'value_not_equal_to' => 'yes',
+			),
 		),
 	),
 ) );

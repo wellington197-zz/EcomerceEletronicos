@@ -1,25 +1,31 @@
-#mega-line-container h2 {
+.mega-line-container h2 {
 	margin: 5px 0 0 0;
 }
-#mega-line-container p {
+
+.mega-line-container p {
 	margin: 5px 0 0 0;
 }
-#mega-line-container .mega-line-top span {
+
+.mega-line-container .mega-line-top span {
 	display: inline-block;
 }
-#mega-line-container .mega-line-center span {
+
+.mega-line-container .mega-line-center span {
 	display: inline-table;
 }
-#mega-line-container .mega-line-bottom span {
+
+.mega-line-container .mega-line-bottom span {
 	display: inline-block;
 }
-#mega-line-icon .line-icon {
+
+.mega-line-icon .line-icon {
 	width: 230px;
     display: inline-block;
     border-top: 2px solid #ccc;
     padding-right: 15px;
 }
-#mega-line-icon .line-icon i {
+
+.mega-line-icon .line-icon i {
 	position: absolute;
 	font-size: 16px;
 	margin-top: -9px;
@@ -27,7 +33,8 @@
 	background: #fff;
 	padding: 0 7px;
 }
-#mega-line-icon .line-icon img {
+
+.mega-line-icon .line-icon img {
 	width: 60px;
 	/*height: 60px;*/
 	position: absolute;
@@ -43,9 +50,11 @@
     display: inline-block;
     border-top: 2px solid #ccc;
 }
-#mega-line-icon h2 {
+
+.mega-line-icon h2 {
 	/*line-height: 4;*/
 }
+
 #mega-line-img .line-img img {
 	width: 48px;
 	position: absolute;

@@ -98,7 +98,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action   : 'delete_wcfm_enquiry',
-			enquiryid : item.data('enquiryid')
+			enquiryid : item.data('enquiryid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',

@@ -185,7 +185,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'wcfm_order_mark_complete',
-			orderid : item.data('orderid')
+			orderid : item.data('orderid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		$.ajax({
 			type:		'POST',

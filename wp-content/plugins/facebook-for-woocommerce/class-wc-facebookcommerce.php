@@ -12,7 +12,9 @@ use SkyVerge\WooCommerce\Facebook\API;
 use SkyVerge\WooCommerce\Facebook\Lifecycle;
 use SkyVerge\WooCommerce\Facebook\Utilities\Background_Handle_Virtual_Products_Variations;
 use SkyVerge\WooCommerce\Facebook\Utilities\Background_Remove_Duplicate_Visibility_Meta;
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
+use SkyVerge\WooCommerce\Facebook\ProductSync\ProductValidator as ProductSyncValidator;
+use SkyVerge\WooCommerce\Facebook\Utilities\Heartbeat;
 
 if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 
@@ -22,7 +24,7 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 
 
 		/** @var string the plugin version */
-		const VERSION = '2.1.4';
+		const VERSION = WC_Facebook_Loader::PLUGIN_VERSION;
 
 		/** @var string for backwards compatibility TODO: remove this in v2.0.0 {CW 2020-02-06} */
 		const PLUGIN_VERSION = self::VERSION;
@@ -32,6 +34,9 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 
 		/** @var string the integration ID */
 		const INTEGRATION_ID = 'facebookcommerce';
+
+		/** @var string the product set categories meta name */
+		const PRODUCT_SET_META = '_wc_facebook_product_cats';
 
 
 		/** @var \WC_Facebookcommerce singleton instance */
@@ -70,8 +75,14 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		/** @var \SkyVerge\WooCommerce\Facebook\Products\Sync\Background background sync handler */
 		private $sync_background_handler;
 
+		/** @var \SkyVerge\WooCommerce\Facebook\ProductSets\Sync product sets sync handler */
+		private $product_sets_sync_handler;
+
 		/** @var \SkyVerge\WooCommerce\Facebook\Handlers\Connection connection handler */
 		private $connection_handler;
+
+		/** @var \SkyVerge\WooCommerce\Facebook\Handlers\WebHook webhook handler */
+		private $webhook_handler;
 
 		/** @var \SkyVerge\WooCommerce\Facebook\Integrations\Integrations integrations handler */
 		private $integrations;
@@ -79,6 +90,14 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		/** @var \SkyVerge\WooCommerce\Facebook\Commerce commerce handler */
 		private $commerce_handler;
 
+		/** @var \SkyVerge\WooCommerce\Facebook\Tracker */
+		private $tracker;
+
+		/** @var \SkyVerge\WooCommerce\Facebook\Jobs\JobRegistry */
+		public $job_registry;
+
+		/** @var Heartbeat */
+		public $heartbeat;
 
 		/**
 		 * Constructs the plugin.
@@ -90,9 +109,9 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 			parent::__construct(
 				self::PLUGIN_ID,
 				self::VERSION,
-				[
+				array(
 					'text_domain' => 'facebook-for-woocommerce',
-				]
+				)
 			);
 
 			$this->init();
@@ -106,39 +125,39 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		 */
 		public function init() {
 
-			add_action( 'init', [ $this, 'get_integration' ] );
+			add_action( 'init', array( $this, 'get_integration' ) );
+			add_action( 'init', array( $this, 'register_custom_taxonomy' ) );
+			add_action( 'add_meta_boxes_product', array( $this, 'remove_product_fb_product_set_metabox' ), 50 );
+			add_filter( 'fb_product_set_row_actions', array( $this, 'product_set_links' ) );
+			add_filter( 'manage_edit-fb_product_set_columns', array( $this, 'manage_fb_product_set_columns' ) );
+
+			// Product Set breadcrumb filters
+			add_filter( 'woocommerce_navigation_is_connected_page', array( $this, 'is_current_page_conected_filter' ), 99, 2 );
+			add_filter( 'woocommerce_navigation_get_breadcrumbs', array( $this, 'wc_page_breadcrumbs_filter' ), 99 );
 
 			if ( \WC_Facebookcommerce_Utils::isWoocommerceIntegration() ) {
+				require_once __DIR__ . '/vendor/autoload.php';
 
 				include_once 'facebook-commerce.php';
 
 				require_once $this->get_framework_path() . '/utilities/class-sv-wp-async-request.php';
 				require_once $this->get_framework_path() . '/utilities/class-sv-wp-background-job-handler.php';
 
-				require_once __DIR__ . '/includes/AJAX.php';
-				require_once __DIR__ . '/includes/Handlers/Connection.php';
-				require_once __DIR__ . '/includes/Integrations/Integrations.php';
-				require_once __DIR__ . '/includes/Product_Categories.php';
-				require_once __DIR__ . '/includes/Products.php';
-				require_once __DIR__ . '/includes/Products/Feed.php';
-				require_once __DIR__ . '/includes/Products/FBCategories.php';
-				require_once __DIR__ . '/includes/Products/Stock.php';
-				require_once __DIR__ . '/includes/Products/Sync.php';
-				require_once __DIR__ . '/includes/Products/Sync/Background.php';
 				require_once __DIR__ . '/includes/fbproductfeed.php';
 				require_once __DIR__ . '/facebook-commerce-messenger-chat.php';
-				require_once __DIR__ . '/includes/Commerce.php';
-				require_once __DIR__ . '/includes/Events/Event.php';
-				require_once __DIR__ . '/includes/Events/Normalizer.php';
-				require_once __DIR__ . '/includes/Events/AAMSettings.php';
-				require_once __DIR__ . '/includes/Utilities/Shipment.php';
+				require_once __DIR__ . '/includes/Exceptions/ConnectWCAPIException.php';
 
-				$this->product_feed            = new \SkyVerge\WooCommerce\Facebook\Products\Feed();
-				$this->products_stock_handler  = new \SkyVerge\WooCommerce\Facebook\Products\Stock();
-				$this->products_sync_handler   = new \SkyVerge\WooCommerce\Facebook\Products\Sync();
-				$this->sync_background_handler = new \SkyVerge\WooCommerce\Facebook\Products\Sync\Background();
-				$this->commerce_handler        = new \SkyVerge\WooCommerce\Facebook\Commerce();
-				$this->fb_categories 					 = new \SkyVerge\WooCommerce\Facebook\Products\FBCategories();
+				$this->heartbeat = new Heartbeat( WC()->queue() );
+				$this->heartbeat->init();
+
+				$this->product_feed              = new \SkyVerge\WooCommerce\Facebook\Products\Feed();
+				$this->products_stock_handler    = new \SkyVerge\WooCommerce\Facebook\Products\Stock();
+				$this->products_sync_handler     = new \SkyVerge\WooCommerce\Facebook\Products\Sync();
+				$this->sync_background_handler   = new \SkyVerge\WooCommerce\Facebook\Products\Sync\Background();
+				$this->configuration_detection   = new \SkyVerge\WooCommerce\Facebook\Feed\FeedConfigurationDetection();
+				$this->product_sets_sync_handler = new \SkyVerge\WooCommerce\Facebook\ProductSets\Sync();
+				$this->commerce_handler          = new \SkyVerge\WooCommerce\Facebook\Commerce();
+				$this->fb_categories             = new \SkyVerge\WooCommerce\Facebook\Products\FBCategories();
 
 				if ( is_ajax() ) {
 					$this->ajax = new \SkyVerge\WooCommerce\Facebook\AJAX();
@@ -162,6 +181,13 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 				}
 
 				$this->connection_handler = new \SkyVerge\WooCommerce\Facebook\Handlers\Connection( $this );
+				$this->webhook_handler    = new \SkyVerge\WooCommerce\Facebook\Handlers\WebHook( $this );
+
+				$this->tracker = new \SkyVerge\WooCommerce\Facebook\Utilities\Tracker();
+
+				// Init jobs
+				$this->job_registry = new \SkyVerge\WooCommerce\Facebook\Jobs\JobRegistry();
+				add_action( 'init', [ $this->job_registry, 'init' ] );
 
 				// load admin handlers, before admin_init
 				if ( is_admin() ) {
@@ -170,7 +196,9 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 					require_once __DIR__ . '/includes/Admin/Abstract_Settings_Screen.php';
 					require_once __DIR__ . '/includes/Admin/Settings_Screens/Connection.php';
 					require_once __DIR__ . '/includes/Admin/Settings_Screens/Product_Sync.php';
+					require_once __DIR__ . '/includes/Admin/Settings_Screens/Product_Sets.php';
 					require_once __DIR__ . '/includes/Admin/Settings_Screens/Messenger.php';
+					require_once __DIR__ . '/includes/Admin/Settings_Screens/Advertise.php';
 					require_once __DIR__ . '/includes/Admin/Google_Product_Category_Field.php';
 					require_once __DIR__ . '/includes/Admin/Enhanced_Catalog_Attribute_Fields.php';
 
@@ -204,12 +232,12 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		 */
 		protected function get_deprecated_hooks() {
 
-			return [
-				'wc_facebook_page_access_token' => [
+			return array(
+				'wc_facebook_page_access_token' => array(
 					'version'     => '2.1.0',
 					'replacement' => false,
-				],
-			];
+				),
+			);
 		}
 
 
@@ -231,14 +259,20 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 					$message = sprintf(
 						/* translators: Placeholders %1$s - opening strong HTML tag, %2$s - closing strong HTML tag, %3$s - opening link HTML tag, %4$s - closing link HTML tag */
 						__( '%1$sHeads up!%2$s You\'re ready to migrate to a more secure, reliable Facebook for WooCommerce connection. Please %3$sclick here%4$s to reconnect!', 'facebook-for-woocommerce' ),
-						'<strong>', '</strong>',
-						'<a href="' . esc_url( $this->get_connection_handler()->get_connect_url() ) . '">', '</a>'
+						'<strong>',
+						'</strong>',
+						'<a href="' . esc_url( $this->get_connection_handler()->get_connect_url() ) . '">',
+						'</a>'
 					);
 
-					$this->get_admin_notice_handler()->add_admin_notice( $message, self::PLUGIN_ID . '_migrate_to_v2_0', [
-						'dismissible'  => false,
-						'notice_class' => 'notice-info',
-					] );
+					$this->get_admin_notice_handler()->add_admin_notice(
+						$message,
+						self::PLUGIN_ID . '_migrate_to_v2_0',
+						array(
+							'dismissible'  => false,
+							'notice_class' => 'notice-info',
+						)
+					);
 
 					// direct these users to the new plugin settings page
 					if ( ! $this->is_plugin_settings() ) {
@@ -246,16 +280,21 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 						$message = sprintf(
 							/* translators: Placeholders %1$s - opening link HTML tag, %2$s - closing link HTML tag */
 							__( 'For your convenience, the Facebook for WooCommerce settings are now located under %1$sWooCommerce > Facebook%2$s.', 'facebook-for-woocommerce' ),
-							'<a href="' . esc_url( facebook_for_woocommerce()->get_settings_url() ) . '">', '</a>'
+							'<a href="' . esc_url( facebook_for_woocommerce()->get_settings_url() ) . '">',
+							'</a>'
 						);
 
-						$this->get_admin_notice_handler()->add_admin_notice( $message, self::PLUGIN_ID . '_relocated_settings', [
-							'dismissible'  => true,
-							'notice_class' => 'notice-info',
-						] );
+						$this->get_admin_notice_handler()->add_admin_notice(
+							$message,
+							self::PLUGIN_ID . '_relocated_settings',
+							array(
+								'dismissible'  => true,
+								'notice_class' => 'notice-info',
+							)
+						);
 					}
 
-				// otherwise, a general getting started message
+					// otherwise, a general getting started message
 				} elseif ( ! $this->is_plugin_settings() ) {
 
 					$message = sprintf(
@@ -270,33 +309,43 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 						'</a>'
 					);
 
-					$this->get_admin_notice_handler()->add_admin_notice( $message, self::PLUGIN_ID . '_get_started', [
-						'dismissible'  => true,
-						'notice_class' => 'notice-info',
-					] );
+					$this->get_admin_notice_handler()->add_admin_notice(
+						$message,
+						self::PLUGIN_ID . '_get_started',
+						array(
+							'dismissible'  => true,
+							'notice_class' => 'notice-info',
+						)
+					);
 				}
 
-			// notices for those connected to FBE 2
+				// notices for those connected to FBE 2
 			} else {
 
 				// if upgraders had messenger enabled and one of the removed settings was customized, alert them to reconfigure
 				if (
 					   $this->get_integration()->get_external_merchant_settings_id()
 					&& $this->get_integration()->is_messenger_enabled()
-					&& ( '#0084ff' !== $this->get_integration()->get_messenger_color_hex() || ! in_array( $this->get_integration()->get_messenger_greeting(), [ 'Hi! How can we help you?', "Hi! We're here to answer any questions you may have.", '' ], true ) )
+					&& ( '#0084ff' !== $this->get_integration()->get_messenger_color_hex() || ! in_array( $this->get_integration()->get_messenger_greeting(), array( 'Hi! How can we help you?', "Hi! We're here to answer any questions you may have.", '' ), true ) )
 				) {
 
 					$message = sprintf(
 					/* translators: Placeholders: %1$s - <strong> tag, %2$s - </strong> tag, %3$s - <a> tag, %4$s - </a> tag */
 						__( '%1$sHeads up!%2$s If you\'ve customized your Facebook Messenger color or greeting settings, please update those settings again from the %3$sManage Connection%4$s area.', 'facebook-for-woocommerce' ),
-						'<strong>', '</strong>',
-						'<a href="' . esc_url( $this->get_connection_handler()->get_manage_url() ) . '" target="_blank">', '</a>'
+						'<strong>',
+						'</strong>',
+						'<a href="' . esc_url( $this->get_connection_handler()->get_manage_url() ) . '" target="_blank">',
+						'</a>'
 					);
 
-					$this->get_admin_notice_handler()->add_admin_notice( $message, 'update_messenger', [
-						'always_show_on_settings' => false,
-						'notice_class'            => 'notice-info',
-					] );
+					$this->get_admin_notice_handler()->add_admin_notice(
+						$message,
+						'update_messenger',
+						array(
+							'always_show_on_settings' => false,
+							'notice_class'            => 'notice-info',
+						)
+					);
 				}
 			}
 
@@ -306,13 +355,43 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 				$message = sprintf(
 					/* translators: Placeholders: %1$s - <strong> tag, %2$s - </strong> tag, %3$s - <a> tag, %4$s - </a> tag */
 					__( '%1$sHeads up!%2$s Your connection to Facebook is no longer valid. Please %3$sclick here%4$s to securely reconnect your account and continue syncing products.', 'facebook-for-woocommerce' ),
-					'<strong>', '</strong>',
-					'<a href="' . esc_url( $this->get_connection_handler()->get_connect_url() ) . '">', '</a>'
+					'<strong>',
+					'</strong>',
+					'<a href="' . esc_url( $this->get_connection_handler()->get_connect_url() ) . '">',
+					'</a>'
 				);
 
-				$this->get_admin_notice_handler()->add_admin_notice( $message, 'connection_invalid', [
-					'notice_class' => 'notice-error',
-				] );
+				$this->get_admin_notice_handler()->add_admin_notice(
+					$message,
+					'connection_invalid',
+					array(
+						'notice_class' => 'notice-error',
+					)
+				);
+			}
+
+			if ( Framework\SV_WC_Plugin_Compatibility::is_enhanced_admin_available() ) {
+
+				$is_marketing_enabled = is_callable( 'Automattic\WooCommerce\Admin\Loader::is_feature_enabled' )
+										&& Automattic\WooCommerce\Admin\Loader::is_feature_enabled( 'marketing' );
+
+				if ( $is_marketing_enabled ) {
+
+					$this->get_admin_notice_handler()->add_admin_notice(
+						sprintf(
+							/* translators: Placeholders: %1$s - opening <a> HTML link tag, %2$s - closing </a> HTML link tag */
+							esc_html__( 'Heads up! The Facebook menu is now located under the %1$sMarketing%2$s menu.', 'facebook-for-woocommerce' ),
+							'<a href="' . esc_url( $this->get_settings_url() ) . '">',
+							'</a>'
+						),
+						'settings_moved_to_marketing',
+						array(
+							'dismissible'             => true,
+							'always_show_on_settings' => false,
+							'notice_class'            => 'notice-info',
+						)
+					);
+				}
 			}
 		}
 
@@ -321,6 +400,22 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 			new WP_Facebook_Integration();
 		}
 
+		/**
+		 * Saves errors or messages to WooCommerce Log (woocommerce/logs/plugin-id-xxx.txt)
+		 *
+		 * @since 2.3.3
+		 * @param string $message error or message to save to log
+		 * @param string $log_id optional log id to segment the files by, defaults to plugin id
+		 */
+		public function log( $message, $log_id = null ) {
+			// Bail if site is connected and user has disabled logging.
+			// If site is disconnected, force-enable logging so merchant can diagnose connection issues.
+			if ( ( ! $this->get_integration() || ! $this->get_integration()->is_debug_mode_enabled() ) && $this->get_connection_handler()->is_connected() ) {
+				return;
+			}
+
+			parent::log( $message, $log_id );
+		}
 
 		/**
 		 * Logs an API request.
@@ -329,7 +424,7 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		 *
 		 * @param array $request request data
 		 * @param array $response response data
-		 * @param null $log_id log ID
+		 * @param null  $log_id log ID
 		 */
 		public function log_api_request( $request, $response, $log_id = null ) {
 
@@ -339,6 +434,135 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 			}
 
 			parent::log_api_request( $request, $response, $log_id );
+		}
+
+		/**
+		 * Remove Product Set metabox from Product edit page
+		 *
+		 * @since 2.3.0
+		 */
+		public function remove_product_fb_product_set_metabox() {
+			remove_meta_box( 'fb_product_setdiv', 'product', 'side' );
+		}
+
+		/**
+		 * Register FB Product Set Taxonomy
+		 *
+		 * @since 2.3.0
+		 */
+		public function register_custom_taxonomy() {
+
+			$plural   = esc_html__( 'FB Product Sets', 'facebook-for-woocommerce' );
+			$singular = esc_html__( 'FB Product Set', 'facebook-for-woocommerce' );
+
+			$args = array(
+				'labels'            => array(
+					'name'                       => $plural,
+					'singular_name'              => $singular,
+					'menu_name'                  => $plural,
+					// translators: Edit item label
+					'edit_item'                  => sprintf( esc_html__( 'Edit %s', 'facebook-for-woocommerce' ), $singular ),
+					// translators: Add new label
+					'add_new_item'               => sprintf( esc_html__( 'Add new %s', 'facebook-for-woocommerce' ), $singular ),
+					'menu_name'                  => $plural,
+					// translators: No items found text
+					'not_found'                  => sprintf( esc_html__( 'No %s found.', 'facebook-for-woocommerce' ), $plural ),
+					// translators: Search label
+					'search_items'               => sprintf( esc_html__( 'Search %s.', 'facebook-for-woocommerce' ), $plural ),
+					// translators: Text label
+					'separate_items_with_commas' => sprintf( esc_html__( 'Separate %s with commas', 'facebook-for-woocommerce' ), $plural ),
+					// translators: Text label
+					'choose_from_most_used'      => sprintf( esc_html__( 'Choose from the most used %s', 'facebook-for-woocommerce' ), $plural ),
+				),
+				'hierarchical'      => true,
+				'public'            => true,
+				'show_in_nav_menus' => false,
+				'show_tagcloud'     => false,
+			);
+
+			register_taxonomy( 'fb_product_set', array( 'product' ), $args );
+		}
+
+
+		/**
+		 * Filter FB Product Set Taxonomy table links
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param array $actions Item Actions.
+		 *
+		 * @return array
+		 */
+		public function product_set_links( $actions ) {
+			unset( $actions['inline hide-if-no-js'] );
+			unset( $actions['view'] );
+			return $actions;
+		}
+
+
+		/**
+		 * Remove posts count column from FB Product Set custom taxonomy
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param array $columns Taxonomy columns.
+		 *
+		 * @return array
+		 */
+		public function manage_fb_product_set_columns( $columns ) {
+			unset( $columns['posts'] );
+			return $columns;
+		}
+
+
+		/**
+		 * Filter WC Breadcrumbs when the page is FB Product Sets
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param array $breadcrumbs Page breadcrumbs.
+		 *
+		 * @return array
+		 */
+		public function wc_page_breadcrumbs_filter( $breadcrumbs ) {
+
+			if ( 'edit-fb_product_set' !== $this->get_current_page_id() ) {
+				return $breadcrumbs;
+			}
+
+			$breadcrumbs = array(
+				array( 'admin.php?page=wc-admin', 'WooCommerce' ),
+				array( 'edit.php?post_type=product', 'Products' ),
+			);
+
+			$term_id = empty( $_GET['tag_ID'] ) ? '' : $_GET['tag_ID']; //phpcs:ignore WordPress.Security
+
+			if ( ! empty( $term_id ) ) {
+				$breadcrumbs[] = array( 'edit-tags.php?taxonomy=fb_product_set&post_type=product', 'Products Sets' );
+			}
+
+			$breadcrumbs[] = ( empty( $term_id ) ? 'Product Sets' : 'Edit Product Set' );
+
+			return $breadcrumbs;
+		}
+
+
+		/**
+		 * Return that FB Product Set page is a WC Conected Page
+		 *
+		 * @since 2.3.0
+		 *
+		 * @param boolean $is_conected If it's connected or not.
+		 *
+		 * @return boolean
+		 */
+		public function is_current_page_conected_filter( $is_conected ) {
+
+			if ( 'edit-fb_product_set' === $this->get_current_page_id() ) {
+				return true;
+			}
+
+			return $is_conected;
 		}
 
 
@@ -401,14 +625,6 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 
 				if ( ! class_exists( API\Pixel\Events\Request::class ) ) {
 					require_once __DIR__ . '/includes/API/Pixel/Events/Request.php';
-				}
-
-				if ( ! class_exists( API\Business_Manager\Request::class ) ) {
-					require_once __DIR__ . '/includes/API/Business_Manager/Request.php';
-				}
-
-				if ( ! class_exists( API\Business_Manager\Response::class ) ) {
-					require_once __DIR__ . '/includes/API/Business_Manager/Response.php';
 				}
 
 				if ( ! class_exists( API\Catalog\Request::class ) ) {
@@ -703,6 +919,44 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		}
 
 		/**
+		 * Gets tracker instance.
+		 *
+		 * @since 2.6.0
+		 *
+		 * @return \SkyVerge\WooCommerce\Facebook\Utilities\Tracker
+		 */
+		public function get_tracker() {
+
+			return $this->tracker;
+		}
+
+		/**
+		 * Gets the debug profiling logger instance.
+		 *
+		 * @return \SkyVerge\WooCommerce\Facebook\Debug\ProfilingLogger
+		 */
+		public function get_profiling_logger() {
+			static $instance = null;
+			if ( null === $instance ) {
+				$is_enabled = defined( 'FACEBOOK_FOR_WOOCOMMERCE_PROFILING_LOG_ENABLED' ) && FACEBOOK_FOR_WOOCOMMERCE_PROFILING_LOG_ENABLED;
+				$instance   = new \SkyVerge\WooCommerce\Facebook\Debug\ProfilingLogger( $is_enabled );
+			}
+
+			return $instance;
+		}
+
+		/**
+		 * Get the product sync validator class.
+		 *
+		 * @param WC_Product $product A product object to be validated.
+		 *
+		 * @return ProductSyncValidator
+		 */
+		public function get_product_sync_validator( WC_Product $product ) {
+			return new ProductSyncValidator( $this->get_integration(), $product );
+		}
+
+		/**
 		 * Gets the settings page URL.
 		 *
 		 * @since 1.10.0
@@ -780,6 +1034,17 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 			return __( 'Facebook for WooCommerce', 'facebook-for-woocommerce' );
 		}
 
+		/**
+		 * Gets the url for the assets build directory.
+		 *
+		 * @since 2.3.4
+		 *
+		 * @return string
+		 */
+		public function get_asset_build_dir_url() {
+			return $this->get_plugin_url() . '/assets/build';
+		}
+
 
 		/** Conditional methods ***************************************************************************************/
 
@@ -842,6 +1107,24 @@ if ( ! class_exists( 'WC_Facebookcommerce' ) ) :
 		protected function get_file() {
 
 			return __FILE__;
+		}
+
+
+		/**
+		 * Return current page ID
+		 *
+		 * @since 2.3.0
+		 *
+		 * @return string
+		 */
+		protected function get_current_page_id() {
+
+			$current_screen_id = '';
+			$current_screen    = get_current_screen();
+			if ( ! empty( $current_screen ) ) {
+				$current_screen_id = $current_screen->id;
+			}
+			return $current_screen_id;
 		}
 
 

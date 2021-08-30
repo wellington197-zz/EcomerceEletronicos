@@ -33,6 +33,14 @@ class Loco_package_Plugin extends Loco_package_Bundle {
 
 
     /**
+     * {@inheritDoc}
+     */
+    public function getDirectoryUrl(){
+        return plugins_url('/',$this->getHandle());
+    }
+
+
+    /**
      * {@inheritdoc}
      */
     public function getSlug(){
@@ -44,8 +52,25 @@ class Loco_package_Plugin extends Loco_package_Bundle {
 
 
     /**
+     * @return Loco_package_Plugin[]
+     */
+    public static function getAll(){
+        $plugins = array();
+        foreach( self::get_plugins() as $handle => $data ){
+            try {
+                $plugins[] = Loco_package_Plugin::create($handle);
+            }
+            catch( Exception $e ){
+                // @codeCoverageIgnore
+            }
+        }
+        return $plugins;
+    }
+
+
+    /**
      * Maintaining our own cache of full paths to available plugins, because get_mu_plugins doesn't get cached by WP
-     * @return array
+     * @return array[]
      */    
     public static function get_plugins(){
         $cached = wp_cache_get('plugins','loco');

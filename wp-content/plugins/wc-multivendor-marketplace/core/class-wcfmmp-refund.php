@@ -473,12 +473,22 @@ class WCFMmp_Refund {
 					$refund_reason     = $refund_info->refund_reason;
 					$is_partially_refunded = $refund_info->is_partially_refunded;
 					$is_refunded = 0;
-					if( !$is_partially_refunded ) $is_refunded = 1;
 					
 					$wc_refund_processed = true;
 					
 					// Create WC Refund Item
 					if( $order_id ) {
+						$line_item = new WC_Order_Item_Product( $item_id );
+						
+						if( $c_refunded_qty ) {
+							$item_qty  = $line_item->get_quantity(); 
+							if( $item_qty == $c_refunded_qty ) {
+								$is_partially_refunded = 0;
+							}
+						}
+					
+						if( !$is_partially_refunded ) $is_refunded = 1;
+						
 						$order                  = wc_get_order( $order_id );
 						
 						// API Refund Check
@@ -495,8 +505,6 @@ class WCFMmp_Refund {
 						$refund_tax             = $this->wcfmmp_get_refund_meta( $refund_id, 'refunded_tax' );
 						if( !$refund_tax ) $refund_tax = array();
 						else $refund_tax = unserialize( $refund_tax );
-						
-						$line_item = new WC_Order_Item_Product( $item_id );
 						
 						if( $is_refunded ) {
 							$product         = $line_item->get_product();
@@ -543,11 +551,6 @@ class WCFMmp_Refund {
 									'refund_total' => $shipping_cost,
 									'refund_tax'   => $shipping_tax_refund,
 								);
-							}
-						} elseif( $c_refunded_qty ) {
-							$item_qty  = $line_item->get_quantity(); 
-							if( $item_qty == $c_refunded_qty ) {
-								$is_partially_refunded = 0;
 							}
 						}
 						
@@ -610,7 +613,7 @@ class WCFMmp_Refund {
 							$aff_commission     = (float) $WCFMmp->wcfmmp_commission->wcfmmp_get_commission_meta( $commission_id, '_wcfm_affiliate_commission' );
 						
 							// Fetch Commission details & recalculate commission
-							$sql = 'SELECT order_id, product_id, variation_id, item_sub_total, item_total, quantity, commission_amount, total_commission, refunded_amount, tax, shipping, shipping_tax_amount, commission_status FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders';
+							$sql = 'SELECT order_id, product_id, variation_id, item_id, item_sub_total, item_total, quantity, commission_amount, total_commission, refunded_amount, tax, shipping, shipping_tax_amount, commission_status FROM ' . $wpdb->prefix . 'wcfm_marketplace_orders';
 							$sql .= ' WHERE 1=1';
 							$sql .= " AND ID = " . $commission_id;
 							$sql .= " AND vendor_id = " . $vendor_id;
@@ -647,19 +650,23 @@ class WCFMmp_Refund {
 										$total_commission -= (float) $aff_commission;
 										$total_commission -= (float) $transaction_charge; // Not right, have to recalculate
 										
+										$c_refunded_amount     = $refunded_amount;
+										$tax                   = (float)$tax - (float)$refunded_tax_amount;
+										$WCFMmp->wcfmmp_commission->wcfmmp_update_commission_meta( $commission_id, 'gross_tax_cost', round($tax, 2) );
+										
 										// Commission Tax Calculation
 										if( isset( $commission_rule['tax_enable'] ) && ( $commission_rule['tax_enable'] == 'yes' ) ) {
 											$commission_tax = $total_commission * ( (float)$commission_rule['tax_percent'] / 100 );
-											$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $commission_info->product_id, $commission_info->variation_id, $commission_info->order_id, $total_commission, $commission_rule );
+											if( $WCFMmp->wcfmmp_vendor->is_vendor_get_tax( $vendor_id ) ) {
+												$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $commission_info->product_id, $commission_info->variation_id, $commission_info->order_id, ( $total_commission - $tax ), $commission_rule, $commission_info->item_id, $item_total );
+											} else {
+												$commission_tax = apply_filters( 'wcfmmp_commission_deducted_tax', $commission_tax, $vendor_id, $commission_info->product_id, $commission_info->variation_id, $commission_info->order_id, $total_commission, $commission_rule, $commission_info->item_id, $item_total );
+											}
 											$total_commission -= (float) $commission_tax;
 											
 											$WCFMmp->wcfmmp_commission->wcfmmp_delete_commission_meta( $commission_id, 'commission_tax' );
 											$WCFMmp->wcfmmp_commission->wcfmmp_update_commission_meta( $commission_id, 'commission_tax', round($commission_tax, 2) );
 										}
-										
-										$c_refunded_amount     = $refunded_amount;
-										$tax                   = (float)$tax - (float)$refunded_tax_amount;
-										$WCFMmp->wcfmmp_commission->wcfmmp_update_commission_meta( $commission_id, 'gross_tax_cost', round($tax, 2) );
 									} else {
 										$c_refunded_amount = $refunded_amount; //(float) $commission_info->total_commission;
 										$commission_amount = 0;

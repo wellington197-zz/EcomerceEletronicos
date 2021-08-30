@@ -85,7 +85,7 @@ class WCFM_Library {
 	  $noloader = 0;
 	  $wcfm_options = $WCFM->wcfm_options;
 	  $noloader = isset( $wcfm_options['noloader'] ) ? $wcfm_options['noloader'] : 'no';
-	  wp_localize_script( 'wcfm_menu_js', 'wcfm_noloader', $noloader );
+	  wp_localize_script( 'wcfm_menu_js', 'wcfm_noloader', array( 'loader_stat' => $noloader ) );
 	  
 	  //$this->load_blockui_lib();
 	  
@@ -1081,7 +1081,7 @@ class WCFM_Library {
 		wp_enqueue_script( 'dataTables_responsive_js', $WCFM->plugin_url . 'includes/libs/datatable/js/dataTables.responsive.min.js', array('jquery', 'dataTables_js'), $WCFM->version, true );
 		
 		$dataTables_language = '{"processing": "' . __('Processing...', 'wc-frontend-manager' ) . '" , "search": "' . __('Search:', 'wc-frontend-manager' ) . '", "lengthMenu": "' . __('Show _MENU_ entries', 'wc-frontend-manager' ) . '", "info": " ' . __('Showing _START_ to _END_ of _TOTAL_ entries', 'wc-frontend-manager' ) . '", "infoEmpty": "' . __('Showing 0 to 0 of 0 entries', 'wc-frontend-manager' ) . '", "infoFiltered": "' . __('(filtered _MAX_ entries of total)', 'wc-frontend-manager' ) . '", "loadingRecords": "' . __('Loading...', 'wc-frontend-manager' ) . '", "zeroRecords": "' . __('No matching records found', 'wc-frontend-manager' ) . '", "emptyTable": "' . __('No data in the table', 'wc-frontend-manager' ) . '", "paginate": {"first": "' . __('First', 'wc-frontend-manager' ) . '", "previous": "' . __('Previous', 'wc-frontend-manager' ) . '", "next": "' . __('Next', 'wc-frontend-manager' ) . '", "last": "' .  __('Last', 'wc-frontend-manager') . '"}, "buttons": {"print": "' . __('Print', 'wc-frontend-manager' ) . '", "pdf": "' . __('PDF', 'wc-frontend-manager' ) . '", "excel": "' . __('Excel', 'wc-frontend-manager' ) . '", "csv": "' . __('CSV', 'wc-frontend-manager' ) . '"}}';
-		wp_localize_script( 'dataTables_js', 'dataTables_language', $dataTables_language );
+		//wp_localize_script( 'dataTables_js', 'dataTables_language', $dataTables_language );
 		
 		wp_localize_script( 'dataTables_js', 'dataTables_config', array( 'pageLength' => apply_filters( 'wcfm_datatable_page_length', 25 ), 'is_allow_hidden_export' => apply_filters( 'wcfm_is_allow_datatable_hidden_export', false ) ) );
 		
@@ -1380,7 +1380,7 @@ class WCFM_Library {
 	  
 	  $date_format = strtoupper( wcfm_wp_date_format_to_js( wc_date_format() ) );
 	  if( strpos( wc_date_format(), 'F' ) !== FALSE ) $date_format = str_replace( 'MM', 'MMMM', $date_format );
-	  wp_localize_script( 'jquery-chart_moment_js', 'wcfm_wp_date_format_to_js',  $date_format );
+	  wp_localize_script( 'jquery-chart_moment_js', 'wcfm_wp_date_format_to_js',  array( 'date_format' => $date_format ) );
 	  
 	  $wcfm_chartjs_localiztion_params = array(
 																							'monthNames'        => $this->_strip_chartjs_indices( $wp_locale->month ),

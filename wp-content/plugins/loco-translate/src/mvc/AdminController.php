@@ -40,9 +40,8 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
         $this->auth();
         
         // check essential extensions on all pages so admin notices are shown
-        foreach( array('json','mbstring') as $ext ){
-            loco_check_extension($ext);
-        }
+        loco_check_extension('json');
+        loco_check_extension('mbstring');
 
         // add contextual help tabs to current screen if there are any
         if( $screen = get_current_screen() ){
@@ -120,7 +119,7 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
     /**
      * "update_footer" filter, prints Loco version number in admin footer
      */
-    public function filter_update_footer( $text ){
+    public function filter_update_footer( /*$text*/ ){
         $html = sprintf( '<span>v%s</span>', loco_plugin_version() );
         if( $this->bench && ( $info = $this->get('_debug') ) ){
             $html .= sprintf('<span>%ss</span>', number_format_i18n($info['time'],2) );
@@ -220,6 +219,11 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
                 $tag = apply_filters( 'plugin_locale', get_locale(), 'loco-translate' );
                 $jsConf->offsetSet('wplang', Loco_Locale::parse($tag) );
             }
+            // localized formatting from core translations
+            global $wp_locale;
+            if( is_object($wp_locale) && property_exists($wp_locale,'number_format') ){
+                $jsConf->offsetSet('wpnum', array_map(array($this,'filter_number_format_i18n'),$wp_locale->number_format) );
+            }
         }
         // take benchmark for debugger to be rendered in footer
         if( $this->bench ){
@@ -252,7 +256,7 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
         if( ! $base ){
             throw new Loco_error_Exception('Too early to enqueueStyle('.var_export($name,1).')');
         }
-        $id = 'loco-translate-css-'.strtr($name,'/','-');
+        $id = 'loco-translate-'.strtr($name,'/','-');
         // css always minified. sass in build env only
         $href = $base.'/pub/css/'.$name.'.css';
         $vers = apply_filters( 'loco_static_version', loco_plugin_version(), $href );
@@ -275,7 +279,7 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
         // use minimized javascript file. hook into script_loader_src to point at development source
         $href = $base.'/pub/js/min/'.$name.'.js';
         $vers = apply_filters( 'loco_static_version', loco_plugin_version(), $href );
-        $id = 'loco-translate-js-'.strtr($name,'/','-');
+        $id = 'loco-translate-'.strtr($name,'/','-');
         wp_enqueue_script( $id, $href, $deps, $vers, true );
         $this->scripts[$id] = $href;
         return $this;
@@ -286,14 +290,17 @@ abstract class Loco_mvc_AdminController extends Loco_mvc_Controller {
      * @internal
      * @param string
      * @param string
-     * @param string
      * @return string
      */
-    public function filter_script_loader_tag( $tag, $id, $src ) {
+    public function filter_script_loader_tag( $tag, $id ) {
         if( array_key_exists($id,$this->scripts) ) {
             // Add element id for in-dom verification of expected scripts
             if( '<script ' === substr($tag,0,8) ){
-                $tag = '<script id="'.$id.'" '.substr($tag,8);
+                // WordPress has started adding their own ID since v5.5 which simply appends -js to the handle
+                $id .= '-js';
+                if( false === strpos($tag,$id) ){
+                    $tag = '<script id="'.$id.'" '.substr($tag,8);
+                }
             }
         }
         return $tag;

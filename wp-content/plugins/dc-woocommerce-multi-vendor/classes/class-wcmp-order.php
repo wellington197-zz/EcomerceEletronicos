@@ -141,7 +141,9 @@ class WCMp_Order {
         if ('shop_order' == $typenow) {
             if (current_user_can('administrator') && empty($_REQUEST['s'])) {
                 $query['post_parent'] = 0;
-            }elseif(in_array('dc_vendor', $user->roles)){
+            } elseif (current_user_can('shop_manager') && empty($_REQUEST['s'])) {
+                $query['post_parent'] = 0;
+            } elseif(in_array('dc_vendor', $user->roles)) {
                 $query['author'] = $user->ID;
             }
             return apply_filters("wcmp_shop_order_query_request", $query);
@@ -318,6 +320,10 @@ class WCMp_Order {
     }
     
     public function wcmp_create_orders_from_backend( $order_id, $items ){
+        $this->wcmp_manually_create_order_item_and_suborder($order_id, $items, false);
+    }
+    
+    public function wcmp_manually_create_order_item_and_suborder( $order_id = 0, $items = '', $is_sub_create = false ) {
         $order = wc_get_order($order_id);
         if(!$order) return;
 
@@ -337,10 +343,15 @@ class WCMp_Order {
         }
         
         $has_sub_order = get_post_meta($order_id, 'has_wcmp_sub_order', true) ? true : false;
-        if($has_sub_order) return;
-        $this->wcmp_create_orders($order_id, array(), $order, true);
+        $suborders = get_wcmp_suborders( $order_id, false, false);
+        if ($is_sub_create && $suborders) {
+            foreach ( $suborders as $v_order_id ) {
+                wp_delete_post($v_order_id, true);
+            }
+            $this->wcmp_create_orders($order_id, array(), $order, true);
+        }
     }
-    
+
     public function wcmp_create_orders_via_rest_callback( $order, $request, $creating ) {
         global $WCMp;
         $items = $order->get_items();
@@ -823,6 +834,13 @@ class WCMp_Order {
     }
     
     public function wcmp_vendor_order_to_parent_order_status_synchronization($order_id, $old_status, $new_status){
+        $is_vendor_order = ($order_id) ? wcmp_get_order($order_id) : false;
+        if ($is_vendor_order && current_user_can('administrator') && $new_status != $old_status && apply_filters('wcmp_vendor_notified_when_admin_change_status', true)) {
+            $email_admin = WC()->mailer()->emails['WC_Email_Admin_Change_Order_Status'];
+            $vendor_id = get_post_meta($order_id, '_vendor_id', true);
+            $vendor = get_wcmp_vendor($vendor_id);
+            $email_admin->trigger($order_id, $new_status, $vendor);
+        }
         // parent order synchronization
         $parent_order_id = wp_get_post_parent_id( $order_id );
         if($parent_order_id){
@@ -1124,8 +1142,7 @@ class WCMp_Order {
         }
 
         foreach (wc_get_order_types('order-count') as $type) {
-            $query = "SELECT COUNT( * ) FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_parent = 0";
-            $count += $wpdb->get_var($wpdb->prepare($query, $type, $status));
+            $count += $wpdb->get_var($wpdb->prepare("SELECT COUNT( * ) FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s AND post_parent = 0", $type, $status));
         }
 
         wp_cache_set($cache_key, $count, 'counts');
@@ -1494,7 +1511,7 @@ class WCMp_Order {
 
     public function wcmp_handler_cust_requested_refund() {
         global $wp;
-        $nonce_value = wc_get_var( $_REQUEST['cust-request-refund-nonce'], wc_get_var( $_REQUEST['_wpnonce'], '' ) ); // @codingStandardsIgnoreLine.
+        $nonce_value = isset($_REQUEST['cust-request-refund-nonce']) ? wc_get_var( $_REQUEST['cust-request-refund-nonce'], wc_get_var( $_REQUEST['_wpnonce'], '' ) ) : ''; // @codingStandardsIgnoreLine.
 
 		if ( ! wp_verify_nonce( $nonce_value, 'customer_request_refund' ) ) {
 			return;
@@ -1519,7 +1536,7 @@ class WCMp_Order {
         );
         // update customer refunt request 
         update_post_meta( $order_id, '_customer_refund_order', 'refund_request' );
-        $comment_id = $order->add_order_note( __('Customer requested a refund '.$order_id.' .', 'dc-woocommerce-multi-vendor') );
+        $comment_id = $order->add_order_note( __('Customer requested a refund ', 'dc-woocommerce-multi-vendor') .$order_id.' .' );
         // user info
         $user_info = get_userdata(get_current_user_id());
         wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
@@ -1527,7 +1544,7 @@ class WCMp_Order {
         // parent order
         $parent_order_id = wp_get_post_parent_id($order->get_id());
         $parent_order = wc_get_order( $parent_order_id );
-        $comment_id_parent = $parent_order->add_order_note( __('Customer requested a refund for '.$order_id.'.', 'dc-woocommerce-multi-vendor') );
+        $comment_id_parent = $parent_order->add_order_note( __('Customer requested a refund for ', 'dc-woocommerce-multi-vendor') .$order_id.'.'  );
         wp_update_comment(array('comment_ID' => $comment_id_parent, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
 
         $mail = WC()->mailer()->emails['WC_Email_Customer_Refund_Request'];
@@ -1588,7 +1605,7 @@ class WCMp_Order {
             if( in_array( $_POST['refund_order_customer'], array( 'refund_reject', 'refund_accept' ) ) ) {
 
                 $refund_details = array(
-                    'admin_reason' => isset( $_POST['refund_admin_reason_text'] ) ? $_POST['refund_admin_reason_text'] : '',
+                    'admin_reason' => isset( $_POST['refund_admin_reason_text'] ) ? wc_clean($_POST['refund_admin_reason_text']) : '',
                     );
                 
                 $order_status = '';
@@ -1599,7 +1616,7 @@ class WCMp_Order {
                 }
                 // Comment note for suborder
                 $order = wc_get_order( $post_id );
-                $comment_id = $order->add_order_note( __('Site admin '.$order_status.' refund request for order #'.$post_id.' .', 'dc-woocommerce-multi-vendor') );
+                $comment_id = $order->add_order_note( __('Site admin ', 'dc-woocommerce-multi-vendor') . $order_status. __(' refund request for order #', 'dc-woocommerce-multi-vendor') .$post_id.' .' );
                 // user info
                 $user_info = get_userdata(get_current_user_id());
                 wp_update_comment(array('comment_ID' => $comment_id, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
@@ -1607,24 +1624,18 @@ class WCMp_Order {
                 // Comment note for parent order
                 $parent_order_id = wp_get_post_parent_id($post_id);
                 $parent_order = wc_get_order( $parent_order_id );
-                $comment_id_parent = $parent_order->add_order_note( __('Site admin '.$order_status.' refund request for order #'.$post_id.'.', 'dc-woocommerce-multi-vendor') );
+                $comment_id_parent = $parent_order->add_order_note( __('Site admin ', 'dc-woocommerce-multi-vendor') . $order_status. __(' refund request for order #', 'dc-woocommerce-multi-vendor') . $post_id .'.' );
                 wp_update_comment(array('comment_ID' => $comment_id_parent, 'comment_author' => $user_info->user_name, 'comment_author_email' => $user_info->user_email));
 
                 $mail = WC()->mailer()->emails['WC_Email_Customer_Refund_Request'];
-                $mail->trigger( $_POST['_billing_email'], $post_id, $refund_details, 'customer' );
+                $mail->trigger( sanitize_email($_POST['_billing_email']), $post_id, $refund_details, 'customer' );
             }
         }
     }
 
     public function wcmp_suborder_hide( $args, $request ){
-        $woocommerce_orders = wcmp_get_orders();
-        $suborders = array();
-        foreach ($woocommerce_orders as $key => $value) {
-            if( wp_get_post_parent_id( $value ) ) {
-                $suborders[] = $value;
-            }
-        }
-        $args['post__not_in'] = array( $suborders );
+        $woocommerce_orders = wcmp_get_orders( array('post_status' => array('wc-processing', 'wc-completed', 'wc-on-hold')), 'ids', true );
+        $args['post__not_in'] = $woocommerce_orders;
         return $args;
     }
 

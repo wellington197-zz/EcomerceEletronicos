@@ -15,6 +15,10 @@ class WCV_Product_Meta {
 	 */
 	function __construct() {
 
+		if ( current_user_can( 'vendor' ) ) {
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
+		}
+
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
@@ -26,7 +30,9 @@ class WCV_Product_Meta {
 		add_action( 'wp_dropdown_users', array( $this, 'author_vendor_roles' ), 0, 1 );
 		add_action( 'restrict_manage_posts', array( $this, 'restrict_manage_posts' ), 12 );
 
-		if ( apply_filters( 'wcv_product_commission_tab', true ) ) {
+		$product_commission_tab = apply_filters_deprecated( 'wcv_product_commission_tab', array( true ), '2.3.0', 'wcvendors_product_commission_tab' );
+		$product_commission_tab = apply_filters( 'wcvendors_product_commission_tab', $product_commission_tab );
+		if ( $product_commission_tab ) {
 			add_action( 'woocommerce_product_write_panel_tabs', array( $this, 'add_tab' ) );
 			add_action( 'woocommerce_product_data_panels'     , array( $this, 'add_panel' ) );
 			add_action( 'woocommerce_process_product_meta'    , array( $this, 'save_panel' ) );
@@ -52,6 +58,59 @@ class WCV_Product_Meta {
 
 	public function enqueue_script() {
 		wp_enqueue_script('wcv-vendor-select', wcv_assets_url . 'js/admin/wcv-vendor-select.js', array( 'select2' ), WCV_VERSION, true );
+		wp_localize_script(
+			'wcv-vendor-select',
+			'wcv_vendor_select',
+			array(
+				'minimum_input_length' => apply_filters( 'wcvndors_vendor_select_minimum_input_length', 4 ),
+			)
+		);
+	}
+
+	/**
+	 * Print inline script for product add or edit page
+	 *
+	 * @return void
+	 * @version 2.2.2
+	 * @since   2.2.2
+	 */
+	public function enqueue_styles( $hook_suffix ) {
+		$screen = get_current_screen();
+
+		if ( 'product' !== $screen->post_type ) {
+			return;
+		}
+
+		wp_register_style( 'wcv-inline', false ); // phpcs:ignore
+		wp_enqueue_style( 'wcv-inline' );
+
+		$styles = $this->get_inline_style();
+		wp_add_inline_style( 'wcv-inline', $styles );
+	}
+
+	/**
+	 * Get the inline styles
+	 *
+	 * @return string
+	 * @version 2.2.2
+	 * @since   2.2.2
+	 */
+	public function get_inline_style() {
+		$product_misc = self::get_product_capabilities();
+		// Add any custom css
+		$css = get_option( 'wcvendors_display_advanced_stylesheet' );
+		// Filter taxes
+		if ( ! empty( $product_misc['taxes'] ) ) {
+			$css .= '.form-field._tax_status_field, .form-field._tax_class_field{display:none !important;}';
+		}
+		// Filter the rest of the fields
+		foreach ( $product_misc as $key => $value ) {
+			if ( $value ) {
+				$css .= sprintf( '._%s_field{display:none !important;}', $key );
+			}
+		}
+
+		return apply_filters( 'wcvendors_display_advanced_styles', $css );
 	}
 
 	/**
@@ -120,7 +179,7 @@ class WCV_Product_Meta {
 					'ID',
 					'user_login',
 				),
-				'placeholder' => __('— No change —', 'wc-vendors'),
+				'placeholder' => sprintf( __( 'Search  %s', 'wc-vendors' ), wcv_get_vendor_name() ),
 			);
 
 			if ( isset( $_GET['vendor'] ) ) {
@@ -156,7 +215,8 @@ class WCV_Product_Meta {
 		 *
 		 * @param array $args The arguments to be filtered.
 		 */
-		$args = apply_filters( 'wcv_vendor_selectbox_args', $args );
+		$args = apply_filters_deprecated( 'wcv_vendor_selectbox_args', array( $args ), '2.3.0', 'wcvendors_vendor_selectbox_args' );
+		$args = apply_filters( 'wcvendors_vendor_selectbox_args', $args );
 
 		extract( $args );
 
@@ -175,7 +235,8 @@ class WCV_Product_Meta {
 		 *
 		 * @param array $user_args The arguments to be filtered.
 		 */
-		$user_args = apply_filters( 'wcv_vendor_selectbox_user_args',  $user_args );
+		$user_args = apply_filters_deprecated( 'wcv_vendor_selectbox_user_args',  array( $user_args ), '2.3.0', 'wcvendors_vendor_selectbox_user_args' );
+		$user_args = apply_filters( 'wcvendors_vendor_selectbox_user_args',  $user_args );
 		$users = get_users( $user_args );
 
 		$output = "<select style='width:200px;' name='$id' id='$id' class='wcv-vendor-select $class'>\n";
@@ -193,7 +254,8 @@ class WCV_Product_Meta {
 			$output .= '</label></p>';
         }
 
-		return apply_filters( 'wcv_vendor_selectbox', $output, $user_args, $media );
+		$output = apply_filters_deprecated( 'wcv_vendor_selectbox', array( $output, $user_args, $media ), '2.3.0', 'wcvendors_vendor_selectbox' );
+		return apply_filters( 'wcvendors_vendor_selectbox', $output, $user_args, $media );
 	}
 
 	/**
@@ -321,7 +383,7 @@ class WCV_Product_Meta {
 
 		if ( $product->is_type( 'simple' ) || $product->is_type( 'external' ) ) {
 
-			if ( isset( $_REQUEST['_vendor'] ) ) {
+			if ( isset( $_REQUEST['_vendor'] ) && '' !== $_REQUEST['vendor'] ) {
 				$vendor            = wc_clean( $_REQUEST['_vendor'] );
 				$post              = get_post( $product->get_id() );
 				$post->post_author = $vendor;
@@ -365,11 +427,11 @@ class WCV_Product_Meta {
 	*/
 	public function save_vendor_bulk_edit( $product ) {
 
-		if( ! isset( $_REQUEST['vendor'] ) || isset( $_REQUEST['vendor'] ) && 'nochange' === $_REQUEST['vendor'] ) {
+		if( ! isset( $_REQUEST['vendor'] ) || isset( $_REQUEST['vendor'] ) && '' == $_REQUEST['vendor'] ) {
 			return;
 		}
 
-		if ( isset( $_REQUEST['vendor'] ) && $_REQUEST['vendor'] != 'nochange'  ) {
+		if ( isset( $_REQUEST['vendor'] ) && '' != $_REQUEST['vendor'] ) {
 			$vendor            = wc_clean( $_REQUEST['vendor'] );
 			$update_vendor = array(
 				'ID'          => $product->get_id(),
@@ -508,13 +570,17 @@ class WCV_Product_Meta {
 		OR user_url LIKE $search_string
 		OR ( mt2.meta_key = 'first_name' AND mt2.meta_value LIKE $search_string )
 		OR ( mt2.meta_key = 'last_name' AND mt2.meta_value LIKE $search_string )
+		OR ( mt2.meta_key = 'pv_shop_name' AND mt2.meta_value LIKE $search_string )
+		OR ( mt2.meta_key = 'pv_shop_slug' AND mt2.meta_value LIKE $search_string )
+		OR ( mt2.meta_key = 'pv_seller_info' AND mt2.meta_value LIKE $search_string )
+		OR ( mt2.meta_key = 'pv_shop_description' AND mt2.meta_value LIKE $search_string )
 	  )
 	  ORDER BY display_name
 	";
 
-
 		$response = new stdClass();
 		$response->results = $wpdb->get_results( $sql );
+
 		wp_send_json($response);
 	}
 
@@ -544,5 +610,25 @@ class WCV_Product_Meta {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Get product capabilities.
+	 *
+	 * @return void
+	 * @version 2.2.2
+	 * @since   2.2.2
+	 */
+	public static function get_product_capabilities() {
+		return apply_filters(
+			'wcvendors_product_capabilities',
+			array(
+				'taxes'     => wc_string_to_bool( get_option( 'wcvendors_capability_product_taxes', 'no' ) ),
+				'sku'       => wc_string_to_bool( get_option( 'wcvendors_capability_product_sku', 'no' ) ),
+				'duplicate' => wc_string_to_bool( get_option( 'wcvendors_capability_product_duplicate', 'no' ) ),
+				'delete'    => wc_string_to_bool( get_option( 'wcvendors_capability_product_delete', 'no' ) ),
+				'featured'  => wc_string_to_bool( get_option( 'wcvendors_capability_product_featured', 'no' ) ),
+			)
+		);
 	}
 }

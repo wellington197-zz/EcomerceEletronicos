@@ -171,7 +171,7 @@ class WCFM_Vendors_New_Controller {
 							// sanitize html editor content
 							if( apply_filters( 'wcfm_is_allow_store_description', true ) ) {
 								if( isset( $_POST['profile'] ) && !empty( $_POST['profile'] ) ) {
-									$wcfm_vendor_form_data['shop_description'] = ! empty( $_POST['profile'] ) ? stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) : '';
+									$wcfm_vendor_form_data['shop_description'] = ! empty( $_POST['profile'] ) ? sanitize_option( 'wcfm_editor_content', stripslashes( html_entity_decode( $_POST['profile'], ENT_QUOTES, 'UTF-8' ) ) ) : '';
 									wcfm_update_user_meta( $vendor_id, '_store_description', apply_filters( 'wcfm_editor_content_before_save', $wcfm_vendor_form_data['shop_description'] ) );
 								}
 							}
@@ -248,7 +248,9 @@ class WCFM_Vendors_New_Controller {
 							$message = str_replace( '{user_role}', 'Vendor', $message );
 							$message = apply_filters( 'wcfm_email_content_wrapper', $message, __( 'New Account', 'wc-frontend-manager' ) );
 							
-							wp_mail( $mail_to, $subject, $message );
+							if( apply_filters( 'wcfm_is_allow_vendor_welcome_email', true, $vendor_id, false, false ) && apply_filters( 'wcfm_is_allow_vendor_new_account_email', true, $vendor_id ) ) {
+								wp_mail( $mail_to, $subject, $message );
+							}
 						
 							update_user_meta( $vendor_id, 'show_admin_bar_front', false );
 							
@@ -272,18 +274,18 @@ class WCFM_Vendors_New_Controller {
 							do_action( 'wcfm_vendors_new', $vendor_id, $wcfm_vendor_form_data );
 						}
 						
-						if(!$has_error) { echo '{"status": true, "message": "' . $wcfm_vendor_messages['vendor_saved'] . '", "redirect": "' . apply_filters( 'wcfm_vendors_new_redirect', get_wcfm_vendors_manage_url( $vendor_id ), $vendor_id ) . '"}'; }
-						else { echo '{"status": false, "message": "' . $wcfm_vendor_messages['vendor_failed'] . '"}'; }
+						if(!$has_error) { echo '{"status": true, "message": "' . esc_html( $wcfm_vendor_messages['vendor_saved'] ) . '", "redirect": "' . esc_url( apply_filters( 'wcfm_vendors_new_redirect', get_wcfm_vendors_manage_url( $vendor_id ), $vendor_id ) ) . '"}'; }
+						else { echo '{"status": false, "message": "' . esc_html( $wcfm_vendor_messages['vendor_failed'] ) . '"}'; }
 					}
 				} else {
-					echo '{"status": false, "message": "' . $wcfm_vendor_messages['no_store_name'] . '"}';
+					echo '{"status": false, "message": "' . esc_html( $wcfm_vendor_messages['no_store_name'] ) . '"}';
 				}
 			} else {
-				echo '{"status": false, "message": "' . $wcfm_vendor_messages['no_email'] . '"}';
+				echo '{"status": false, "message": "' . esc_html( $wcfm_vendor_messages['no_email'] ) . '"}';
 			}
 	  	
 	  } else {
-			echo '{"status": false, "message": "' . $wcfm_vendor_messages['no_username'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_vendor_messages['no_username'] ) . '"}';
 		}
 		
 		die;

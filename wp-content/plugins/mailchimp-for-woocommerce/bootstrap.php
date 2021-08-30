@@ -87,7 +87,7 @@ function mailchimp_environment_variables() {
     return (object) array(
         'repo' => 'master',
         'environment' => 'production', // staging or production
-        'version' => '2.4.7',
+        'version' => '2.5.2',
         'php_version' => phpversion(),
         'wp_version' => (empty($wp_version) ? 'Unknown' : $wp_version),
         'wc_version' => function_exists('WC') ? WC()->version : null,
@@ -131,7 +131,9 @@ function mailchimp_as_push( Mailchimp_Woocommerce_Job $job, $delay = 0 ) {
         ) : null;
         
         if (!empty($existing_actions)) {
-            as_unschedule_action(get_class($job), array('obj_id' => $job->id), 'mc-woocommerce');
+            try {
+                as_unschedule_action(get_class($job), array('obj_id' => $job->id), 'mc-woocommerce');
+            } catch (\Exception $e) {}
         }
         else {
             $inserted = $wpdb->insert($wpdb->prefix."mailchimp_jobs", $args);
@@ -319,7 +321,7 @@ function mailchimp_get_store_id() {
 /**
  * @return array
  */
-function mailchimp_get_user_tags_to_update($email = null) {
+function mailchimp_get_user_tags_to_update($email = null, $order = null) {
     $tags = mailchimp_get_option('mailchimp_user_tags');
     $formatted_tags = array();
     
@@ -332,7 +334,7 @@ function mailchimp_get_user_tags_to_update($email = null) {
     }
 
     // apply filter to user custom tags addition/removal
-    $formatted_tags = apply_filters('mailchimp_user_tags', $formatted_tags, $email);
+    $formatted_tags = apply_filters('mailchimp_user_tags', $formatted_tags, $email, $order);
     
     if (empty($formatted_tags)){
         return false;
@@ -1001,7 +1003,9 @@ function mailchimp_delete_as_jobs() {
     
     if (!empty($existing_as_actions)) {
         foreach ($existing_as_actions as $as_action) {
-            as_unschedule_action($as_action->get_hook(), $as_action->get_args(), 'mc-woocommerce');    # code...
+            try {
+                as_unschedule_action($as_action->get_hook(), $as_action->get_args(), 'mc-woocommerce');    # code...
+            } catch (\Exception $e) {}
         }
         return true;
     }
@@ -1050,7 +1054,8 @@ function mailchimp_has_started_syncing() {
 function mailchimp_is_done_syncing() {
     $sync_started_at = get_option('mailchimp-woocommerce-sync.started_at');
     $sync_completed_at = get_option('mailchimp-woocommerce-sync.completed_at');
-    return ($sync_completed_at >= $sync_started_at);
+    if ($sync_completed_at == false) return false;
+    else return ($sync_completed_at >= $sync_started_at);
 }
 
 function run_mailchimp_woocommerce() {
@@ -1154,7 +1159,21 @@ function mailchimp_remove_activity_panel_inbox_notes() {
         return;
     }
 
-    \Automattic\WooCommerce\Admin\Notes\WC_Admin_Notes::delete_notes_with_name( 'mailchimp-for-woocommerce-incomplete-install' );
+    // if we can't use woocommerce for some reason - just return null
+    if (!function_exists('WC')) {
+        return;
+    }
+
+    // if we do not have the ability to use notes, just cancel out here.
+    if (!method_exists(WC(), 'is_wc_admin_active') || !WC()->is_wc_admin_active()) {
+        return;
+    }
+
+    try {
+        \Automattic\WooCommerce\Admin\Notes\WC_Admin_Notes::delete_notes_with_name( 'mailchimp-for-woocommerce-incomplete-install' );
+    } catch (\Exception $e) {
+        // do nothing.
+    }
 }
 
 // Print notices outside woocommerce admin bar
@@ -1233,6 +1252,48 @@ function mailchimp_member_data_update($user_email = null, $language = null, $cal
         }
     }
 }
+
+/**
+ * @param string $name
+ * @param string $value
+ * @param int $expire
+ * @param string $path
+ * @param string $domain
+ * @param bool $secure
+ * @param bool $httponly
+ * @param string $samesite
+ * @return void
+ */
+function mailchimp_set_cookie($name, $value, $expire, $path, $domain = '', $secure = true, $httponly = false, $samesite = 'Strict') {
+    if (PHP_VERSION_ID < 70300) {
+        @setcookie($name, $value, $expire, $path . '; samesite=' . $samesite, $domain, $secure, $httponly);
+        return;
+    }
+    @setcookie($name, $value, [
+        'expires' => $expire,
+        'path' => $path,
+        'domain' => $domain,
+        'samesite' => $samesite,
+        'secure' => $secure,
+        'httponly' => $httponly,
+    ]);
+}
+
+/**
+ * We will allow people to filter this value - turn it off if they would like.
+ * add_filter( 'mailchimp_allowed_to_use_cookie', 'custom_cookie_callback_function', 10, 1 );
+ * @return bool
+ */
+function mailchimp_allowed_to_use_cookie($cookie) {
+    $result = apply_filters('mailchimp_allowed_to_use_cookie', $cookie);
+    if (is_bool($result)) return $result;
+    return $result === $cookie;
+}
+
+// the cookie name will be whatever we're trying to set, but the most simple
+// return the $cookie_name if you will allow it -
+// otherwise it is going to turn this feature off.
+
 
 
 // Add WP CLI commands

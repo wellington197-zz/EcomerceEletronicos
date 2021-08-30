@@ -21,7 +21,7 @@ class WCFMvm_Memberships_Registration_Controller {
 		global $WCFM, $WCFMvm, $wpdb, $wcfm_membership_registration_form_data;
 		
 		$wcfm_membership_registration_form_data = array();
-	  parse_str($_POST['wcfm_membership_registration_form'], $wcfm_membership_registration_form_data);
+	  parse_str($_POST['wcfm_membership_registration_form'], $wcfm_membership_registration_form_data); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	  
 	  $wcfm_membership_registration_messages = get_wcfmvm_membership_registration_messages();
 	  $has_error = false;
@@ -513,14 +513,14 @@ class WCFMvm_Memberships_Registration_Controller {
 					
 					if(!$has_error) {
 						if( apply_filters( 'wcfmvm_is_allow_registration_first', false, $wcfm_membership ) ) {
-						  echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'choose_membership', get_wcfm_membership_url() ) . '"}';
+						  echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( add_query_arg( 'vmstep', 'choose_membership', get_wcfm_membership_url() ) ) . '"}';
 						//} elseif( isset( $_SESSION['wcfm_membership'] ) && isset( $_SESSION['wcfm_membership']['free_registration'] ) && $_SESSION['wcfm_membership']['free_registration'] ) {
 						} elseif( empty( $wcfm_memberships_list ) || ( WC()->session && WC()->session->get( 'wcfm_membership_free_registration' ) ) ) {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_registration_url() ) ) . '"}';
+							echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( apply_filters( 'wcfm_registration_thankyou_url', add_query_arg( 'vmstep', 'thankyou', get_wcfm_registration_url() ) ) ) . '"}';
 						} elseif( $subscription_pay_mode == 'by_wc' ) {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . wc_get_checkout_url() . '"}';
+							echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( wc_get_checkout_url() ) . '"}';
 						} else {
-							echo '{"status": true, "message": "' . $wcfm_membership_registration_messages['registration_success'] . '", "redirect": "' . add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) . '"}';
+							echo '{"status": true, "message": "' . esc_html( $wcfm_membership_registration_messages['registration_success'] ) . '", "redirect": "' . esc_url( add_query_arg( 'vmstep', 'payment', get_wcfm_membership_url() ) ) . '"}';
 						}
 					} else { echo '{"status": false, "message": "' . $wcfm_membership_registration_messages['registration_failed'] . '"}'; }
 				}

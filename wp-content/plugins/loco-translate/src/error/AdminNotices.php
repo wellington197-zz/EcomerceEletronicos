@@ -25,7 +25,7 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
     public static function get(){
         self::$singleton or self::$singleton = new Loco_error_AdminNotices;
         return self::$singleton;
-    } 
+    }
 
     
     /**
@@ -34,6 +34,16 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
      */
     public static function add( Loco_error_Exception $error ){
         $notices = self::get();
+        // if exception wasn't thrown we have to do some work to establish where it was invoked
+        if( __FILE__ === $error->getRealFile() ){
+            $error->setCallee(1);
+        }
+        // write error immediately under WP_CLI
+        if( 'cli' === PHP_SAPI && class_exists('WP_CLI',false) ){
+            $error->logCli();
+            return $error;
+        }
+        // else buffer notices for displaying when UI is ready
         $notices->errors[] = $error;
         // do late flush if we missed the boat
         if( did_action('loco_admin_init') ){
@@ -42,14 +52,8 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
         if( did_action('admin_notices') ){
             $notices->on_admin_notices();
         }
-        // if exception wasn't thrown we have to do some work to establish where it was invoked
-        if( __FILE__ === $error->getFile() ){
-            $error->setCallee(1);
-        }
-        // Log messages of minimum priority and up, depending on debug mode
-        // note that non-debug level is in line with error_reporting set by WordPress (notices ignored)
-        $priority = loco_debugging() ? Loco_error_Exception::LEVEL_DEBUG : Loco_error_Exception::LEVEL_WARNING;
-        if( $error->getLevel() <= $priority ){
+        // Log message automatically if enabled
+        if( $error->loggable() ){
             $error->log();
         }
         return $error;
@@ -118,7 +122,8 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
      * @return Loco_error_Exception[]
      */
     public static function destroy(){
-        if( $notices = self::$singleton ){
+        $notices = self::$singleton;
+        if( $notices instanceof  Loco_error_AdminNotices ){
             $buffer = $notices->errors;
             $notices->errors = array();
             self::$singleton = null;
@@ -145,7 +150,7 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
     /**
      * @return void
      */
-    private function flush(){
+    private function flushHtml(){
         if( $this->errors ){
             $htmls = array();
             foreach( $this->errors as $error ){
@@ -169,13 +174,24 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
         }
     }
 
+    /**
+     * @return void
+     */
+    private function flushCli(){
+        foreach( $this->errors as $e ){
+            $e->logCli();
+        }
+        $this->errors = array();
+        
+    }
+
 
     /**
      * admin_notices action handler.
      */
     public function on_admin_notices(){
         if( ! $this->inline ){
-            $this->flush();
+            $this->flushHtml();
         }
     }
 
@@ -186,7 +202,7 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
      */
     public function on_loco_admin_notices(){
         $this->inline = true;
-        $this->flush();
+        $this->flushHtml();
     }
 
 
@@ -205,9 +221,23 @@ class Loco_error_AdminNotices extends Loco_hooks_Hookable {
      */
     public function __destruct(){
         $this->inline = false;
-        if( ! loco_doing_ajax() ){
-            $this->flush();
+        $this->flush();
+    }
+
+
+    /**
+     * @internal
+     */
+    public function flush(){
+        if( class_exists('WP_CLI',false) ){
+            $this->flushCli();
         }
+        else if( ! loco_doing_ajax() ){
+            $this->flushHtml();
+        }
+        else {
+            $this->errors = array();
+        }   
     }
 
 }

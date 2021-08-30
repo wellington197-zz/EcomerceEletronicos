@@ -161,7 +161,7 @@ class WCMp_Vendor {
             $value = $this->get_permalink();
         } else {
             // Get values or default if not set
-            $value = get_user_meta($this->id, '_vendor_' . $key, true);
+            $value = wcmp_get_user_meta($this->id, '_vendor_' . $key, true);
         }
 
         return $value;
@@ -371,7 +371,8 @@ class WCMp_Vendor {
         $groupby  = isset( $clauses['groupby'] ) ? $clauses['groupby'] : '';
         $orderby  = isset( $clauses['orderby'] ) ? $clauses['orderby'] : '';
         $limits   = isset( $clauses['limits'] ) ? $clauses['limits'] : '';
-        $sql = "SELECT
+        
+        return apply_filters( 'wcmp_get_products_ids', $wpdb->get_results( $wpdb->prepare( "SELECT
                 $fields
             FROM
                 {$wpdb->prefix}posts
@@ -383,14 +384,12 @@ class WCMp_Vendor {
             )
             WHERE
                 1 = 1 AND(
-                    {$wpdb->prefix}term_taxonomy.term_id IN( $this->term_id )
-                ) AND {$wpdb->prefix}posts.post_author IN( $this->id ) AND {$wpdb->prefix}posts.post_type = 'product' $where
+                    {$wpdb->prefix}term_taxonomy.term_id IN( %s )
+                ) AND {$wpdb->prefix}posts.post_author IN( %s ) AND {$wpdb->prefix}posts.post_type = %s $where
             GROUP BY
                 $groupby
             ORDER BY
-                $orderby $limits";
-
-        return apply_filters( 'wcmp_get_products_ids', $wpdb->get_results( $sql ), $clauses, $this->id );
+                %s %s", $this->term_id, $this->id, 'product', $orderby, $limits ) ), $clauses, $this->id );
     }
 
     /**
@@ -662,11 +661,11 @@ class WCMp_Vendor {
                 $variation_id = $item['variation_id'];
             }
             $product_id = $item['product_id'];
-            $commission_amount = get_wcmp_vendor_order_amount(array('order_id' => $order->get_id(), 'product_id' => $product_id, 'variation_id' => $variation_id, 'order_item_id' => $item_id));
+            $commission_amount = $item->get_meta('_vendor_item_commission', true);
             if ($is_ship)
                 echo "\n" . sprintf(__('Total: %s', 'dc-woocommerce-multi-vendor'), $order->get_formatted_line_subtotal($item));
             else
-                echo "\n" . sprintf(__('Commission: %s', 'dc-woocommerce-multi-vendor'), wc_price($commission_amount['commission_amount']));
+                echo "\n" . sprintf(__('Commission: %s', 'dc-woocommerce-multi-vendor'), wc_price($commission_amount));
 
             echo "\n\n";
         }
@@ -1037,7 +1036,6 @@ class WCMp_Vendor {
             // set new meta shipped
             update_post_meta($order_id, 'wcmp_vendor_order_shipped', 1);
         }
-        //$wpdb->query("UPDATE {$wpdb->prefix}wcmp_vendor_orders SET shipping_status = '1' WHERE order_id = $order_id and vendor_id = $this->id");
         do_action('wcmp_vendors_vendor_ship', $order_id, $this->term_id);
         $order = wc_get_order($order_id);
         $comment_id = $order->add_order_note(__('Vendor ', 'dc-woocommerce-multi-vendor') . $this->page_title . __(' has shipped his part of order to customer.', 'dc-woocommerce-multi-vendor') . '<br><span>' . __('Tracking Url : ', 'dc-woocommerce-multi-vendor') . '</span> <a target="_blank" href="' . $tracking_url . '">' . $tracking_url . '</a><br><span>' . __('Tracking Id : ', 'dc-woocommerce-multi-vendor') . '</span>' . $tracking_id, 0, true);
@@ -1233,14 +1231,23 @@ class WCMp_Vendor {
                 }
                 $order_total_arr[] = $subtotal;
                 $total_rows['order_subtotal'] = array(
-                    'label' => __( 'Subtotal:', 'woocommerce' ),
+                    'label' => __( 'Subtotal:', 'dc-woocommerce-multi-vendor' ),
                     'value' => ($html_price) ? wc_price($subtotal) : $subtotal,
+                );
+            }
+            // Discount Cost
+            $discount_amount = $order->get_total_discount();
+            if ( $discount_amount ) {
+                $order_total_arr[] = ( - $discount_amount );
+                $total_rows['discount_cost'] = array(
+                    'label' => __( 'Discount:', 'dc-woocommerce-multi-vendor' ),
+                    'value' => ($html_price) ? wc_price($discount_amount) : $discount_amount,
                 );
             }
             // shipping methods
             if ( $this->is_shipping_enable() && $vendor_shipping_method ) {
                 $total_rows['shipping'] = array(
-                    'label' => __( 'Shipping:', 'woocommerce' ),
+                    'label' => __( 'Shipping:', 'dc-woocommerce-multi-vendor' ),
                     'value' => $vendor_shipping_method->get_name(),
                 );
             }
@@ -1265,7 +1272,7 @@ class WCMp_Vendor {
             }else{
                 $order_total_arr[] = $shipping_tax_amount;
                 $total_rows['shipping_tax'] = array(
-                    'label' => __( 'Shipping:', 'woocommerce' ).' '.WC()->countries->tax_or_vat() . ':',
+                    'label' => __( 'Shipping:', 'dc-woocommerce-multi-vendor' ).' '.WC()->countries->tax_or_vat() . ':',
                     'value' => ($html_price) ? wc_price($shipping_tax_amount) : $shipping_tax_amount,
                 );
                 $order_total_arr[] = $tax_amount;
@@ -1276,18 +1283,34 @@ class WCMp_Vendor {
             }
             // payment methods
             $total_rows['payment_method'] = array(
-                'label' => __( 'Payment method:', 'woocommerce' ),
+                'label' => __( 'Payment method:', 'dc-woocommerce-multi-vendor' ),
                 'value' => $order->get_payment_method_title(),
             );
             // Order totals
             $total_rows['order_total'] = array(
-                'label' => __( 'Total:', 'woocommerce' ),
+                'label' => __( 'Total:', 'dc-woocommerce-multi-vendor' ),
                 'value' => ($html_price) ? wc_price(array_sum($order_total_arr)) : array_sum($order_total_arr),
             );
             
             return apply_filters( 'wcmp_get_vendor_order_item_totals', $total_rows, $order_id, $this->id );
         }
         return false;
+    }
+
+    public function get_top_rated_products( $args = array() ) {
+        $default = array(
+            'post_status'    => 'publish',
+            'post_type'      => 'product',
+            'author__in'     => array($this->id),
+            'meta_key'       => '_wc_average_rating',
+            'orderby'        => 'meta_value_num',
+            'order'          => 'DESC',
+            'meta_query'     => WC()->query->get_meta_query(),
+            'tax_query'      => WC()->query->get_tax_query(),
+        );
+        $args = wp_parse_args($args, $default);
+        $top_products = $this->get_products( apply_filters( 'wcmp_get_top_rated_products_query_args', $args, $this->id ) );
+        return $top_products;
     }
 
 }

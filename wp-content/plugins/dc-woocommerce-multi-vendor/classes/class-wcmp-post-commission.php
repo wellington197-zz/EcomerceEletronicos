@@ -64,7 +64,7 @@ class WCMp_Commission {
             'new_item' => sprintf(__('New %s', 'dc-woocommerce-multi-vendor'), __('Commission', 'dc-woocommerce-multi-vendor')),
             'all_items' => sprintf(__('All %s', 'dc-woocommerce-multi-vendor'), __('Commissions', 'dc-woocommerce-multi-vendor')),
             'view_item' => sprintf(__('View %s', 'dc-woocommerce-multi-vendor'), __('Commission', 'dc-woocommerce-multi-vendor')),
-            'search_items' => sprintf(__('Search %a', 'dc-woocommerce-multi-vendor'), __('Commissions', 'dc-woocommerce-multi-vendor')),
+            'search_items' => sprintf(__('Search %s', 'dc-woocommerce-multi-vendor'), __('Commissions', 'dc-woocommerce-multi-vendor')),
             'not_found' => sprintf(__('No %s found', 'dc-woocommerce-multi-vendor'), __('Commissions', 'dc-woocommerce-multi-vendor')),
             'not_found_in_trash' => sprintf(__('No %s found in trash', 'dc-woocommerce-multi-vendor'), __('Commissions', 'dc-woocommerce-multi-vendor')),
             'parent_item_colon' => '',
@@ -1795,6 +1795,27 @@ class WCMp_Commission {
             $vars['meta_key'] = '_commission_vendor';
             $vars['meta_value'] = wc_clean($_GET['commission_vendor']);
         }
+        // Filter by both fileds
+        if ($typenow == $this->post_type && isset($_GET['commission_vendor']) && !empty($_GET['commission_vendor']) && isset($_GET['commission_status']) && !empty($_GET['commission_status'])) {
+
+            $vars['meta_query'] = array(
+                array(
+                    'key' => '_commission_vendor',
+                    'value' => wc_clean($_GET['commission_vendor']),
+                    'compare' => '='
+                ),
+                array(
+                    'key' => '_paid_status',
+                    'value' => wc_clean($_GET['commission_status']),
+                    'compare' => '='
+                )
+            );
+        }
+        if ( $typenow == $this->post_type && !empty( $vars['s'] ) ) {
+            $ids =  array(wc_clean( wp_unslash( $vars['s'] ) ));
+            $vars['post__in']   = $ids;
+            unset( $vars['s'] );
+        }
         return $vars;
     }
 
@@ -1806,7 +1827,7 @@ class WCMp_Commission {
                 if ($post_type == $this->post_type) {
                     $wp_query->set('orderby', 'ID');
                     $wp_query->set('order', 'DESC');
-                    $wp_query->set('post__not_in', wcmp_get_failed_order_commission());
+                    $wp_query->set('post__not_in', wcmp_failed_pending_order_commission());
                 }
             }
         }
@@ -1870,7 +1891,7 @@ class WCMp_Commission {
                     $order_id = wcmp_get_commission_order_id( $commission_id );
                     $order = wc_get_order( $order_id );
                     if( $order ) {
-                        if ( is_commission_requested_for_withdrawals( $commission_id ) || in_array( $order->get_status('edit'), array( 'on-hold', 'pending', 'failed', 'refunded', 'cancelled' ) ) ) {
+                        if ( is_commission_requested_for_withdrawals( $commission_id ) || in_array( $order->get_status('edit'), array( 'on-hold', 'pending', 'failed', 'refunded', 'cancelled', 'draft' ) ) ) {
                             continue; // calculate only available withdrawable balance
                         }
                     }

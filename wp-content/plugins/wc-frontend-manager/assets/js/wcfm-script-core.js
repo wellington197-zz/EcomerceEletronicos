@@ -133,7 +133,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action : 'delete_wcfm_product',
-			proid : item.data('proid')
+			proid : item.data('proid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',
@@ -383,7 +384,8 @@ jQuery(document).ready(function($) {
 					firstDay: wcfm_datepicker_params.firstDay,
 					isRTL: wcfm_datepicker_params.isRTL,
 					changeMonth: true,
-					changeYear: true
+					changeYear: true,
+					yearRange: '1920:2030'
 				});
 			}
 		});
@@ -404,7 +406,8 @@ jQuery(document).ready(function($) {
 				isRTL: wcfm_datepicker_params.isRTL,
 				timeFormat: 'h:mm tt',
 				changeMonth: true,
-				changeYear: true
+				changeYear: true,
+				yearRange: '1920:2030'
 			});
 		});
 		
@@ -1937,6 +1940,15 @@ function wcfmcapitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var audio = new Audio(wcfm_notification_sound);
-var wcfm_notification_sound = new Audio(wcfm_notification_sound);
-var wcfm_desktop_notification_sound = new Audio(wcfm_desktop_notification_sound);
+if (typeof wcfm_notification_sound !== 'undefined') {
+	var audio = new Audio(wcfm_notification_sound.file);
+	var wcfm_notification_sound = new Audio(wcfm_notification_sound.file);
+} else {
+	var audio = new Audio(wcfm_notification_sound);
+	var wcfm_notification_sound = new Audio(wcfm_notification_sound);
+}
+if (typeof wcfm_desktop_notification_sound !== 'undefined') {
+	var wcfm_desktop_notification_sound = new Audio(wcfm_desktop_notification_sound.file);
+} else {
+	var wcfm_desktop_notification_sound = new Audio(wcfm_desktop_notification_sound);
+}

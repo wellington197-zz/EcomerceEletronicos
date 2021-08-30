@@ -48,7 +48,7 @@ class WCFM_Articles_Controller {
 			$args['s'] = wc_clean($_POST['search']['value']);
 		}
 		
-		if( isset($_POST['article_status']) && !empty($_POST['article_status']) ) $args['post_status'] = $_POST['article_status'];
+		if( isset($_POST['article_status']) && !empty($_POST['article_status']) ) $args['post_status'] = wc_clean($_POST['article_status']);
   	
 		if( isset($_POST['article_cat']) && !empty($_POST['article_cat']) ) {
 			$args['tax_query'][] = array(

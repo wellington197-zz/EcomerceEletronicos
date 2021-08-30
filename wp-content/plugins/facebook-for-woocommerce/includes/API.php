@@ -16,7 +16,7 @@ use SkyVerge\WooCommerce\Facebook\API\Orders\Order;
 use SkyVerge\WooCommerce\Facebook\API\Request;
 use SkyVerge\WooCommerce\Facebook\API\Response;
 use SkyVerge\WooCommerce\Facebook\Events\Event;
-use SkyVerge\WooCommerce\PluginFramework\v5_5_4 as Framework;
+use SkyVerge\WooCommerce\PluginFramework\v5_10_0 as Framework;
 
 /**
  * API handler.
@@ -32,7 +32,7 @@ class API extends Framework\SV_WC_API_Base {
 
 
 	/** @var string URI used for the request */
-	protected $request_uri = 'https://graph.facebook.com/v7.0';
+	protected $request_uri = \WC_Facebookcommerce_Graph_API::GRAPH_API_URL . \WC_Facebookcommerce_Graph_API::API_VERSION;
 
 	/** @var string the configured access token */
 	protected $access_token;
@@ -49,9 +49,9 @@ class API extends Framework\SV_WC_API_Base {
 
 		$this->access_token = $access_token;
 
-		$this->request_headers = [
+		$this->request_headers = array(
 			'Authorization' => "Bearer {$access_token}",
-		];
+		);
 
 		$this->set_request_content_type_header( 'application/json' );
 		$this->set_request_accept_header( 'application/json' );
@@ -148,7 +148,7 @@ class API extends Framework\SV_WC_API_Base {
 			 * @link https://developers.facebook.com/docs/graph-api/using-graph-api/error-handling#rate-limiting-error-codes
 			 * @link https://developers.facebook.com/docs/marketing-api/reference/product-catalog/batch/#validation-rules
 			 */
-			if ( in_array( $code, [ 4, 17, 32, 613, 80001, 80004 ], true ) ) {
+			if ( in_array( $code, array( 4, 17, 32, 613, 80001, 80004 ), true ) ) {
 
 				$delay_in_seconds = $this->calculate_rate_limit_delay( $response, $this->get_response_headers() );
 
@@ -172,7 +172,7 @@ class API extends Framework\SV_WC_API_Base {
 			 *
 			 * @link https://developers.facebook.com/docs/graph-api/using-graph-api/error-handling#errorcodes
 			 */
-			if ( ( $code >= 200 && $code < 300 ) || in_array( $code, [ 10, 102, 190 ], false ) ) {
+			if ( ( $code >= 200 && $code < 300 ) || in_array( $code, array( 10, 102, 190 ), false ) ) {
 				set_transient( 'wc_facebook_connection_invalid', time(), DAY_IN_SECONDS );
 			} else {
 				// this was an unrelated error, so the OAuth connection may still be valid
@@ -203,7 +203,7 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.1.0
 	 *
 	 * @param string $rate_limit_id ID for the API request
-	 * @param int $timestamp timestamp until the delay is over
+	 * @param int    $timestamp timestamp until the delay is over
 	 * @throws API\Exceptions\Request_Limit_Reached
 	 */
 	private function handle_throttled_request( $rate_limit_id, $timestamp ) {
@@ -256,25 +256,6 @@ class API extends Framework\SV_WC_API_Base {
 		$request = new API\Pages\Read\Request( $page_id );
 
 		$this->set_response_handler( API\Pages\Read\Response::class );
-
-		return $this->perform_request( $request );
-	}
-
-
-	/**
-	 * Gets a business manager object from Facebook.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param string $business_manager_id business manager ID
-	 * @return API\Business_Manager\Response
-	 * @throws Framework\SV_WC_API_Exception
-	 */
-	public function get_business_manager( $business_manager_id ) {
-
-		$request = new API\Business_Manager\Request( $business_manager_id );
-
-		$this->set_response_handler( API\Business_Manager\Response::class );
 
 		return $this->perform_request( $request );
 	}
@@ -364,12 +345,12 @@ class API extends Framework\SV_WC_API_Base {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param string $external_business_id external business ID
+	 * @param string                          $external_business_id external business ID
 	 * @param API\FBE\Configuration\Messenger $configuration messenger configuration
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
-	public function update_messenger_configuration(  $external_business_id, API\FBE\Configuration\Messenger $configuration ) {
+	public function update_messenger_configuration( $external_business_id, API\FBE\Configuration\Messenger $configuration ) {
 
 		$request = new API\FBE\Configuration\Update\Request( $external_business_id );
 
@@ -389,8 +370,8 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $catalog_id catalog ID
-	 * @param array $requests array of prefixed product IDs to create, update or remove
-	 * @param bool $allow_upsert whether to allow updates to insert new items
+	 * @param array  $requests array of prefixed product IDs to create, update or remove
+	 * @param bool   $allow_upsert whether to allow updates to insert new items
 	 * @return \SkyVerge\WooCommerce\Facebook\API\Catalog\Send_Item_Updates\Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -413,16 +394,18 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $catalog_id catalog ID
-	 * @param array $data product group data
+	 * @param array  $data product group data
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
 	public function create_product_group( $catalog_id, $data ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$catalog_id}/product_groups",
-			'method' => 'POST',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$catalog_id}/product_groups",
+				'method' => 'POST',
+			)
+		);
 
 		$request->set_data( $data );
 
@@ -438,16 +421,18 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $product_group_id product group ID
-	 * @param array $data product group data
+	 * @param array  $data product group data
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
 	public function update_product_group( $product_group_id, $data ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$product_group_id}",
-			'method' => 'POST',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$product_group_id}",
+				'method' => 'POST',
+			)
+		);
 
 		$request->set_data( $data );
 
@@ -468,10 +453,12 @@ class API extends Framework\SV_WC_API_Base {
 	 */
 	public function delete_product_group( $product_group_id ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$product_group_id}",
-			'method' => 'DELETE',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$product_group_id}",
+				'method' => 'DELETE',
+			)
+		);
 
 		$this->set_response_handler( Response::class );
 
@@ -485,7 +472,7 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $product_group_id product group ID
-	 * @param int $limit max number of results returned per page of data
+	 * @param int    $limit max number of results returned per page of data
 	 * @return API\Catalog\Product_Group\Products\Read\Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -525,16 +512,18 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $product_group_id parent product ID
-	 * @param array $data product data
+	 * @param array  $data product data
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
 	public function create_product_item( $product_group_id, $data ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$product_group_id}/products",
-			'method' => 'POST',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$product_group_id}/products",
+				'method' => 'POST',
+			)
+		);
 
 		$request->set_data( $data );
 
@@ -550,16 +539,18 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param string $product_item_id product item ID
-	 * @param array $data product data
+	 * @param array  $data product data
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
 	public function update_product_item( $product_item_id, $data ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$product_item_id}",
-			'method' => 'POST',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$product_item_id}",
+				'method' => 'POST',
+			)
+		);
 
 		$request->set_data( $data );
 
@@ -580,10 +571,12 @@ class API extends Framework\SV_WC_API_Base {
 	 */
 	public function delete_product_item( $product_item_id ) {
 
-		$request = $this->get_new_request( [
-			'path'   => "/{$product_item_id}",
-			'method' => 'DELETE',
-		] );
+		$request = $this->get_new_request(
+			array(
+				'path'   => "/{$product_item_id}",
+				'method' => 'DELETE',
+			)
+		);
 
 		$this->set_response_handler( Response::class );
 
@@ -596,7 +589,7 @@ class API extends Framework\SV_WC_API_Base {
 	 *
 	 * @since 2.0.0
 	 *
-	 * @param string $pixel_id pixel ID
+	 * @param string  $pixel_id pixel ID
 	 * @param Event[] $events events to send
 	 * @return Response
 	 * @throws Framework\SV_WC_API_Exception
@@ -617,7 +610,7 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.0.0
 	 *
 	 * @param API\Response $response previous response object
-	 * @param int $additional_pages number of additional pages of results to retrieve
+	 * @param int          $additional_pages number of additional pages of results to retrieve
 	 * @return API\Response|null
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -630,11 +623,13 @@ class API extends Framework\SV_WC_API_Base {
 
 			$components = parse_url( str_replace( $this->request_uri, '', $response->get_next_page_endpoint() ) );
 
-			$request = $this->get_new_request( [
-				'path'   => isset( $components['path'] ) ? $components['path'] : '',
-				'method' => 'GET',
-				'params' => isset( $components['query'] ) ? wp_parse_args( $components['query'] ) : [],
-			] );
+			$request = $this->get_new_request(
+				array(
+					'path'   => isset( $components['path'] ) ? $components['path'] : '',
+					'method' => 'GET',
+					'params' => isset( $components['query'] ) ? wp_parse_args( $components['query'] ) : array(),
+				)
+			);
 
 			$this->set_response_handler( get_class( $response ) );
 
@@ -659,12 +654,12 @@ class API extends Framework\SV_WC_API_Base {
 	 */
 	public function get_new_orders( $page_id ) {
 
-		$request_args = [
-			'state' => [
+		$request_args = array(
+			'state' => array(
 				Order::STATUS_PROCESSING,
 				Order::STATUS_CREATED,
-			]
-		];
+			),
+		);
 
 		$request = new API\Orders\Request( $page_id, $request_args );
 
@@ -685,13 +680,13 @@ class API extends Framework\SV_WC_API_Base {
 	 */
 	public function get_cancelled_orders( $page_id ) {
 
-		$request_args = [
-			'state' => [
+		$request_args = array(
+			'state'         => array(
 				Order::STATUS_COMPLETED,
-			],
+			),
 			'updated_after' => time() - facebook_for_woocommerce()->get_commerce_handler()->get_orders_handler()->get_order_update_interval(),
 			'filters'       => 'has_cancellations',
-		];
+		);
 
 		$request = new API\Orders\Request( $page_id, $request_args );
 
@@ -748,7 +743,7 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.1.0
 	 *
 	 * @param string $remote_id remote order ID
-	 * @param array $fulfillment_data fulfillment data to be sent on the request
+	 * @param array  $fulfillment_data fulfillment data to be sent on the request
 	 * @return API\Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -769,7 +764,7 @@ class API extends Framework\SV_WC_API_Base {
 	 *
 	 * @param string $remote_id remote order ID
 	 * @param string $reason cancellation reason
-	 * @param bool $restock_items whether to restock items remotely
+	 * @param bool   $restock_items whether to restock items remotely
 	 * @return API\Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -791,7 +786,7 @@ class API extends Framework\SV_WC_API_Base {
 	 * @since 2.1.0
 	 *
 	 * @param string $remote_id remote order ID
-	 * @param array $refund_data refund data to be sent on the request
+	 * @param array  $refund_data refund data to be sent on the request
 	 * @return API\Response
 	 * @throws Framework\SV_WC_API_Exception
 	 */
@@ -819,13 +814,13 @@ class API extends Framework\SV_WC_API_Base {
 	 * }
 	 * @return Request
 	 */
-	protected function get_new_request( $args = [] ) {
+	protected function get_new_request( $args = array() ) {
 
-		$defaults = [
+		$defaults = array(
 			'path'   => '/',
 			'method' => 'GET',
-			'params' => [],
-		];
+			'params' => array(),
+		);
 
 		$args    = wp_parse_args( $args, $defaults );
 		$request = new Request( $args['path'], $args['method'] );

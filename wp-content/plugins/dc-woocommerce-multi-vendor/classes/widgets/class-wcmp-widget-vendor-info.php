@@ -57,28 +57,27 @@ class DC_Widget_Vendor_Info extends WP_Widget {
         $vendor_id = false;
         $vendor = false;
         // Only show current vendor widget when showing a vendor's product(s)
-        $show_widget = true;
+        $show_widget = false;
         if (is_singular('product')) {
             global $post;
             $vendor = get_wcmp_product_vendors($post->ID);
-            if (!$vendor) {
-                $show_widget = false;
+            if ($vendor) {
+                $show_widget = true;
             }
         }
-        if (is_archive() && !is_tax($WCMp->taxonomy->taxonomy_name)) {
-            $show_widget = false;
+        if (wcmp_is_store_page()) {
+            $show_widget = true;
         }
 
         if ($show_widget) {
-            if (is_tax($WCMp->taxonomy->taxonomy_name)) {
-                $vendor_id = get_queried_object()->term_id;
-                if ($vendor_id) {
-                    $vendor = get_wcmp_vendor_by_term($vendor_id);
-                }
+            if (wcmp_is_store_page()) {
+                $vendor_id = wcmp_find_shop_page_vendor();
+                $vendor = get_wcmp_vendor($vendor_id);
             }
+
             if ($vendor) {
                 // Set up widget title
-                if ($instance['title']) {
+                if (isset($instance['title'])) {
                     $title = apply_filters('widget_title', $instance['title'], $instance, $this->id_base);
                 } else {
                     $title = false;

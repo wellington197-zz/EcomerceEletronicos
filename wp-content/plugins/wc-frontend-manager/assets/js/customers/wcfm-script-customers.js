@@ -104,7 +104,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action  : 'delete_wcfm_customer',
-			customerid : item.data('customerid')
+			customerid : item.data('customerid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',

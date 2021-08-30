@@ -137,7 +137,7 @@ class WCMp_User {
             if (isset($_POST['wcmp_vendor_fields']) && isset($_POST['pending_vendor']) && isset($_POST['vendor_apply'])) {
                 $customer_id = $user->ID;
                 $validation_errors = new WP_Error();
-                $wcmp_vendor_registration_form_data = get_option('wcmp_vendor_registration_form_data');
+                $wcmp_vendor_registration_form_data = wcmp_get_option('wcmp_vendor_registration_form_data');
                 if(isset($_POST['g-recaptchatype']) && $_POST['g-recaptchatype'] == 'v2'){
                     if (isset($_POST['g-recaptcha-response']) && empty($_POST['g-recaptcha-response'])) {
                         $validation_errors->add('recaptcha is not validate', __('Please Verify  Recaptcha', 'dc-woocommerce-multi-vendor'));
@@ -182,7 +182,7 @@ class WCMp_User {
                 }
 
                 if ($validation_errors->get_error_code()) {
-                    WC()->session->set('wc_notices', array('error' => array($validation_errors->get_error_message())));
+                    WC()->session->set('wc_notices', array('error' => array(array('notice' => $validation_errors->get_error_message()))));
                     return;
                 }
 
@@ -252,9 +252,9 @@ class WCMp_User {
      */
     function vendor_login_redirect($redirect_to) {
         if (isset($_POST['email'])) {
-            $user = get_user_by('email', $_POST['email']);
+            $user = get_user_by('email', sanitize_email($_POST['email']));
             if (is_object($user) && isset($user->ID) && is_user_wcmp_vendor($user->ID)) {
-                $redirect_to = get_permalink(wcmp_vendor_dashboard_page_id());
+                $redirect_to = get_permalink(wcmp_vendor_dashboard_page_id()).'?page=vendor-store-setup';
                 return apply_filters('wcmp_vendor_login_redirect', $redirect_to, $user);
             }
             return apply_filters('wcmp_vendor_login_redirect', $redirect_to, $user);
@@ -446,12 +446,6 @@ class WCMp_User {
                 'value' => $vendor->twitter_profile,
                 'class' => "user-profile-fields regular-text"
             ), // Text
-            "vendor_google_plus_profile" => array(
-                'label' => __('Google+ Profile', 'dc-woocommerce-multi-vendor'),
-                'type' => 'text',
-                'value' => $vendor->google_plus_profile,
-                'class' => "user-profile-fields regular-text"
-            ), // Text
             "vendor_linkdin_profile" => array(
                 'label' => __('LinkedIn Profile', 'dc-woocommerce-multi-vendor'),
                 'type' => 'text',
@@ -626,7 +620,6 @@ class WCMp_User {
             'value' => $vendor->paypal_email,
             'class' => "user-profile-fields regular-text"
         ); // Text
-
         if (apply_filters('wcmp_vendor_can_overwrite_policies', true) && get_wcmp_vendor_settings('is_policy_on', 'general') == 'Enable') {
             $_wp_editor_settings = array('tinymce' => true);
             if (!$WCMp->vendor_caps->vendor_can('is_upload_files')) {
@@ -903,9 +896,9 @@ class WCMp_User {
                             $errors->add('vendor_slug_exists', __('Slug already exists', 'dc-woocommerce-multi-vendor'));
                         }
                     } elseif ($fieldkey == 'vendor_description') {
-                        update_user_meta($user_id, '_' . $fieldkey, wc_clean(wp_unslash($_POST[$fieldkey])));
+                        update_user_meta($user_id, '_' . $fieldkey, wp_kses_post($_POST[$fieldkey]));
                     } else {
-                        update_user_meta($user_id, '_' . $fieldkey, wc_clean(wp_unslash($_POST[$fieldkey])));
+                        update_user_meta($user_id, '_' . $fieldkey, wp_kses_post($_POST[$fieldkey]));
                     }
                 } else if (isset($_POST['vendor_commission']) && $fieldkey == 'vendor_commission') {
                     update_user_meta($user_id, '_vendor_commission', absint( $_POST[$fieldkey] ));

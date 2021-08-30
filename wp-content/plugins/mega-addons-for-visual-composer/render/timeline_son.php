@@ -50,7 +50,7 @@ class WPBakeryShortCode_mvc_timeline_son extends WPBakeryShortCode {
 				<h2 style="background: <?php echo $titlebg; ?>; color: <?php echo $titleclr; ?>; font-size: <?php echo $titlesize; ?>px; text-align: <?php echo $titlealign; ?>; padding: <?php echo $titlepadding ?>px 15px;">
 					<?php echo $maintitle; ?>
 				</h2>
-				<?php if ($image_url != '') { ?>
+				<?php if (isset($image_url)) { ?>
 					<img src="<?php echo $image_url; ?>" style="max-width: 100%; width: <?php echo $img_width; ?>px">
 				<?php } ?>
 				<div class="cd-timeline-content-area" style="padding: 0 10px; display: block;">

@@ -14,6 +14,7 @@ class WPBakeryShortCode_accordion_father extends WPBakeryShortCodesContainer {
 			'titlemargin'		=>		'0',
 			'activetabbg'		=>		'',
 			'activetabclr'		=>		'',
+			'class'				=>		'',
 			'iconsize' 			=> 		'15',
 			'icon' 				=> 		'fa fa-plus',
 			'activeicon' 		=> 		'fa fa-minus',
@@ -27,7 +28,7 @@ class WPBakeryShortCode_accordion_father extends WPBakeryShortCodesContainer {
 		wp_enqueue_style( 'accordion-css', plugins_url( '../css/accordion.css' , __FILE__ ));
 		wp_enqueue_script( 'accordion-js', plugins_url( '../js/accordion.js' , __FILE__ ), array('jquery', 'jquery-ui-accordion'));
 		ob_start(); ?>
-		<div class="mega-accordion maw_accordion_<?php echo $some_id; ?>" data-active="<?php echo $active; ?>" data-anim="<?php echo $animation; ?>" data-event="<?php echo $event; ?>" data-closeicons="<?php echo $icon; ?>" data-activeicons="<?php echo $activeicon; ?>">
+		<div class="mega-accordion maw_accordion_<?php echo $some_id; ?> <?php echo $class; ?>" data-active="<?php echo $active; ?>" data-anim="<?php echo $animation; ?>" data-event="<?php echo $event; ?>" data-closeicons="<?php echo $icon; ?>" data-activeicons="<?php echo $activeicon; ?>">
 			<?php echo $content; ?>
 		</div>
 
@@ -133,6 +134,14 @@ vc_map( array(
 				"heading" 		=> 	__( 'Active Tab Hover Color', 'accordion' ),
 				"param_name" 	=> 	"activetabclr",
 				"group" 		=> 	'General',
+	        ),
+
+			array(
+	            "type" 			=> 	"textfield",
+				"heading" 		=> 	__( 'Extra Class', 'int_banner' ),
+				"param_name" 	=> 	"class",
+				"description" 	=> 	__( 'Add extra class name that will be applied to the accordion, and you can use this class for your customizations.', 'int_banner' ),
+				"group" 		=> 	"General",
 	        ),
 
 			array(

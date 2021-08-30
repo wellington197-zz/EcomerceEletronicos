@@ -1,9 +1,14 @@
 /*jshint multistr: true */
 
-window.onload = function () {
+window.addEventListener('load', function() {
   //remove link breadcrumb, header and save button
   document.querySelector('.wc-admin-breadcrumb').style.display = 'none';
-  document.querySelector('.mp-header-logo').style.display = 'none';
+	if (document.querySelector('.mp-header-logo') !== null){
+		document.querySelector('.mp-header-logo').style.display = 'none';
+	} else {
+    var pElement = document.querySelectorAll('#mainform > p');
+    pElement[0] !== undefined ? pElement[0].style.display = 'none' : null;
+	}
   document.querySelector('p.submit').style.display = 'none';
 
   var h2s = document.querySelectorAll('h2');
@@ -18,7 +23,7 @@ window.onload = function () {
   var label = document.querySelectorAll('th.titledesc');
   for (var j = 0; j < label.length; j++) {
     label[j].id = 'mp_field_text';
-    if (label[j].children[0].children[0] != null) {
+    if (label[j] && label[j].children[0] && label[j].children[0].children[0]) {
       label[j].children[0].children[0].style.position = 'relative';
       label[j].children[0].children[0].style.fontSize = '22px';
     }
@@ -30,17 +35,34 @@ window.onload = function () {
     table[k].id = 'mp_table_' + k;
   }
 
-  // Remove title and description label necessary for custom
-  document.querySelector('.hidden-field-mp-title').setAttribute('type', 'hidden');
-  document.querySelector('.hidden-field-mp-desc').setAttribute('type', 'hidden');
-  var removeLabel = document.querySelectorAll('#mp_table_0');
-  removeLabel[0].children[0].children[0].style.display = 'none';
-  removeLabel[0].children[0].children[1].style.display = 'none';
+  // Add max length to title input
+
+  let titleInput = this.document.querySelectorAll('.limit-title-max-length');
+
+  titleInput.forEach(
+    (element) => {
+      element.setAttribute('maxlength', '85');
+    }
+  );
+
+  // Remove title and description row if necessary.
+ 
+  document.querySelectorAll('.hidden-field-mp-title').forEach(
+    (element) => {
+      element.closest('tr').style.display = 'none';
+    }
+  );
+
+  document.querySelectorAll('.hidden-field-mp-desc').forEach(
+    (element) => {
+      element.closest('tr').style.display = 'none';
+    }
+  );
 
   //clone save button
   var cloneSaveButton = document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_btn_save');
-  if (document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_homolog_title') !== null || document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_credential_description_prod') !== null) {
-    document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_credential_description_prod').nextElementSibling.append(cloneSaveButton.cloneNode(true));
+  if (document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_homolog_title') !== null || document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_credential_description_test') !== null) {
+    document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_credential_description_test').nextElementSibling.append(cloneSaveButton.cloneNode(true));
   }
 
   if (document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_homolog_title') !== null || document.getElementById('woocommerce_woo-mercado-pago-ticket_checkout_ticket_options_title') !== null) {
@@ -149,7 +171,7 @@ window.onload = function () {
     });
   }
 
-};
+
 
 //Offline payments
 window.completeOfflineCheckbox = function () {
@@ -163,4 +185,5 @@ window.completeOfflineCheckbox = function () {
       offlineInputs[i].checked = false;
     }
   }
-};
+  };
+});

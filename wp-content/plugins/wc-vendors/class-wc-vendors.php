@@ -7,18 +7,18 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.2.1
+ * Version:              2.3.1
  * Requires at least:    5.3.0
- * Tested up to:         5.5
+ * Tested up to:         5.8
  * WC requires at least: 4.0
- * WC tested up to:      4.4.1
+ * WC tested up to:      5.6.4
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
  *
  * @category             Plugin
  * @copyright            Copyright © 2012 Matt Gates
- * @copyright            Copyright © 2020 WC Vendors
+ * @copyright            Copyright © 2021 WC Vendors
  * @author               Matt Gates, WC Vendors
  * @package              WCVendors
  * @license              GPL2
@@ -39,16 +39,27 @@
 
 
 /**
+ * WooCommerce fallback notice.
+ *
+ * @since 2.2.2
+ */
+function wc_vendors_wc_missing_notice() {
+	/* translators: %s WooCommerce download URL link. */
+	echo '<div class="error"><p><strong>' . sprintf( esc_html__( 'WC Vendors Marketplace requires WooCommerce to run. You can download %s here.', 'wc-vendors' ), '<a href="https://wordpress.org/plugins/woocommerce/" target="_blank">WooCommerce</a>' ) . '</strong></p></div>';
+}
+
+/**
  *   Plugin activation hook
  */
 function wcvendors_activate() {
 	/**
-	 *  Requires woocommerce to be installed and active
+	 *  Requires WooCommerce to be installed and active
 	 */
 	if ( ! class_exists( 'WooCommerce' ) ) {
-		deactivate_plugins( plugin_basename( __FILE__ ) );
-		wp_die( __( 'WC Vendors Marketplace requires WooCommerce to run. Please install WooCommerce and activate before attempting to activate again.', 'wc-vendors' ) );
+		add_action( 'admin_notices', 'wc_vendors_wc_missing_notice' );
+		return;
 	}
+
 	// Flush rewrite rules when activating plugin
 	flush_rewrite_rules();
 } // wcvendors_activate()
@@ -62,7 +73,6 @@ function wcvendors_deactivate() {
 }
 
 register_activation_hook( __FILE__, 'wcvendors_activate' );
-
 register_deactivation_hook( __FILE__, 'wcvendors_deactivate' );
 
 
@@ -97,7 +107,7 @@ if ( wcv_is_woocommerce_activated() ) {
 	 */
 	class WC_Vendors {
 
-		public $version = '2.2.1';
+		public $version = '2.3.1';
 
 		/**
 		 * @var
@@ -119,19 +129,19 @@ if ( wcv_is_woocommerce_activated() ) {
 
 			// Install & upgrade
 			add_action( 'admin_init', array( $this, 'check_install' ) );
-			add_action( 'init'      , array( $this, 'maybe_flush_permalinks' ), 99 );
+			add_action( 'init', array( $this, 'maybe_flush_permalinks' ), 99 );
 			add_action( 'admin_init', array( $this, 'wcv_required_ignore_notices' ) );
 
 			add_action( 'wcvendors_flush_rewrite_rules', array( $this, 'flush_rewrite_rules' ) );
 
 			add_action( 'plugins_loaded', array( $this, 'include_gateways' ) );
 			add_action( 'plugins_loaded', array( $this, 'include_core' ) );
-			add_action( 'init'          , array( $this, 'include_init' ) );
+			add_action( 'init', array( $this, 'include_init' ) );
 			add_action( 'current_screen', array( $this, 'include_assets' ) );
 
 			// // Legacy settings
-			add_action( 'admin_init'    , array( 'WCVendors_Install', 'check_pro_version' ) );
-			add_action( 'plugins_loaded', array( $this              , 'load_legacy_settings' ) );
+			add_action( 'admin_init', array( 'WCVendors_Install', 'check_pro_version' ) );
+			add_action( 'plugins_loaded', array( $this, 'load_legacy_settings' ) );
 
 			// Show update notices
 			$file   = basename( __FILE__ );
@@ -140,7 +150,7 @@ if ( wcv_is_woocommerce_activated() ) {
 			add_action( $hook, array( $this, 'show_upgrade_notification' ), 10, 2 );
 
 			// Add become a vendor rewrite endpoint
-			add_action( 'init'              , array( $this, 'add_rewrite_endpoint' ) );
+			add_action( 'init', array( $this, 'add_rewrite_endpoint' ) );
 			add_action( 'after_switch_theme', array( $this, 'flush_rewrite_rules' ) );
 		}
 
@@ -236,6 +246,7 @@ if ( wcv_is_woocommerce_activated() ) {
 				include_once wcv_plugin_dir . 'classes/admin/class-wcv-admin-settings.php';
 				include_once wcv_plugin_dir . 'classes/admin/class-admin-menus.php';
 				include_once wcv_plugin_dir . 'classes/admin/class-wcv-admin-extensions.php';
+				include_once wcv_plugin_dir . 'classes/admin/class-wcv-admin-go-pro.php';
 				include_once wcv_plugin_dir . 'classes/admin/class-wcv-admin-help.php';
 				include_once wcv_plugin_dir . 'classes/admin/class-setup-wizard.php';
 				include_once wcv_plugin_dir . 'classes/admin/class-vendor-admin-dashboard.php';
@@ -318,13 +329,25 @@ if ( wcv_is_woocommerce_activated() ) {
 					);
 					break;
 				case 'wc-vendors_page_wcv-commissions':
-					wp_register_script( 'wcv_admin_commissions', wcv_assets_url . 'js/admin/wcv-admin-commissions.js', array( 'jquery' ), WCV_VERSION , true );
-					$param_args = apply_filters( 'wcv_admin_commissions_params', array( 'confirm_prompt' => __( 'Are you sure you want mark all commissions paid?', 'wc-vendors' ) ) );
+					wp_register_script( 'wcv_admin_commissions', wcv_assets_url . 'js/admin/wcv-admin-commissions.js', array( 'jquery' ), WCV_VERSION, true );
+					$param_args = apply_filters_deprecated(
+						'wcv_admin_commissions_params',
+						array(
+							array(
+								'confirm_prompt' => __( 'Are you sure you want mark all commissions paid?', 'wc-vendors' ),
+								'confirm_delete_commission' => __( 'Are you sure delete this commission?', 'wc-vendors' ),
+								'confirm_bulk_delete_commission' => __( 'Are you sure delete these commissions?', 'wc-vendors' ),
+							),
+						),
+						'2.3.0',
+						'wcvendors_admin_commissions_params',
+					);
+					$param_args = apply_filters( 'wcvendors_admin_commissions_params', $param_args );
 					wp_localize_script( 'wcv_admin_commissions', 'wcv_admin_commissions_params', $param_args );
 					wp_enqueue_script( 'wcv_admin_commissions' );
 					break;
 				default:
-					# code...
+					// code...
 					break;
 			}
 
@@ -450,4 +473,9 @@ if ( wcv_is_woocommerce_activated() ) {
 
 	$wc_vendors = new WC_Vendors();
 
+} else {
+	if ( ! class_exists( 'WooCommerce' ) ) {
+		add_action( 'admin_notices', 'wc_vendors_wc_missing_notice' );
+		return;
+	}
 }

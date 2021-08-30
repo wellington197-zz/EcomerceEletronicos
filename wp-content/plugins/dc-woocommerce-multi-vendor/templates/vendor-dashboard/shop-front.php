@@ -107,7 +107,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
         </div>
 
         <div class="panel panel-default panel-pading pannel-outer-heading">
-            <div class="panel-heading">
+            <div class="panel-heading d-flex">
                 <h3><?php _e('General', 'dc-woocommerce-multi-vendor'); ?></h3>
             </div>
             <div class="panel-body panel-content-padding">
@@ -254,7 +254,51 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
                         <div class="col-md-6 col-sm-9">  
                             <?php
                             $api_key = get_wcmp_vendor_settings('google_api_key');
-                            if (!empty($api_key)) {
+                            if (wcmp_mapbox_api_enabled()) {
+                                $WCMp->library->load_mapbox_api();
+                                $map_style = apply_filters( 'wcmp_dashboard_location_widget_map_style', 'mapbox://styles/mapbox/streets-v11');
+                                ?>
+                                <div class="vendor_store_map" id="vendor_store_map" style="width: 100%; height: 300px;"></div>
+                                <div class="form_area">
+                                    <?php
+                                    $store_location = get_user_meta($vendor->id, '_store_location', true) ? get_user_meta($vendor->id, '_store_location', true) : '';
+                                    $store_lat = get_user_meta($vendor->id, '_store_lat', true) ? get_user_meta($vendor->id, '_store_lat', true) : 0;
+                                    $store_lng = get_user_meta($vendor->id, '_store_lng', true) ? get_user_meta($vendor->id, '_store_lng', true) : 0;
+                                    ?>
+                                    <input type="hidden" name="_store_location" id="store_location" value="<?php echo $store_location; ?>">
+                                    <input type="hidden" name="_store_lat" id="store_lat" value="<?php echo $store_lat; ?>">
+                                    <input type="hidden" name="_store_lng" id="store_lng" value="<?php echo $store_lng; ?>">
+                                </div>
+                                <script>
+                                    mapboxgl.accessToken = '<?php echo wcmp_mapbox_api_enabled(); ?>';
+                                    var map = new mapboxgl.Map({
+                                        container: 'vendor_store_map', // container id
+                                        style: '<?php echo $map_style ?>',
+                                        center: [<?php echo $store_lat ?>, <?php echo $store_lng ?>],
+                                        zoom: 5
+                                    });
+
+                                    var marker1 = new mapboxgl.Marker()
+                                        .setLngLat([<?php echo $store_lat ?>, <?php echo $store_lng ?>])
+                                    .addTo(map);
+                                    var geocoder = new MapboxGeocoder({
+                                        accessToken: mapboxgl.accessToken,
+                                        marker: {
+                                            color: 'red'
+                                        },
+                                        mapboxgl: mapboxgl
+                                    });
+                                    map.on('load', function() {
+                                        geocoder.on('result', function(ev) {
+                                            document.getElementById("store_location").value = ev.result.place_name;
+                                            document.getElementById("store_lat").value = ev.result.center[0];
+                                            document.getElementById("store_lng").value = ev.result.center[1];
+                                        });
+                                    });
+                                    map.addControl(geocoder);
+                                </script>
+                                <?php
+                            } elseif (!empty($api_key)) {
                                 ?>
                                 <div class="row">
                                     <div class="col-md-8">
@@ -366,7 +410,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
         </div>
 
         <div class="panel panel-default pannel-outer-heading">
-            <div class="panel-heading">
+            <div class="panel-heading d-flex">
                 <h3><?php _e('Social Media', 'dc-woocommerce-multi-vendor'); ?></h3>
             </div>
             <div class="panel-body panel-content-padding form-horizontal">
@@ -394,13 +438,6 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-sm-3 col-md-3 google-plus"><?php _e('Google Plus', 'dc-woocommerce-multi-vendor'); ?></label>
-                        <div class="col-md-6 col-sm-9">
-                            <input class="form-control" type="url"   name="vendor_google_plus_profile" value="<?php echo isset($vendor_google_plus_profile['value']) ? $vendor_google_plus_profile['value'] : ''; ?>">
-                        </div>  
-                    </div>
-
-                    <div class="form-group">
                         <label class="control-label col-sm-3 col-md-3 youtube"><?php _e('YouTube', 'dc-woocommerce-multi-vendor'); ?></label>
                         <div class="col-md-6 col-sm-9">
                             <input class="form-control" type="url"   name="vendor_youtube" value="<?php echo isset($vendor_youtube['value']) ? $vendor_youtube['value'] : ''; ?>">
@@ -420,7 +457,7 @@ $_wp_editor_settings = apply_filters('wcmp_vendor_storefront_wp_editor_settings'
 
 <?php if (apply_filters('can_vendor_edit_shop_template', false)): ?>
             <div class="panel panel-default panel-pading">
-                <div class="panel-heading">
+                <div class="panel-heading d-flex">
                     <h3><?php _e('Shop Template', 'dc-woocommerce-multi-vendor'); ?></h3>
                 </div>
                 <div class="panel-body">

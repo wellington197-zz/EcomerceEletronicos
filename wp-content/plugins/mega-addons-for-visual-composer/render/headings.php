@@ -10,8 +10,8 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 		extract( shortcode_atts( array(
 			'style'			=>		'theme1',
 			'style2'		=>		'icon',
-			'linewidth'		=>		'170',
-			'borderwidth'	=>		'4',
+			'linewidth'		=>		'230',
+			'borderwidth'	=>		'2',
 			'borderclr'		=>		'#000',
 			'lineheight'	=>		'1',
 			'icon'			=>		'',
@@ -22,39 +22,54 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 			'title'			=>		'',
 			'titlesize'		=>		'22',
 			'titleclr'		=>		'#000',
-			'font_family' 	=>		'',
-			'font_weight' 	=>		'normal',
+			'desc_size'		=>		'',
+			'use_theme_fonts' =>		'',
+			'google_fonts' 	=>		'default',
 			'transform' 	=>		'default',
-			'text_style' 	=>		'default',
+			'classname' 	=>		'',
 		), $atts ) );
+		$some_id = rand(5, 500);
 		if ($image_id != '') {
 			$image_url = wp_get_attachment_url( $image_id );		
 		}
 		$content = wpb_js_remove_wpautop($content, true);
 		wp_enqueue_style( 'vc-heading-css', plugins_url( '../css/heading.css' , __FILE__ ));
+		$atts = vc_map_get_attributes( $this->getShortcode(), $atts );
+		$googleallfonts = "";
+		if($google_fonts != "default"){
+			$fontsData = $this->getFontsData( $atts, 'google_fonts' );
+			$googleFontsStyles = $this->googleFontsStyles( $fontsData );
+			$this->enqueueGoogleFonts( $fontsData );
+			if (empty($googleFontsStyles) == false){
+				$googleallfonts = esc_attr( implode( ';', $googleFontsStyles ) );
+			} else {
+				$googleallfonts = $googleFontsStyles;
+			}
+		}
 		ob_start(); ?>
-		<div id="mega-line-container">
+		<div class="mega-line-container ma_heading_wrap<?php echo $some_id ?> <?php echo $classname; ?>">
 			<?php if ($style == 'theme1') { ?>
 				<div class="mega-line-top" style="text-align: <?php echo $align; ?>;">  
 			        <span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>;
+			        text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
-			        <div>
+			        <div class="heading_desc">
 			        	<?php echo $content ?>
 			        </div>
-		      </div>
+		      	</div>
 			<?php } ?>
 
 			<?php if ($style == 'theme2') { ?>
 			    <div class="mega-line-center" style="text-align: <?php echo $align; ?>;">  
-		        	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+		        	<h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
 		        		<span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
 		        	</div>
-		        	<div>
+		        	<div class="heading_desc">
 			        	<?php echo $content ?>
 			        </div>
 		      	</div>
@@ -62,10 +77,10 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 		    <?php if ($style == 'theme3') { ?>
 			    <div class="mega-line-bottom" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
-			        <div style="line-height: <?php echo $lineheight; ?>;">
+			        <div class="heading_desc" style="line-height: <?php echo $lineheight; ?>;">
 			        	<?php echo $content ?>
 			        </div>
 			        <span style="width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;"></span>
@@ -74,8 +89,8 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 
 		    <?php if ($style == 'theme4') { ?>
 		        
-			    <div id="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
-			        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>;">
+			    <div class="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
+			        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>; width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;">
 		        		<?php if ($style2 == 'icon') { ?>
 		        			<i class="<?php echo $icon; ?>" aria-hidden="true" style="color: <?php echo $iconclr; ?>"></i>
 		        		<?php } ?>
@@ -83,22 +98,22 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 		        		<img src="<?php echo $image_url; ?>">
 		        	<?php } ?>
 		        	</div>
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; margin-bottom: -15px; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; line-height: <?php echo $lineheight; ?>; margin-bottom: -15px; text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
-			        <div>
+			        <div class="heading_desc">
 			        	<?php echo $content ?>
 			        </div>
 			    </div>
 		    <?php } ?>
 
 		    <?php if ($style == 'theme5') { ?>
-			    <div id="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+			    <div class="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
 			        <div style="line-height: <?php echo $lineheight; ?>;">
-				        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>;">
+				        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>; width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;">
 				        	<?php if ($style2 == 'icon') { ?>
 				        		<i class="<?php echo $icon; ?>" aria-hidden="true" style="color: <?php echo $iconclr; ?>"></i>
 				        	<?php } ?>
@@ -107,21 +122,21 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 				        	<?php } ?>
 				        </div>
 			        </div>
-			        <div>
+			        <div class="heading_desc">
 			        	<?php echo $content ?>
 			        </div>
 			    </div>
 		    <?php } ?>
 
 		    <?php if ($style == 'theme6') { ?>
-				<div id="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
-			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; font-family: <?php echo $font_family ?>; font-weight: <?php echo $font_weight ?>; text-transform: <?php echo $transform ?>; font-style: <?php echo $text_style ?>;">
+				<div class="mega-line-icon" style="text-align: <?php echo $align; ?>;">  
+			        <h2 style="font-size: <?php echo $titlesize; ?>px; color: <?php echo $titleclr; ?>; text-transform: <?php echo $transform ?>; <?php echo $googleallfonts; ?>;">
 			        	<?php echo $title; ?>
 			        </h2>
-			        <div style="line-height: <?php echo $lineheight; ?>;">
+			        <div class="heading_desc" style="line-height: <?php echo $lineheight; ?>;">
 			        	<?php echo $content ?>
 			        </div>
-			        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>;">
+			        <div class="line-icon" style="text-align: <?php echo $iconalign; ?>; width: <?php echo $linewidth; ?>px; border-top: <?php echo $borderwidth; ?>px solid <?php echo $borderclr; ?>;">
 			        	<?php if ($style2 == 'icon') { ?>
 			        		<i class="<?php echo $icon; ?>" aria-hidden="true" style="color: <?php echo $iconclr; ?>"></i>
 			        	<?php } ?>
@@ -132,8 +147,53 @@ class WPBakeryShortCode_vc_headings extends WPBakeryShortCode {
 			    </div>
 		    <?php } ?>
       	</div>
+
+      	<style>
+			.ma_heading_wrap<?php echo $some_id ?> .heading_desc *{
+				font-size: <?php echo $desc_size; ?>px;
+				<?php echo $googleallfonts; ?>;
+			}
+      	</style>
 		<?php
 		return ob_get_clean();
+	}
+
+	protected function getFontsData( $atts, $paramName ) {
+		$googleFontsParam = new Vc_Google_Fonts();
+		$field = WPBMap::getParam( $this->shortcode, $paramName );
+		$fieldSettings = isset( $field['settings'], $field['settings']['fields'] ) ? $field['settings']['fields'] : array();
+		$fontsData = strlen( $atts[ $paramName ] ) > 0 ? $googleFontsParam->_vc_google_fonts_parse_attributes( $fieldSettings, $atts[ $paramName ] ) : '';
+
+		return $fontsData;
+	}
+
+	protected function googleFontsStyles( $fontsData ) {
+		// Inline styles
+		$fontFamily = explode( ':', $fontsData['values']['font_family'] );
+		$styles[] = 'font-family:' . $fontFamily[0];
+		$fontStyles = explode( ':', $fontsData['values']['font_style'] );
+		if(count($fontStyles)>1){
+			$styles[] = 'font-weight:' . $fontStyles[1];
+			$styles[] = 'font-style:' . $fontStyles[2];
+			return $styles;
+		} else {
+			return "";
+		}
+	}
+
+	protected function enqueueGoogleFonts( $fontsData ) {
+		// Get extra subsets for settings (latin/cyrillic/etc)
+		$settings = get_option( 'wpb_js_google_fonts_subsets' );
+		if ( is_array( $settings ) && ! empty( $settings ) ) {
+			$subsets = '&subset=' . implode( ',', $settings );
+		} else {
+			$subsets = '';
+		}
+
+		// We also need to enqueue font from googleapis
+		if ( isset( $fontsData['values']['font_family'] ) ) {
+			wp_enqueue_style( 'vc_google_fonts_' . vc_build_safe_css_class( $fontsData['values']['font_family'] ), '//fonts.googleapis.com/css?family=' . $fontsData['values']['font_family'] . $subsets );
+		}
 	}
 }
 
@@ -149,7 +209,7 @@ vc_map( array(
 			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Select Style', 'heading' ),
 			"param_name" 	=> "style",
-			"description" 	=> __('<a href="https://addons.topdigitaltrends.net/headings/" target="_blank">See Demo</a>', 'heading'),
+			"description" 	=> 'click to <a href="https://addons.topdigitaltrends.net/headings/" target="_blank">See Demo</a>',
 			"group" 		=> "General",
 			"value"			=>	array(
 				"Simple Top Line"		=>	"theme1",
@@ -165,10 +225,9 @@ vc_map( array(
 			"type" 			=> "vc_number",
 			"heading" 		=> __( 'Line length', 'heading' ),
 			"param_name" 	=> "linewidth",
-			"description" 	=> __('set in pixel. default: 230', 'heading'),
-			"dependency" => array('element' => "style", 'value' => array('theme1', 'theme2', 'theme3')),
+			"edit_field_class" => "vc_col-sm-4",
 			"suffix" 		=> 	'px',
-			"value"			=>	"170",
+			"value"			=>	"230",
 			'max' 			=> 	"",
 			"group" 		=> 	"General",
 		),
@@ -177,9 +236,8 @@ vc_map( array(
 			"type" 			=> "vc_number",
 			"heading" 		=> __( 'Border Width', 'heading' ),
 			"param_name" 	=> "borderwidth",
-			"description" 	=> __('set in pixel. default: 2', 'heading'),
-			"dependency" => array('element' => "style", 'value' => array('theme1', 'theme2', 'theme3')),
-			"value"			=>	"4",
+			"edit_field_class" => "vc_col-sm-4",
+			"value"			=>	"2",
 			"suffix" 		=> 'px',
 			"group" 		=> "General",
 		),
@@ -188,8 +246,7 @@ vc_map( array(
 			"type" 			=> "colorpicker",
 			"heading" 		=> __( 'Border Color', 'heading' ),
 			"param_name" 	=> "borderclr",
-			"description" 	=> __('color of border line', 'heading'),
-			"dependency" => array('element' => "style", 'value' => array('theme1', 'theme2', 'theme3')),
+			"edit_field_class" => "vc_col-sm-4",
 			"value"			=>	"#000",
 			"group" 		=> "General",
 		),
@@ -244,8 +301,16 @@ vc_map( array(
 			"dependency" => array('element' => "style2", 'value' => 'image'),
 			"group" 		=> "General",
 		),
-		
+
 		array(
+            "type" 			=> 	"textfield",
+			"heading" 		=> 	__( 'Extra class name', 'megaaddons' ),
+			"param_name" 	=> 	"classname",
+			"description" 	=> 	"Style particular content element differently - add a class name and refer to it in custom CSS.",
+			"group" 		=> 	'General',
+        ),
+
+        array(
 			"type" 			=> "vc_links",
 			"param_name" 	=> "caption_url",
 			"class"			=>	"ult_param_heading",
@@ -276,31 +341,10 @@ vc_map( array(
 		),
 
 		array(
-			"type" 			=> "vc_number",
-			"heading" 		=> __( 'Line Height', 'heading' ),
-			"param_name" 	=> "lineheight",
-			"edit_field_class" => "vc_col-sm-6",
-			"description" 	=> __('margin between line and headings', 'heading'),
-			"value"			=>	"1",
-			"group" 		=> "Heading",
-		),
-
-
-		array(
-			"type" 			=> "vc_number",
-			"heading" 		=> __( 'Title [Font Size]', 'heading' ),
-			"param_name" 	=> "titlesize",
-			"edit_field_class" => "vc_col-sm-6",
-			"value"			=>	"22",
-			"suffix" 		=> 'px',
-			"group" 		=> "Heading",
-		),
-
-		array(
-			"type" 			=> "colorpicker",
-			"heading" 		=> __( 'Title Color', 'heading' ),
-			"param_name" 	=> "titleclr",
-			"value"			=>	"#000",
+			"type" 			=> "textarea_html",
+			"heading" 		=> __( 'Description', 'heading' ),
+			"param_name" 	=> "content",
+			"value"			=>	"write your detail or leave blank",
 			"group" 		=> "Heading",
 		),
 
@@ -308,43 +352,52 @@ vc_map( array(
 			"type" 			=> "vc_links",
 			"param_name" 	=> "caption_urls",
 			"class"			=>	"ult_param_heading",
-			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Typography</span>', 'ihover' ),
-			"group" 		=> 'Heading',
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Google Fonts Option</span>', 'ihover' ),
+			"group" 		=> 'Typography',
 		),
 
 		array(
-			"type" 			=> "textfield",
-			"heading" 		=> __( 'Font Family Name', 'button' ),
-			"param_name" 	=> "font_family",
-			"group" 		=> 'Heading',
-		),
-
-		array(
-			"type" 			=> "dropdown",
-			"heading" 		=> __( 'Font Weight', 'button' ),
-			"param_name" 	=> "font_weight",
-			"group" 		=> 'Heading',
-			"value"			=>	array(
-				"100"		=>		"100",
-				"200"		=>		"200",
-				"300"		=>		"300",
-				"400"		=>		"400",
-				"500"		=>		"500",
-				"600"		=>		"600",
-				"700"		=>		"700",
-				"800"		=>		"800",
-				"900"		=>		"900",
-				"Default"	=>		"default",
-				"Normal"	=>		"normal",
-				"Bold"		=>		"bold",
+			"type" 			=> 	"checkbox",
+			"heading" 		=> 	__( 'Use theme default font family?', 'creativelink' ),
+			"param_name" 	=> 	"use_theme_fonts",
+			"description" 	=> 	__( 'Use font family from the theme.', 'creativelink' ),
+			"group" 		=> 	'Typography',
+			"value" 		=> array(
+					"Yes"		=> "yes",
 			)
+		),
+
+		array(
+			'type' => 'google_fonts',
+			'param_name' => 'google_fonts',
+			'value' => 'default',
+			'settings' => array(
+				'fields' => array(
+					'font_family_description' => __( 'Select font family.', 'js_composer' ),
+					'font_style_description' => __( 'Select font styling.', 'js_composer' ),
+				),
+			),
+			"group" 		=> 	'Typography',
+			'weight' => 0,
+			'dependency' => array(
+				'element' => 'use_theme_fonts',
+				'value_not_equal_to' => 'yes',
+			),
+		),
+
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_urlss",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Title Settings</span>', 'ihover' ),
+			"group" 		=> 'Typography',
 		),
 
 		array(
 			"type" 			=> "dropdown",
 			"heading" 		=> __( 'Transform', 'button' ),
 			"param_name" 	=> "transform",
-			"group" 		=> 'Heading',
+			"group" 		=> 'Typography',
 			"value"			=>	array(
 				"Default"		=>		"default",
 				"Uppercase"		=>		"uppercase",
@@ -355,26 +408,47 @@ vc_map( array(
 		),
 
 		array(
-			"type" 			=> "dropdown",
-			"heading" 		=> __( 'Style', 'button' ),
-			"param_name" 	=> "text_style",
-			"group" 		=> 'Heading',
-			"value"			=>	array(
-				"Default"		=>		"default",
-				"Normal"		=>		"normal",
-				"Italic"		=>		"italic",
-				"Oblique"		=>		"oblique",
-			)
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Line Height', 'heading' ),
+			"param_name" 	=> "lineheight",
+			"edit_field_class" => "vc_col-sm-6",
+			"description" 	=> __('margin between line and headings', 'heading'),
+			"value"			=>	"1",
+			"group" 		=> "Typography",
 		),
 
-		// Description section 
-		
 		array(
-			"type" 			=> "textarea_html",
-			"heading" 		=> __( 'Description', 'heading' ),
-			"param_name" 	=> "content",
-			"value"			=>	"write your detail or leave blank",
-			"group" 		=> "Description",
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Title [Font Size]', 'heading' ),
+			"param_name" 	=> "titlesize",
+			"edit_field_class" => "vc_col-sm-6",
+			"value"			=>	"22",
+			"suffix" 		=> 'px',
+			"group" 		=> "Typography",
+		),
+
+		array(
+			"type" 			=> "colorpicker",
+			"heading" 		=> __( 'Title Color', 'heading' ),
+			"param_name" 	=> "titleclr",
+			"value"			=>	"#000",
+			"group" 		=> "Typography",
+		),
+
+		array(
+			"type" 			=> "vc_links",
+			"param_name" 	=> "caption_urldesc",
+			"class"			=>	"ult_param_heading",
+			"description" 	=> __( '<span style="Background: #ddd;padding: 10px; display: block; color: #302f2f;font-weight:600;">Description Settings</span>', 'ihover' ),
+			"group" 		=> 'Typography',
+		),
+
+		array(
+			"type" 			=> "vc_number",
+			"heading" 		=> __( 'Description [Font Size]', 'ihover' ),
+			"param_name" 	=> "desc_size",
+			"suffix" 		=> 'px',
+			"group" 		=> 'Typography',
 		),
 	),
 ) );

@@ -70,7 +70,8 @@ class WCV_Admin_Import_Export {
 		// column slug => column name
 		$options['vendor_id'] = __( 'Vendor ID', 'wc-vendors');
 
-		return apply_filters( 'wcv_csv_product_import_mapping_options', $options );
+		$options =  apply_filters_deprecated( 'wcv_csv_product_import_mapping_options', array( $options ), '2.3.0', 'wcvendors_csv_product_import_mapping_options' );
+		return apply_filters( 'wcvendors_csv_product_import_mapping_options', $options );
 	}
 
 	/**
@@ -165,7 +166,7 @@ class WCV_Admin_Import_Export {
 	public function is_product_author( $data ) {
 		$vendor_id = get_current_user_id();
 		
-		if ( isset( $data['vendor_id'] ) && $vendor_id == $data['vendor_id'] ) {
+		if ( ( isset( $data['vendor_id'] ) && $vendor_id == $data['vendor_id'] ) || is_admin() ) {
 			return true;
 		}
 

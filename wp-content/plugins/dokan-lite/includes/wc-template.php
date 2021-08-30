@@ -75,13 +75,7 @@ function dokan_order_show_suborders( $parent_order ) {
         [
             'post_parent' => dokan_get_prop( $parent_order, 'id' ),
             'post_type'   => 'shop_order',
-            'post_status' => [
-                'wc-pending',
-                'wc-completed',
-                'wc-processing',
-                'wc-on-hold',
-                'wc-cancelled',
-            ],
+            'post_status' => array_keys( wc_get_order_statuses() ),
         ]
     );
 
@@ -246,7 +240,7 @@ function dokan_save_quick_edit_vendor_data( $product ) {
 
     $get_data = wp_unslash( $_REQUEST );
 
-    if ( ! empty( $get_data['woocommerce_quick_edit_nonce'] ) && ! wp_verify_nonce( $get_data['woocommerce_quick_edit_nonce'], 'inline-save' ) ) {
+    if ( ! isset( $get_data['woocommerce_quick_edit_nonce'] ) || ! wp_verify_nonce( sanitize_key( $get_data['woocommerce_quick_edit_nonce'] ), 'woocommerce_quick_edit_nonce' ) ) {
         return;
     }
 

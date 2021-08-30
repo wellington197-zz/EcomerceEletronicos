@@ -14,7 +14,9 @@ class WCMp_Seller_Review_Rating {
         $rating_settings = get_option('wcmp_general_sellerreview_settings_name');
         if (get_wcmp_vendor_settings('is_sellerreview', 'general') == 'Enable') {
             //add_action('woocommerce_after_main_content', array($this, 'wcmp_seller_review_rating_form'), 5);
-            add_action('woocommerce_after_shop_loop', array($this, 'wcmp_seller_review_rating_form'), 30);
+            if ( apply_filters( 'wcmp_load_default_vendor_store', false ) ) {
+                add_action('woocommerce_after_shop_loop', array($this, 'wcmp_seller_review_rating_form'), 30);
+            }
             add_action('add_meta_boxes', array($this, 'add_wcmp_rating_meta_box'));
             add_action('comment_save_pre', array($this, 'save_wcmp_rating_meta_box'));
             add_filter('widget_comments_args', array($this, 'remove_vendor_rating_from_recent_comment'), 10);
@@ -45,7 +47,11 @@ class WCMp_Seller_Review_Rating {
                             $term_id = get_user_meta($vendor->id, '_vendor_term_id', true);
                             $term = get_term_by('id', $term_id, $WCMp->taxonomy->taxonomy_name);
                             $term_link = get_term_link($term, $WCMp->taxonomy->taxonomy_name);
-                            $review_link = trailingslashit($term_link) . '#reviews';
+                            if ( apply_filters( 'wcmp_load_default_vendor_store', false ) ) {
+                                $review_link = trailingslashit($term_link) . '#reviews';
+                            } else {
+                                $review_link = trailingslashit($term_link) . 'reviews';
+                            }
                             $arr_values['vendor_review_link'] = $review_link;
                             $arr_values['shop_name'] = $vendor->page_title;
                             $arr_values['product_name'] = $product->post_title;
@@ -63,7 +69,11 @@ class WCMp_Seller_Review_Rating {
                         $term_id = get_user_meta($vendor->id, '_vendor_term_id', true);
                         $term = get_term_by('id', $term_id, $WCMp->taxonomy->taxonomy_name);
                         $term_link = get_term_link($term, $WCMp->taxonomy->taxonomy_name);
-                        $review_link = trailingslashit($term_link) . '#reviews';
+                        if ( apply_filters( 'wcmp_load_default_vendor_store', false ) ) {
+                            $review_link = trailingslashit($term_link) . '#reviews';
+                        } else {
+                            $review_link = trailingslashit($term_link) . 'reviews';
+                        }
                         $arr_values['vendor_review_link'] = $review_link;
                         $arr_values['shop_name'] = $vendor->page_title;
                         $arr_values['product_name'] = $product->post_title;
@@ -81,9 +91,8 @@ class WCMp_Seller_Review_Rating {
 
     function wcmp_seller_review_rating_form() {
         global $WCMp;
-        if (is_tax($WCMp->taxonomy->taxonomy_name)) {
-            $queried_object = get_queried_object();
-            $WCMp->template->get_template('wcmp-vendor-review-form.php', array('queried_object' => $queried_object));
+        if (wcmp_is_store_page()) {
+            $WCMp->template->get_template('wcmp-vendor-review-form.php', array('vendor_id' => wcmp_find_shop_page_vendor()));
         }
     }
 

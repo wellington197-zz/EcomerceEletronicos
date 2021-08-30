@@ -32,6 +32,8 @@ class WCMp_Gateway_Stripe_Connect extends WCMp_Payment_Gateway {
         add_action('before_wcmp_vendor_dashboard', array($this, 'disconnect_stripe_account'));
         // Stripe authorization
         add_action('wp_ajax_marketplace_stripe_authorize', array(&$this, 'marketplace_stripe_authorize')); 
+        // stripe return back to dashboard page
+        add_action('wp_ajax_marketplace_stripe_authorize?error=access_denied', array(&$this, 'marketplace_stripe_return_business')); 
     }
     
     public function gateway_logo() { global $WCMp; return $WCMp->plugin_url . 'assets/images/'.$this->id.'.png'; }
@@ -101,7 +103,8 @@ class WCMp_Gateway_Stripe_Connect extends WCMp_Payment_Gateway {
             $transfer_args = array(
                 'amount' => $this->get_stripe_amount(),
                 'currency' => $this->currency,
-                'destination' => $this->stripe_user_id
+                'destination' => $this->stripe_user_id,
+                'description' => apply_filters('wcmp_stripe_description_at_paid_time', 'Commissions are ' . implode(",", $this->commissions) . ' paid from ' . get_bloginfo('title'), $this->commissions),
             );
             $transfer_args = wp_parse_args($args, $transfer_args);
             return Transfer::create($transfer_args);
@@ -250,5 +253,10 @@ class WCMp_Gateway_Stripe_Connect extends WCMp_Payment_Gateway {
             }
         }
     }
+
+    public function marketplace_stripe_return_business() {
+        wp_redirect(wcmp_get_vendor_dashboard_endpoint_url(get_wcmp_vendor_settings('wcmp_vendor_billing_endpoint', 'vendor', 'general', 'vendor-billing' )));
+        exit();
+    }   
 
 }

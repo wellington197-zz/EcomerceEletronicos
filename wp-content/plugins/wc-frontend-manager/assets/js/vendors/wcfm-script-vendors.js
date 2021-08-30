@@ -112,8 +112,9 @@ jQuery(document).ready(function($) {
 					}
 				});
 				var data = {
-					action       : 'wcfm_vendor_enable',
-					memberid     : $(this).data('memberid'),
+					action           : 'wcfm_vendor_enable',
+					memberid         : $(this).data('memberid'),
+					wcfm_ajax_nonce  : wcfm_params.wcfm_ajax_nonce
 				}	
 				$.post(wcfm_params.ajax_url, data, function(response) {
 					if(response) {
@@ -136,8 +137,9 @@ jQuery(document).ready(function($) {
 					}
 				});
 				var data = {
-					action       : 'wcfm_vendor_disable',
-					memberid     : $(this).data('memberid'),
+					action           : 'wcfm_vendor_disable',
+					memberid         : $(this).data('memberid'),
+					wcfm_ajax_nonce  : wcfm_params.wcfm_ajax_nonce
 				}	
 				$.post(wcfm_params.ajax_url, data, function(response) {
 					if(response) {
@@ -160,8 +162,9 @@ jQuery(document).ready(function($) {
 					}
 				});
 				var data = {
-					action       : 'wcfm_vendor_store_offline',
-					memberid     : $(this).data('memberid'),
+					action            : 'wcfm_vendor_store_offline',
+					memberid          : $(this).data('memberid'),
+					wcfm_ajax_nonce   : wcfm_params.wcfm_ajax_nonce
 				}	
 				$.post(wcfm_params.ajax_url, data, function(response) {
 					if(response) {
@@ -184,8 +187,9 @@ jQuery(document).ready(function($) {
 					}
 				});
 				var data = {
-					action       : 'wcfm_vendor_store_online',
-					memberid     : $(this).data('memberid'),
+					action            : 'wcfm_vendor_store_online',
+					memberid          : $(this).data('memberid'),
+					wcfm_ajax_nonce   : wcfm_params.wcfm_ajax_nonce
 				}	
 				$.post(wcfm_params.ajax_url, data, function(response) {
 					if(response) {

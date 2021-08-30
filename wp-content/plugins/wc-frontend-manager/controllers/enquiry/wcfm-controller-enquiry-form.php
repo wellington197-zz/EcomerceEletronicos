@@ -43,7 +43,7 @@ class WCFM_Enquiry_Form_Controller {
 			if ( true === $check_result ) {
 					/* do necessary action */
 			} else { 
-				echo '{"status": false, "message": "' . __( 'Captcha failed, please try again.', 'wc-frontend-manager' ) . '"}';
+				echo '{"status": false, "message": "' . esc_html( __( 'Captcha failed, please try again.', 'wc-frontend-manager' ) ) . '"}';
 				die;
 			}
 		}
@@ -51,7 +51,7 @@ class WCFM_Enquiry_Form_Controller {
 		if( !defined('WCFM_REST_API_CALL') ) {
 	  	if( isset( $wcfm_enquiry_tab_form_data['wcfm_nonce'] ) && !empty( $wcfm_enquiry_tab_form_data['wcfm_nonce'] ) ) {
 	  		if( !wp_verify_nonce( $wcfm_enquiry_tab_form_data['wcfm_nonce'], 'wcfm_enquiry' ) ) {
-	  			echo '{"status": false, "message": "' . __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) . '"}';
+	  			echo '{"status": false, "message": "' . esc_html( __( 'Invalid nonce! Refresh your page and try again.', 'wc-frontend-manager' ) ) . '"}';
 	  			die;
 	  		}
 	  	}
@@ -237,9 +237,9 @@ class WCFM_Enquiry_Form_Controller {
 				do_action( 'wcfm_after_enquiry_submit',  $enquiry_id, $customer_id, $product_id, $vendor_id, $enquiry, $wcfm_enquiry_tab_form_data );
 			}
 			
-			echo '{"status": true, "message": "' . $wcfm_enquiry_messages['enquiry_saved'] . '"}';
+			echo '{"status": true, "message": "' . esc_html( $wcfm_enquiry_messages['enquiry_saved'] ) . '"}';
 		} else {
-			echo '{"status": false, "message": "' . $wcfm_enquiry_messages['no_enquiry'] . '"}';
+			echo '{"status": false, "message": "' . esc_html( $wcfm_enquiry_messages['no_enquiry'] ) . '"}';
 		}
 		
 		die;

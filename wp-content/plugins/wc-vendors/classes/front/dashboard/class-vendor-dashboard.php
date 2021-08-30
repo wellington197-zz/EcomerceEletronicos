@@ -44,7 +44,7 @@ class WCV_Vendor_Dashboard {
 			|| has_shortcode( $post->post_content, 'wcv_orders' )
 			|| has_shortcode( $post->post_content, 'wcv_vendor_dashboard_nav' )
 		) {
-			wp_enqueue_style( 'wcv_frontend_style', wcv_assets_url . 'css/wcv-frontend.css' );
+			wp_enqueue_style( 'wcv_frontend_style', wcv_assets_url . 'css/wcv-frontend.css' );			
 		}
 	}
 
@@ -236,6 +236,9 @@ class WCV_Vendor_Dashboard {
 		ob_start();
 
 		global $start_date, $end_date;
+		
+		// WC 3.6+ - Cart and other frontend functions are not included for REST requests.
+		include_once WC()->plugin_path() . '/includes/wc-notice-functions.php';
 
 		// Need to check if the session exists and if it doesn't create it 
 		if ( null === WC()->session ) {
@@ -294,7 +297,9 @@ class WCV_Vendor_Dashboard {
 
 		do_action( 'wcvendors_before_dashboard' );
 
-		wc_print_notices();
+		if( function_exists ( 'wc_print_notices' ) ){ 
+			wc_print_notices();
+		}
 
 		wc_get_template(
 			'navigation.php',
@@ -305,9 +310,9 @@ class WCV_Vendor_Dashboard {
 			wcv_plugin_dir . 'templates/dashboard/'
 		);
 
-		if ( $can_view_sales = get_option( 'wcvendors_capability_frontend_reports' ) ) {
+		if ( wc_string_to_bool( get_option( 'wcvendors_capability_frontend_reports', 'yes' ) ) ) {
 
-			$can_view_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping' ) );
+			$can_view_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'yes' ) );
 
 			wc_get_template(
 				'reports.php',
@@ -380,7 +385,8 @@ class WCV_Vendor_Dashboard {
 			);
 		}
 
-		return apply_filters( 'wcv_dashboard_nav_items', $items );
+		$items = apply_filters_deprecated( 'wcv_dashboard_nav_items', array( $items ), '2.3.0', 'wcvendors_dashboard_nav_items' );
+		return apply_filters( 'wcvendors_dashboard_nav_items', $items );
 	}
 
 	/**

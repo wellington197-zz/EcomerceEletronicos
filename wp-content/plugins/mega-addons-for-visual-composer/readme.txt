@@ -3,12 +3,12 @@ Contributors: nasir179125, smokehunt
 Donate link: https://www.paypal.com/donate/?token=IEJu3QF5rsSIXSKPvPFBAyFldUM4WbkVRzGfUQ4ZSTSZcI3_hiYjVvr5fcz8_MFFwzeW5W&country.x=GB&locale.x=GB
 Tags: mega addons for wpbakery page builder, mega addons for visual composer, visual composer, all in one plugin, visual composer extension, whatsapp chat, imag hover effects, portfolio, carousel for wpbakery, post, shortcodes, tabs, member profile, info banner, price table, stats counter, flip book, testimonial, filterable gallery, floating menu,
 Requires at least: 3.5
-Tested up to: 5.5.1
-Stable tag: 4.2.0
+Tested up to: 5.7
+Stable tag: 4.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-33+ Addons WPBakery extension, Beautifully designed unique elements, Includes Premium quality addons For WPBakery Page Builder.
+34+ Addons WPBakery extension, Beautifully designed unique elements, Includes Premium quality addons For WPBakery Page Builder.
 
 == Description ==
 
@@ -94,6 +94,7 @@ We have designed 33+ of the most useful widgets to enhance your WPBakery Page Bu
 16.	[Modal Popup](http://addons.topdigitaltrends.net/modal-popup/) - (6+ Button Effects ) Add modal box in your content
 17.	[Accordion](http://addons.topdigitaltrends.net/accordion/) - (7+ Theme Design ) vertically stacked list of items
 18.	[WhatsApp Chat](https://addons.topdigitaltrends.net/whatsapp-chat-wordpress/) - Get instant WhatsApp messages right from your website visitors.
+19.	[360 Product View](https://addons.topdigitaltrends.net/360-product-viewer/) - Interactive 3D image rotation in WordPress.
 
 
 ### Looking for a Best themes?
@@ -159,6 +160,30 @@ https://www.youtube.com/watch?time_continue=387&v=Qj4tfvMlcJs
 
 
 == Changelog ==
+
+= 4.2.7 – 02/06/2021 =
+* Bug Fixed: PHP Warning Undefined array key 1 & PHP Warning: Undefined array key 2 error show in different elements.
+* Fixed: Error show using Google Fonts option.
+* Accordion: Added the option of custom "Class" & "ID".
+* Accordion: In the Backend Editor you can see the Title of each accordion tab.
+* Fixed: Undefined line show in "Timeline" element.
+* Social Icon: Option to link url in new tab, fixed effect "Icon & Text".
+* Fixed: In InfoList "show" "hide" class conflict with other templates so removed It.
+
+= 4.2.6 – 18/11/2020 =
+* Advanced Carousel: Bug Fixed
+
+= 4.2.5 – 18/11/2020 =
+* Info Banner: Redesign Settings and more Features.
+* Info Banner: Now you can add Gradient Background, Shadow for Button and Box. Added Google Fonts Option.
+* Advanced Button: Added Google Fonts Option.
+* Advanced Carousel: Fixed Padding for content + added "Animation Speed" option.
+* Heading: Added Google Fonts Option, Set custom width Line with Icon and fixed border line show as box.
+* Member Profile: Redesign Settings + Included new style. 
+* Accordion: Added Title Align Option + Title padding + More settings
+* Bugs Fixed: When using the jQuery Migrate Helper plugin see the following notice: jQuery.fn.load() is deprecated
+* Creative Link: CSS Class option added. 
+* New Pro feature available: 360 Product View
 
 = 4.2.0 =
 * Filterable Gallery: Now you can show caption text in Popup view.

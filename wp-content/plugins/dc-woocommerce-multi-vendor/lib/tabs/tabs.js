@@ -91,7 +91,7 @@ var scrollTab = ( function ( $, W ) {
             var width = tabs.getWidth( _tabUI, _tabWidth ); //only visible tabs combined width
             _maxLeftMargin = _wrapBoundary.right - _wrapBoundary.left - width;
             // add nav components- prev, next
-            privateApi.addNavComponents( _$navs );
+            // privateApi.addNavComponents( _$navs );
             //enable or disable prev and next button for first and last item in the list
             privateApi.checkNavComponents();
             // add event listners
@@ -160,7 +160,6 @@ var scrollTab = ( function ( $, W ) {
         addEventListners: function addEventListners( $tabs, $navs ) {
             $tabs.on( 'click', '>li:visible', this.onSelect );
             $tabs.on( 'shown.bs.tab', this.afterTabShown );
-            $tabs.on( 'tab-display-updated', privateApi.updatedTabVisibility );
             $( W ).on( 'resize', privateApi.recalculatePositions );
 
             $navs.on( 'click', '.prev', this.navPrev.bind( this ) );
@@ -252,24 +251,6 @@ var scrollTab = ( function ( $, W ) {
             }
             return this;
         },
-        updatedTabVisibility: function updatedTabVisibility() {
-            var currentTab = tabs.activeIndex( _tabUI );
-            _tabUI = _tabUI.map( function ( li ) {
-                li.active = $( li.item ).is( ":visible" );
-                return li;
-            } );
-            privateApi.readjustWidthMargin();
-            if ( !_tabUI[currentTab].active ) { //after visibility change current tab hides
-                var activeTab = tabs.nextVisibleIndex( currentTab, _tabUI );
-                if ( ~activeTab ) {
-                    _$navs.find( '.next' ).trigger( 'click' );
-                } else {   //select prev element
-                    _$navs.find( '.prev' ).trigger( 'click' );
-                }
-            } else {
-                privateApi.mayAdjustOffset( currentTab ).checkNavComponents( );
-            }
-        },
         recalculatePositions: function recalculatePositions() {
             //boundary change
             var boundary = _$wrapper[0].getBoundingClientRect( );
@@ -316,7 +297,7 @@ var scrollTab = ( function ( $, W ) {
 } )( jQuery, window );
 jQuery( function ( $ ) {
     $.fn.afmTabInit = function ( ) {
-        scrollTab.init( this );
-        return this;
+      //  scrollTab.init( this );
+      //  return this;
     };
 } );

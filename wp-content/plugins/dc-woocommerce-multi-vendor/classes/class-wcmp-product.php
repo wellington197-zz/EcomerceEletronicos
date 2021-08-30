@@ -305,7 +305,7 @@ class WCMp_Product {
 
     public function review_title($reviews_title, $count, $product) {
         $count = get_comments(array('post_id' => $product->get_id(), 'type__not_in' => array('product_note', 'comment'), 'count' => true));
-        $reviews_title = sprintf( esc_html( _n( '%1$s review for %2$s', '%1$s reviews for %2$s', $count, 'woocommerce' ) ), esc_html( $count ), '<span>' . $product->get_title() . '</span>' );
+        $reviews_title = sprintf( esc_html( _n( '%1$s review for %2$s', '%1$s reviews for %2$s', $count, 'dc-woocommerce-multi-vendor' ) ), esc_html( $count ), '<span>' . $product->get_title() . '</span>' );
         return $reviews_title;
     }
 
@@ -315,7 +315,7 @@ class WCMp_Product {
             $count = get_comments(array('post_id' => $product->get_id(), 'type__not_in' => array('product_note', 'comment'), 'count' => true));
 
             $tabs['reviews'] = array(
-                    'title'    => sprintf( __( 'Reviews (%d)', 'woocommerce' ), $count),
+                    'title'    => sprintf( __( 'Reviews (%d)', 'dc-woocommerce-multi-vendor' ), $count),
                     'priority' => 30,
                     'callback' => 'comments_template',
                 );
@@ -478,7 +478,7 @@ class WCMp_Product {
                     $selected = isset($_GET[$taxonomy]) ? wc_clean( wp_unslash( $_GET[$taxonomy] ) ) : '';
                     $info_taxonomy = get_taxonomy($taxonomy);
                     wp_dropdown_categories(array(
-                        'show_option_all' => __("Show All {$info_taxonomy->label}"),
+                        'show_option_all' => __("Show All {$info_taxonomy->label}", 'dc-woocommerce-multi-vendor'),
                         'taxonomy' => $taxonomy,
                         'name' => $taxonomy,
                         'orderby' => 'name',
@@ -818,7 +818,7 @@ class WCMp_Product {
         if ( in_array( $post_type, $post_types ) ) {
             add_meta_box(
                 'wf_child_letters'
-                ,__( 'Rejection History', 'woocommerce' )
+                ,__( 'Rejection History', 'dc-woocommerce-multi-vendor' )
                 ,array( $this, 'render_meta_box_content' )
                 ,$post_type
                 ,'side'
@@ -835,7 +835,7 @@ class WCMp_Product {
              <?php wp_nonce_field('dc-vendor-add-product-comment', 'vendor_add_product_nonce'); ?> 
              <div class="add_note">
                  <p>
-                     <label for="add_order_note"><?php esc_html_e( 'Add note', 'woocommerce' ); ?> <?php echo wc_help_tip( __( 'Add a note for your reference, or add a customer note (the user will be notified).', 'woocommerce' ) ); ?></label>
+                     <label for="add_order_note"><?php esc_html_e( 'Add note', 'dc-woocommerce-multi-vendor' ); ?> <?php echo wc_help_tip( __( 'Add a note for your reference, or add a customer note (the user will be notified).', 'dc-woocommerce-multi-vendor' ) ); ?></label>
                      <textarea placeholder="<?php esc_attr_e('Enter text ...', 'dc-woocommerce-multi-vendor'); ?>" class="form-control" name="product_comment_text"></textarea>
                  </p>
                  <p>
@@ -847,7 +847,7 @@ class WCMp_Product {
          <?php endif; 
          $log_statuses = apply_filters('admin_product_logs_status', array('pending', 'publish'));
          if( in_array($post->post_status, $log_statuses) ) { ?>
-             <div><b><?php echo esc_html_e( 'Communication Log', 'woocommerce' ); ?></b></div>
+             <div><b><?php echo esc_html_e( 'Communication Log', 'dc-woocommerce-multi-vendor' ); ?></b></div>
              <ul class="order_notes">
                  <?php
                  if ($notes) {
@@ -859,12 +859,12 @@ class WCMp_Product {
                              <div class="note_content <?php echo $style; ?>">
                                  <?php echo wpautop( wptexturize( wp_kses_post( $note->comment_content ) ) ); ?>
                              </div>
-                             <p ><?php echo esc_html_e($note->comment_author); ?><?php echo $Seller; ?> - <?php echo esc_html_e( date_i18n(wc_date_format() . ' ' . wc_time_format(), strtotime($note->comment_date) ) ); ?></p>
+                             <p ><?php echo esc_html($note->comment_author); ?><?php echo $Seller; ?> - <?php echo esc_html( date_i18n(wc_date_format() . ' ' . wc_time_format(), strtotime($note->comment_date) ) ); ?></p>
                          </li>
                          <?php
                      }
                  }else{
-                     echo '<li class="list-group-item list-group-item-action flex-column align-items-start order-notes">' . __( 'There are no notes yet.', 'woocommerce' ) . '</li>';
+                     echo '<li class="list-group-item list-group-item-action flex-column align-items-start order-notes">' . __( 'There are no notes yet.', 'dc-woocommerce-multi-vendor' ) . '</li>';
                  }
                  ?>
              </ul>
@@ -909,13 +909,13 @@ class WCMp_Product {
         $post = get_post($post_id);
         if ($post->post_type == 'product') {
             if (isset($_POST['_wcmp_cancallation_policy'])) {
-                update_post_meta($post_id, '_wcmp_cancallation_policy', wc_clean(wp_unslash($_POST['_wcmp_cancallation_policy'])));
+                update_post_meta($post_id, '_wcmp_cancallation_policy', stripslashes( html_entity_decode( $_POST['_wcmp_cancallation_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
             }
             if (isset($_POST['_wcmp_refund_policy'])) {
-                update_post_meta($post_id, '_wcmp_refund_policy', wc_clean(wp_unslash($_POST['_wcmp_refund_policy'])));
+                update_post_meta($post_id, '_wcmp_refund_policy', stripslashes( html_entity_decode( $_POST['_wcmp_refund_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
             }
             if (isset($_POST['_wcmp_shipping_policy'])) {
-                update_post_meta($post_id, '_wcmp_shipping_policy', wc_clean(wp_unslash($_POST['_wcmp_shipping_policy'])));
+                update_post_meta($post_id, '_wcmp_shipping_policy', stripslashes( html_entity_decode( $_POST['_wcmp_shipping_policy'], ENT_QUOTES, get_bloginfo( 'charset' ) ) ) );
             }
         }
     }
@@ -1074,7 +1074,7 @@ class WCMp_Product {
                     unset($_POST['variable_product_vendors_commission_fixed_per_qty'][$post_key]);
                 }
                 if (isset($_POST['dc_variable_shipping_class'][$post_key])) {
-                    $_POST['dc_variable_shipping_class'][$post_key] = !empty($_POST['dc_variable_shipping_class'][$post_key]) ? (int) $_POST['dc_variable_shipping_class'][$post_key] : '';
+                    $_POST['dc_variable_shipping_class'][$post_key] = !empty($_POST['dc_variable_shipping_class'][$post_key]) ? absint($_POST['dc_variable_shipping_class'][$post_key]) : '';
                     $array = wp_set_object_terms($value, absint($_POST['dc_variable_shipping_class'][$post_key]), 'product_shipping_class');
                     unset($_POST['dc_variable_shipping_class'][$post_key]);
                 }
@@ -1362,7 +1362,7 @@ class WCMp_Product {
 
     public function woocommerce_shop_loop_callback($product = null) {
         global $WCMp, $post;
-        if (is_tax($WCMp->taxonomy->taxonomy_name)) {
+        if (wcmp_is_store_page()) {
             return;
         }
         if (!is_object($product)) {
@@ -1393,7 +1393,7 @@ class WCMp_Product {
      */
     public function woocommerce_product_query($q) {
         global $WCMp;
-        if (is_tax($WCMp->taxonomy->taxonomy_name)) {
+        if (wcmp_is_store_page()) {
             return;
         }
         //$q->set('post_parent', 0);
@@ -1414,7 +1414,7 @@ class WCMp_Product {
     public function wcmp_filter_product_category($tax_query) {
         global $WCMp;
         $category = filter_input(INPUT_GET, 'category');
-        if (!is_tax($WCMp->taxonomy->taxonomy_name) || is_null($category)) {
+        if (!wcmp_is_store_page() || is_null($category)) {
             return $tax_query;
         }
         $tax_query[] = array(
@@ -1687,7 +1687,7 @@ class WCMp_Product {
      */
     public function wcmp_gtin_product_search( $query  ) {
         global $wpdb;
-        $search_keyword = ((isset($query->query['s']) && !empty($query->query['s'])) ? $query->query['s'] : (isset($_REQUEST['s']) && !empty($_REQUEST['s']))) ? $_REQUEST['s'] : '';
+        $search_keyword = ((isset($query->query['s']) && !empty($query->query['s'])) ? $query->query['s'] : (isset($_REQUEST['s']) && !empty($_REQUEST['s']))) ? wc_clean($_REQUEST['s']) : '';
         if( empty($search_keyword) || !isset( $query->query['post_type'] ) || $query->query['post_type'] != 'product'){
             return;
         }
@@ -1715,7 +1715,7 @@ class WCMp_Product {
     
     public function wcmp_gtin_get_search_query_vars(){
         if(isset($_REQUEST['s']))
-            return $_REQUEST['s'];
+            return wc_clean($_REQUEST['s']);
     }
     
     /**
@@ -1846,7 +1846,7 @@ class WCMp_Product {
         }
     }
     
-    public function show_default_product_cats_in_wp_backend( $termlist_html, $taxonomy = 'product_cat', $product_id, $termlist = array(), $terms = array() ){
+    public function show_default_product_cats_in_wp_backend( $termlist_html, $taxonomy = 'product_cat', $product_id = 0, $termlist = array(), $terms = array() ){
         $default_cat_hierarchy = get_post_meta( $product_id, '_default_cat_hierarchy_term_id', true );
         if( $taxonomy != 'product_cat' ) return $termlist_html;
         if( !$default_cat_hierarchy ) return $termlist_html;

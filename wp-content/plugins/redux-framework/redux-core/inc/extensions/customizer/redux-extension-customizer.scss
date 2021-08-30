@@ -11,7 +11,16 @@
                 margin-left: 30px !important;
                 margin-top: 0px !important;
             }
+
+            .redux-container-editor {
+                .wp-editor-area {
+                    color:#000000;
+                }
+            }
         }
+    }
+    .redux-section.open .redux-group-tab {
+        display: block !important;
     }
 
     .redux-section {

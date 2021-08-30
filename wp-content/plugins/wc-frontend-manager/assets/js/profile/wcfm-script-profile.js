@@ -379,7 +379,8 @@ jQuery(document).ready( function($) {
 				controller         : 'wcfm-profile',
 				wcfm_profile_form  : $('#wcfm_profile_form').serialize(),
 				user_email         : $('#email').val(),
-				about              : about
+				about              : about,
+				wcfm_ajax_nonce    : wcfm_params.wcfm_ajax_nonce
 			}	
 			$.post(wcfm_params.ajax_url, data, function(response) {
 				if(response) {

@@ -4,3 +4,9 @@ input[type=number].wpb_vc_param_value.vc_number {
 }
 /* Custom VC number Parameter
 ============================================== */
+
+/* Edit Field Class Padding top vc_col-sm-4
+============================================== */
+.edit_field_padding_top {
+    padding-top: 0 !important;
+}

@@ -34,7 +34,7 @@ class WCFM_Withdrawal_Requests_Approve_Controller {
 			if(isset($custom_validation_results['has_error']) && !empty($custom_validation_results['has_error'])) {
 				$custom_validation_error = __( 'There has some error in submitted data.', 'wc-frontend-manager' );
 				if( isset( $custom_validation_results['message'] ) && !empty( $custom_validation_results['message'] ) ) { $custom_validation_error = $custom_validation_results['message']; }
-				echo '{"status": false, "message": "' . $custom_validation_error . '"}';
+				echo '{"status": false, "message": "' . esc_html( $custom_validation_error ) . '"}';
 				die;
 			}
 	  	
@@ -57,12 +57,12 @@ class WCFM_Withdrawal_Requests_Approve_Controller {
 				}
 			}
 			if( $withdrawal_update_status ) {
-				echo '{"status": true, "message": "' . __('Withdrawal Requests successfully processed.', 'wc-frontend-manager') . '"}';
+				echo '{"status": true, "message": "' . esc_html( __('Withdrawal Requests successfully processed.', 'wc-frontend-manager') ) . '"}';
 			} else {
-				echo '{"status": false, "message": "' . __('Withdrawal Requests partially processed, check log for more details.', 'wc-frontend-manager') . '"}';
+				echo '{"status": false, "message": "' . esc_html( __('Withdrawal Requests partially processed, check log for more details.', 'wc-frontend-manager') ) . '"}';
 			}
 	  } else {
-	  	echo '{"status": false, "message": "' . __('No withdrawals selected for approval.', 'wc-frontend-manager') . '"}';
+	  	echo '{"status": false, "message": "' . esc_html( __('No withdrawals selected for approval.', 'wc-frontend-manager') ) . '"}';
 	  }
 		
 		die;
@@ -108,9 +108,9 @@ class WCFM_Withdrawal_Requests_Cancel_Controller {
 				
 				do_action( 'wcfmmp_withdrawal_request_cancelled', $withdrawal_id );
 			}
-			echo '{"status": true, "message": "' . __('Withdrawal Requests successfully cancelled.', 'wc-frontend-manager') . '"}';
+			echo '{"status": true, "message": "' . esc_html( __('Withdrawal Requests successfully cancelled.', 'wc-frontend-manager') ) . '"}';
 	  } else {
-	  	echo '{"status": false, "message": "' . __('No withdrawals selected for cancel.', 'wc-frontend-manager') . '"}';
+	  	echo '{"status": false, "message": "' . esc_html( __('No withdrawals selected for cancel.', 'wc-frontend-manager') ) . '"}';
 	  }
 		
 		die;

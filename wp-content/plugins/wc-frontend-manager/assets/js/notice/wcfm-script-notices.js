@@ -45,7 +45,8 @@ jQuery(document).ready(function($) {
 				});
 				var data = {
 					action   : 'archive_wcfm_notice',
-					noticeid : $(this).data('noticeid')
+					noticeid : $(this).data('noticeid'),
+					wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 				}	
 				jQuery.ajax({
 					type:		'POST',
@@ -75,7 +76,8 @@ jQuery(document).ready(function($) {
 				});
 				var data = {
 					action   : 'publish_wcfm_notice',
-					noticeid : $(this).data('noticeid')
+					noticeid : $(this).data('noticeid'),
+					wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 				}	
 				jQuery.ajax({
 					type:		'POST',
@@ -113,7 +115,8 @@ jQuery(document).ready(function($) {
 		});
 		var data = {
 			action   : 'delete_wcfm_notice',
-			noticeid : item.data('noticeid')
+			noticeid : item.data('noticeid'),
+			wcfm_ajax_nonce : wcfm_params.wcfm_ajax_nonce
 		}	
 		jQuery.ajax({
 			type:		'POST',
